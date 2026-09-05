@@ -1,6 +1,7 @@
 {
   "$schema": "https://raw.githubusercontent.com/oxc-project/oxc/main/npm/oxlint/configuration_schema.json",
   "plugins": ["unicorn", "oxc", "promise", "import"],
+  "jsPlugins": ["@stylistic/eslint-plugin"],
   "env": {
     "browser": true,
     "es2024": true
@@ -9,17 +10,82 @@
     "Alpine": "readonly",
     "umami": "readonly"
   },
-  // La catégorie `style` interdit les ternaires, les nombres littéraux et impose le tri
-  // des clés. oxfmt tient déjà la mise en forme ; ces règles ne feraient que du bruit.
   "categories": {
     "correctness": "error",
     "perf": "error",
+    "style": "error",
     "suspicious": "error"
   },
-  // Activée ici pour que l'exception des tests ci-dessous ait un sens : sans cette ligne
-  // la règle n'est dans aucune catégorie active, et `production/` n'est gardé par rien.
   "rules": {
-    "import/no-nodejs-modules": "error"
+    "@stylistic/padding-line-between-statements": [
+      "error",
+      {
+        "blankLine": "always",
+        "prev": "*",
+        "next": "if"
+      },
+      {
+        "blankLine": "always",
+        "prev": "*",
+        "next": "return"
+      },
+      {
+        "blankLine": "always",
+        "prev": "*",
+        "next": ["class", "function"]
+      },
+      {
+        "blankLine": "always",
+        "prev": ["class", "function"],
+        "next": "*"
+      },
+      {
+        "blankLine": "always",
+        "prev": "*",
+        "next": "break"
+      },
+      {
+        "blankLine": "always",
+        "prev": "*",
+        "next": "throw"
+      },
+      {
+        "blankLine": "always",
+        "prev": ["const", "let", "var"],
+        "next": "*"
+      },
+      {
+        "blankLine": "any",
+        "prev": ["const", "let", "var"],
+        "next": ["const", "let", "var"]
+      }
+    ],
+    "@stylistic/spaced-comment": [
+      "error",
+      "always",
+      {
+        "markers": ["/"],
+        "exceptions": ["-", "+", "*"]
+      }
+    ],
+    "capitalized-comments": [
+      "warn",
+      "always",
+      {
+        "ignoreConsecutiveComments": true
+      }
+    ],
+    "eqeqeq": "error",
+    "import/no-nodejs-modules": "error",
+    "no-magic-numbers": "off",
+    "no-ternary": "off",
+    "import/no-named-export": "off",
+    "import/prefer-default-export": "off",
+    "import/group-exports": "off",
+    "import/exports-last": "off",
+    "one-var": "off",
+    "id-length": "off",
+    "max-statements": "off"
   },
   "ignorePatterns": [
     "design/**",
@@ -30,10 +96,13 @@
   ],
   "overrides": [
     {
-      // L'outillage tourne sous node ; seul `production/` doit rester du code navigateur.
       "files": ["tests/**", "playwright.config.js"],
-      "env": { "node": true },
-      "rules": { "import/no-nodejs-modules": "off" }
+      "env": {
+        "node": true
+      },
+      "rules": {
+        "import/no-nodejs-modules": "off"
+      }
     }
   ]
 }

@@ -1,9 +1,9 @@
 import { expect, test } from "@playwright/test";
 
-async function open(page, hash) {
+const open = async (page, hash) => {
   await page.goto(`/${hash}`);
   await expect(page.locator("[data-boot]")).toHaveCount(0, { timeout: 10_000 });
-}
+};
 
 const out = (page) => page.locator('[data-pane="out"]');
 

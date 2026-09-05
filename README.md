@@ -31,13 +31,19 @@ Playwright.
 ## Commandes
 
 ```
-npm run lint          # oxlint
+npm run lint          # oxlint, via npx : voir la note ci-dessous
 npm run format        # oxfmt, écriture en place
 npm run format:check  # oxfmt, vérification seule
 npm run test:unit     # seam interpréteur, sans navigateur
 npm run test:browser  # seam page, navigateur réel
 npm test              # les deux
 ```
+
+Le script `lint` appelle `npx oxlint` et non `oxlint`. Les règles `@stylistic` sont un
+greffon JavaScript, que le binaire autonome ne charge pas. Lancé directement, il ne signale
+aucune erreur **et n'applique pas ces règles non plus**, sans le dire.
+
+`npx oxlint --fix` corrige automatiquement la plupart des violations de style.
 
 ## Les deux seams de test
 

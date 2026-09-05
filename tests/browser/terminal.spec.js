@@ -42,7 +42,9 @@ test("la page ne fait aucune requête externe", async ({ page }) => {
   const external = [];
 
   page.on("request", (request) => {
-    if (!request.url().startsWith("http://127.0.0.1")) external.push(request.url());
+    if (!request.url().startsWith("http://127.0.0.1")) {
+      external.push(request.url());
+    }
   });
 
   await page.goto("/");

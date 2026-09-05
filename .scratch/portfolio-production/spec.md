@@ -316,9 +316,25 @@ Umami is absent, blocked, or failing, nothing breaks and nothing is logged to th
 The current `oxlintrc.json` was copied from a Next.js project. It enables `nextjs`, `react`,
 and `react-perf`, ignores `.next/**` and `.specify/**`, and references an `anti-slop` plugin
 that does not exist here. It is rewritten for a vanilla browser project: `unicorn`, `oxc`,
-`promise` and `import`, and nothing else. `typeAware` goes, because there is no TypeScript.
-`jsx-a11y` goes too, because it only inspects JSX and there will be none; accessibility is
-covered at the browser seam instead, where it can actually be observed. Both tools are already
+`promise` and `import`, plus the four categories including `style`, plus the `@stylistic`
+rules Benjamin asked for. `typeAware` goes, because there is no TypeScript. `jsx-a11y` goes
+too, because it only inspects JSX and there will be none; accessibility is covered at the
+browser seam instead, where it can actually be observed.
+
+Seven rules of the `style` category are turned off, each because it contradicts a decision
+already taken. The four `import` export rules — `no-named-export`, `prefer-default-export`,
+`group-exports`, `exports-last` — would force the interpreter module into a single default
+export, and that module's named exports are the test seam. `one-var` would merge declarations
+that `padding-line-between-statements` exists to separate. `id-length` would rename `m`, `t`,
+`c` and `w`, which are `content.json`'s own schema keys. `max-statements` would split the
+command dispatcher, which is deliberately one point. `no-magic-numbers` and `no-ternary` are
+off at Benjamin's request.
+
+One operational note that cost an hour to find: the `@stylistic` rules are a JavaScript
+plugin, and the standalone oxlint binary loads no JavaScript plugin. Run through `npx oxlint`
+and they fire; run the bare binary and **they are silently inert** — no error, no warning, no
+rule. The lint script therefore calls `npx oxlint`, and `@stylistic/eslint-plugin` and
+`@oxlint/plugins` are development dependencies. Both tools are already
 installed through mise: `oxlint` 1.81.0 and `oxfmt` 0.66.0.
 
 **The repository is public on GitHub, named `portfolio`.**

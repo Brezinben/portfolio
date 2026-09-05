@@ -1,7 +1,6 @@
 import assert from "node:assert/strict";
-import { test } from "node:test";
-
 import { contentLine } from "../../production/interpret.js";
+import { test } from "node:test";
 
 test("une ligne simple garde son texte, son ton et sa graisse", () => {
   const result = contentLine({ t: "bonjour", tone: "acc", w: "700" });

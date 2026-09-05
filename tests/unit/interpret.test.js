@@ -1,7 +1,6 @@
 import assert from "node:assert/strict";
-import { test } from "node:test";
-
 import { interpret } from "../../production/interpret.js";
+import { test } from "node:test";
 
 const CONTEXT = {
   current: { cmd: "bd whoami --verbose", id: "whoami" },

@@ -4,15 +4,20 @@
 // minuteur. Il rend les lignes à afficher et des descripteurs d'effets que la coquille
 // applique. C'est ce qui permet de couvrir les commandes sans navigateur.
 
-const YES = /^(o|oui|y|yes|ok)$/i;
-const NO = /^(n|non|no|annuler|cancel)$/i;
+const YES = /^(?<yes>o|oui|y|yes|ok)$/iu;
+const NO = /^(?<no>n|non|no|annuler|cancel)$/iu;
 
-const line = (m, mc, t, c) => ({ c, m, mc, t });
-const info = (t) => line("·", "fg2", t, "fg");
-const muted = (t) => line("·", "fg2", t, "fg2");
-const done = (t) => line("✓", "ok", t, "fg");
-const failed = (t) => line("✗", "warn", t, "fg");
-const echoed = (t) => line("›", "acc", t, "fg2");
+const line = ({ marker = "", markerTone = "fg2", text, tone = "fg" }) => ({
+  c: tone,
+  m: marker,
+  mc: markerTone,
+  t: text,
+});
+const info = (t) => line({ marker: "·", text: t });
+const muted = (t) => line({ marker: "·", text: t, tone: "fg2" });
+const done = (t) => line({ marker: "✓", markerTone: "ok", text: t });
+const failed = (t) => line({ marker: "✗", markerTone: "warn", text: t });
+const echoed = (t) => line({ marker: "›", markerTone: "acc", text: t, tone: "fg2" });
 
 const track = (event, props) => ({ event, props, type: "track" });
 const say = (text, mood) => ({ mood, text, type: "say" });
@@ -47,17 +52,29 @@ const EGGS = {
         "Vélo de course, code propre, et une conviction : un service doit marcher pour tout le monde.",
       ),
       muted("Si vous lisez ceci, vous avez tapé mon nom dans un terminal. On devrait se parler."),
-      line("›", "acc", "benjamin.david1@hotmail.fr", "acc"),
+      line({ marker: "›", markerTone: "acc", text: "benjamin.david1@hotmail.fr", tone: "acc" }),
     ],
     say: say("salut", "happy"),
   },
   coffee: {
     egg: "coffee",
-    lines: [line("418", "warn", "I'm a teapot. Le café se fait hors du navigateur.", "fg")],
+    lines: [
+      line({
+        marker: "418",
+        markerTone: "warn",
+        text: "I'm a teapot. Le café se fait hors du navigateur.",
+      }),
+    ],
   },
   pet: {
     egg: "pet",
-    lines: [line("♥", "acc", "La mascotte apprécie modérément, mais elle apprécie.", "fg")],
+    lines: [
+      line({
+        marker: "♥",
+        markerTone: "acc",
+        text: "La mascotte apprécie modérément, mais elle apprécie.",
+      }),
+    ],
     say: say("♥", "happy"),
   },
   sudo: {
@@ -71,7 +88,12 @@ const EGGS = {
     lines: [
       info("Vous êtes dans un portfolio déguisé en terminal. Rien ne s'exécute vraiment."),
       muted("La colonne de gauche navigue, l'onglet « texte » donne la version lisible."),
-      line("›", "acc", "tapez help pour la liste complète.", "fg2"),
+      line({
+        marker: "›",
+        markerTone: "acc",
+        text: "tapez help pour la liste complète.",
+        tone: "fg2",
+      }),
     ],
   },
 };
@@ -102,9 +124,10 @@ const ALIASES = {
   write: "send-mail",
 };
 
-function answerPending(input, pending) {
-  if (YES.test(input))
+const answerPending = (input, pending) => {
+  if (YES.test(input)) {
     return { effects: [{ payload: pending, type: "send" }], lines: [echoed(input)] };
+  }
 
   if (NO.test(input)) {
     return {
@@ -114,9 +137,9 @@ function answerPending(input, pending) {
   }
 
   return { effects: [], lines: [muted("répondez « oui » ou « non » — Échap annule.")] };
-}
+};
 
-function slime(argument) {
+const slime = (argument) => {
   if (argument === "drop" || argument === "jump") {
     return { effects: [{ type: "drop" }], lines: [done("le slime saute et s'écrase.")] };
   }
@@ -135,7 +158,7 @@ function slime(argument) {
     effects: [{ mood: argument, type: "emote" }, say(MOODS[argument], argument)],
     lines: [done(`le slime est ${MOODS[argument]}.`)],
   };
-}
+};
 
 const VERBS = [
   "ai",
@@ -194,7 +217,7 @@ export const MAX_SUGGESTIONS = 10;
 
 // Le second mot n'a de sens que pour certaines commandes. Proposer le vocabulaire entier
 // après « slime » ferait du bruit, pas de l'aide.
-function argumentsFor(command, context) {
+const argumentsFor = (command, context) => {
   const ids = [...context.sections, ...context.details].map((entry) => entry.id);
 
   return {
@@ -208,9 +231,9 @@ function argumentsFor(command, context) {
     share: context.shareTargets ?? [],
     slime: [...Object.keys(MOODS), "drop"],
   }[command];
-}
+};
 
-export function candidates(value, context) {
+export const candidates = (value, context) => {
   const slash = /^[/:]/.test(value);
   const bare = value.replace(/^[/:]+/, "");
   const parts = bare.split(" ");
@@ -241,20 +264,24 @@ export function candidates(value, context) {
     hits: (pool ?? []).filter((entry) => entry.startsWith(frag)).slice(0, MAX_SUGGESTIONS),
     slash,
   };
-}
+};
 
 // Tab complète jusqu'au plus long préfixe commun, puis laisse la liste faire le reste.
-export function commonPrefix(entries) {
-  if (entries.length === 0) return "";
+export const commonPrefix = (entries) => {
+  if (entries.length === 0) {
+    return "";
+  }
 
   return entries.reduce((prefix, entry) => {
     let index = 0;
 
-    while (index < prefix.length && prefix[index] === entry[index]) index += 1;
+    while (index < prefix.length && prefix[index] === entry[index]) {
+      index += 1;
+    }
 
     return prefix.slice(0, index);
   });
-}
+};
 
 // Mise en forme des lignes de contenu venues de content.json. Pure, donc testable sans
 // navigateur, au même titre que les commandes.
@@ -262,8 +289,10 @@ const JQ_TONE = { num: "warn", str: "ok" };
 
 const token = (t, c, w = "400") => ({ c, t, w });
 
-export function contentLine(raw) {
-  if (raw.banner) return { banner: raw.banner, tone: "acc", text: raw.t ?? raw.banner };
+export const contentLine = (raw) => {
+  if (raw.banner) {
+    return { banner: raw.banner, text: raw.t ?? raw.banner, tone: "acc" };
+  }
 
   if (raw.jq) {
     const [pad, key, value, kind, comma] = raw.jq;
@@ -286,7 +315,9 @@ export function contentLine(raw) {
     };
   }
 
-  if (raw.jqLine) return { pad: raw.jqLine[0], tokens: [token(raw.jqLine[1], "fg2")] };
+  if (raw.jqLine) {
+    return { pad: raw.jqLine[0], tokens: [token(raw.jqLine[1], "fg2")] };
+  }
 
   return {
     letterSpacing: raw.ls ?? "0",
@@ -298,13 +329,18 @@ export function contentLine(raw) {
     tone: raw.tone ?? "fg",
     weight: raw.w ?? "400",
   };
-}
+};
 
-export function interpret(raw, context) {
+export const interpret = (raw, context) => {
   const input = raw.trim().replace(/\s+/g, " ");
 
-  if (!input) return { effects: [], lines: [] };
-  if (context.pending) return answerPending(input, context.pending);
+  if (!input) {
+    return { effects: [], lines: [] };
+  }
+
+  if (context.pending) {
+    return answerPending(input, context.pending);
+  }
 
   const parts = input.replace(/^[/:]+/, "").split(" ");
   const command = ALIASES[parts[0].toLowerCase()] ?? parts[0].toLowerCase();
@@ -315,7 +351,9 @@ export function interpret(raw, context) {
   const out = (lines, effects = []) => ({ effects: [marked, ...effects], lines: [echo, ...lines] });
 
   // Retaper la commande de la section en cours la rejoue : les commandes ne s'empilent pas.
-  if (input === context.current.cmd) return { effects: [marked, { type: "replay" }], lines: [] };
+  if (input === context.current.cmd) {
+    return { effects: [marked, { type: "replay" }], lines: [] };
+  }
 
   const sections = [...context.sections, ...context.details];
   const target = sections.find((entry) => entry.id === command || entry.id === argument);
@@ -324,12 +362,12 @@ export function interpret(raw, context) {
     return out(
       [
         ...HELP.map((text) => info(text)),
-        line(
-          "›",
-          "acc",
-          "Clavier : / cible la saisie · j / k changent de section · Tab complète · ↑ ↓ rappellent l'historique.",
-          "fg2",
-        ),
+        line({
+          marker: "›",
+          markerTone: "acc",
+          text: "Clavier : / cible la saisie · j / k changent de section · Tab complète · ↑ ↓ rappellent l'historique.",
+          tone: "fg2",
+        }),
       ],
       [say("essaie « joke »", "happy")],
     );
@@ -337,7 +375,11 @@ export function interpret(raw, context) {
 
   if (command === "ls") {
     return out([
-      line("·", "fg2", context.sections.map((entry) => entry.id).join("   "), "acc"),
+      line({
+        marker: "·",
+        text: context.sections.map((entry) => entry.id).join("   "),
+        tone: "acc",
+      }),
       muted(context.details.map((entry) => entry.id).join("   ")),
     ]);
   }
@@ -349,7 +391,10 @@ export function interpret(raw, context) {
     );
   }
 
-  if (command === "clear") return { effects: [marked, { type: "clear" }], lines: [] };
+  if (command === "clear") {
+    return { effects: [marked, { type: "clear" }], lines: [] };
+  }
+
   if (command === "slime") {
     const result = slime(argument);
 
@@ -360,7 +405,7 @@ export function interpret(raw, context) {
     const next = (context.jokeIndex + 1) % context.jokes.length;
 
     return out(
-      [line("☺", "acc", context.jokes[next], "fg")],
+      [line({ marker: "☺", markerTone: "acc", text: context.jokes[next] })],
       [
         track("easter_egg", { nom: "joke" }),
         { mood: "laugh", type: "emote" },
@@ -370,12 +415,13 @@ export function interpret(raw, context) {
     );
   }
 
-  if (command === "sleep")
+  if (command === "sleep") {
     return out([muted("Mise en veille de la mascotte.")], [say("zzz…", "sleep")]);
+  }
 
   if (command === "matrix") {
     return out(
-      [line("·", "fg2", "Réveille-toi, Néo.", "ok")],
+      [line({ marker: "·", text: "Réveille-toi, Néo.", tone: "ok" })],
       [
         track("easter_egg", { nom: "matrix" }),
         { mood: "scared", type: "emote" },
@@ -386,7 +432,7 @@ export function interpret(raw, context) {
 
   if (command === "shutdown" || command === "reboot") {
     return out(
-      [line("·", "fg2", "Extinction du système…", "warn")],
+      [line({ marker: "·", text: "Extinction du système…", tone: "warn" })],
       [{ mode: command, type: "power" }],
     );
   }
@@ -413,10 +459,12 @@ export function interpret(raw, context) {
     theme: { type: "theme" },
   }[command];
 
-  if (deferred) return out([], [deferred]);
+  if (deferred) {
+    return out([], [deferred]);
+  }
 
   return out(
     [failed(`commande introuvable : ${command} — tapez help.`)],
     [track("commande_inconnue", { cmd: command }), say("connais pas", "sad")],
   );
-}
+};

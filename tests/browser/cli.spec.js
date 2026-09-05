@@ -1,11 +1,11 @@
 import { expect, test } from "@playwright/test";
 
-async function boot(page) {
+const boot = async (page) => {
   await page.goto("/");
   await expect(page.locator("[data-boot]")).toHaveCount(0, { timeout: 10_000 });
 
   return page.getByLabel("Commande");
-}
+};
 
 test("taper une commande affiche son résultat dans le journal", async ({ page }) => {
   const cli = await boot(page);

@@ -17,7 +17,7 @@ test("la police est servie depuis production/", async ({ request }) => {
   expect(response.headers()["content-type"]).toBe("font/woff2");
 });
 
-// woff2 est déjà compressé : le recompresser coûterait du temps pour rien.
+// Woff2 est déjà compressé : le recompresser coûterait du temps pour rien.
 test("la police n'est pas recompressée", async ({ request }) => {
   const response = await request.get("/fonts/jetbrains-mono.woff2", {
     headers: { "accept-encoding": "gzip" },

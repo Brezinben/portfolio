@@ -1,7 +1,6 @@
+import { MAX_SUGGESTIONS, candidates, commonPrefix } from "../../production/interpret.js";
 import assert from "node:assert/strict";
 import { test } from "node:test";
-
-import { MAX_SUGGESTIONS, candidates, commonPrefix } from "../../production/interpret.js";
 
 const CONTEXT = {
   details: [{ id: "m-kereis" }, { id: "m-run" }],
