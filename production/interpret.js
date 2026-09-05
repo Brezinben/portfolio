@@ -421,6 +421,43 @@ export const cowsay = (text, { columns = 40, mode = "", think = false } = {}) =>
 
 export const COW_HEAD_MODES = COW_MODES;
 
+// Les jetons sont substitues dans les URL de partage declarees par content.json : une
+// nouvelle cible s'ajoute sans toucher au code.
+export const fillTokens = (template, share) =>
+  template
+    .replaceAll("{url}", encodeURIComponent(share.url ?? ""))
+    .replaceAll("{title}", encodeURIComponent(share.title ?? ""))
+    .replaceAll("{text}", encodeURIComponent(share.text ?? ""));
+
+export const shareTarget = (id, share) => {
+  const target = (share.targets ?? []).find((entry) => entry.id === id);
+
+  if (!target) {
+    return undefined;
+  }
+
+  return {
+    id: target.id,
+    kind: target.kind,
+    label: target.label,
+    url: fillTokens(target.url ?? "", share),
+  };
+};
+
+// Consentement en deux temps : la commande dit ce qui part, ou, et ce qui ne part pas.
+// Rien n'est envoye avant un oui.
+export const proposalPrompt = (text, feedback) => [
+  line({ marker: "›", markerTone: "acc", text: `« ${text} »`, tone: "fg" }),
+  line({
+    marker: "·",
+    text: `Destination : ${feedback.tool}, ${feedback.umamiHost}.`,
+    tone: "fg2",
+  }),
+  line({ marker: "·", text: `Ce qui part : ${feedback.sent}`, tone: "fg2" }),
+  line({ marker: "·", text: `Ce qui ne part pas : ${feedback.notSent}`, tone: "fg2" }),
+  line({ marker: "?", markerTone: "acc", text: "Envoyer ? tapez oui ou non.", tone: "fg" }),
+];
+
 export const interpret = (raw, context) => {
   const input = raw.trim().replace(/\s+/g, " ");
 
@@ -539,6 +576,36 @@ export const interpret = (raw, context) => {
     );
   }
 
+  if (command === "propose") {
+    if (rest.trim() === "") {
+      return out([info("propose <idée> — suggérer un ajout à ce portfolio.")]);
+    }
+
+    return out(proposalPrompt(rest, context.feedback ?? {}), [{ payload: rest, type: "pending" }]);
+  }
+
+  if (command === "share") {
+    if (argument === "") {
+      const ids = (context.share?.targets ?? []).map((entry) => entry.id).join(" · ");
+
+      return out([info(`share <cible> — ${ids}`)], [{ type: "shareMenu" }]);
+    }
+
+    const chosen = shareTarget(argument, context.share ?? {});
+
+    if (!chosen) {
+      return out([failed(`cible inconnue : ${argument}`)]);
+    }
+
+    return out(
+      [done(`partage vers ${chosen.label}.`)],
+      [
+        track("partage", { cible: chosen.id }),
+        { kind: chosen.kind, type: "share", url: chosen.url },
+      ],
+    );
+  }
+
   const egg = EGGS[command];
 
   if (egg) {
@@ -553,9 +620,8 @@ export const interpret = (raw, context) => {
     cv: { type: "cv" },
     email: { type: "email" },
     options: { type: "options" },
-    propose: { text: rest, type: "propose" },
+
     "send-mail": { type: "sendMail" },
-    share: { target: argument, type: "share" },
     theme: { type: "theme" },
   }[command];
 

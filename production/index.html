@@ -24,6 +24,10 @@
   <meta name="twitter:title" content="Benjamin David — Développeur IA &amp; Full Stack">
   <meta name="twitter:description" content="Serveurs MCP, SDD, accessibilité, numérique responsable.">
   <meta name="twitter:image" content="https://portfolio.brezinben.dpdns.org/share.png">
+  <!-- Mesure d'audience auto-hébergée, sans cookie ni identifiant. Différée, et hors du
+       budget de poids : si elle est bloquée, la page ne change pas d'un octet. -->
+  <script defer src="https://umami.brezinben.dpdns.org/script.js"
+    data-website-id="0afaa975-9528-4eac-84a2-9452a9ee607c"></script>
   <style>
     /* Police variable auto-hébergée : un seul fichier couvre 400 et 700. Les ligatures
        sont retirées ici et dans la police, sans quoi les traits de l'art ASCII se
@@ -1433,6 +1437,10 @@
         resizing: undefined,
         ops: 0,
         mood: "idle",
+        feedback: {},
+        pending: undefined,
+        profileEmail: "",
+        share: {},
         shareTargets: [],
         stack: [],
         tech: "",
@@ -1959,7 +1967,9 @@
             jokeIndex: this.jokeIndex,
             jokes: this.jokes,
             columns: Math.floor((this.$refs.cli?.clientWidth ?? 400) / CHAR_PX),
-            pending: undefined,
+            feedback: this.feedback,
+            pending: this.pending,
+            share: this.share,
             sections: this.sections,
           });
 
@@ -1976,11 +1986,81 @@
           this.apply(effects);
         },
 
+        // Marquage silencieux : Umami absent, bloqué ou en erreur ne casse rien et
+        // n'écrit rien en console.
+        track(event, props) {
+          try {
+            globalThis.umami?.track?.(event, props);
+          } catch {
+            // Un bloqueur a mange le script : ce n'est pas une panne du portfolio.
+          }
+        },
+
+        nativeShare() {
+          if (globalThis.navigator?.share) {
+            globalThis.navigator.share({ text: this.share.text, title: this.share.title, url: this.share.url }).catch(() => {});
+          }
+        },
+
+        shareTo(effect) {
+          if (effect.kind === "copy") {
+            this.copy(decodeURIComponent(effect.url));
+
+            return;
+          }
+
+          globalThis.open(decodeURIComponent(effect.url), "_blank", "noopener");
+        },
+
+        copy(text) {
+          globalThis.navigator?.clipboard?.writeText?.(text).catch(() => {
+            this.journal = [...this.journal, { c: "warn", m: "✗", mc: "warn", t: `copie refusée — ${text}` }];
+          });
+          this.say("copié", "happy");
+        },
+
+        // Trois chemins dans l'ordre : marquage Umami, puis POST, puis mailto.
+        async send(text) {
+          this.pending = undefined;
+
+          const feedback = this.feedback ?? {};
+
+          if (globalThis.umami?.track) {
+            this.track(feedback.event ?? "proposition", { message: text });
+            this.journal = [...this.journal, { c: "ok", m: "✓", mc: "ok", t: "proposition envoyée. merci." }];
+
+            return;
+          }
+
+          try {
+            const response = await fetch(`${feedback.umamiHost}/api/send`, {
+              body: JSON.stringify({ payload: { data: { message: text }, name: feedback.event, website: feedback.websiteId }, type: "event" }),
+              headers: { "content-type": "application/json" },
+              method: "POST",
+            });
+
+            if (!response.ok) throw new Error(String(response.status));
+
+            this.journal = [...this.journal, { c: "ok", m: "✓", mc: "ok", t: "proposition envoyée. merci." }];
+          } catch {
+            globalThis.open(`mailto:${feedback.fallbackEmail}?subject=Proposition&body=${encodeURIComponent(text)}`);
+            this.journal = [...this.journal, { c: "fg2", m: "·", mc: "fg2", t: "envoi direct impossible — votre client de courrier prend le relais." }];
+          }
+        },
+
         // La coquille applique ce que l'interpréteur décrit. Les effets des tickets à
         // venir sont ignorés ici plutôt que simulés.
         apply(effects) {
           for (const effect of effects) {
-            if (effect.type === "say") this.say(effect.text, effect.mood);
+            if (effect.type === "track") this.track(effect.event, effect.props);
+            else if (effect.type === "pending") this.pending = effect.payload;
+            else if (effect.type === "send") this.send(effect.payload);
+            else if (effect.type === "share") this.shareTo(effect);
+            else if (effect.type === "shareMenu") this.nativeShare();
+            else if (effect.type === "email" || effect.type === "copy") this.copy(this.profileEmail);
+            else if (effect.type === "sendMail") globalThis.open(`mailto:${this.profileEmail}`);
+            else if (effect.type === "cv") this.goSection("whoami");
+            else if (effect.type === "say") this.say(effect.text, effect.mood);
             else if (effect.type === "emote") this.emote(effect.mood);
             else if (effect.type === "drop") this.drop();
             else if (effect.type === "navigate") this.goSection(effect.id);
@@ -2084,6 +2164,9 @@
             this.sections = content.sections.map(section);
             this.details = (content.details ?? []).map(section);
             this.jokes = content.jokes ?? [];
+            this.share = content.share ?? {};
+            this.feedback = content.feedback ?? {};
+            this.profileEmail = content.profile?.email ?? "";
             this.shareTargets = (content.share?.targets ?? []).map((entry) => entry.id);
             this.timeline = content.timeline ?? [];
             this.stack = content.stack ?? [];
