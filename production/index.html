@@ -907,12 +907,12 @@
     </div>
 
     <template x-if="booting">
-      <div aria-hidden="true" data-boot
+      <div data-boot
         :style="`position:absolute;inset:0;z-index:30;background:var(--bg);padding:18px clamp(12px,2.5vw,26px) 26px;box-sizing:border-box;display:flex;flex-direction:column;${power === 'fade' ? 'animation:bootOut .62s ease forwards' : ''}`">
         <div
           style="flex:1;border:1px solid var(--edge);border-radius:12px;background:var(--panel);padding:clamp(20px,4vw,44px);display:grid;align-content:center;gap:8px;font-size:13px;line-height:1.7">
           <template x-if="dataErr">
-            <div style="display:grid;gap:8px">
+            <div role="alert" style="display:grid;gap:8px">
               <p style="margin:0;color:var(--warn);font-size:16px;font-weight:700">panic: content.json not found</p>
               <p style="margin:0;color:var(--fg2)">goroutine 1 [running]:</p>
               <p style="margin:0;color:var(--fg2)"> main.loadPortfolio(0x0, 0x0)</p>
@@ -932,7 +932,7 @@
             </div>
           </template>
           <template x-if="!dataErr">
-            <div style="display:grid;gap:8px">
+            <div aria-hidden="true" style="display:grid;gap:8px">
               <p style="margin:0;color:var(--acc);font-size:16px;font-weight:700;animation:bootLine .3s ease both">bd os
                 8.0</p>
               <p style="margin:0;color:var(--fg2);animation:bootLine .3s .18s ease both">initialisation du profil
