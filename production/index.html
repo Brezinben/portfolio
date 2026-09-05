@@ -917,6 +917,46 @@
             style="color:var(--acc);animation:caret 1s steps(1) infinite">_</span></p>
         <div data-result x-show="!running"
           :style="`flex:1 1 auto;min-height:0;overflow-y:auto;align-content:start;display:grid;gap:${dense ? '0' : '2px'};line-height:${dense ? '1.35' : '1.6'}`">
+
+          <template x-if="current.view === 'timeline'">
+            <div data-timeline role="listbox" aria-label="Parcours professionnel" aria-orientation="vertical"
+              style="display:grid;gap:2px;align-content:start">
+              <template x-for="(entry, index) in timeline" :key="entry.id">
+                <button type="button" role="option" data-ctl="tl" :aria-selected="index === timelineAt"
+                  @click="openTimeline(index)" @focus="timelineAt = index"
+                  :style="`display:grid;grid-template-columns:14px 1fr;gap:8px;text-align:left;padding:6px 8px;border:0;border-left:2px solid ${index === timelineAt ? 'var(--acc)' : 'transparent'};background:${index === timelineAt ? 'var(--acc-soft)' : 'transparent'};color:var(--fg);font-family:inherit;font-size:13px;cursor:pointer`">
+                  <span aria-hidden="true" style="color:var(--acc-text)"
+                    x-text="index === timelineAt ? '›' : ' '"></span>
+                  <span style="display:grid;gap:2px;min-width:0">
+                    <span data-years style="font-variant-numeric:tabular-nums;color:var(--fg2);font-size:12px"
+                      x-text="entry.years"></span>
+                    <span :style="`font-weight:${index === timelineAt ? '700' : '400'}`" x-text="entry.org"></span>
+                    <span style="font-size:12px;color:var(--fg2);text-wrap:pretty" x-text="entry.role"></span>
+                  </span>
+                </button>
+              </template>
+            </div>
+          </template>
+
+          <template x-if="current.view === 'tree'">
+            <div data-tree style="display:grid;gap:8px;align-content:start;font-size:13px">
+              <template x-for="root in stack" :key="root.id">
+                <div style="display:grid;gap:1px">
+                  <p style="margin:0;color:var(--acc-text)"><span x-text="root.label"></span><span
+                      style="color:var(--fg2)"> — </span><span style="color:var(--fg2)" x-text="root.note"></span></p>
+                  <template x-for="(kid, index) in root.kids" :key="kid">
+                    <button type="button" data-ctl="tech" data-tech :aria-pressed="armed && tech === kid"
+                      @click="armTech(kid)" @focus="followTech(kid)" @keydown.enter.prevent="armTech(kid)"
+                      @keydown.space.prevent="armTech(kid)"
+                      :style="`display:grid;grid-template-columns:18px 1fr;gap:6px;text-align:left;padding:2px 4px;border:0;background:${armed && tech === kid ? 'var(--acc-soft)' : 'transparent'};color:var(--fg);font-family:inherit;font-size:13px;cursor:pointer`"><span
+                        aria-hidden="true" style="color:var(--fg2)"
+                        x-text="index === root.kids.length - 1 ? '└' : '├'"></span><span x-text="kid"></span></button>
+                  </template>
+                </div>
+              </template>
+            </div>
+          </template>
+
           <template x-for="(line, index) in current.lines" :key="index">
             <p
               :style="`margin:0;display:grid;grid-template-columns:18px 1fr;gap:8px;align-items:baseline;padding-left:${line.pad ?? '0'}`">
@@ -1026,63 +1066,21 @@
           style="margin:0;padding:9px 12px;font-size:11px;letter-spacing:.12em;color:var(--fg2);border-bottom:1px solid var(--edge)"
           x-text="current.out.title"></p>
         <div tabindex="0" role="region" aria-label="Contenu de la sortie"
-          style="overflow-y:auto;align-content:start;display:grid">
-          <template x-if="current.view === 'pairs'">
-            <dl style="margin:0;padding:10px 12px;display:grid;gap:6px;align-content:start;font-size:13px">
-              <template x-for="(row, index) in current.out.lines" :key="index">
-                <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr);gap:10px">
-                  <dt :style="`color:var(--${row.kc === 'acc' ? 'acc-text' : row.kc});margin:0`" x-text="row.k"></dt>
-                  <dd :style="`color:var(--${row.vc === 'acc' ? 'acc-text' : row.vc});margin:0`" x-text="row.v"></dd>
-                </div>
-              </template>
-            </dl>
-          </template>
+          style="overflow-y:auto;align-content:start;display:grid;gap:8px;padding:10px 12px">
+          <dl style="margin:0;display:grid;gap:6px;align-content:start;font-size:13px">
+            <template x-for="(row, index) in current.out.lines" :key="index">
+              <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr);gap:10px">
+                <dt :style="`color:var(--${row.kc === 'acc' ? 'acc-text' : row.kc});margin:0`" x-text="row.k"></dt>
+                <dd :style="`color:var(--${row.vc === 'acc' ? 'acc-text' : row.vc});margin:0`" x-text="row.v"></dd>
+              </div>
+            </template>
+          </dl>
 
-          <template x-if="current.view === 'timeline'">
-            <div data-timeline role="listbox" aria-label="Parcours professionnel" aria-orientation="vertical"
-              style="padding:10px 12px;display:grid;gap:2px;align-content:start">
-              <template x-for="(entry, index) in timeline" :key="entry.id">
-                <button type="button" role="option" data-ctl="tl" :aria-selected="index === timelineAt"
-                  @click="openTimeline(index)" @focus="timelineAt = index"
-                  :style="`display:grid;grid-template-columns:14px 1fr;gap:8px;text-align:left;padding:6px 8px;border:0;border-left:2px solid ${index === timelineAt ? 'var(--acc)' : 'transparent'};background:${index === timelineAt ? 'var(--acc-soft)' : 'transparent'};color:var(--fg);font-family:inherit;font-size:13px;cursor:pointer`">
-                  <span aria-hidden="true"
-                    :style="`color:var(--acc-text)`" x-text="index === timelineAt ? '›' : ' '"></span>
-                  <span style="display:grid;gap:2px;min-width:0">
-                    <span data-years style="font-variant-numeric:tabular-nums;color:var(--fg2);font-size:12px"
-                      x-text="entry.years"></span>
-                    <span :style="`font-weight:${index === timelineAt ? '700' : '400'}`" x-text="entry.org"></span>
-                    <span style="font-size:12px;color:var(--fg2);text-wrap:pretty" x-text="entry.role"></span>
-                  </span>
-                </button>
-              </template>
-            </div>
-          </template>
-
-          <template x-if="current.view === 'tree'">
-            <div data-tree style="padding:10px 12px;display:grid;gap:8px;align-content:start;font-size:13px">
-              <template x-for="root in stack" :key="root.id">
-                <div style="display:grid;gap:1px">
-                  <p style="margin:0;color:var(--acc-text)"><span x-text="root.label"></span><span
-                      style="color:var(--fg2)"> — </span><span style="color:var(--fg2)" x-text="root.note"></span></p>
-                  <template x-for="(kid, index) in root.kids" :key="kid">
-                    <button type="button" data-ctl="tech" data-tech :aria-pressed="armed && tech === kid"
-                      @click="armTech(kid)" @focus="followTech(kid)" @keydown.enter.prevent="armTech(kid)"
-                      @keydown.space.prevent="armTech(kid)"
-                      :style="`display:grid;grid-template-columns:18px 1fr;gap:6px;text-align:left;padding:2px 4px;border:0;background:${armed && tech === kid ? 'var(--acc-soft)' : 'transparent'};color:var(--fg);font-family:inherit;font-size:13px;cursor:pointer`"><span
-                        aria-hidden="true" style="color:var(--fg2)"
-                        x-text="index === root.kids.length - 1 ? '└' : '├'"></span><span x-text="kid"></span></button>
-                  </template>
-                </div>
-              </template>
-
-              <template x-if="techNote">
-                <div data-technote
-                  style="border-top:1px solid var(--edge);padding-top:8px;display:grid;gap:4px">
-                  <p style="margin:0;color:var(--acc-text);font-weight:700" x-text="tech"></p>
-                  <p style="margin:0;color:var(--fg2);font-size:12px" x-text="techNote.where"></p>
-                  <p style="margin:0;text-wrap:pretty" x-text="techNote.note"></p>
-                </div>
-              </template>
+          <template x-if="techNote">
+            <div data-technote style="border-top:1px solid var(--edge);padding-top:8px;display:grid;gap:4px">
+              <p style="margin:0;color:var(--acc-text);font-weight:700" x-text="tech"></p>
+              <p style="margin:0;color:var(--fg2);font-size:12px" x-text="techNote.where"></p>
+              <p style="margin:0;text-wrap:pretty" x-text="techNote.note"></p>
             </div>
           </template>
         </div>
