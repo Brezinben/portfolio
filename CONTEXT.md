@@ -76,11 +76,6 @@ Jauge de la barre d'état qui monte à chaque commande, et se vide avec une comp
 ironique quand elle est pleine.
 _Avoid_: barre de progression, compteur.
 
-**Armement** (`armed`) :
-État de la stack après la première validation d'une techno. Une fois armée, la stack suit
-le focus sans validation.
-_Avoid_: activation, sélection.
-
 **Valeur figée** (`frozenValue`) :
 Durée ou seuil arrêté après itération, qui ne doit pas redevenir un réglage.
 _Avoid_: constante, paramètre, réglage.
