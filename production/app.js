@@ -260,76 +260,87 @@ const sprite = (rows, colors, px) => {
   return shadows.join(",");
 };
 
-const face = (mood, blink) => {
-  const closed = blink || mood === "sleep";
-  const key = closed && mood !== "sleep" ? "sleep" : FACES[mood] ? mood : "idle";
+const faceKey = (mood, blink) => {
+  // Les yeux fermes empruntent le visage endormi, sauf quand la mascotte dort deja.
+  if (blink && mood !== "sleep") {
+    return "sleep";
+  }
 
-  return MASCOT.map((row, y) => (y >= 6 && y <= 11 ? FACES[key][y - 6] : row));
+  return FACES[mood] ? mood : "idle";
+};
+
+const face = (mood, blink) => {
+  const rows = FACES[faceKey(mood, blink)];
+
+  return MASCOT.map((row, y) => (y >= 6 && y <= 11 ? rows[y - 6] : row));
 };
 
 const EMPTY = { cmd: "", lines: [], out: { lines: [], title: "" }, suggest: "", view: "pairs" };
 
 document.addEventListener("alpine:init", () => {
+  // Les proprietes sont triees, les methodes suivent un ordre de lecture : chargement,
+  // navigation, clavier, options, mascotte, commandes. Les trier alphabetiquement
+  // disperserait chaque sujet aux quatre coins du fichier pour un gain nul.
+  // eslint-disable-next-line sort-keys
   Alpine.data("terminal", () => ({
+    MASCOT_PX,
+    THEMES,
+    TOGGLES,
+    anim: true,
+    at: 0,
+    blink: false,
+    bubble: "",
+    clicks: 0,
     commands: [],
+    compacting: false,
+    contentSource: "remote",
+    crowned: false,
     dataErr: false,
     details: [],
+    direction: 1,
+    dragging: false,
     errDetail: "",
+    feedback: {},
+    focusAt: { main: 0, nav: 0, out: 0 },
+    grabAt: 0,
     input: "",
     jokeIndex: 0,
     jokes: [],
     journal: [],
-    missions: [],
-    power: "boot",
-    THEMES,
-    TOGGLES,
-    anim: true,
-    crowned: false,
-    focusAt: { main: 0, nav: 0, out: 0 },
+    journalOverflows: false,
     logH: 0,
+    missions: [],
+    mood: "idle",
+    more: { journal: false },
+    motion: "",
+    ops: 0,
     optsOpen: false,
     out: true,
     pane: "nav",
+    pending: undefined,
+    power: "boot",
+    profileEmail: "",
     recallAt: -1,
+    resizing: undefined,
+    running: false,
+    section: "whoami",
+    sections: [],
+    seen: [],
+    share: {},
+    shareTargets: [],
+    stack: [],
     sugg: [],
     suggAt: 0,
     suggFrag: "",
     suggHead: "",
     suggOpen: false,
     suggSlash: false,
-    running: false,
-    at: 0,
-    direction: 1,
-    dragging: false,
-    grabAt: 0,
-    section: "whoami",
-    sections: [],
-    seen: [],
-    MASCOT_PX,
-    blink: false,
-    bubble: "",
-    clicks: 0,
-    compacting: false,
-    contentSource: "remote",
-    journalOverflows: false,
-    more: { journal: false },
-    motion: "",
-    resizing: undefined,
-    ops: 0,
-    mood: "idle",
-    feedback: {},
-    pending: undefined,
-    profileEmail: "",
-    share: {},
-    shareTargets: [],
-    stack: [],
     tech: "",
     techNotes: {},
+    theme: "dark",
     timeline: [],
     timelineAt: 0,
-    theme: "dark",
     typed: "",
-
     get booting() {
       return this.power !== "on";
     },
@@ -994,10 +1005,9 @@ document.addEventListener("alpine:init", () => {
 
     persist() {
       try {
-        globalThis.localStorage.setItem(
-          OPTS_KEY,
-          JSON.stringify(Object.fromEntries(KEPT.map((key) => [key, this[key]]))),
-        );
+        const saved = Object.fromEntries(KEPT.map((key) => [key, this[key]]));
+
+        globalThis.localStorage.setItem(OPTS_KEY, JSON.stringify(saved));
       } catch {
         // Navigation privée ou stockage plein : le réglage vaut pour cette visite.
       }
@@ -1122,11 +1132,19 @@ document.addEventListener("alpine:init", () => {
       }
     },
 
-    nativeShare() {
-      if (globalThis.navigator?.share) {
-        globalThis.navigator
-          .share({ text: this.share.text, title: this.share.title, url: this.share.url })
-          .catch(() => {});
+    async nativeShare() {
+      if (!globalThis.navigator?.share) {
+        return;
+      }
+
+      try {
+        await globalThis.navigator.share({
+          text: this.share.text,
+          title: this.share.title,
+          url: this.share.url,
+        });
+      } catch {
+        // Le visiteur a ferme le menu de partage : ce n'est pas une panne.
       }
     },
 
@@ -1143,13 +1161,18 @@ document.addEventListener("alpine:init", () => {
       globalThis.open(effect.url, "_blank", "noopener");
     },
 
-    copy(text) {
-      globalThis.navigator?.clipboard?.writeText?.(text).catch(() => {
+    async copy(text) {
+      try {
+        await globalThis.navigator?.clipboard?.writeText?.(text);
+      } catch {
         this.journal = [
           ...this.journal,
           { c: "warn", m: "✗", mc: "warn", t: `copie refusée — ${text}` },
         ];
-      });
+
+        return;
+      }
+
       this.say("copié", "happy");
     },
 

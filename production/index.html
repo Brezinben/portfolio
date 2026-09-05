@@ -934,8 +934,7 @@
         style="flex:1 1 auto;min-width:0;min-height:0;display:flex;flex-direction:column;gap:10px;border:1px solid var(--edge);border-radius:12px;background:var(--panel);padding:14px;overflow:hidden">
         <p style="margin:0;font-size:13px;color:var(--fg2);flex:none"><span
             style="color:var(--ok)">benjamin@portfolio</span><span style="color:var(--fg2)">:~$ </span><span
-            style="color:var(--fg)" x-text="typed"></span><span x-show="running" style="color:var(--fg2);margin-left:10px"
-            :style="`animation:${anim ? 'dotPulse 1.2s ease-in-out infinite' : 'none'};color:var(--fg2);margin-left:10px`">exécution…</span><span
+            style="color:var(--fg)" x-text="typed"></span><span
             x-show="!running && anim" aria-hidden="true"
             :style="`color:var(--acc-text);animation:${anim ? 'caret 1s steps(1) infinite' : 'none'}`">_</span></p>
         <div data-result
@@ -999,7 +998,7 @@
             </div>
           </template>
 
-          <template x-for="(line, index) in current.lines" :key="index">
+          <template x-for="(line, index) in current.lines" :key="`${section}-${index}`">
             <p
               :style="`margin:0;display:grid;grid-template-columns:18px 1fr;gap:8px;align-items:baseline;padding-left:${line.pad ?? '0'};animation:${anim ? `lineIn .3s cubic-bezier(.2,.7,.3,1) ${(index * 0.038).toFixed(3)}s both` : 'none'}`">
               <span aria-hidden="true" :style="`color:var(--${line.markerTone ?? 'fg2'})`"
@@ -1093,7 +1092,7 @@
         </div>
 
         <form data-cli @submit.prevent="submit()"
-          style="flex:none;display:grid;grid-template-columns:auto 1fr;gap:8px;align-items:baseline;border-top:1px solid var(--edge);padding-top:10px">
+          style="flex:none;display:grid;grid-template-columns:auto 1fr;gap:8px;align-items:baseline;margin-top:-10px;padding-top:6px">
           <label for="cli" style="position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)">Commande</label>
           <span aria-hidden="true" style="color:var(--ok)">$</span>
           <input id="cli" x-ref="cli" x-model="input" @input="suggest()" @blur="closeSugg()"
