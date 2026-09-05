@@ -122,7 +122,7 @@ test("masquer le volet de sortie le retire de la page", async ({ page }) => {
   await expect(page.locator('[data-pane="out"]')).toBeVisible();
 
   await opts(page).click();
-  await page.getByRole("button", { name: /volet de sortie/ }).click();
+  await page.getByRole("button", { name: /output pane/ }).click();
   await page.getByRole("dialog").press("Escape");
 
   await expect(page.locator('[data-pane="out"]')).toBeHidden();
@@ -136,7 +136,7 @@ test("la densité compacte resserre les lignes", async ({ page }) => {
   const comfortable = await spacing();
 
   await opts(page).click();
-  await page.getByRole("button", { name: /densité/ }).click();
+  await page.getByRole("button", { name: /dense lines/ }).click();
   await page.getByRole("dialog").press("Escape");
 
   expect(Number.parseFloat(await spacing())).toBeLessThan(Number.parseFloat(comfortable));
