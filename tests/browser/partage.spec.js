@@ -1,0 +1,86 @@
+import { expect, test } from "@playwright/test";
+
+const boot = async (page) => {
+  await page.goto("/");
+  await expect(page.locator("[data-boot]")).toHaveCount(0, { timeout: 10_000 });
+
+  return page.getByLabel("Commande");
+};
+
+const run = async (cli, command) => {
+  await cli.fill(command);
+  await cli.press("Enter");
+};
+
+test("share seul liste les cibles déclarées dans le contenu", async ({ page }) => {
+  const cli = await boot(page);
+
+  await run(cli, "share");
+
+  await expect(page.locator("[data-journal]")).toContainText("linkedin");
+  await expect(page.locator("[data-journal]")).toContainText("github");
+});
+
+test("share vers le lien copie l'adresse", async ({ page, context }) => {
+  await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+
+  const cli = await boot(page);
+
+  await run(cli, "share link");
+
+  await expect(page.locator("[data-journal]")).toContainText("partage vers");
+  expect(await page.evaluate(() => navigator.clipboard.readText())).toContain("portfolio");
+});
+
+test("une cible inconnue le dit sans rien ouvrir", async ({ page }) => {
+  const cli = await boot(page);
+
+  await run(cli, "share nexistepas");
+
+  await expect(page.locator("[data-journal]")).toContainText("cible inconnue");
+});
+
+// Consentement en deux temps : rien ne part avant un oui.
+test("propose annonce ce qui part et attend la confirmation", async ({ page }) => {
+  const cli = await boot(page);
+
+  await run(cli, "propose ajouter une section veille");
+
+  const journal = page.locator("[data-journal]");
+
+  await expect(journal).toContainText("ajouter une section veille");
+  await expect(journal).toContainText("umami.brezinben.dpdns.org");
+  await expect(journal).toContainText("Votre texte, et rien d'autre");
+  await expect(journal).toContainText("Aucune adresse IP");
+  await expect(journal).toContainText("oui ou non");
+});
+
+test("répondre non n'envoie rien", async ({ page }) => {
+  const cli = await boot(page);
+
+  await run(cli, "propose une idée");
+  await run(cli, "non");
+
+  await expect(page.locator("[data-journal]")).toContainText("rien n'a été envoyé");
+});
+
+test("la page ne pose aucun cookie", async ({ page, context }) => {
+  const cli = await boot(page);
+
+  await run(cli, "help");
+  await run(cli, "joke");
+
+  expect(await context.cookies()).toEqual([]);
+});
+
+// Umami bloque ou absent ne doit rien casser : le helper est silencieux.
+test("une mesure d'audience bloquée ne casse pas la page", async ({ page }) => {
+  await page.route("**/umami.brezinben.dpdns.org/**", (route) => route.abort());
+
+  const cli = await boot(page);
+
+  await run(cli, "wtf");
+
+  await expect(page.locator("[data-journal]")).toContainText("portfolio déguisé");
+  await expect(page.locator('[data-pane="main"]')).toBeVisible();
+});

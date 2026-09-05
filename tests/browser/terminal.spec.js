@@ -37,12 +37,14 @@ test("le boot dure au moins deux secondes", async ({ page }) => {
   expect(Date.now() - started).toBeGreaterThanOrEqual(BOOT_MS);
 });
 
-// La page promet aucune requête tierce. Une police distante la trahirait en premier.
-test("la page ne fait aucune requête externe", async ({ page }) => {
+// Le seul tiers admis est la mesure d'audience auto-hébergée, différée et facultative.
+// Une police distante ou un CDN trahiraient la promesse en premier.
+test("la page ne fait aucune requête externe hors mesure d'audience", async ({ page }) => {
   const external = [];
+  const allowed = ["http://127.0.0.1", "https://umami.brezinben.dpdns.org"];
 
   page.on("request", (request) => {
-    if (!request.url().startsWith("http://127.0.0.1")) {
+    if (!allowed.some((prefix) => request.url().startsWith(prefix))) {
       external.push(request.url());
     }
   });
