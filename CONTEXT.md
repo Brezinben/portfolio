@@ -104,6 +104,15 @@ Repli en une colonne, sans script et sans image. Cible du lien de secours de l'�
 panique. Contenu écrit en dur.
 _Avoid_: version simple, version accessible, fallback.
 
+**Artefact compact** (`dist/`) :
+Le dossier que la construction produit. Même page que `production/`, sous forme minifiée.
+Hors de git. Les tests navigateur servent ce dossier.
+_Avoid_: sortie, distribution, bundle.
+
+**Construction** (`npm run build`) :
+L'étape qui produit l'artefact compact à partir de `production/`.
+_Avoid_: build, compilation, packaging.
+
 **Contenu** (`content.json`) :
 Fichier JSON chargé au démarrage, seule source de vérité du contenu de la version
 terminal. Ses clés sont en anglais.

@@ -23,9 +23,9 @@ const findForbidden = async (directory) => {
   return [...found, ...deeper.flat()];
 };
 
-// Production/ se copie tel quel sur un serveur statique. Un manifeste de dépendances ou un
-// node_modules signifierait qu'une étape de construction s'est glissée dedans, y compris
-// sous production/vendor/ où Alpine est figé.
+// Production/ reste la source, servable telle quelle sans npm. La construction produit
+// dist/ et n'écrit jamais ici. Un manifeste de dépendances ou un node_modules signifierait
+// que la construction a débordé, y compris sous production/vendor/ où Alpine est figé.
 test("production/ ne contient aucune dépendance ni artefact de construction", async () => {
   assert.deepEqual(await findForbidden(PRODUCTION), []);
 });

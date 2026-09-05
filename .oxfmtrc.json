@@ -4,6 +4,7 @@
   "ignorePatterns": [
     "**/*.md",
     "design/**",
+    "dist/**",
     "production/**/*.html",
     "production/content.json",
     "production/vendor/**"

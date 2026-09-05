@@ -89,6 +89,7 @@
   },
   "ignorePatterns": [
     "design/**",
+    "dist/**",
     "node_modules/**",
     "playwright-report/**",
     "production/vendor/**",
@@ -96,7 +97,7 @@
   ],
   "overrides": [
     {
-      "files": ["tests/**", "playwright.config.js"],
+      "files": ["tests/**", "tools/**", "playwright.config.js"],
       "env": {
         "node": true
       },
