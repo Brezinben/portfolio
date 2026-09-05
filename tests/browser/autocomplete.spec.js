@@ -1,11 +1,11 @@
 import { expect, test } from "@playwright/test";
 
-async function boot(page) {
+const boot = async (page) => {
   await page.goto("/");
   await expect(page.locator("[data-boot]")).toHaveCount(0, { timeout: 10_000 });
 
   return page.getByLabel("Commande");
-}
+};
 
 const list = (page) => page.locator("[data-suggestions]");
 

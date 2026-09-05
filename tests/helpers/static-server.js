@@ -1,9 +1,9 @@
-import { createReadStream } from "node:fs";
-import { stat } from "node:fs/promises";
-import { createServer } from "node:http";
 import { extname, join, resolve, sep } from "node:path";
-import { fileURLToPath } from "node:url";
 import { createGzip } from "node:zlib";
+import { createReadStream } from "node:fs";
+import { createServer } from "node:http";
+import { fileURLToPath } from "node:url";
+import { stat } from "node:fs/promises";
 
 const ROOT = resolve(fileURLToPath(new URL("../../production/", import.meta.url)));
 
@@ -26,8 +26,8 @@ const TYPES = {
 // du budget mesurerait deux à quatre fois le poids réel et ne voudrait plus rien dire.
 const COMPRESSIBLE = new Set([".css", ".html", ".js", ".json", ".svg", ".txt"]);
 
-function resolveTarget(rawUrl) {
-  let pathname;
+const resolveTarget = (rawUrl) => {
+  let pathname = "";
 
   try {
     pathname = decodeURIComponent(new URL(rawUrl, "http://127.0.0.1").pathname);
@@ -38,18 +38,20 @@ function resolveTarget(rawUrl) {
   const target = resolve(join(ROOT, pathname === "/" ? "/index.html" : pathname));
 
   return target === ROOT || target.startsWith(ROOT + sep) ? target : undefined;
-}
+};
 
-function notFound(response) {
-  if (!response.headersSent) response.writeHead(NOT_FOUND);
+const notFound = (response) => {
+  if (!response.headersSent) {
+    response.writeHead(NOT_FOUND);
+  }
   response.end("Not Found");
-}
+};
 
-function send(request, response, target, size) {
+const send = ({ request, response, size, target }) => {
   const type = TYPES[extname(target)] ?? "application/octet-stream";
   const stream = createReadStream(target);
 
-  // stat() peut réussir là où open() échoue. Sans cet écouteur, l'erreur est non gérée
+  // Stat() peut réussir là où open() échoue. Sans cet écouteur, l'erreur est non gérée
   // et tue le processus : le harnais tombe au milieu d'une série de tests.
   stream.on("error", () => notFound(response));
 
@@ -69,7 +71,7 @@ function send(request, response, target, size) {
 
   response.writeHead(OK, { "content-length": size, "content-type": type });
   stream.pipe(response);
-}
+};
 
 const server = createServer(async (request, response) => {
   const target = resolveTarget(request.url);
@@ -80,7 +82,7 @@ const server = createServer(async (request, response) => {
     return;
   }
 
-  let info;
+  let info = undefined;
 
   try {
     info = await stat(target);
@@ -90,8 +92,11 @@ const server = createServer(async (request, response) => {
     return;
   }
 
-  if (info.isFile()) send(request, response, target, info.size);
-  else notFound(response);
+  if (info.isFile()) {
+    send({ request, response, size: info.size, target });
+  } else {
+    notFound(response);
+  }
 });
 
 server.listen(Number(process.argv[2] ?? 4173), "127.0.0.1");
