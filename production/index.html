@@ -913,6 +913,23 @@
           </template>
         </div>
 
+        <div data-track x-ref="track" @pointermove.window="drag($event); nearby($event)" @pointerup.window="release()"
+          @pointercancel.window="release()"
+          style="flex:none;position:relative;height:64px;margin-top:4px">
+          <template x-if="bubble">
+            <span data-bubble aria-live="polite"
+              :style="`position:absolute;bottom:${20 * MASCOT_PX}px;left:0;transform:translateX(${at}px);border:1px solid var(--edge);background:var(--panel);color:var(--fg);padding:2px 8px;font-size:12px;white-space:nowrap;pointer-events:none`"
+              x-text="bubble"></span>
+          </template>
+          <span data-mascot x-ref="mascot" role="img" :aria-label="mascotLabel" tabindex="0"
+            @pointerdown.prevent="grab($event)" @click="poke()" @keydown.enter.prevent="poke()"
+            :style="`position:absolute;bottom:0;left:${at}px;width:${MASCOT_PX}px;height:${MASCOT_PX}px;box-shadow:${mascotShadow};cursor:grab;touch-action:none;transform-origin:bottom center;animation:${mascotAnim}`"></span>
+          <template x-if="crowned">
+            <span data-crown aria-hidden="true"
+              :style="`position:absolute;bottom:${18 * MASCOT_PX}px;left:0;width:${MASCOT_PX}px;height:${MASCOT_PX}px;box-shadow:${crownShadow};transform:translateX(${at}px);pointer-events:none`"></span>
+          </template>
+        </div>
+
         <div x-show="suggOpen" x-transition:enter.duration.220ms x-transition:leave.duration.170ms
           data-suggestions role="listbox" aria-label="Suggestions"
           style="flex:none;display:grid;gap:1px;border:1px solid var(--edge);background:var(--panel);padding:4px;margin-bottom:-4px">
@@ -1246,6 +1263,84 @@
       };
     }
 
+    // Sprite valide apres iteration : ne pas le redessiner. Deux tentatives de refonte
+    // ont ete annulees (DECISIONS.md, section 10).
+    const MASCOT = [
+      "........bbbbbbbb........",
+      "......bbbbbbbbbbbb......",
+      ".....bbbbbbbbbbbbbb.....",
+      "....bbhbbbbbbbbbbbbb....",
+      "...bbhbbbbbbbbbbbbbbb...",
+      "...bhbbbbbbbbbbbbbbbb...",
+      "..bbbbbbbbbbbbbbbbbbbb..",
+      "..bbbbbeebbbbbbeebbbbb..",
+      "..bbbbbeebbbbbbeebbbbb..",
+      ".bbbbbbbbbbbbbbbbbbbbbb.",
+      ".bbbbbbbbbmbbmbbbbbbbbb.",
+      ".bbbbbbbbbbmmbbbbbbbbbb.",
+      "bbbbbbbbbbbbbbbbbbbbbbbb",
+      "bbbbbbbbbbbbbbbbbbbbbbbb",
+      "bbbbbbbbbbbbbbbbbbbbbbbb",
+      "bbbbbbbbbbbbbbbbbbbbbbbb",
+      ".ssssssssssssssssssssss.",
+      "..ssssssssssssssssssss..",
+    ];
+
+    // Couleurs fixes dans les huit themes : demande explicite.
+    const MASCOT_COLORS = { b: "#F5B83B", e: "#242538", h: "#FFD98A", m: "#242538", s: "#C98F1E" };
+
+    const CROWN = [
+      "..........jjjj..........",
+      "....r.....jjjj.....r....",
+      "...rrr...gjjjjg...rrr...",
+      "....r..ggggggggg..r.....",
+      "....gggggggggggggggg....",
+      "....gggggggggggggggg....",
+      "....GGGGGGGGGGGGGGGG....",
+    ];
+
+    const CROWN_COLORS = { G: "#C8921A", g: "#F2C230", j: "#2F7FE0", r: "#D8322B" };
+    const CROWN_AT = new Date().getFullYear() - 2000;
+    const MASCOT_PX = 2.6;
+
+    const FACES = {
+      alert: ["..bbbbbbbbbbbbbbbbbbbb..", "..bbbbeeeebbbbeeeebbbb..", "..bbbbeeeebbbbeeeebbbb..", ".bbbbbbbbbbbbbbbbbbbbbb.", ".bbbbbbbbbmmmmbbbbbbbbb.", ".bbbbbbbbbmmmmbbbbbbbbb."],
+      happy: ["..bbbbbbbbbbbbbbbbbbbb..", "..bbbbbmbbbbbbmbbbbbbb..", "..bbbbmbmbbbbmbmbbbbbb..", ".bbbbbbbbbbbbbbbbbbbbbb.", ".bbbbbbbbmbbbbmbbbbbbbb.", ".bbbbbbbbbmmmmbbbbbbbbb."],
+      idle: ["..bbbbbbbbbbbbbbbbbbbb..", "..bbbbbeebbbbbbeebbbbb..", "..bbbbbeebbbbbbeebbbbb..", ".bbbbbbbbbbbbbbbbbbbbbb.", ".bbbbbbbbbmbbmbbbbbbbbb.", ".bbbbbbbbbbmmbbbbbbbbbb."],
+      laugh: ["..bbbbbbbbbbbbbbbbbbbb..", "..bbbbmmmbbbbmmmbbbbbb..", "..bbbbbbbbbbbbbbbbbbbb..", ".bbbbbbbmmmmmmmmbbbbbbb.", ".bbbbbbmmmmmmmmmmbbbbbb.", ".bbbbbbbmmmmmmmmbbbbbbb."],
+      sad: ["..bbmmbbbbbbbbbbbbmmbb..", "..bbbmmbbbbbbbbmmbbbbb..", "..bbbbbeebbbbbbeebbbbb..", ".bbbbbbbbbbbbbbbbbbbbbb.", ".bbbbbbbbbbmmbbbbbbbbbb.", ".bbbbbbbbbmbbmbbbbbbbbb."],
+      scared: ["..bbbbbbbbbbbbbbbbbbbb..", "..bbbbeeeebbbbeeeebbbb..", "..bbbbeeeebbbbeeeebbbb..", ".bbbbbbbbbbbbbbbbbbbbbb.", ".bbbbbbbbbbmmbbbbbbbbbb.", ".bbbbbbbbbbmmbbbbbbbbbb."],
+      sleep: ["..bbbbbbbbbbbbbbbbbbbb..", "..bbbbbbbbbbbbbbbbbbbb..", "..bbbbmmmmbbbbmmmmbbbb..", ".bbbbbbbbbbbbbbbbbbbbbb.", ".bbbbbbbbbbmmbbbbbbbbbb.", ".bbbbbbbbbbbbbbbbbbbbbb."],
+    };
+
+    const MOOD_LABELS = {
+      alert: "surpris", happy: "content", idle: "au repos", laugh: "hilare",
+      sad: "triste", scared: "apeuré", sleep: "endormi",
+    };
+
+    const sprite = (rows, colors, px) => {
+      const shadows = [];
+
+      rows.forEach((row, y) => {
+        [...row].forEach((character, x) => {
+          const colour = colors[character];
+
+          if (colour) {
+            shadows.push(`${(x * px).toFixed(2)}px ${(y * px).toFixed(2)}px 0 ${colour}`);
+          }
+        });
+      });
+
+      return shadows.join(",");
+    };
+
+    const face = (mood, blink) => {
+      const closed = blink || mood === "sleep";
+      const key = closed && mood !== "sleep" ? "sleep" : (FACES[mood] ? mood : "idle");
+
+      return MASCOT.map((row, y) => (y >= 6 && y <= 11 ? FACES[key][y - 6] : row));
+    };
+
     const EMPTY = { cmd: "", lines: [], out: { lines: [], title: "" }, suggest: "", view: "pairs" };
 
     document.addEventListener("alpine:init", () => {
@@ -1279,10 +1374,19 @@
         suggOpen: false,
         suggSlash: false,
         running: false,
+        at: 0,
+        direction: 1,
+        dragging: false,
         section: "whoami",
         sections: [],
         seen: [],
+        MASCOT_PX,
         armed: false,
+        blink: false,
+        bubble: "",
+        clicks: 0,
+        motion: "",
+        mood: "idle",
         shareTargets: [],
         stack: [],
         tech: "",
@@ -1302,6 +1406,7 @@
 
         init() {
           this.restore();
+          this.startMascot();
           globalThis.addEventListener("popstate", () => this.fromHash());
           this.load();
         },
@@ -1396,6 +1501,149 @@
           const target = this.timeline[index]?.detail;
 
           if (target) this.goSection(target);
+        },
+
+        get mascotShadow() {
+          return sprite(face(this.mood, this.blink), MASCOT_COLORS, MASCOT_PX);
+        },
+
+        get crownShadow() {
+          return sprite(CROWN, CROWN_COLORS, MASCOT_PX);
+        },
+
+        get mascotLabel() {
+          return `Mascotte ${MOOD_LABELS[this.mood] ?? "au repos"}${this.crowned ? ", couronnée" : ""}`;
+        },
+
+        say(text, mood) {
+          this.bubble = text;
+          this.emote(mood ?? "happy", 2600);
+          clearTimeout(this.bubbleTimer);
+          this.bubbleTimer = setTimeout(() => {
+            this.bubble = "";
+          }, 2600);
+        },
+
+        drop() {
+          this.emote("alert", 1300);
+          this.place(Math.random() * this.trackWidth());
+          this.move("drop", 1100);
+        },
+
+        emote(mood, hold = 3200) {
+          this.mood = mood;
+          clearTimeout(this.moodTimer);
+          this.moodTimer = setTimeout(() => {
+            this.mood = "idle";
+          }, hold);
+        },
+
+        // La couronne tombe apres l'annee courante moins 2000 clics, et reste sur
+        // l'appareil.
+        poke() {
+          this.clicks += 1;
+          this.emote(this.clicks >= CROWN_AT ? "laugh" : "happy", 1400);
+
+          if (this.clicks >= CROWN_AT && !this.crowned) {
+            this.crowned = true;
+            this.persist();
+          }
+        },
+
+        // La position est ecrite directement dans le style : la faire passer par l'etat
+        // reactif ferait rerendre la page a chaque image.
+        place(x) {
+          this.at = Math.max(0, Math.min(this.trackWidth(), x));
+
+          // La position passe par `left` et non par `transform` : les keyframes du canvas
+          // pilotent `transform` pour l'écrasement et le saut, et se battraient avec elle.
+          if (this.$refs.mascot) this.$refs.mascot.style.left = `${this.at}px`;
+        },
+
+        // Les animations viennent des keyframes du canvas, déjà dans la feuille de style.
+        get mascotAnim() {
+          if (!this.anim || this.reduced) return "none";
+
+          return {
+            bump: `${this.direction > 0 ? "bumpR" : "bumpL"} .5s ease both`,
+            drop: "splat 1.1s both",
+            grab: "startle .4s ease both",
+            near: "wiggle .5s ease both",
+          }[this.motion] ?? "bob 3.4s ease-in-out infinite";
+        },
+
+        move(motion, hold) {
+          this.motion = motion;
+          clearTimeout(this.motionTimer);
+          this.motionTimer = setTimeout(() => {
+            this.motion = "";
+          }, hold);
+        },
+
+        // Réaction élastique seulement à proximité : un seuil large donnait un
+        // déclenchement fantôme, curseur encore loin du slime.
+        nearby(event) {
+          if (this.dragging || !this.$refs.mascot || this.motion !== "") return;
+
+          const box = this.$refs.mascot.getBoundingClientRect();
+          const distance = Math.hypot(event.clientX - (box.left + box.width / 2), event.clientY - (box.top + box.height / 2));
+
+          if (distance < 60) this.move("near", 500);
+        },
+
+        trackWidth() {
+          const track = this.$refs.track;
+          const sprite_width = MASCOT[0].length * MASCOT_PX;
+
+          return track ? Math.max(0, track.clientWidth - sprite_width) : 0;
+        },
+
+        wander() {
+          if (this.dragging || !this.anim || this.reduced) return;
+
+          const next = this.at + this.direction * 6;
+
+          if (next <= 0 || next >= this.trackWidth()) {
+            this.direction = -this.direction;
+            this.emote("alert", 700);
+            this.move("bump", 500);
+          }
+
+          this.place(next);
+        },
+
+        grab(event) {
+          this.dragging = true;
+          this.emote("scared", 900);
+          this.move("grab", 400);
+          this.$refs.mascot.setPointerCapture(event.pointerId);
+        },
+
+        drag(event) {
+          if (!this.dragging || !this.$refs.track) return;
+
+          this.place(event.clientX - this.$refs.track.getBoundingClientRect().left);
+        },
+
+        release() {
+          if (!this.dragging) return;
+
+          this.dragging = false;
+          this.emote("happy", 900);
+        },
+
+        get reduced() {
+          return globalThis.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
+        },
+
+        startMascot() {
+          this.blinker = setInterval(() => {
+            this.blink = true;
+            setTimeout(() => {
+              this.blink = false;
+            }, 140);
+          }, 2600 + Math.random() * 3200);
+          this.walker = setInterval(() => this.wander(), 2400);
         },
 
         get themeLabel() {
@@ -1604,7 +1852,10 @@
         // venir sont ignorés ici plutôt que simulés.
         apply(effects) {
           for (const effect of effects) {
-            if (effect.type === "navigate") this.goSection(effect.id);
+            if (effect.type === "say") this.say(effect.text, effect.mood);
+            else if (effect.type === "emote") this.emote(effect.mood);
+            else if (effect.type === "drop") this.drop();
+            else if (effect.type === "navigate") this.goSection(effect.id);
             else if (effect.type === "clear") this.journal = [];
             else if (effect.type === "replay") this.journal = [];
             else if (effect.type === "state") Object.assign(this, effect.patch);
