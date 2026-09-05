@@ -104,3 +104,14 @@ test("shutdown éteint puis rejoue le démarrage", async ({ page }) => {
   await expect(page.locator("[data-boot]")).toHaveCount(0, { timeout: 15_000 });
   await expect(page.locator('[data-pane="main"]')).toContainText("bd whoami --verbose");
 });
+
+// Les yeux du mode cupide valent « $$ », qui est un motif de remplacement en JavaScript.
+// Un build qui passe par String.replace avec un remplacement litteral les reduit a « $ ».
+// Ce test s'execute sur l'artefact servi, la ou les tests unitaires lisent la source.
+test("les yeux du mode cupide survivent au build", async ({ page }) => {
+  const cli = await boot(page);
+
+  await run(cli, "/cowsay -g argent");
+
+  await expect(page.locator("[data-journal]")).toContainText("($$)");
+});
