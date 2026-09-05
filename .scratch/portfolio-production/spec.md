@@ -277,6 +277,17 @@ stylesheet carries only what cannot be inline: keyframes, font face, resets, scr
 hiding, and box sizing. A port that extracts everything into a stylesheet breaks the
 constraint even though the page would still look right.
 
+The constraint bends in exactly one place, and it is forced. The canvas template carries 12
+`style-hover` and 12 `style-focus` attributes. Those are not HTML: the canvas runtime
+synthesises them. A real browser cannot express a hover or a focus state inline, so those 24
+declarations become CSS rules in the stylesheet. This is the same bend the approved
+`:focus-visible` fix already required, since that too is a pseudo-class. Nothing else moves
+out of the inline styles.
+
+Measured while porting, the rest of the canvas-only syntax is: 44 `hint-placeholder-*`
+authoring hints that are simply dropped, 31 event attributes that become Alpine bindings, and
+10 `ref` attributes that become `x-ref`. The template declares exactly one CSS class.
+
 **The hard-coded content fallback is dropped.**
 The canvas embeds a full copy of the content in the page, behind the fetched JSON. The agreed
 boot behaviour makes it unreachable: when the JSON does not load, the page shows the panic
