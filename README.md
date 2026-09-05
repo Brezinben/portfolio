@@ -9,7 +9,8 @@ Domaine cible : `https://portfolio.brezinben.dpdns.org/`
 
 | Dossier | Rôle |
 |---|---|
-| `production/` | Ce qui est déployé. Aucune dépendance, aucune étape de construction. |
+| `production/` | La source. Lisible, sans dépendance, servable telle quelle. |
+| `dist/` | L'artefact compact, produit par `npm run build`. Hors de git. |
 | `design/` | Le canvas Claude Design, **gelé**. Référence visuelle et de comportement, plus une source de code. |
 | `docs/adr/` | Décisions d'architecture. |
 | `.scratch/` | Spec et tickets. |
@@ -21,16 +22,17 @@ Domaine cible : `https://portfolio.brezinben.dpdns.org/`
 
 ```
 mise install                      # node, oxlint, oxfmt
-npm install                       # Playwright
+npm install                       # Playwright et les outils de construction
 npx playwright install chromium   # le navigateur du seam page
 ```
 
-Les versions des outils sont figées dans `.config/mise/config.toml`. `npm` ne fournit que
-Playwright.
+Les versions des outils sont figées dans `.config/mise/config.toml`. `npm` fournit
+Playwright et les deux outils de construction.
 
 ## Commandes
 
 ```
+npm run build         # produit dist/ à partir de production/
 npm run lint          # oxlint, via npx : voir la note ci-dessous
 npm run format        # oxfmt, écriture en place
 npm run format:check  # oxfmt, vérification seule
@@ -53,10 +55,19 @@ synchrone : il rend les lignes à afficher et des descripteurs d'effets, sans to
 **La page servie** se teste dans un navigateur réel, avec Playwright. Ce seam couvre le
 démarrage, le clavier, le focus, l'accessibilité et le budget de poids.
 
+Playwright sert `dist/` et lance la construction avant. Le seam exerce donc la page compacte, celle
+que le visiteur reçoit, et non la source. Le seam interpréteur, lui, garde
+`production/interpret.js`.
+
 Le serveur de test compresse comme le ferait un serveur de production : le budget de poids
 se mesure après compression, sinon le chiffre ne veut rien dire.
 
 ## Déploiement
 
-Copier le contenu de `production/` à la racine du domaine. `content.json` doit rester à côté
-de la page : il est chargé par une URL relative.
+Un conteneur Caddy monte `/mnt/portfolio/production` en lecture seule et le publie. Chaque
+sauvegarde part donc en ligne dans la seconde.
+
+`npm run build` produit `dist/`, la même page sous forme compacte. Le montage ne pointe pas
+encore dessus. Voir `docs/adr/0002-un-artefact-compact-plutot-qu-un-dossier-servi-tel-quel.md`.
+
+`content.json` doit rester à côté de la page. La page le charge par une URL relative.

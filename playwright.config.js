@@ -12,7 +12,7 @@ export default defineConfig({
     trace: "retain-on-failure",
   },
   webServer: {
-    command: `node tests/helpers/static-server.js ${PORT}`,
+    command: `npm run build && node tests/helpers/static-server.js ${PORT}`,
     // Réutiliser un serveur déjà là masque « port déjà utilisé » et fait passer les tests
     // contre un `production/` périmé, ou contre une autre application sur le même port.
     reuseExistingServer: false,

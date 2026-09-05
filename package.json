@@ -5,6 +5,7 @@
   "description": "Portfolio de Benjamin David. Pages statiques, contenu externalisé en JSON.",
   "type": "module",
   "scripts": {
+    "build": "node tools/build.js",
     "lint": "npx oxlint",
     "format": "oxfmt .",
     "format:check": "oxfmt --check .",
@@ -16,6 +17,8 @@
     "@axe-core/playwright": "^4.13.0",
     "@oxlint/plugins": "^1.81.0",
     "@playwright/test": "1.63.0",
-    "@stylistic/eslint-plugin": "^5.10.0"
+    "@stylistic/eslint-plugin": "^5.10.0",
+    "html-minifier-terser": "^7.2.0",
+    "rolldown": "^1.2.7"
   }
 }
