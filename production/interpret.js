@@ -256,6 +256,50 @@ export function commonPrefix(entries) {
   });
 }
 
+// Mise en forme des lignes de contenu venues de content.json. Pure, donc testable sans
+// navigateur, au même titre que les commandes.
+const JQ_TONE = { num: "warn", str: "ok" };
+
+const token = (t, c, w = "400") => ({ c, t, w });
+
+export function contentLine(raw) {
+  if (raw.banner) return { banner: raw.banner, tone: "acc", text: raw.t ?? raw.banner };
+
+  if (raw.jq) {
+    const [pad, key, value, kind, comma] = raw.jq;
+
+    return {
+      pad,
+      tokens: [
+        token(`"${key}"`, "acc", "700"),
+        token(": ", "fg2"),
+        token(kind === "num" ? String(value) : `"${value}"`, JQ_TONE[kind] ?? "ok"),
+        ...(comma ? [token(",", "fg2")] : []),
+      ],
+    };
+  }
+
+  if (raw.jqOpen) {
+    return {
+      pad: raw.jqOpen[0],
+      tokens: [token(`"${raw.jqOpen[1]}"`, "acc", "700"), token(": {", "fg2")],
+    };
+  }
+
+  if (raw.jqLine) return { pad: raw.jqLine[0], tokens: [token(raw.jqLine[1], "fg2")] };
+
+  return {
+    letterSpacing: raw.ls ?? "0",
+    marker: raw.m ?? "",
+    markerTone: raw.mc ?? "fg2",
+    pad: raw.pad ?? "0",
+    size: raw.size ?? "14px",
+    text: raw.t ?? "",
+    tone: raw.tone ?? "fg",
+    weight: raw.w ?? "400",
+  };
+}
+
 export function interpret(raw, context) {
   const input = raw.trim().replace(/\s+/g, " ");
 

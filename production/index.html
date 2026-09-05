@@ -878,18 +878,23 @@
           :style="`flex:1 1 auto;min-height:0;overflow-y:auto;align-content:start;display:grid;gap:${dense ? '0' : '2px'};line-height:${dense ? '1.35' : '1.6'}`">
           <template x-for="(line, index) in current.lines" :key="index">
             <p
-              :style="`margin:0;display:grid;grid-template-columns:18px 1fr;gap:8px;align-items:baseline;padding-left:${line.pad}`">
-              <span aria-hidden="true" :style="`color:${line.mc}`" x-text="line.m"></span>
+              :style="`margin:0;display:grid;grid-template-columns:18px 1fr;gap:8px;align-items:baseline;padding-left:${line.pad ?? '0'}`">
+              <span aria-hidden="true" :style="`color:var(--${line.markerTone ?? 'fg2'})`"
+                x-text="line.marker ?? ''"></span>
               <span
-                :style="`color:${line.c};font-size:${line.size};font-weight:${line.w};letter-spacing:${line.ls};text-wrap:pretty`">
+                :style="`color:var(--${line.tone ?? 'fg'});font-size:${line.size ?? '14px'};font-weight:${line.weight ?? '400'};letter-spacing:${line.letterSpacing ?? '0'};text-wrap:pretty`">
                 <template x-if="line.banner">
                   <span role="img" :aria-label="line.banner.label"
                     :style="`display:block;position:relative;width:${line.banner.width};height:${line.banner.height};max-width:100%`"><span
                       aria-hidden="true"
                       :style="`position:absolute;top:0;left:0;width:${line.banner.size};height:${line.banner.size};border-radius:50%;box-shadow:${line.banner.shadow}`"></span></span>
                 </template>
-                <template x-if="!line.banner">
-                  <span x-text="line.t"></span>
+                <template x-if="!line.banner && line.tokens">
+                  <span><template x-for="(tk, at) in line.tokens" :key="at"><span
+                        :style="`color:var(--${tk.c});font-weight:${tk.w}`" x-text="tk.t"></span></template></span>
+                </template>
+                <template x-if="!line.banner && !line.tokens">
+                  <span x-text="line.text"></span>
                 </template>
               </span>
             </p>
@@ -937,14 +942,66 @@
         <p
           style="margin:0;padding:9px 12px;font-size:11px;letter-spacing:.12em;color:var(--fg2);border-bottom:1px solid var(--edge)"
           x-text="current.out.title"></p>
-        <dl style="margin:0;padding:10px 12px;display:grid;gap:6px;overflow-y:auto;align-content:start;font-size:13px">
-          <template x-for="(row, index) in current.out.lines" :key="index">
-            <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr);gap:10px">
-              <dt :style="`color:${row.kc};margin:0`" x-text="row.k"></dt>
-              <dd :style="`color:${row.c};margin:0`" x-text="row.v"></dd>
+        <div style="overflow-y:auto;align-content:start;display:grid">
+          <template x-if="current.view === 'pairs'">
+            <dl style="margin:0;padding:10px 12px;display:grid;gap:6px;align-content:start;font-size:13px">
+              <template x-for="(row, index) in current.out.lines" :key="index">
+                <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr);gap:10px">
+                  <dt :style="`color:var(--${row.kc});margin:0`" x-text="row.k"></dt>
+                  <dd :style="`color:var(--${row.vc});margin:0`" x-text="row.v"></dd>
+                </div>
+              </template>
+            </dl>
+          </template>
+
+          <template x-if="current.view === 'timeline'">
+            <div data-timeline role="listbox" aria-label="Parcours professionnel" aria-orientation="vertical"
+              style="padding:10px 12px;display:grid;gap:2px;align-content:start">
+              <template x-for="(entry, index) in timeline" :key="entry.id">
+                <button type="button" role="option" data-ctl="tl" :aria-selected="index === timelineAt"
+                  @click="openTimeline(index)" @focus="timelineAt = index"
+                  :style="`display:grid;grid-template-columns:14px 1fr;gap:8px;text-align:left;padding:6px 8px;border:0;border-left:2px solid ${index === timelineAt ? 'var(--acc)' : 'transparent'};background:${index === timelineAt ? 'var(--acc-soft)' : 'transparent'};color:var(--fg);font-family:inherit;font-size:13px;cursor:pointer`">
+                  <span aria-hidden="true"
+                    :style="`color:var(--acc)`" x-text="index === timelineAt ? '›' : ' '"></span>
+                  <span style="display:grid;gap:2px;min-width:0">
+                    <span data-years style="font-variant-numeric:tabular-nums;color:var(--fg2);font-size:12px"
+                      x-text="entry.years"></span>
+                    <span :style="`font-weight:${index === timelineAt ? '700' : '400'}`" x-text="entry.org"></span>
+                    <span style="font-size:12px;color:var(--fg2);text-wrap:pretty" x-text="entry.role"></span>
+                  </span>
+                </button>
+              </template>
             </div>
           </template>
-        </dl>
+
+          <template x-if="current.view === 'tree'">
+            <div data-tree style="padding:10px 12px;display:grid;gap:8px;align-content:start;font-size:13px">
+              <template x-for="root in stack" :key="root.id">
+                <div style="display:grid;gap:1px">
+                  <p style="margin:0;color:var(--acc)"><span x-text="root.label"></span><span
+                      style="color:var(--fg2)"> — </span><span style="color:var(--fg2)" x-text="root.note"></span></p>
+                  <template x-for="(kid, index) in root.kids" :key="kid">
+                    <button type="button" data-ctl="tech" data-tech :aria-pressed="armed && tech === kid"
+                      @click="armTech(kid)" @focus="followTech(kid)" @keydown.enter.prevent="armTech(kid)"
+                      @keydown.space.prevent="armTech(kid)"
+                      :style="`display:grid;grid-template-columns:18px 1fr;gap:6px;text-align:left;padding:2px 4px;border:0;background:${armed && tech === kid ? 'var(--acc-soft)' : 'transparent'};color:var(--fg);font-family:inherit;font-size:13px;cursor:pointer`"><span
+                        aria-hidden="true" style="color:var(--fg2)"
+                        x-text="index === root.kids.length - 1 ? '└' : '├'"></span><span x-text="kid"></span></button>
+                  </template>
+                </div>
+              </template>
+
+              <template x-if="techNote">
+                <div data-technote
+                  style="border-top:1px solid var(--edge);padding-top:8px;display:grid;gap:4px">
+                  <p style="margin:0;color:var(--acc);font-weight:700" x-text="tech"></p>
+                  <p style="margin:0;color:var(--fg2);font-size:12px" x-text="techNote.where"></p>
+                  <p style="margin:0;text-wrap:pretty" x-text="techNote.note"></p>
+                </div>
+              </template>
+            </div>
+          </template>
+        </div>
       </aside>
     </div>
 
@@ -1061,7 +1118,7 @@
     </footer>
   </div>
   <script type="module">
-    import { candidates, commonPrefix, interpret } from "./interpret.js";
+    import { candidates, commonPrefix, contentLine, interpret } from "./interpret.js";
 
     // Valeurs figées après itération dans le canvas. Ne pas les transformer en réglages :
     // voir DECISIONS.md, section 23.
@@ -1145,12 +1202,12 @@
       return shadows.join(",");
     }
 
-    function banner(raw) {
-      const rows = dots(raw.banner);
+    function banner(shaped) {
+      const rows = dots(shaped.banner);
 
       return {
         height: `${rows.length * BANNER_PX}px`,
-        label: raw.t ?? raw.banner,
+        label: shaped.text,
         shadow: pixels(rows, TONE.acc),
         size: `${BANNER_PX - 1}px`,
         width: `${Math.max(...rows.map((row) => row.length)) * BANNER_PX}px`,
@@ -1158,41 +1215,18 @@
     }
 
     function line(raw) {
-      if (raw.banner) {
-        return { banner: banner(raw), c: TONE.acc, ls: "0", m: "", mc: "", pad: "0", size: "14px", t: raw.t ?? raw.banner, w: "400" };
-      }
+      const shaped = contentLine(raw);
 
-      // Les lignes jq rendent leur texte joint. La coloration par jeton arrive avec la
-      // section contact, au ticket 05.
-      const text = raw.jq
-        ? `"${raw.jq[1]}": ${raw.jq[3] === "num" ? raw.jq[2] : `"${raw.jq[2]}"`}${raw.jq[4] ? "," : ""}`
-        : raw.jqOpen
-          ? `"${raw.jqOpen[1]}": {`
-          : raw.jqLine
-            ? raw.jqLine[1]
-            : (raw.t ?? "");
-      const pad = raw.jq?.[0] ?? raw.jqOpen?.[0] ?? raw.jqLine?.[0] ?? raw.pad ?? "0";
-
-      return {
-        banner: undefined,
-        c: TONE[raw.tone] ?? TONE.fg,
-        ls: raw.ls ?? "0",
-        m: raw.m ?? "",
-        mc: TONE[raw.mc] ?? TONE.fg2,
-        pad,
-        size: raw.size ?? "14px",
-        t: text,
-        w: raw.w ?? "400",
-      };
+      return shaped.banner ? { ...shaped, banner: banner(shaped) } : shaped;
     }
 
     function outPane(out) {
       return {
         lines: (out?.lines ?? []).map((row) => ({
-          c: TONE[row[3]] ?? TONE.fg,
           k: row[0],
-          kc: TONE[row[2]] ?? TONE.fg2,
+          kc: row[2] ?? "fg2",
           v: row[1],
+          vc: row[3] ?? "fg",
         })),
         title: out?.title ?? "",
       };
@@ -1201,16 +1235,18 @@
     function section(raw) {
       return {
         cmd: raw.cmd ?? "",
-        dot: TONE[raw.dot] ?? TONE.ok,
+        dot: raw.dot ?? "ok",
         id: raw.id,
         label: raw.label,
         lines: (raw.lines ?? []).map(line),
         out: outPane(raw.out),
         sub: raw.sub ?? "",
+        suggest: raw.suggest ?? "",
+        view: raw.view ?? "pairs",
       };
     }
 
-    const EMPTY = { cmd: "", lines: [], out: { lines: [], title: "" } };
+    const EMPTY = { cmd: "", lines: [], out: { lines: [], title: "" }, suggest: "", view: "pairs" };
 
     document.addEventListener("alpine:init", () => {
       Alpine.data("terminal", () => ({
@@ -1246,7 +1282,13 @@
         section: "whoami",
         sections: [],
         seen: [],
+        armed: false,
         shareTargets: [],
+        stack: [],
+        tech: "",
+        techNotes: {},
+        timeline: [],
+        timelineAt: 0,
         theme: "dark",
         typed: "",
 
@@ -1331,6 +1373,29 @@
 
           event.preventDefault();
           handler();
+        },
+
+        // La stack s'arme à la première validation, puis suit le focus. Avant l'armement,
+        // aucun texte d'invite ne s'affiche.
+        get techNote() {
+          return this.armed ? (this.techNotes[this.tech] ?? undefined) : undefined;
+        },
+
+        armTech(name) {
+          this.armed = true;
+          this.tech = name;
+        },
+
+        followTech(name) {
+          if (this.armed) this.tech = name;
+        },
+
+        openTimeline(index) {
+          this.timelineAt = index;
+
+          const target = this.timeline[index]?.detail;
+
+          if (target) this.goSection(target);
         },
 
         get themeLabel() {
@@ -1491,6 +1556,9 @@
           }
 
           this.seen = [...this.seen, id];
+
+          if (this.current.suggest) this.input = this.current.suggest;
+
           this.typed = "";
           this.running = true;
 
@@ -1636,6 +1704,9 @@
             this.details = (content.details ?? []).map(section);
             this.jokes = content.jokes ?? [];
             this.shareTargets = (content.share?.targets ?? []).map((entry) => entry.id);
+            this.timeline = content.timeline ?? [];
+            this.stack = content.stack ?? [];
+            this.techNotes = content.techNotes ?? {};
             this.missions = (content.missions ?? []).map((raw) => ({
               dot: TONE[raw.dot] ?? TONE.ok,
               id: raw.id,
