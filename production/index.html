@@ -1000,7 +1000,7 @@
 
           <template x-for="(line, index) in current.lines" :key="`${section}-${index}`">
             <p
-              :style="`margin:0;display:grid;grid-template-columns:18px 1fr;gap:8px;align-items:baseline;padding-left:${line.pad ?? '0'};animation:${anim ? `lineIn .3s cubic-bezier(.2,.7,.3,1) ${(index * 0.038).toFixed(3)}s both` : 'none'}`">
+              :style="`margin:0;display:grid;grid-template-columns:18px 1fr;gap:8px;align-items:baseline;padding-left:${line.pad ?? '0'}`">
               <span aria-hidden="true" :style="`color:var(--${line.markerTone ?? 'fg2'})`"
                 x-text="line.marker ?? ''"></span>
               <span
