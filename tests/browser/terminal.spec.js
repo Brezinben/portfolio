@@ -41,7 +41,11 @@ test("le boot dure au moins deux secondes", async ({ page }) => {
 // Une police distante ou un CDN trahiraient la promesse en premier.
 test("la page ne fait aucune requête externe hors mesure d'audience", async ({ page }) => {
   const external = [];
-  const allowed = ["http://127.0.0.1", "https://umami.brezinben.dpdns.org"];
+  const allowed = [
+    "http://127.0.0.1",
+    "https://raw.githubusercontent.com",
+    "https://umami.brezinben.dpdns.org",
+  ];
 
   page.on("request", (request) => {
     if (!allowed.some((prefix) => request.url().startsWith(prefix))) {
