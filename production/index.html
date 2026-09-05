@@ -985,13 +985,12 @@
                     <!-- Les technologies coulent en colonnes, comme la sortie d'un ls. -->
                     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:1px 18px">
                       <template x-for="kid in root.kids" :key="kid">
-                        <button type="button" data-ctl="tech" data-tech :aria-pressed="armed && tech === kid"
-                          @click="armTech(kid)" @focus="followTech(kid)" @keydown.enter.prevent="armTech(kid)"
-                          @keydown.space.prevent="armTech(kid)"
-                          :style="`display:grid;grid-template-columns:12px 1fr;gap:7px;align-items:baseline;text-align:left;padding:1px 4px 1px 0;border:0;background:transparent;color:var(--${techNotes[kid] ? 'fg' : 'fg2'});font-family:inherit;font-size:13px;font-weight:${armed && tech === kid ? '700' : '400'};cursor:pointer`"><span
+                        <button type="button" data-ctl="tech" data-tech :aria-pressed="tech === kid"
+                          @click="followTech(kid)" @focus="followTech(kid)"
+                          :style="`display:grid;grid-template-columns:12px 1fr;gap:7px;align-items:baseline;text-align:left;padding:1px 4px 1px 0;border:0;background:transparent;color:var(--${techNotes[kid] ? 'fg' : 'fg2'});font-family:inherit;font-size:13px;font-weight:${tech === kid ? '700' : '400'};cursor:pointer`"><span
                             aria-hidden="true"
-                            :style="`color:var(--${armed && tech === kid ? 'acc-text' : 'fg2'})`"
-                            x-text="armed && tech === kid ? '›' : '·'"></span><span x-text="kid"></span></button>
+                            :style="`color:var(--${tech === kid ? 'acc-text' : 'fg2'})`"
+                            x-text="tech === kid ? '›' : '·'"></span><span x-text="kid"></span></button>
                       </template>
                     </div>
                   </div>
@@ -1512,7 +1511,6 @@
         sections: [],
         seen: [],
         MASCOT_PX,
-        armed: false,
         blink: false,
         bubble: "",
         clicks: 0,
@@ -1591,6 +1589,47 @@
           if (next >= 0 && next < ids.length) this.goSection(ids[next]);
         },
 
+        // Une grille se parcourt aux quatre fleches. Les boutons d'une meme ligne
+        // partagent leur position verticale : c'est ce qui donne le nombre de colonnes.
+        gridMove(selector, key) {
+          const cells = [...document.querySelectorAll(selector)];
+          const at = cells.indexOf(document.activeElement);
+
+          if (at < 0) return false;
+
+          const top = cells[0].offsetTop;
+          const columns = Math.max(1, cells.filter((cell) => cell.offsetTop === top).length);
+          const step = { ArrowDown: columns, ArrowLeft: -1, ArrowRight: 1, ArrowUp: -columns }[key];
+
+          if (step === undefined) return false;
+
+          cells[Math.max(0, Math.min(cells.length - 1, at + step))]?.focus();
+
+          return true;
+        },
+
+        // Dans une liste a une colonne, la fleche droite valide et descend vers le volet
+        // suivant : c'est ce qu'un terminal fait.
+        listMove(selector, key, activate) {
+          const items = [...document.querySelectorAll(selector)];
+          const at = items.indexOf(document.activeElement);
+
+          if (at < 0) return false;
+          if (key === "ArrowRight") {
+            activate(at);
+
+            return true;
+          }
+
+          if (key === "ArrowUp" || key === "ArrowDown") {
+            items[Math.max(0, Math.min(items.length - 1, at + (key === "ArrowDown" ? 1 : -1)))]?.focus();
+
+            return true;
+          }
+
+          return false;
+        },
+
         onKey(event) {
           if (event.altKey || event.ctrlKey || event.metaKey) return;
           // La modale a son propre clavier. Sans cette garde, les deux gestionnaires
@@ -1605,21 +1644,49 @@
             if (!leaving) return;
           }
 
-          const handlers = {
-            "/": () => this.$refs.cli.focus(),
+          if (event.key === "/") {
+            event.preventDefault();
+            this.$refs.cli.focus();
+
+            return;
+          }
+
+          if (event.key === "j" || event.key === "k") {
+            event.preventDefault();
+            this.moveSection(event.key === "j" ? 1 : -1);
+
+            return;
+          }
+
+          // Chaque zone a sa logique. La stack est une grille, les sections et la frise
+          // sont des listes ou la fleche droite valide, le reste change de volet.
+          const handled = this.gridMove("[data-tech]", event.key)
+            || this.listMove('[data-ctl="nav"]', event.key, (at) => {
+              const items = [...document.querySelectorAll('[data-ctl="nav"]')];
+
+              items[at].click();
+              // De gauche a droite : valider une section amene a la ligne de commande.
+              this.$nextTick(() => this.$refs.cli?.focus());
+            })
+            || this.listMove('[data-ctl="tl"]', event.key, (at) => this.openTimeline(at));
+
+          if (handled) {
+            event.preventDefault();
+
+            return;
+          }
+
+          const fallback = {
             ArrowDown: () => this.moveInPane(1),
             ArrowLeft: () => this.movePane(-1),
             ArrowRight: () => this.movePane(1),
             ArrowUp: () => this.moveInPane(-1),
-            j: () => this.moveSection(1),
-            k: () => this.moveSection(-1),
-          };
-          const handler = handlers[event.key];
+          }[event.key];
 
-          if (!handler) return;
+          if (!fallback) return;
 
           event.preventDefault();
-          handler();
+          fallback();
         },
 
         // La stack s'arme à la première validation, puis suit le focus. Avant l'armement,
@@ -1631,16 +1698,13 @@
         },
 
         get techNote() {
-          return this.armed ? (this.techNotes[this.tech] ?? undefined) : undefined;
+          return this.techNotes[this.tech];
         },
 
-        armTech(name) {
-          this.armed = true;
-          this.tech = name;
-        },
-
+        // La fiche suit le focus des la premiere techno atteinte. Rien ne s'affiche
+        // tant qu'aucune n'a le focus, donc aucun texte d'invite au depart.
         followTech(name) {
-          if (this.armed) this.tech = name;
+          this.tech = name;
         },
 
         openTimeline(index) {
