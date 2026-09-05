@@ -785,6 +785,28 @@
       }
     }
 
+    /* L'ambre du theme clair donne 2,1:1 : correct pour une pastille ou un trait, pas
+       pour du texte. La teinte decorative ne change pas ; le texte prend un ambre plus
+       sombre de la meme famille, mesure a 5,2:1. Les sept autres themes passent deja. */
+    .tm {
+      --acc-text: var(--acc)
+    }
+
+    .tm[data-theme="light"] {
+      --acc-text: #8f5f00
+    }
+
+    /* La feuille du canvas colore les liens avec l'ambre decoratif. Un lien est du
+       texte : il prend l'ambre textuel. */
+    .tm a,
+    .tm a:hover {
+      color: var(--acc-text)
+    }
+
+    .tm a:hover {
+      border-bottom-color: var(--acc-text)
+    }
+
     /* Le canvas exprimait le survol et le focus en attributs style-hover et style-focus,
        que son runtime synthétisait. Un navigateur ne sait pas les mettre en inline : ces
        règles sont la seule chose qui sorte des styles inline. */
@@ -857,7 +879,7 @@
                     <span style="display:grid;gap:1px;min-width:0">
                       <span :style="`font-weight:${item.id === section ? '700' : '400'}`" x-text="item.label"></span>
                       <span
-                        style="font-size:12px;color:var(--fg2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap"
+                        :style="`font-size:12px;color:var(--${item.id === section ? 'fg' : 'fg2'});overflow:hidden;text-overflow:ellipsis;white-space:nowrap`"
                         x-text="item.sub"></span>
                     </span>
                   </button>
@@ -901,7 +923,7 @@
               <span aria-hidden="true" :style="`color:var(--${line.markerTone ?? 'fg2'})`"
                 x-text="line.marker ?? ''"></span>
               <span
-                :style="`color:var(--${line.tone ?? 'fg'});font-size:${line.size ?? '14px'};font-weight:${line.weight ?? '400'};letter-spacing:${line.letterSpacing ?? '0'};text-wrap:pretty`">
+                :style="`color:var(--${(line.tone ?? 'fg') === 'acc' ? 'acc-text' : (line.tone ?? 'fg')});font-size:${line.size ?? '14px'};font-weight:${line.weight ?? '400'};letter-spacing:${line.letterSpacing ?? '0'};text-wrap:pretty`">
                 <template x-if="line.banner">
                   <span role="img" :aria-label="line.banner.label"
                     :style="`display:block;position:relative;width:${line.banner.width};height:${line.banner.height};max-width:100%`"><span
@@ -910,7 +932,7 @@
                 </template>
                 <template x-if="!line.banner && line.tokens">
                   <span><template x-for="(tk, at) in line.tokens" :key="at"><span
-                        :style="`color:var(--${tk.c});font-weight:${tk.w}`" x-text="tk.t"></span></template></span>
+                        :style="`color:var(--${tk.c === 'acc' ? 'acc-text' : tk.c});font-weight:${tk.w}`" x-text="tk.t"></span></template></span>
                 </template>
                 <template x-if="!line.banner && !line.tokens">
                   <span x-text="line.text"></span>
@@ -921,18 +943,20 @@
         </div>
 
         <div data-handle role="separator" aria-orientation="horizontal"
-          aria-label="Redimensionner le journal" tabindex="0" @pointerdown.prevent="logDown($event)"
+          aria-label="Redimensionner le journal" tabindex="0" :aria-valuenow="logHeight"
+          aria-valuemin="44" :aria-valuemax="600" @pointerdown.prevent="logDown($event)"
           @keydown.arrow-up.prevent="setLogHeight(logHeight + 24)"
           @keydown.arrow-down.prevent="setLogHeight(logHeight - 24)"
           style="flex:none;display:flex;justify-content:center;align-items:center;height:14px;cursor:row-resize;color:var(--fg2);font-size:12px;letter-spacing:.3em;user-select:none">⋯</div>
 
-        <div data-journal x-ref="journal" aria-live="polite" @scroll="checkMore('journal')"
+        <div data-journal x-ref="journal" aria-live="polite" tabindex="0" role="log"
+          aria-label="Journal" @scroll="checkMore('journal')"
           :style="`flex:none;height:${logHeight}px;overflow-y:auto;align-content:start;display:grid;gap:2px;border-top:1px solid var(--edge);padding-top:8px`">
           <template x-for="(entry, index) in journal" :key="index">
             <p
               style="margin:0;display:grid;grid-template-columns:18px minmax(0,1fr);gap:8px;align-items:baseline;line-height:1.5">
-              <span aria-hidden="true" :style="`color:var(--${entry.mc})`" x-text="entry.m"></span>
-              <span :style="`color:var(--${entry.c});white-space:pre-wrap;overflow-wrap:anywhere`"
+              <span aria-hidden="true" :style="`color:var(--${entry.mc === 'acc' ? 'acc-text' : entry.mc})`" x-text="entry.m"></span>
+              <span :style="`color:var(--${entry.c === 'acc' ? 'acc-text' : entry.c});white-space:pre-wrap;overflow-wrap:anywhere`"
                 x-text="entry.t"></span>
             </p>
           </template>
@@ -950,7 +974,7 @@
               :style="`color:var(--${compacting ? 'warn' : 'fg2'})`"
               x-text="compacting ? 'compaction…' : 'prêt'"></span></span>
           <span data-gauge aria-hidden="true" style="white-space:pre"><span style="color:var(--fg2)">ctx [</span><span
-              style="color:var(--acc)" x-text="'█'.repeat(ctxCells)"></span><span style="color:var(--edge)"
+              style="color:var(--acc-text)" x-text="'█'.repeat(ctxCells)"></span><span style="color:var(--edge)"
               x-text="'░'.repeat(10 - ctxCells)"></span><span style="color:var(--fg2)">]</span></span>
         </p>
 
@@ -979,7 +1003,7 @@
             <button type="button" data-suggestion role="option" :aria-selected="index === suggAt"
               @mousedown.prevent="applySugg(index)"
               :style="`min-height:32px;display:flex;align-items:center;gap:8px;padding:0 8px;border:0;border-left:2px solid ${index === suggAt ? 'var(--acc)' : 'transparent'};background:${index === suggAt ? 'var(--acc-soft)' : 'transparent'};color:var(--fg);font-family:inherit;font-size:13px;text-align:left;cursor:pointer`"><span
-                style="color:var(--acc)" x-text="suggFrag"></span><span style="margin-left:-8px"
+                style="color:var(--acc-text)" x-text="suggFrag"></span><span style="margin-left:-8px"
                 x-text="hit.slice(suggFrag.length)"></span></button>
           </template>
         </div>
@@ -1001,13 +1025,14 @@
         <p
           style="margin:0;padding:9px 12px;font-size:11px;letter-spacing:.12em;color:var(--fg2);border-bottom:1px solid var(--edge)"
           x-text="current.out.title"></p>
-        <div style="overflow-y:auto;align-content:start;display:grid">
+        <div tabindex="0" role="region" aria-label="Contenu de la sortie"
+          style="overflow-y:auto;align-content:start;display:grid">
           <template x-if="current.view === 'pairs'">
             <dl style="margin:0;padding:10px 12px;display:grid;gap:6px;align-content:start;font-size:13px">
               <template x-for="(row, index) in current.out.lines" :key="index">
                 <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr);gap:10px">
-                  <dt :style="`color:var(--${row.kc});margin:0`" x-text="row.k"></dt>
-                  <dd :style="`color:var(--${row.vc});margin:0`" x-text="row.v"></dd>
+                  <dt :style="`color:var(--${row.kc === 'acc' ? 'acc-text' : row.kc});margin:0`" x-text="row.k"></dt>
+                  <dd :style="`color:var(--${row.vc === 'acc' ? 'acc-text' : row.vc});margin:0`" x-text="row.v"></dd>
                 </div>
               </template>
             </dl>
@@ -1021,7 +1046,7 @@
                   @click="openTimeline(index)" @focus="timelineAt = index"
                   :style="`display:grid;grid-template-columns:14px 1fr;gap:8px;text-align:left;padding:6px 8px;border:0;border-left:2px solid ${index === timelineAt ? 'var(--acc)' : 'transparent'};background:${index === timelineAt ? 'var(--acc-soft)' : 'transparent'};color:var(--fg);font-family:inherit;font-size:13px;cursor:pointer`">
                   <span aria-hidden="true"
-                    :style="`color:var(--acc)`" x-text="index === timelineAt ? '›' : ' '"></span>
+                    :style="`color:var(--acc-text)`" x-text="index === timelineAt ? '›' : ' '"></span>
                   <span style="display:grid;gap:2px;min-width:0">
                     <span data-years style="font-variant-numeric:tabular-nums;color:var(--fg2);font-size:12px"
                       x-text="entry.years"></span>
@@ -1037,7 +1062,7 @@
             <div data-tree style="padding:10px 12px;display:grid;gap:8px;align-content:start;font-size:13px">
               <template x-for="root in stack" :key="root.id">
                 <div style="display:grid;gap:1px">
-                  <p style="margin:0;color:var(--acc)"><span x-text="root.label"></span><span
+                  <p style="margin:0;color:var(--acc-text)"><span x-text="root.label"></span><span
                       style="color:var(--fg2)"> — </span><span style="color:var(--fg2)" x-text="root.note"></span></p>
                   <template x-for="(kid, index) in root.kids" :key="kid">
                     <button type="button" data-ctl="tech" data-tech :aria-pressed="armed && tech === kid"
@@ -1053,7 +1078,7 @@
               <template x-if="techNote">
                 <div data-technote
                   style="border-top:1px solid var(--edge);padding-top:8px;display:grid;gap:4px">
-                  <p style="margin:0;color:var(--acc);font-weight:700" x-text="tech"></p>
+                  <p style="margin:0;color:var(--acc-text);font-weight:700" x-text="tech"></p>
                   <p style="margin:0;color:var(--fg2);font-size:12px" x-text="techNote.where"></p>
                   <p style="margin:0;text-wrap:pretty" x-text="techNote.note"></p>
                 </div>
@@ -1075,7 +1100,7 @@
           <div style="display:grid;gap:8px">
             <div style="display:flex;justify-content:space-between;gap:12px">
               <p style="margin:0;font-size:13px">thème</p>
-              <p style="margin:0;font-size:13px;color:var(--acc)" x-text="themeLabel"></p>
+              <p style="margin:0;font-size:13px;color:var(--acc-text)" x-text="themeLabel"></p>
             </div>
             <div role="group" aria-label="Thème"
               style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:6px">
@@ -1105,9 +1130,9 @@
 
           <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:16px">
             <p style="margin:0;font-size:12px;color:var(--fg2);max-width:40ch;line-height:1.5;text-wrap:pretty"><span
-                style="color:var(--acc)">← →</span> choisir · <span style="color:var(--acc)">↑ ↓</span> changer de
-              réglage · <span style="color:var(--acc)">espace</span> valider · <span
-                style="color:var(--acc)">échap</span> fermer · réglages conservés sur cet appareil</p>
+                style="color:var(--acc-text)">← →</span> choisir · <span style="color:var(--acc-text)">↑ ↓</span> changer de
+              réglage · <span style="color:var(--acc-text)">espace</span> valider · <span
+                style="color:var(--acc-text)">échap</span> fermer · réglages conservés sur cet appareil</p>
             <button type="button" data-ctl="opt" @click="closeOpts()"
               style="min-height:44px;padding:0 18px;border:1px solid var(--edge);border-radius:0;background:transparent;color:var(--fg);font-family:inherit;font-size:13px;cursor:pointer">fermer</button>
           </div>
@@ -1171,8 +1196,8 @@
     <footer
       style="flex:none;display:flex;justify-content:space-between;align-items:baseline;gap:20px;padding:0 4px;font-size:12px;color:var(--fg2);white-space:nowrap;overflow:hidden">
       <p style="margin:0;overflow:hidden;text-overflow:ellipsis"><span style="color:var(--acc)">←→</span> volet · <span
-          style="color:var(--acc)">↑↓</span> parcourir · <span style="color:var(--acc)">j/k</span> section · <span
-          style="color:var(--acc)">/</span> saisie · <span style="color:var(--acc)">help</span></p>
+          style="color:var(--acc)">↑↓</span> parcourir · <span style="color:var(--acc-text)">j/k</span> section · <span
+          style="color:var(--acc)">/</span> saisie · <span style="color:var(--acc-text)">help</span></p>
       <p style="margin:0;display:flex;gap:14px"><a href="texte.html">texte</a><a href="llms.txt">llms.txt</a></p>
     </footer>
   </div>
