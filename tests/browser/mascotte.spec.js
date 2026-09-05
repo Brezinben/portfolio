@@ -15,7 +15,11 @@ test("la mascotte est dessinée en ombres portées, sans aucune image", async ({
   await expect(mascot(page)).toBeVisible();
   await expect(page.locator("img")).toHaveCount(0);
 
-  const shadow = await mascot(page).evaluate((node) => getComputedStyle(node).boxShadow);
+  // Le bloc porte le curseur et les evenements ; les pixels vivent dans le span interne.
+  const shadow = await mascot(page)
+    .locator("span span")
+    .first()
+    .evaluate((node) => getComputedStyle(node).boxShadow);
 
   expect(shadow.length, "le sprite est une longue liste d'ombres").toBeGreaterThan(2000);
   expect(shadow).toContain("245, 184, 59");
@@ -120,4 +124,16 @@ test("animations désactivées, la mascotte ne bouge plus", async ({ page }) => 
   await expect
     .poll(() => mascot(page).evaluate((node) => getComputedStyle(node).animationName))
     .toBe("none");
+});
+
+// Le bloc de la mascotte doit etre assez grand pour etre clique : c'etait la cause du
+// curseur faux et de la couronne inatteignable.
+test("la mascotte offre une cible cliquable, pas un pixel", async ({ page }) => {
+  await boot(page);
+
+  const box = await mascot(page).boundingBox();
+
+  expect(box.width).toBeGreaterThanOrEqual(60);
+  expect(box.height).toBeGreaterThanOrEqual(44);
+  expect(await mascot(page).evaluate((node) => getComputedStyle(node).cursor)).toBe("grab");
 });
