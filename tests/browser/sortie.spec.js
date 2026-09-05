@@ -7,12 +7,15 @@ const open = async (page, hash) => {
 
 const out = (page) => page.locator('[data-pane="out"]');
 
-test("la frise du parcours s'affiche dans le volet de sortie", async ({ page }) => {
+// La frise et l'arbre sont le contenu de la section : ils s'affichent au centre. Le volet
+// de sortie garde ses paires et la fiche techno.
+test("la frise du parcours s'affiche dans le volet central", async ({ page }) => {
   await open(page, "#parcours");
 
-  await expect(page.locator("[data-timeline]")).toBeVisible();
+  await expect(page.locator('[data-pane="main"] [data-timeline]')).toBeVisible();
+  await expect(page.locator('[data-pane="out"] [data-timeline]')).toHaveCount(0);
   await expect(out(page)).toContainText("git log");
-  await expect(out(page)).toContainText("Kereis");
+  await expect(page.locator('[data-pane="main"]')).toContainText("Kereis");
   await expect(page.getByRole("option")).not.toHaveCount(0);
 });
 
@@ -34,13 +37,14 @@ test("valider une entrée de la frise ouvre la fiche de mission", async ({ page 
   await expect(page).toHaveURL(/#m-kereis$/);
 });
 
-test("l'arbre de la stack montre ses glyphes et ses branches", async ({ page }) => {
+test("l'arbre de la stack s'affiche au centre avec ses glyphes", async ({ page }) => {
   await open(page, "#stack");
 
-  await expect(page.locator("[data-tree]")).toBeVisible();
-  await expect(out(page)).toContainText("frontend");
-  await expect(out(page)).toContainText("├");
-  await expect(out(page)).toContainText("└");
+  await expect(page.locator('[data-pane="main"] [data-tree]')).toBeVisible();
+  await expect(page.locator('[data-pane="out"] [data-tree]')).toHaveCount(0);
+  await expect(page.locator('[data-pane="main"]')).toContainText("frontend");
+  await expect(page.locator('[data-pane="main"]')).toContainText("├");
+  await expect(page.locator('[data-pane="main"]')).toContainText("└");
 });
 
 // Avant l'armement, aucun texte d'invite : le volet reste muet tant que le visiteur
