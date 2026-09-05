@@ -806,6 +806,21 @@
     .tm [data-ctl="retry"]:focus-visible {
       outline-width: 3px
     }
+
+    /* Sous 900 px les trois volets s'empilent en une colonne. Une requête de média ne
+       peut pas s'écrire en style inline : c'est la seconde chose, avec le survol et le
+       focus, qui sort des styles inline. */
+    @media (max-width: 900px) {
+      .tm [data-panes] {
+        flex-direction: column;
+        overflow-y: auto
+      }
+
+      .tm [data-pane] {
+        flex: none;
+        min-height: 42dvh
+      }
+    }
   </style>
 </head>
 
@@ -813,7 +828,7 @@
   <div class="tm" x-data="terminal" :data-theme="theme" x-cloak @keydown.window="onKey($event)"
     style="background:var(--bg);color:var(--fg);height:100dvh;max-height:100dvh;overflow:hidden;box-sizing:border-box;padding:14px clamp(12px,2.5vw,26px) 14px;font-size:14px;line-height:1.6;position:relative;display:flex;flex-direction:column;gap:10px">
 
-    <div
+    <div data-panes
       style="flex:1;min-height:0;display:flex;flex-wrap:nowrap;gap:10px;align-items:stretch;overflow:hidden;max-width:2400px;width:100%;margin:0 auto">
 
       <nav data-pane="nav" aria-label="Sections"
@@ -901,8 +916,14 @@
           </template>
         </div>
 
-        <div data-journal aria-live="polite"
-          style="flex:0 1 auto;min-height:44px;max-height:38%;overflow-y:auto;align-content:start;display:grid;gap:2px;border-top:1px solid var(--edge);padding-top:8px">
+        <div data-handle role="separator" aria-orientation="horizontal"
+          aria-label="Redimensionner le journal" tabindex="0" @pointerdown.prevent="logDown($event)"
+          @keydown.arrow-up.prevent="setLogHeight(logHeight + 24)"
+          @keydown.arrow-down.prevent="setLogHeight(logHeight - 24)"
+          style="flex:none;display:flex;justify-content:center;align-items:center;height:14px;cursor:row-resize;color:var(--fg2);font-size:12px;letter-spacing:.3em;user-select:none">⋯</div>
+
+        <div data-journal x-ref="journal" aria-live="polite" @scroll="checkMore('journal')"
+          :style="`flex:none;height:${logHeight}px;overflow-y:auto;align-content:start;display:grid;gap:2px;border-top:1px solid var(--edge);padding-top:8px`">
           <template x-for="(entry, index) in journal" :key="index">
             <p
               style="margin:0;display:grid;grid-template-columns:18px minmax(0,1fr);gap:8px;align-items:baseline;line-height:1.5">
@@ -912,6 +933,12 @@
             </p>
           </template>
         </div>
+
+        <template x-if="more.journal">
+          <p data-more aria-hidden="true"
+            style="flex:none;margin:0;text-align:right;font-size:11px;letter-spacing:.1em;color:var(--fg2)">▾ plus bas
+          </p>
+        </template>
 
         <p data-status
           style="flex:none;margin:0;display:flex;justify-content:space-between;align-items:baseline;gap:12px;font-size:11px;color:var(--fg2);border-top:1px solid var(--edge);padding-top:6px">
@@ -923,8 +950,9 @@
               x-text="'░'.repeat(10 - ctxCells)"></span><span style="color:var(--fg2)">]</span></span>
         </p>
 
-        <div data-track x-ref="track" @pointermove.window="drag($event); nearby($event)" @pointerup.window="release()"
-          @pointercancel.window="release()"
+        <div data-track x-ref="track"
+          @pointermove.window="drag($event); nearby($event); logMove($event)"
+          @pointerup.window="release(); logUp()" @pointercancel.window="release(); logUp()"
           style="flex:none;position:relative;height:64px;margin-top:4px">
           <template x-if="bubble">
             <span data-bubble aria-live="polite"
@@ -1400,7 +1428,9 @@
         bubble: "",
         clicks: 0,
         compacting: false,
+        more: { journal: false },
         motion: "",
+        resizing: undefined,
         ops: 0,
         mood: "idle",
         shareTargets: [],
@@ -1424,6 +1454,7 @@
           this.restore();
           this.startMascot();
           globalThis.addEventListener("popstate", () => this.fromHash());
+          globalThis.addEventListener("resize", () => this.setLogHeight(this.logHeight));
           this.load();
         },
 
@@ -1523,6 +1554,46 @@
         // elle "compacte" avec un resume ironique, puis repart a zero.
         get ctxCells() {
           return Math.min(CTX_CELLS, Math.round((this.ops / CTX_MAX) * CTX_CELLS));
+        },
+
+        // Le journal se redimensionne au glisser, entre 44 px et la place disponible, et
+        // sa hauteur est conservée sur l'appareil.
+        // logH vaut 0 tant que rien n'a ete regle : la hauteur effective doit donc
+        // toujours passer par ce getter, sinon un reglage part de zero.
+        get logHeight() {
+          return this.logH || 120;
+        },
+
+        setLogHeight(next) {
+          const room = this.$refs.journal?.parentElement?.clientHeight ?? 400;
+
+          this.logH = Math.max(44, Math.min(Math.round(next), Math.max(44, room - 160)));
+          this.persist();
+        },
+
+        logDown(event) {
+          this.resizing = { height: this.logHeight, y: event.clientY };
+          event.target.setPointerCapture(event.pointerId);
+        },
+
+        logMove(event) {
+          if (!this.resizing) return;
+
+          this.setLogHeight(this.resizing.height + (this.resizing.y - event.clientY));
+        },
+
+        logUp() {
+          this.resizing = undefined;
+        },
+
+        // L'indicateur remplace la barre de défilement, masquée pour l'esthétique
+        // terminale. Sans lui, rien ne dit qu'il reste du contenu.
+        checkMore(name) {
+          const node = this.$refs[name];
+
+          if (!node) return;
+
+          this.more = { ...this.more, [name]: node.scrollHeight - node.scrollTop - node.clientHeight > 4 };
         },
 
         bump() {
@@ -1897,6 +1968,10 @@
           this.commands = [raw, ...this.commands.filter((entry) => entry !== raw)];
           this.recallAt = -1;
           this.journal = [...this.journal, ...lines];
+          this.$nextTick(() => {
+            if (this.$refs.journal) this.$refs.journal.scrollTop = this.$refs.journal.scrollHeight;
+            this.checkMore("journal");
+          });
           this.bump();
           this.apply(effects);
         },
