@@ -1103,7 +1103,8 @@
             <div role="group" aria-label="Thème"
               style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:6px">
               <template x-for="entry in THEMES" :key="entry.id">
-                <button type="button" data-ctl="opt" data-theme-choice :aria-pressed="entry.id === theme"
+                <button type="button" data-ctl="opt" :data-theme-choice="entry.id"
+                  :aria-pressed="entry.id === theme"
                   @click="setTheme(entry.id, $event)"
                   :style="`min-height:44px;display:flex;align-items:center;gap:9px;padding:0 10px;border:1px solid ${entry.id === theme ? 'var(--acc)' : 'var(--edge)'};border-radius:0;background:${entry.id === theme ? 'var(--acc-soft)' : 'transparent'};color:var(--fg);font-family:inherit;font-size:13px;cursor:pointer;text-align:left`">
                   <span aria-hidden="true"
@@ -1229,7 +1230,6 @@
       { key: "dense", label: "dense lines", off: "off", on: "on" },
     ];
 
-    const SETTINGS = ["theme", ...TOGGLES.map((toggle) => toggle.key)];
     const TYPE_CPS = 52;
     const EXEC_MS = 20;
     const CTX_MAX = 20;
@@ -1431,7 +1431,6 @@
         dense: false,
         focusAt: { main: 0, nav: 0, out: 0 },
         logH: 0,
-        optAt: 0,
         optsOpen: false,
         out: true,
         pane: "nav",
@@ -1828,25 +1827,12 @@
 
         openOpts() {
           this.optsOpen = true;
-          this.optAt = 0;
           this.$nextTick(() => this.focusSetting());
         },
 
         closeOpts() {
           this.optsOpen = false;
           this.$nextTick(() => document.querySelector("[data-ctl='opts']")?.focus());
-        },
-
-        focusSetting() {
-          const dialog = document.querySelector("[data-opts]");
-
-          if (!dialog) return;
-
-          const target = SETTINGS[this.optAt] === "theme"
-            ? dialog.querySelector("[data-theme-choice][aria-pressed='true']") ?? dialog.querySelector("[data-theme-choice]")
-            : dialog.querySelectorAll("[data-toggle]")[this.optAt - 1];
-
-          target?.focus();
         },
 
         value(key) {
@@ -1864,7 +1850,7 @@
             this.persist();
           };
 
-          // Le réglage « animations désactivées » coupe aussi la transition de thème.
+          // Le réglage « animations off » coupe aussi la transition de thème.
           if (!this.anim || typeof document.startViewTransition !== "function") {
             apply();
 
@@ -1885,40 +1871,138 @@
           return box ? { x: box.left + box.width / 2, y: box.top + box.height / 2 } : { x: 0, y: 0 };
         },
 
-        cycleTheme(step) {
-          const index = THEMES.findIndex((entry) => entry.id === this.theme);
+        themeButtons() {
+          return [...document.querySelectorAll("[data-opts] [data-theme-choice]")];
+        },
 
-          this.setTheme(THEMES[(index + step + THEMES.length) % THEMES.length].id);
-          this.$nextTick(() => this.focusSetting());
+        toggleButtons() {
+          return [...document.querySelectorAll("[data-opts] [data-toggle]")];
+        },
+
+        // Le reglage courant se lit sur l'element focalise. Le deduire d'un compteur le
+        // desynchronisait des qu'on arrivait par tabulation ou a la souris : le focus
+        // etait sur « animations » et la fleche droite modifiait « dense lines ».
+        focused() {
+          const active = document.activeElement;
+          const theme = this.themeButtons().indexOf(active);
+
+          if (theme >= 0) return { group: "theme", index: theme };
+
+          const toggle = this.toggleButtons().indexOf(active);
+
+          return toggle >= 0 ? { group: "toggle", index: toggle } : undefined;
+        },
+
+        focusSetting() {
+          const active = document.querySelector("[data-opts] [data-theme-choice][aria-pressed='true']");
+
+          (active ?? this.themeButtons()[0])?.focus();
+        },
+
+        // Les themes sont sur plusieurs lignes : les quatre fleches doivent y naviguer.
+        // Les boutons d'une meme ligne partagent leur position verticale.
+        themeColumns() {
+          const buttons = this.themeButtons();
+          const top = buttons[0]?.offsetTop;
+
+          return Math.max(1, buttons.filter((button) => button.offsetTop === top).length);
+        },
+
+        moveTheme(index) {
+          const buttons = this.themeButtons();
+          const target = buttons[Math.max(0, Math.min(buttons.length - 1, index))];
+
+          if (!target) return;
+
+          this.setTheme(target.dataset.themeChoice);
+          this.$nextTick(() => target.focus());
         },
 
         optsKey(event) {
-          const key = SETTINGS[this.optAt];
-
           if (event.key === "Escape") {
             event.preventDefault();
             this.closeOpts();
-          } else if (event.key === "ArrowDown" || event.key === "ArrowUp") {
-            event.preventDefault();
-            this.optAt = Math.max(0, Math.min(SETTINGS.length - 1, this.optAt + (event.key === "ArrowDown" ? 1 : -1)));
-            this.focusSetting();
-          } else if (event.key === "Tab") {
-            // Piège à focus : la tabulation ne doit pas sortir d'une boîte de dialogue
-            // modale et laisser le visiteur perdu derrière elle.
+
+            return;
+          }
+
+          if (event.key === "Tab") {
             const focusable = [...document.querySelectorAll("[data-opts] [data-ctl='opt']")];
             const at = focusable.indexOf(document.activeElement);
             const next = (at + (event.shiftKey ? -1 : 1) + focusable.length) % focusable.length;
 
             event.preventDefault();
             focusable[next]?.focus();
-          } else if (event.key === "ArrowRight" || event.key === "ArrowLeft") {
-            event.preventDefault();
 
-            if (key === "theme") this.cycleTheme(event.key === "ArrowRight" ? 1 : -1);
-            else this.flip(key);
+            return;
+          }
+
+          const here = this.focused();
+
+          if (!here || !["ArrowDown", "ArrowLeft", "ArrowRight", "ArrowUp"].includes(event.key)) return;
+
+          event.preventDefault();
+
+          if (here.group === "theme") {
+            const columns = this.themeColumns();
+            const step = { ArrowDown: columns, ArrowLeft: -1, ArrowRight: 1, ArrowUp: -columns }[event.key];
+            const next = here.index + step;
+
+            // Sortir de la grille par le bas mene au premier reglage suivant.
+            if (next >= this.themeButtons().length) this.toggleButtons()[0]?.focus();
+            else this.moveTheme(next);
+
+            return;
+          }
+
+          if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
+            this.flip(TOGGLES[here.index].key);
+
+            return;
+          }
+
+          const next = here.index + (event.key === "ArrowDown" ? 1 : -1);
+
+          if (next < 0) this.focusSetting();
+          else this.toggleButtons()[next]?.focus();
+        },
+
+        get themeLabel() {
+          return THEMES.find((entry) => entry.id === this.theme)?.label ?? "";
+        },
+
+        restore() {
+          try {
+            const saved = JSON.parse(globalThis.localStorage.getItem(OPTS_KEY) ?? "{}");
+
+            for (const key of KEPT) {
+              if (saved[key] !== undefined) this[key] = saved[key];
+            }
+          } catch {
+            // Un stockage illisible ou refusé ne doit pas empêcher la page de démarrer.
           }
         },
 
+        persist() {
+          try {
+            globalThis.localStorage.setItem(
+              OPTS_KEY,
+              JSON.stringify(Object.fromEntries(KEPT.map((key) => [key, this[key]]))),
+            );
+          } catch {
+            // Navigation privée ou stockage plein : le réglage vaut pour cette visite.
+          }
+        },
+
+        openOpts() {
+          this.optsOpen = true;
+          this.$nextTick(() => this.focusSetting());
+        },
+
+        closeOpts() {
+          this.optsOpen = false;
+          this.$nextTick(() => document.querySelector("[data-ctl='opts']")?.focus());
+        },
         fromHash() {
           const id = globalThis.location.hash.slice(1);
 

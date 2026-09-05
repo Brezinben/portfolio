@@ -54,9 +54,9 @@ test("échap ferme la modale et rend le focus au bouton", async ({ page }) => {
   await expect(opts(page)).toBeFocused();
 });
 
-test("les flèches haut et bas changent de réglage, gauche et droite la valeur", async ({
-  page,
-}) => {
+// Les themes sont sur plusieurs lignes : les quatre fleches y naviguent, et sortir par le
+// bas mene au premier reglage.
+test("les quatre flèches naviguent dans la grille des thèmes", async ({ page }) => {
   await boot(page);
   await opts(page).click();
 
@@ -66,12 +66,48 @@ test("les flèches haut et bas changent de réglage, gauche et droite la valeur"
   await expect(page.locator(".tm")).toHaveAttribute("data-theme", "light");
 
   await dialog.press("ArrowDown");
-  await dialog.press("ArrowRight");
+  await expect(page.locator(".tm"), "la flèche bas descend d'une ligne").not.toHaveAttribute(
+    "data-theme",
+    "light",
+  );
 
-  await expect(page.getByRole("button", { name: /animations/ })).toHaveAttribute(
+  await dialog.press("ArrowUp");
+  await expect(page.locator(".tm")).toHaveAttribute("data-theme", "light");
+
+  await dialog.press("ArrowLeft");
+  await expect(page.locator(".tm")).toHaveAttribute("data-theme", "dark");
+});
+
+// Le reglage modifie doit etre celui qui a le focus, quel que soit le chemin pour y
+// arriver : un compteur separe se desynchronisait de la tabulation.
+test("la flèche droite modifie le réglage qui a le focus", async ({ page }) => {
+  await boot(page);
+  await opts(page).click();
+
+  const animations = page.getByRole("button", { name: /animations/ });
+
+  await animations.focus();
+  await animations.press("ArrowRight");
+
+  await expect(animations).toHaveAttribute("aria-pressed", "false");
+  await expect(page.getByRole("button", { name: /dense lines/ })).toHaveAttribute(
     "aria-pressed",
     "false",
   );
+});
+
+test("depuis la dernière ligne de thèmes, la flèche bas atteint les réglages", async ({ page }) => {
+  await boot(page);
+  await opts(page).click();
+
+  const dialog = page.getByRole("dialog");
+
+  await Array.from({ length: 6 }).reduce(
+    (chain) => chain.then(() => dialog.press("ArrowDown")),
+    Promise.resolve(),
+  );
+
+  await expect(page.locator("[data-toggle]:focus")).toHaveCount(1);
 });
 
 test("aucun réglage de taille du texte n'est proposé", async ({ page }) => {
