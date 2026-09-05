@@ -855,7 +855,7 @@
     style="background:var(--bg);color:var(--fg);height:100dvh;max-height:100dvh;overflow:hidden;box-sizing:border-box;padding:14px clamp(12px,2.5vw,26px) 14px;font-size:14px;line-height:1.6;position:relative;display:flex;flex-direction:column;gap:10px">
 
     <div data-panes
-      style="flex:1;min-height:0;display:flex;flex-wrap:nowrap;gap:10px;align-items:stretch;overflow:hidden;max-width:2400px;width:100%;margin:0 auto">
+      style="flex:1;min-height:0;display:flex;flex-wrap:nowrap;gap:10px;align-items:stretch;overflow:hidden;max-width:2400px;width:100%;margin:0">
 
       <nav data-pane="nav" aria-label="Sections"
         style="flex:0 1 clamp(196px,17vw,280px);min-width:176px;min-height:0;display:flex;flex-direction:column;gap:10px;overflow:hidden">
@@ -972,7 +972,7 @@
           style="flex:none;margin:0;display:flex;justify-content:space-between;align-items:baseline;gap:12px;font-size:11px;color:var(--fg2);border-top:1px solid var(--edge);padding-top:6px">
           <span><span x-text="section"></span><span style="color:var(--fg2)"> · </span><span
               :style="`color:var(--${compacting ? 'warn' : 'fg2'})`"
-              x-text="compacting ? 'compaction…' : 'prêt'"></span></span>
+              x-text="compacting ? 'compacting…' : 'ready'"></span></span>
           <span data-gauge aria-hidden="true" style="white-space:pre"><span style="color:var(--fg2)">ctx [</span><span
               style="color:var(--acc-text)" x-text="'█'.repeat(ctxCells)"></span><span style="color:var(--edge)"
               x-text="'░'.repeat(10 - ctxCells)"></span><span style="color:var(--fg2)">]</span></span>
@@ -1130,11 +1130,10 @@
 
           <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:16px">
             <p style="margin:0;font-size:12px;color:var(--fg2);max-width:40ch;line-height:1.5;text-wrap:pretty"><span
-                style="color:var(--acc-text)">← →</span> choisir · <span style="color:var(--acc-text)">↑ ↓</span> changer de
-              réglage · <span style="color:var(--acc-text)">espace</span> valider · <span
-                style="color:var(--acc-text)">échap</span> fermer · réglages conservés sur cet appareil</p>
+                style="color:var(--acc-text)">← →</span> value · <span style="color:var(--acc-text)">↑ ↓</span> setting
+              · <span style="color:var(--acc-text)">esc</span> close · kept on this device</p>
             <button type="button" data-ctl="opt" @click="closeOpts()"
-              style="min-height:44px;padding:0 18px;border:1px solid var(--edge);border-radius:0;background:transparent;color:var(--fg);font-family:inherit;font-size:13px;cursor:pointer">fermer</button>
+              style="min-height:44px;padding:0 18px;border:1px solid var(--edge);border-radius:0;background:transparent;color:var(--fg);font-family:inherit;font-size:13px;cursor:pointer">close</button>
           </div>
         </div>
       </div>
@@ -1225,10 +1224,11 @@
       { acc: "#00707f", bg: "#f7fbfc", edge: "#cfdde1", id: "hibernus", label: "hibernus" },
     ];
 
+    // Les valeurs d'etat restent en anglais : c'est la langue d'un terminal.
     const TOGGLES = [
-      { key: "anim", label: "animations", off: "désactivées", on: "activées" },
-      { key: "out", label: "volet de sortie", off: "masqué", on: "affiché" },
-      { key: "dense", label: "densité des lignes", off: "confortable", on: "compacte" },
+      { key: "anim", label: "animations", off: "off", on: "on" },
+      { key: "out", label: "output pane", off: "off", on: "on" },
+      { key: "dense", label: "dense lines", off: "off", on: "on" },
     ];
 
     const SETTINGS = ["theme", ...TOGGLES.map((toggle) => toggle.key)];
@@ -2166,8 +2166,12 @@
         },
 
         // La première flèche haut rappelle la commande de la section, puis l'historique.
+        // La commande de section n'arrive en tete que tant que rien n'a ete tape : c'est
+        // « la premiere fois dans une section » du journal de conception, pas toujours.
         recall(step) {
-          const pool = [this.current.cmd, ...this.commands];
+          const pool = this.commands.length > 0
+            ? [...this.commands, this.current.cmd]
+            : [this.current.cmd];
           const next = Math.min(pool.length - 1, Math.max(-1, this.recallAt - step));
 
           this.recallAt = next;

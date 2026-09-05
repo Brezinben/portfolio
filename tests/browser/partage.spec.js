@@ -44,7 +44,7 @@ test("une cible inconnue le dit sans rien ouvrir", async ({ page }) => {
 test("propose annonce ce qui part et attend la confirmation", async ({ page }) => {
   const cli = await boot(page);
 
-  await run(cli, "propose ajouter une section veille");
+  await run(cli, "/propose ajouter une section veille");
 
   const journal = page.locator("[data-journal]");
 
@@ -58,7 +58,7 @@ test("propose annonce ce qui part et attend la confirmation", async ({ page }) =
 test("répondre non n'envoie rien", async ({ page }) => {
   const cli = await boot(page);
 
-  await run(cli, "propose une idée");
+  await run(cli, "/propose une idée");
   await run(cli, "non");
 
   await expect(page.locator("[data-journal]")).toContainText("rien n'a été envoyé");
@@ -68,7 +68,7 @@ test("la page ne pose aucun cookie", async ({ page, context }) => {
   const cli = await boot(page);
 
   await run(cli, "help");
-  await run(cli, "joke");
+  await run(cli, "/joke");
 
   expect(await context.cookies()).toEqual([]);
 });
@@ -79,7 +79,7 @@ test("une mesure d'audience bloquée ne casse pas la page", async ({ page }) => 
 
   const cli = await boot(page);
 
-  await run(cli, "wtf");
+  await run(cli, "/wtf");
 
   await expect(page.locator("[data-journal]")).toContainText("portfolio déguisé");
   await expect(page.locator('[data-pane="main"]')).toBeVisible();

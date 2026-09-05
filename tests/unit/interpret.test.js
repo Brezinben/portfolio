@@ -45,12 +45,12 @@ test("les préfixes slash et deux-points sont acceptés", () => {
     const prefixed = interpret(`${prefix}wtf`, CONTEXT);
 
     assert.equal(prefixed.lines[0].t, `${prefix}wtf`);
-    assert.deepEqual(texts(prefixed).slice(1), texts(interpret("wtf", CONTEXT)).slice(1));
+    assert.deepEqual(texts(prefixed).slice(1), texts(interpret("/wtf", CONTEXT)).slice(1));
   }
 });
 
 test("chaque commande est marquée", () => {
-  const [effect] = interpret("wtf", CONTEXT).effects;
+  const [effect] = interpret("/wtf", CONTEXT).effects;
 
   assert.equal(effect.type, "track");
   assert.equal(effect.event, "commande");
@@ -116,30 +116,30 @@ test("clear vide le journal sans rien afficher", () => {
 });
 
 test("wtf explique où l'on se trouve", () => {
-  const result = interpret("wtf", CONTEXT);
+  const result = interpret("/wtf", CONTEXT);
 
   assert.match(texts(result).join("\n"), /portfolio déguisé en terminal/);
 });
 
 test("sudo refuse, et le signale", () => {
-  const result = interpret("sudo", CONTEXT);
+  const result = interpret("/sudo", CONTEXT);
 
   assert.match(result.lines[1].t, /sudoers/);
   assert.equal(result.lines[1].m, "✗");
 });
 
 test("coffee répond 418", () => {
-  assert.equal(interpret("coffee", CONTEXT).lines[1].m, "418");
+  assert.equal(interpret("/coffee", CONTEXT).lines[1].m, "418");
 });
 
 test("vim, nano et emacs tombent dans le même piège", () => {
-  for (const editor of ["vim", "nano", "emacs"]) {
+  for (const editor of ["/vim", "/nano", "/emacs"]) {
     assert.match(interpret(editor, CONTEXT).lines[1].t, /:q!/);
   }
 });
 
 test("pet caresse la mascotte", () => {
-  const result = interpret("pet", CONTEXT);
+  const result = interpret("/pet", CONTEXT);
 
   assert.equal(result.lines[1].m, "♥");
   assert.ok(result.effects.some((effect) => effect.type === "say"));
@@ -152,7 +152,7 @@ test("sleep endort la mascotte", () => {
 });
 
 test("benjamin se présente et donne son adresse", () => {
-  const result = interpret("benjamin", CONTEXT);
+  const result = interpret("/benjamin", CONTEXT);
 
   assert.match(texts(result).join("\n"), /benjamin\.david1@hotmail\.fr/);
   assert.ok(
@@ -162,21 +162,37 @@ test("benjamin se présente et donne son adresse", () => {
 
 test("brezinben est un alias de benjamin", () => {
   assert.deepEqual(
-    texts(interpret("brezinben", CONTEXT)).slice(1),
-    texts(interpret("benjamin", CONTEXT)).slice(1),
+    texts(interpret("/brezinben", CONTEXT)).slice(1),
+    texts(interpret("/benjamin", CONTEXT)).slice(1),
   );
 });
 
-test("joke avance dans la liste sans la dépasser", () => {
-  const first = interpret("joke", CONTEXT);
-  const patch = first.effects.find((effect) => effect.type === "state");
+// La blague est tiree au hasard, mais jamais deux fois la meme d'affilee.
+test("joke tire une blague différente de la précédente", () => {
+  for (let attempt = 0; attempt < 40; attempt += 1) {
+    const result = interpret("/joke", { ...CONTEXT, jokeIndex: 0 });
+    const patch = result.effects.find((effect) => effect.type === "state");
 
-  assert.equal(first.lines[1].t, "une autre");
-  assert.equal(patch.patch.jokeIndex, 1);
+    assert.notEqual(patch.patch.jokeIndex, 0, "la blague courante ne se répète pas");
+    assert.equal(result.lines[1].t, CONTEXT.jokes[patch.patch.jokeIndex]);
+  }
+});
 
-  const second = interpret("joke", { ...CONTEXT, jokeIndex: 1 });
+// Un easter egg sans slash n'est pas une commande de terminal.
+test("un easter egg tapé sans slash n'est pas reconnu", () => {
+  const result = interpret("joke", CONTEXT);
 
-  assert.equal(second.lines[1].t, "une blague");
+  assert.match(result.lines[1].t, /commande introuvable : joke/u);
+  assert.match(result.lines[1].t, /essayez \/joke/u);
+});
+
+test("les vraies commandes marchent sans slash", () => {
+  for (const command of ["help", "ls", "clear"]) {
+    assert.ok(
+      !interpret(command, CONTEXT).lines.some((entry) => /introuvable/u.test(entry.t)),
+      `${command} doit rester une commande`,
+    );
+  }
 });
 
 test("une commande inconnue le dit et se marque comme telle", () => {
@@ -192,8 +208,8 @@ test("une commande inconnue le dit et se marque comme telle", () => {
 
 test("la casse de la commande est ignorée", () => {
   assert.deepEqual(
-    texts(interpret("WTF", CONTEXT)).slice(1),
-    texts(interpret("wtf", CONTEXT)).slice(1),
+    texts(interpret("/WTF", CONTEXT)).slice(1),
+    texts(interpret("/wtf", CONTEXT)).slice(1),
   );
 });
 

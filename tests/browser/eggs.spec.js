@@ -15,7 +15,7 @@ const run = async (cli, command) => {
 test("cowsay dessine sa vache dans le journal", async ({ page }) => {
   const cli = await boot(page);
 
-  await run(cli, "cowsay bonjour");
+  await run(cli, "/cowsay bonjour");
 
   await expect(page.locator("[data-journal]")).toContainText("^__^");
   await expect(page.locator("[data-journal]")).toContainText("bonjour");
@@ -26,7 +26,7 @@ test("cowsay dessine sa vache dans le journal", async ({ page }) => {
 test("l'art ASCII garde ses espaces multiples", async ({ page }) => {
   const cli = await boot(page);
 
-  await run(cli, "cowsay test");
+  await run(cli, "/cowsay test");
 
   const spacing = await page
     .locator("[data-journal] span", { hasText: "^__^" })
@@ -50,7 +50,7 @@ test("les ligatures restent désactivées", async ({ page }) => {
 test("un mode de tête change la vache", async ({ page }) => {
   const cli = await boot(page);
 
-  await run(cli, "cowsay -d mort");
+  await run(cli, "/cowsay -d mort");
 
   await expect(page.locator("[data-journal]")).toContainText("(xx)");
 });
@@ -58,7 +58,7 @@ test("un mode de tête change la vache", async ({ page }) => {
 test("cowthink rend une bulle de pensée", async ({ page }) => {
   const cli = await boot(page);
 
-  await run(cli, "cowthink hmm");
+  await run(cli, "/cowthink hmm");
 
   await expect(page.locator("[data-journal]")).toContainText("( hmm )");
 });
@@ -69,10 +69,10 @@ test("la jauge de contexte monte à chaque commande", async ({ page }) => {
   const filled = () => page.locator("[data-gauge]").textContent();
   const before = await filled();
 
-  await run(cli, "wtf");
-  await run(cli, "wtf");
-  await run(cli, "wtf");
-  await run(cli, "wtf");
+  await run(cli, "/wtf");
+  await run(cli, "/wtf");
+  await run(cli, "/wtf");
+  await run(cli, "/wtf");
 
   expect(await filled()).not.toBe(before);
 });
@@ -82,7 +82,7 @@ test("la jauge pleine déclenche une compaction et se vide", async ({ page }) =>
   const cli = await boot(page);
 
   await Array.from({ length: 20 }).reduce(
-    (chain) => chain.then(() => run(cli, "wtf")),
+    (chain) => chain.then(() => run(cli, "/wtf")),
     Promise.resolve(),
   );
 

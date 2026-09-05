@@ -26,7 +26,7 @@ test("la mascotte porte un nom accessible qui suit son humeur", async ({ page })
 
   await expect(mascot(page)).toHaveAttribute("aria-label", /au repos/);
 
-  await cli.fill("slime sad");
+  await cli.fill("/slime sad");
   await cli.press("Enter");
 
   await expect(mascot(page)).toHaveAttribute("aria-label", /triste/);
@@ -47,7 +47,7 @@ test("les sept humeurs sont pilotables", async ({ page }) => {
   await moods.reduce(
     (chain, [mood, label]) =>
       chain
-        .then(() => cli.fill(`slime ${mood}`))
+        .then(() => cli.fill(`/slime ${mood}`))
         .then(() => cli.press("Enter"))
         .then(() =>
           expect(mascot(page), `humeur ${mood}`).toHaveAttribute("aria-label", new RegExp(label)),
@@ -59,7 +59,7 @@ test("les sept humeurs sont pilotables", async ({ page }) => {
 test("une commande fait parler la mascotte", async ({ page }) => {
   const cli = await boot(page);
 
-  await cli.fill("joke");
+  await cli.fill("/joke");
   await cli.press("Enter");
 
   await expect(page.locator("[data-bubble]")).toContainText("héhé");
@@ -70,7 +70,7 @@ test("une commande fait parler la mascotte", async ({ page }) => {
 test("la position est écrite directement dans le style", async ({ page }) => {
   const cli = await boot(page);
 
-  await cli.fill("slime drop");
+  await cli.fill("/slime drop");
   await cli.press("Enter");
 
   await expect.poll(() => mascot(page).evaluate((node) => node.style.left)).toMatch(/px$/);

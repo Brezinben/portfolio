@@ -73,7 +73,7 @@ test("share vers une cible inconnue le dit", () => {
 
 // Consentement en deux temps : rien ne part avant un oui.
 test("propose annonce ce qui part, où, et ce qui ne part pas", () => {
-  const result = interpret("propose ajouter une section", CONTEXT);
+  const result = interpret("/propose ajouter une section", CONTEXT);
   const body = result.lines.map((entry) => entry.t).join("\n");
 
   assert.match(body, /« ajouter une section »/u);
@@ -88,7 +88,7 @@ test("propose annonce ce qui part, où, et ce qui ne part pas", () => {
 });
 
 test("propose sans texte explique la commande", () => {
-  assert.match(interpret("propose", CONTEXT).lines[1].t, /propose <idée>/u);
+  assert.match(interpret("/propose", CONTEXT).lines[1].t, /propose <idée>/u);
 });
 
 test("oui envoie, non annule", () => {

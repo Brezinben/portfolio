@@ -10,7 +10,7 @@ const boot = async (page) => {
 test("taper une commande affiche son résultat dans le journal", async ({ page }) => {
   const cli = await boot(page);
 
-  await cli.fill("wtf");
+  await cli.fill("/wtf");
   await cli.press("Enter");
 
   await expect(page.locator("[data-journal]")).toContainText("portfolio déguisé en terminal");
@@ -41,7 +41,7 @@ test("cd change de section et le volet de sortie suit", async ({ page }) => {
 test("clear vide le journal", async ({ page }) => {
   const cli = await boot(page);
 
-  await cli.fill("wtf");
+  await cli.fill("/wtf");
   await cli.press("Enter");
   await expect(page.locator("[data-journal]")).toContainText("portfolio déguisé");
 
@@ -51,24 +51,27 @@ test("clear vide le journal", async ({ page }) => {
   await expect(page.locator("[data-journal]")).not.toContainText("portfolio déguisé");
 });
 
-// La première flèche haut rappelle la commande de la section, puis l'historique tapé.
-test("la flèche haut rappelle la commande de la section puis l'historique", async ({ page }) => {
+// Tant que rien n'a été tapé, la flèche haut rappelle la commande de la section. Dès
+// qu'une commande existe, c'est elle qui remonte en premier, comme dans un terminal.
+test("la flèche haut rappelle la dernière commande tapée", async ({ page }) => {
   const cli = await boot(page);
 
   await cli.press("ArrowUp");
-  await expect(cli).toHaveValue("bd whoami --verbose");
+  await expect(cli, "sans historique, la commande de la section").toHaveValue(
+    "bd whoami --verbose",
+  );
 
-  await cli.fill("wtf");
+  await cli.fill("/wtf");
   await cli.press("Enter");
 
   await cli.press("ArrowUp");
-  await expect(cli).toHaveValue("bd whoami --verbose");
+  await expect(cli, "la commande tapée passe devant").toHaveValue("/wtf");
 
   await cli.press("ArrowUp");
-  await expect(cli).toHaveValue("wtf");
+  await expect(cli).toHaveValue("bd whoami --verbose");
 
   await cli.press("ArrowDown");
-  await expect(cli).toHaveValue("bd whoami --verbose");
+  await expect(cli).toHaveValue("/wtf");
 });
 
 test("échap vide la saisie", async ({ page }) => {
@@ -84,7 +87,7 @@ test("échap vide la saisie", async ({ page }) => {
 test("retaper la commande de la section ne l'empile pas", async ({ page }) => {
   const cli = await boot(page);
 
-  await cli.fill("wtf");
+  await cli.fill("/wtf");
   await cli.press("Enter");
   await cli.fill("bd whoami --verbose");
   await cli.press("Enter");

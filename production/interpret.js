@@ -105,10 +105,29 @@ const EGGS = {
   },
 };
 
+// Les easter eggs ne repondent qu'au prefixe slash. Une vraie commande de terminal et un
+// raccourci du portfolio sont deux choses differentes, et taper « joke » sans slash ne
+// doit pas les melanger.
+const SLASH_ONLY = new Set([
+  "benjamin",
+  "brezinben",
+  "coffee",
+  "cowsay",
+  "cowthink",
+  "joke",
+  "matrix",
+  "mood",
+  "pet",
+  "propose",
+  "slime",
+  "sudo",
+  "vim",
+  "wtf",
+]);
+
 const ALIASES = {
   "?": "help",
   aide: "help",
-  blague: "joke",
   brezinben: "benjamin",
   cat: "pet",
   cls: "clear",
@@ -489,10 +508,23 @@ export const interpret = (raw, context) => {
     return answerPending(input, context.pending);
   }
 
+  const prefixed = /^[/:]/.test(input);
   const parts = input.replace(/^[/:]+/, "").split(" ");
   const command = ALIASES[parts[0].toLowerCase()] ?? parts[0].toLowerCase();
   const argument = (parts[1] ?? "").toLowerCase();
   const rest = parts.slice(1).join(" ");
+
+  // Un easter egg tapé sans slash n'est pas une commande : on ne le reconnaît pas.
+  if (SLASH_ONLY.has(command) && !prefixed) {
+    return {
+      effects: [track("commande_inconnue", { cmd: command }), say("connais pas", "sad")],
+      lines: [
+        echoed(input),
+        failed(`commande introuvable : ${command} — essayez /${command} ou tapez help.`),
+      ],
+    };
+  }
+
   const echo = echoed(input);
   const marked = track("commande", { cmd: command });
   const out = (lines, effects = []) => ({ effects: [marked, ...effects], lines: [echo, ...lines] });
@@ -549,7 +581,11 @@ export const interpret = (raw, context) => {
   }
 
   if (command === "joke") {
-    const next = (context.jokeIndex + 1) % context.jokes.length;
+    const next =
+      context.jokes.length < 2
+        ? 0
+        : (context.jokeIndex + 1 + Math.floor(Math.random() * (context.jokes.length - 1))) %
+          context.jokes.length;
 
     return out(
       [line({ marker: "☺", markerTone: "acc", text: context.jokes[next] })],
