@@ -10,10 +10,14 @@ const CONTEXT = {
 
 const hits = (value) => candidates(value, CONTEXT).hits;
 
+// Le vocabulaire ne propose que ce que le dispatcher accepte : les easter eggs portent
+// leur slash, les vraies commandes n'en ont pas.
 test("le préfixe filtre le vocabulaire", () => {
-  assert.deepEqual(hits("wt"), ["wtf"]);
-  assert.ok(hits("co").includes("coffee"));
-  assert.ok(hits("co").includes("cowsay"));
+  assert.deepEqual(hits("he"), ["help"]);
+  assert.deepEqual(hits("wt"), [], "un easter egg sans slash n'est pas propose");
+  assert.ok(hits("/wt").includes("/wtf"));
+  assert.ok(hits("/co").includes("/coffee"));
+  assert.ok(hits("/co").includes("/cowsay"));
 });
 
 test("les sections et les fiches font partie du vocabulaire", () => {
@@ -25,16 +29,13 @@ test("jamais plus de dix propositions", () => {
   assert.ok(hits("").length <= MAX_SUGGESTIONS);
 });
 
-test("le préfixe slash est reconnu et signalé", () => {
-  const result = candidates("/wt", CONTEXT);
-
-  assert.equal(result.slash, true);
-  assert.deepEqual(result.hits, ["wtf"]);
-  assert.equal(candidates("wt", CONTEXT).slash, false);
+test("le préfixe slash fait partie de la proposition", () => {
+  assert.deepEqual(candidates("/wt", CONTEXT).hits, ["/wtf"]);
+  assert.deepEqual(candidates("/wt", CONTEXT).frag, "/wt");
 });
 
 test("les deux-points sont acceptés comme le slash", () => {
-  assert.deepEqual(candidates(":wt", CONTEXT).hits, ["wtf"]);
+  assert.deepEqual(candidates(":wt", CONTEXT).hits, ["/wtf"]);
 });
 
 // Au second mot, seul le vocabulaire de la commande a du sens.

@@ -12,7 +12,7 @@ const list = (page) => page.locator("[data-suggestions]");
 test("taper un préfixe déplie la liste", async ({ page }) => {
   const cli = await boot(page);
 
-  await cli.fill("wt");
+  await cli.fill("/wt");
   await cli.dispatchEvent("input");
 
   await expect(list(page)).toBeVisible();
@@ -49,45 +49,45 @@ test("le second mot propose le bon vocabulaire", async ({ page }) => {
 test("tabulation complète jusqu'au préfixe commun", async ({ page }) => {
   const cli = await boot(page);
 
-  await cli.fill("cow");
+  await cli.fill("/cow");
   await cli.dispatchEvent("input");
   await cli.press("Tab");
 
-  await expect(cli).toHaveValue("cow");
+  await expect(cli).toHaveValue("/cow");
   await expect(list(page)).toBeVisible();
 });
 
 test("tabulation sur une seule proposition la complète", async ({ page }) => {
   const cli = await boot(page);
 
-  await cli.fill("wt");
+  await cli.fill("/wt");
   await cli.dispatchEvent("input");
   await cli.press("Tab");
 
-  await expect(cli).toHaveValue("wtf ");
+  await expect(cli).toHaveValue("/wtf ");
   await expect(list(page)).toBeHidden();
 });
 
 test("les flèches changent de proposition sans toucher à l'historique", async ({ page }) => {
   const cli = await boot(page);
 
-  await cli.fill("co");
+  await cli.fill("/co");
   await cli.dispatchEvent("input");
   await cli.press("ArrowDown");
 
   await expect(page.locator("[data-suggestion][aria-selected='true']")).toHaveCount(1);
-  await expect(cli, "la saisie ne doit pas être remplacée par l'historique").toHaveValue("co");
+  await expect(cli, "la saisie ne doit pas être remplacée par l'historique").toHaveValue("/co");
 });
 
 test("échap referme la liste avant de vider la saisie", async ({ page }) => {
   const cli = await boot(page);
 
-  await cli.fill("wt");
+  await cli.fill("/wt");
   await cli.dispatchEvent("input");
   await cli.press("Escape");
 
   await expect(list(page)).toBeHidden();
-  await expect(cli).toHaveValue("wt");
+  await expect(cli).toHaveValue("/wt");
 
   await cli.press("Escape");
   await expect(cli).toHaveValue("");
@@ -98,7 +98,7 @@ test("échap referme la liste avant de vider la saisie", async ({ page }) => {
 test("perdre le focus vide la liste", async ({ page }) => {
   const cli = await boot(page);
 
-  await cli.fill("wt");
+  await cli.fill("/wt");
   await cli.dispatchEvent("input");
   await expect(list(page)).toBeVisible();
 
@@ -111,9 +111,9 @@ test("perdre le focus vide la liste", async ({ page }) => {
 test("cliquer une proposition la saisit", async ({ page }) => {
   const cli = await boot(page);
 
-  await cli.fill("co");
+  await cli.fill("/co");
   await cli.dispatchEvent("input");
   await page.locator("[data-suggestion]", { hasText: "coffee" }).click();
 
-  await expect(cli).toHaveValue("coffee ");
+  await expect(cli).toHaveValue("/coffee ");
 });
