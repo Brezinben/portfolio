@@ -913,6 +913,16 @@
           </template>
         </div>
 
+        <p data-status
+          style="flex:none;margin:0;display:flex;justify-content:space-between;align-items:baseline;gap:12px;font-size:11px;color:var(--fg2);border-top:1px solid var(--edge);padding-top:6px">
+          <span><span x-text="section"></span><span style="color:var(--fg2)"> · </span><span
+              :style="`color:var(--${compacting ? 'warn' : 'fg2'})`"
+              x-text="compacting ? 'compaction…' : 'prêt'"></span></span>
+          <span data-gauge aria-hidden="true" style="white-space:pre"><span style="color:var(--fg2)">ctx [</span><span
+              style="color:var(--acc)" x-text="'█'.repeat(ctxCells)"></span><span style="color:var(--edge)"
+              x-text="'░'.repeat(10 - ctxCells)"></span><span style="color:var(--fg2)">]</span></span>
+        </p>
+
         <div data-track x-ref="track" @pointermove.window="drag($event); nearby($event)" @pointerup.window="release()"
           @pointercancel.window="release()"
           style="flex:none;position:relative;height:64px;margin-top:4px">
@@ -1167,6 +1177,10 @@
     const SETTINGS = ["theme", ...TOGGLES.map((toggle) => toggle.key)];
     const TYPE_CPS = 52;
     const EXEC_MS = 20;
+    const CTX_MAX = 20;
+    const CTX_CELLS = 10;
+    // Largeur approximative d'un caractere de JetBrains Mono a 14 px.
+    const CHAR_PX = 8.4;
 
     const TONE = {
       acc: "var(--acc)",
@@ -1385,7 +1399,9 @@
         blink: false,
         bubble: "",
         clicks: 0,
+        compacting: false,
         motion: "",
+        ops: 0,
         mood: "idle",
         shareTargets: [],
         stack: [],
@@ -1501,6 +1517,41 @@
           const target = this.timeline[index]?.detail;
 
           if (target) this.goSection(target);
+        },
+
+        // La jauge monte a chaque commande et a chaque changement de section. Pleine,
+        // elle "compacte" avec un resume ironique, puis repart a zero.
+        get ctxCells() {
+          return Math.min(CTX_CELLS, Math.round((this.ops / CTX_MAX) * CTX_CELLS));
+        },
+
+        bump() {
+          this.ops += 1;
+
+          if (this.ops < CTX_MAX) return;
+
+          this.compacting = true;
+          this.journal = [
+            ...this.journal,
+            { c: "warn", m: "·", mc: "warn", t: "fenêtre de contexte pleine — compaction automatique…" },
+            { c: "fg2", m: "·", mc: "fg2", t: "retenu : Benjamin, développeur IA, Nantes, aime le vélo." },
+          ];
+          this.ops = 0;
+          setTimeout(() => {
+            this.compacting = false;
+          }, 1200);
+        },
+
+        // Extinction facon CRT, puis la sequence de boot complete.
+        powerDown(mode) {
+          this.power = "off";
+          setTimeout(() => {
+            this.journal = [];
+            this.seen = [];
+            this.ops = 0;
+            this.power = "boot";
+            this.load();
+          }, mode === "shutdown" ? 2200 : 900);
         },
 
         get mascotShadow() {
@@ -1803,6 +1854,7 @@
             return;
           }
 
+          this.bump();
           this.seen = [...this.seen, id];
 
           if (this.current.suggest) this.input = this.current.suggest;
@@ -1835,7 +1887,7 @@
             details: this.details,
             jokeIndex: this.jokeIndex,
             jokes: this.jokes,
-            paneWidth: this.$refs.cli?.clientWidth ?? 0,
+            columns: Math.floor((this.$refs.cli?.clientWidth ?? 400) / CHAR_PX),
             pending: undefined,
             sections: this.sections,
           });
@@ -1845,6 +1897,7 @@
           this.commands = [raw, ...this.commands.filter((entry) => entry !== raw)];
           this.recallAt = -1;
           this.journal = [...this.journal, ...lines];
+          this.bump();
           this.apply(effects);
         },
 
@@ -1859,6 +1912,8 @@
             else if (effect.type === "clear") this.journal = [];
             else if (effect.type === "replay") this.journal = [];
             else if (effect.type === "state") Object.assign(this, effect.patch);
+            else if (effect.type === "power") this.powerDown(effect.mode);
+            else if (effect.type === "matrix") this.emote("scared", 3200);
           }
         },
 

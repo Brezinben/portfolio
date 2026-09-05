@@ -211,8 +211,6 @@ const VERBS = [
   "wtf",
 ];
 
-const COWSAY_FLAGS = ["-b", "-d", "-g", "-p", "-s", "-t", "-w", "-y"];
-
 export const MAX_SUGGESTIONS = 10;
 
 // Le second mot n'a de sens que pour certaines commandes. Proposer le vocabulaire entier
@@ -223,8 +221,8 @@ const argumentsFor = (command, context) => {
   return {
     bd: ids,
     cd: ids,
-    cowsay: COWSAY_FLAGS,
-    cowthink: COWSAY_FLAGS,
+    cowsay: COW_MODES,
+    cowthink: COW_MODES,
     mood: [...Object.keys(MOODS), "drop"],
     open: ids,
     partager: context.shareTargets ?? [],
@@ -330,6 +328,98 @@ export const contentLine = (raw) => {
     weight: raw.w ?? "400",
   };
 };
+
+// Cowsay, conforme a l'original : la bulle change de forme selon le nombre de lignes,
+// et le retour a la ligne suit la largeur du volet.
+const FACES_COW = {
+  "-b": { eyes: "==", tongue: "  " },
+  "-d": { eyes: "xx", tongue: "U " },
+  "-g": { eyes: "$$", tongue: "  " },
+  "-p": { eyes: "@@", tongue: "  " },
+  "-s": { eyes: "**", tongue: "U " },
+  "-t": { eyes: "--", tongue: "  " },
+  "-w": { eyes: "OO", tongue: "  " },
+  "-y": { eyes: "..", tongue: "  " },
+};
+
+const COW_MODES = Object.keys(FACES_COW);
+
+const wrap = (text, columns) => {
+  const lines = [];
+  let current = "";
+
+  for (const word of text.split(" ")) {
+    if (current === "") {
+      current = word;
+    } else if (`${current} ${word}`.length <= columns) {
+      current += ` ${word}`;
+    } else {
+      lines.push(current);
+      current = word;
+    }
+  }
+
+  if (current !== "") {
+    lines.push(current);
+  }
+
+  return lines.length === 0 ? [""] : lines;
+};
+
+const EDGES = { first: ["/", "\\"], last: ["\\", "/"], middle: ["|", "|"] };
+
+const edgeFor = (index, count) => {
+  if (index === 0) {
+    return EDGES.first;
+  }
+
+  if (index === count - 1) {
+    return EDGES.last;
+  }
+
+  return EDGES.middle;
+};
+
+const bubble = (lines, think) => {
+  const width = Math.max(...lines.map((entry) => entry.length));
+  const top = ` ${"_".repeat(width + 2)}`;
+  const bottom = ` ${"-".repeat(width + 2)}`;
+
+  if (think) {
+    return [top, ...lines.map((entry) => `( ${entry.padEnd(width)} )`), bottom];
+  }
+
+  if (lines.length === 1) {
+    return [top, `< ${lines[0]} >`, bottom];
+  }
+
+  return [
+    top,
+    ...lines.map((entry, index) => {
+      const [left, right] = edgeFor(index, lines.length);
+
+      return `${left} ${entry.padEnd(width)} ${right}`;
+    }),
+    bottom,
+  ];
+};
+
+export const cowsay = (text, { columns = 40, mode = "", think = false } = {}) => {
+  const face = FACES_COW[mode] ?? { eyes: "oo", tongue: "  " };
+  const link = think ? "o" : "\\";
+  const body = wrap(text.trim() === "" ? "Moo." : text.trim(), Math.max(8, columns - 6));
+
+  return [
+    ...bubble(body, think),
+    `        ${link}   ^__^`,
+    `         ${link}  (${face.eyes})\\_______`,
+    "            (__)\\       )\\/\\",
+    `             ${face.tongue} ||----w |`,
+    "                ||     ||",
+  ];
+};
+
+export const COW_HEAD_MODES = COW_MODES;
 
 export const interpret = (raw, context) => {
   const input = raw.trim().replace(/\s+/g, " ");
@@ -437,6 +527,18 @@ export const interpret = (raw, context) => {
     );
   }
 
+  if (command === "cowsay" || command === "cowthink") {
+    const mode = COW_MODES.includes(argument) ? argument : "";
+    const said = rest.replace(mode, "").trim();
+
+    return out(
+      cowsay(said, { columns: context.columns, mode, think: command === "cowthink" }).map((row) =>
+        line({ text: row, tone: "fg" }),
+      ),
+      [track("easter_egg", { nom: command })],
+    );
+  }
+
   const egg = EGGS[command];
 
   if (egg) {
@@ -448,8 +550,6 @@ export const interpret = (raw, context) => {
   const deferred = {
     ai: { type: "probeAI" },
     ask: { query: rest, type: "ask" },
-    cowsay: { text: rest, type: "cowsay", width: context.paneWidth },
-    cowthink: { text: rest, think: true, type: "cowsay", width: context.paneWidth },
     cv: { type: "cv" },
     email: { type: "email" },
     options: { type: "options" },
