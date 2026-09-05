@@ -39,7 +39,7 @@ test("la liste ne dépasse jamais dix propositions et ne défile pas", async ({ 
 test("le second mot propose le bon vocabulaire", async ({ page }) => {
   const cli = await boot(page);
 
-  await cli.fill("slime ");
+  await cli.fill("/slime ");
   await cli.dispatchEvent("input");
 
   await expect(list(page)).toContainText("happy");
