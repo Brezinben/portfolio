@@ -93,6 +93,10 @@ test("depuis la dernière ligne de thèmes, la flèche bas atteint les réglages
 
   const dialog = page.getByRole("dialog");
 
+  // Le focus entre dans la modale au tick suivant. Sans cette attente, la premiere fleche
+  // part avant, et le parcours commence d'ailleurs que du theme actif.
+  await expect(dialog.locator(":focus")).toHaveCount(1);
+
   await Array.from({ length: 6 }).reduce(
     (chain) => chain.then(() => dialog.press("ArrowDown")),
     Promise.resolve(),
