@@ -55,29 +55,44 @@ test("l'arbre de la stack s'affiche au centre, en colonnes", async ({ page }) =>
   expect(columns, "les technologies coulent sur plusieurs colonnes").toBeGreaterThan(1);
 });
 
-// Avant l'armement, aucun texte d'invite : le volet reste muet tant que le visiteur
-// n'a pas validé une première techno.
-test("la stack ne dit rien avant d'être armée", async ({ page }) => {
+// Aucun texte d'invite au depart : rien ne s'affiche tant qu'aucune technologie n'a le
+// focus. Des qu'une en a un, sa fiche suit immediatement.
+test("la fiche techno suit le focus dès la première technologie", async ({ page }) => {
   await open(page, "#stack");
 
   await expect(page.locator("[data-technote]")).toHaveCount(0);
 
   await page.locator("[data-tech]", { hasText: "Vue.js" }).first().focus();
 
-  await expect(page.locator("[data-technote]"), "le focus seul ne doit rien afficher").toHaveCount(
-    0,
-  );
-});
-
-test("une fois armée, la stack suit le focus sans nouvelle validation", async ({ page }) => {
-  await open(page, "#stack");
-  await page.locator("[data-tech]", { hasText: "Vue.js" }).first().click();
-
   await expect(page.locator("[data-technote]")).toContainText("Vue.js");
 
   await page.locator("[data-tech]", { hasText: "Docker" }).first().focus();
 
   await expect(page.locator("[data-technote]")).toContainText("Docker");
+});
+
+// La stack est une grille : les quatre fleches y naviguent, pas seulement la tabulation.
+test("les quatre flèches naviguent dans la grille de la stack", async ({ page }) => {
+  await open(page, "#stack");
+  await page.locator("[data-tech]").first().focus();
+
+  const focused = () => page.evaluate(() => document.activeElement.textContent.trim());
+  const first = await focused();
+
+  await page.keyboard.press("ArrowRight");
+
+  const second = await focused();
+
+  expect(second).not.toBe(first);
+
+  await page.keyboard.press("ArrowLeft");
+  expect(await focused()).toBe(first);
+
+  await page.keyboard.press("ArrowDown");
+  expect(await focused(), "la flèche bas descend d'une ligne").not.toBe(first);
+
+  await page.keyboard.press("ArrowUp");
+  expect(await focused()).toBe(first);
 });
 
 test("la sortie contact est colorée par type", async ({ page }) => {

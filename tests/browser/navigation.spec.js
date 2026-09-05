@@ -91,20 +91,28 @@ test("la barre oblique cible la saisie", async ({ page }) => {
   await expect(page.getByLabel("Commande")).toBeFocused();
 });
 
-// Revenir dans un volet repose le focus là où on l'avait laissé, et non en tête de liste.
-test("le focus est mémorisé par volet", async ({ page }) => {
+// Dans une liste a une colonne, la fleche droite valide et descend vers le volet
+// suivant : c'est ce qu'un terminal fait.
+test("la flèche droite valide une section et descend dans le volet central", async ({ page }) => {
   await boot(page);
-  await page.locator("body").press("ArrowDown");
-  await page.locator("body").press("ArrowDown");
+  await page.locator('[data-ctl="nav"]').first().focus();
+  await page.keyboard.press("ArrowDown");
+  await page.keyboard.press("ArrowRight");
 
-  const remembered = await page.evaluate(() => document.activeElement.textContent.trim());
+  await expect(main(page)).toContainText("bd log --graph");
+  await expect(page.getByLabel("Commande"), "le focus descend dans le volet central").toBeFocused();
+});
 
-  await page.locator("body").press("ArrowRight");
-  await expect(page.getByLabel("Commande")).toBeFocused();
+test("les flèches haut et bas parcourent la liste des sections", async ({ page }) => {
+  await boot(page);
+  await page.locator('[data-ctl="nav"]').first().focus();
 
-  await page.getByLabel("Commande").press("ArrowLeft");
+  const focused = () => page.evaluate(() => document.activeElement.textContent.trim());
+  const first = await focused();
 
-  await expect
-    .poll(() => page.evaluate(() => document.activeElement.textContent.trim()))
-    .toBe(remembered);
+  await page.keyboard.press("ArrowDown");
+  expect(await focused()).not.toBe(first);
+
+  await page.keyboard.press("ArrowUp");
+  expect(await focused()).toBe(first);
 });
