@@ -868,7 +868,7 @@
         <p style="margin:0;font-size:13px;color:var(--fg2);flex:none"><span
             style="color:var(--ok)">benjamin@portfolio</span><span style="color:var(--fg2)">:~$ </span><span
             style="color:var(--fg)" x-text="current.cmd"></span></p>
-        <div style="flex:1 1 auto;min-height:0;overflow-y:auto;align-content:start;display:grid;gap:2px">
+        <div data-result style="flex:1 1 auto;min-height:0;overflow-y:auto;align-content:start;display:grid;gap:2px">
           <template x-for="(line, index) in current.lines" :key="index">
             <p
               :style="`margin:0;display:grid;grid-template-columns:18px 1fr;gap:8px;align-items:baseline;padding-left:${line.pad}`">
@@ -888,6 +888,28 @@
             </p>
           </template>
         </div>
+
+        <div data-journal aria-live="polite"
+          style="flex:0 1 auto;min-height:44px;max-height:38%;overflow-y:auto;align-content:start;display:grid;gap:2px;border-top:1px solid var(--edge);padding-top:8px">
+          <template x-for="(entry, index) in journal" :key="index">
+            <p
+              style="margin:0;display:grid;grid-template-columns:18px minmax(0,1fr);gap:8px;align-items:baseline;line-height:1.5">
+              <span aria-hidden="true" :style="`color:var(--${entry.mc})`" x-text="entry.m"></span>
+              <span :style="`color:var(--${entry.c});white-space:pre-wrap;overflow-wrap:anywhere`"
+                x-text="entry.t"></span>
+            </p>
+          </template>
+        </div>
+
+        <form data-cli @submit.prevent="submit()"
+          style="flex:none;display:grid;grid-template-columns:auto 1fr;gap:8px;align-items:baseline;border-top:1px solid var(--edge);padding-top:10px">
+          <label for="cli" style="position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)">Commande</label>
+          <span aria-hidden="true" style="color:var(--ok)">$</span>
+          <input id="cli" x-ref="cli" x-model="input" @keydown.arrow-up.prevent="recall(-1)"
+            @keydown.arrow-down.prevent="recall(1)" @keydown.escape.prevent="input = ''" type="text"
+            autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="help"
+            style="min-width:0;border:0;background:transparent;color:var(--fg);font-family:inherit;font-size:14px;outline:none">
+        </form>
       </section>
 
       <aside data-pane="out" aria-label="Sortie"
@@ -967,7 +989,9 @@
       <p style="margin:0;display:flex;gap:14px"><a href="texte.html">texte</a><a href="llms.txt">llms.txt</a></p>
     </footer>
   </div>
-  <script>
+  <script type="module">
+    import { interpret } from "./interpret.js";
+
     // Valeurs figées après itération dans le canvas. Ne pas les transformer en réglages :
     // voir DECISIONS.md, section 23.
     const BOOT_MS = 2000;
@@ -1093,10 +1117,17 @@
 
     document.addEventListener("alpine:init", () => {
       Alpine.data("terminal", () => ({
+        commands: [],
         dataErr: false,
+        details: [],
         errDetail: "",
+        input: "",
+        jokeIndex: 0,
+        jokes: [],
+        journal: [],
         missions: [],
         power: "boot",
+        recallAt: -1,
         section: "whoami",
         sections: [],
         theme: "dark",
@@ -1117,6 +1148,48 @@
           this.section = id;
         },
 
+        submit() {
+          const raw = this.input;
+
+          if (!raw.trim()) return;
+
+          const { effects, lines } = interpret(raw, {
+            current: this.current,
+            details: this.details,
+            jokeIndex: this.jokeIndex,
+            jokes: this.jokes,
+            paneWidth: this.$refs.cli?.clientWidth ?? 0,
+            pending: undefined,
+            sections: this.sections,
+          });
+
+          this.input = "";
+          this.commands = [raw, ...this.commands.filter((entry) => entry !== raw)];
+          this.recallAt = -1;
+          this.journal = [...this.journal, ...lines];
+          this.apply(effects);
+        },
+
+        // La coquille applique ce que l'interpréteur décrit. Les effets des tickets à
+        // venir sont ignorés ici plutôt que simulés.
+        apply(effects) {
+          for (const effect of effects) {
+            if (effect.type === "navigate") this.goSection(effect.id);
+            else if (effect.type === "clear") this.journal = [];
+            else if (effect.type === "replay") this.journal = [];
+            else if (effect.type === "state") Object.assign(this, effect.patch);
+          }
+        },
+
+        // La première flèche haut rappelle la commande de la section, puis l'historique.
+        recall(step) {
+          const pool = [this.current.cmd, ...this.commands];
+          const next = Math.min(pool.length - 1, Math.max(-1, this.recallAt - step));
+
+          this.recallAt = next;
+          this.input = next < 0 ? "" : pool[next];
+        },
+
         async load() {
           this.dataErr = false;
           const started = performance.now();
@@ -1133,6 +1206,8 @@
             }
 
             this.sections = content.sections.map(section);
+            this.details = (content.details ?? []).map(section);
+            this.jokes = content.jokes ?? [];
             this.missions = (content.missions ?? []).map((raw) => ({
               dot: TONE[raw.dot] ?? TONE.ok,
               id: raw.id,
