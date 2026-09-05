@@ -1,0 +1,1165 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Benjamin David — Développeur IA &amp; Full Stack</title>
+  <meta name="description"
+    content="Benjamin David, développeur IA et Full Stack à Nantes. Serveurs MCP, Specification-Driven Development, accessibilité et numérique responsable.">
+  <meta name="author" content="Benjamin David">
+  <link rel="canonical" href="https://portfolio.brezinben.dpdns.org/">
+  <meta property="og:type" content="profile">
+  <meta property="og:title" content="Benjamin David — Développeur IA &amp; Full Stack">
+  <meta property="og:description"
+    content="Serveurs MCP, Specification-Driven Development, accessibilité et numérique responsable. Portfolio en interface terminal.">
+  <meta property="og:url" content="https://portfolio.brezinben.dpdns.org/">
+  <meta property="og:locale" content="fr_FR">
+  <meta property="og:image" content="https://portfolio.brezinben.dpdns.org/share.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt"
+    content="Portfolio de Benjamin David en interface terminal : sections, parcours et sortie système.">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Benjamin David — Développeur IA &amp; Full Stack">
+  <meta name="twitter:description" content="Serveurs MCP, SDD, accessibilité, numérique responsable.">
+  <meta name="twitter:image" content="https://portfolio.brezinben.dpdns.org/share.png">
+  <style>
+    /* Police variable auto-hébergée : un seul fichier couvre 400 et 700. Les ligatures
+       sont retirées ici et dans la police, sans quoi les traits de l'art ASCII se
+       recomposent. */
+    @font-face {
+      font-family: "JetBrains Mono";
+      src: url("fonts/jetbrains-mono.woff2") format("woff2");
+      font-weight: 400 800;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    [x-cloak] {
+      display: none !important
+    }
+
+    body {
+      margin: 0;
+      font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-variant-ligatures: none;
+      font-feature-settings: "liga" 0, "calt" 0;
+      -webkit-font-smoothing: antialiased
+    }
+
+    a {
+      color: #F5B83B;
+      text-decoration: none;
+      border-bottom: 1px solid transparent
+    }
+
+    a:hover {
+      color: #F5B83B;
+      border-bottom-color: #F5B83B
+    }
+
+    .tm a {
+      color: var(--acc);
+      border-bottom-color: transparent
+    }
+
+    .tm a:hover {
+      color: var(--acc);
+      border-bottom-color: var(--acc)
+    }
+
+    .tm[data-theme="dark"] {
+      --bg: #1c1d2b;
+      --panel: #242538;
+      --edge: #33344a;
+      --fg: #fff6f6;
+      --fg2: #9b9db8;
+      --acc: #F5B83B;
+      --acc-soft: rgba(245, 184, 59, .14);
+      --ok: #7fd1b9;
+      --warn: #e2914c
+    }
+
+    .tm[data-theme="light"] {
+      --bg: #f3ecec;
+      --panel: #fff6f6;
+      --edge: #ded2d2;
+      --fg: #242538;
+      --fg2: #5a5a70;
+      --acc: #e6a000;
+      --acc-soft: rgba(245, 184, 59, .22);
+      --ok: #1f7a63;
+      --warn: #a05a12
+    }
+
+    .tm[data-theme="noctis"] {
+      --bg: #04252a;
+      --panel: #052c33;
+      --edge: #0d4148;
+      --fg: #d3e5e8;
+      --fg2: #7ea0a6;
+      --acc: #49e9a6;
+      --acc-soft: rgba(73, 233, 166, .14);
+      --ok: #49e9a6;
+      --warn: #e4b781
+    }
+
+    .tm[data-theme="azureus"] {
+      --bg: #061f2c;
+      --panel: #07273b;
+      --edge: #0f3b52;
+      --fg: #cfdce4;
+      --fg2: #7d9bb0;
+      --acc: #49ace9;
+      --acc-soft: rgba(73, 172, 233, .16);
+      --ok: #5fc9a0;
+      --warn: #e4b781
+    }
+
+    .tm[data-theme="uva"] {
+      --bg: #191634;
+      --panel: #211d40;
+      --edge: #332d5c;
+      --fg: #ded9f2;
+      --fg2: #9490bd;
+      --acc: #a29bfe;
+      --acc-soft: rgba(162, 155, 254, .18);
+      --ok: #6fd3b0;
+      --warn: #e4a06a
+    }
+
+    .tm[data-theme="bordo"] {
+      --bg: #23151d;
+      --panel: #2d1b26;
+      --edge: #452a39;
+      --fg: #ecd9e2;
+      --fg2: #a8869a;
+      --acc: #e0728c;
+      --acc-soft: rgba(224, 114, 140, .18);
+      --ok: #79c9a4;
+      --warn: #e0a35c
+    }
+
+    .tm[data-theme="lux"] {
+      --bg: #f2ecdd;
+      --panel: #fdf6e7;
+      --edge: #ddd2ba;
+      --fg: #004d57;
+      --fg2: #4a5952;
+      --acc: #0c6d7a;
+      --acc-soft: rgba(15, 125, 140, .14);
+      --ok: #1f7a63;
+      --warn: #9a6218
+    }
+
+    .tm[data-theme="hibernus"] {
+      --bg: #eaf1f3;
+      --panel: #f7fbfc;
+      --edge: #cfdde1;
+      --fg: #004d57;
+      --fg2: #475e66;
+      --acc: #00707f;
+      --acc-soft: rgba(0, 112, 127, .13);
+      --ok: #1f7a63;
+      --warn: #9a6218
+    }
+
+    @keyframes suggIn {
+      from {
+        opacity: 0;
+        transform: translateY(7px) scaleY(.82)
+      }
+
+      to {
+        opacity: 1;
+        transform: none
+      }
+    }
+
+    @keyframes suggOut {
+      from {
+        opacity: 1;
+        transform: none
+      }
+
+      to {
+        opacity: 0;
+        transform: translateY(7px) scaleY(.7)
+      }
+    }
+
+    @keyframes suggRow {
+      from {
+        opacity: 0;
+        transform: translateX(-5px)
+      }
+
+      to {
+        opacity: 1;
+        transform: none
+      }
+    }
+
+    @keyframes lineIn {
+      from {
+        opacity: 0;
+        transform: translateY(6px)
+      }
+
+      to {
+        opacity: 1;
+        transform: none
+      }
+    }
+
+    @keyframes reveal {
+      from {
+        clip-path: inset(0 100% 0 0)
+      }
+
+      to {
+        clip-path: inset(0 0 0 0)
+      }
+    }
+
+    @keyframes compact {
+      0% {
+        opacity: 0;
+        transform: scaleX(0)
+      }
+
+      30%,
+      70% {
+        opacity: 1;
+        transform: scaleX(1)
+      }
+
+      100% {
+        opacity: 0;
+        transform: scaleX(1)
+      }
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0
+      }
+
+      to {
+        opacity: 1
+      }
+    }
+
+    @keyframes popIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px) scale(.96)
+      }
+
+      to {
+        opacity: 1;
+        transform: none
+      }
+    }
+
+    @keyframes bob {
+
+      0%,
+      100% {
+        transform: scale(1, 1)
+      }
+
+      50% {
+        transform: scale(.965, 1.035)
+      }
+    }
+
+    @keyframes laugh {
+
+      0%,
+      100% {
+        transform: scale(1, 1)
+      }
+
+      40% {
+        transform: scale(1.1, .9)
+      }
+
+      70% {
+        transform: scale(.95, 1.06)
+      }
+    }
+
+    @keyframes shiver {
+
+      0%,
+      100% {
+        transform: translateX(0) scale(1, 1)
+      }
+
+      25% {
+        transform: translateX(-1.5px) scale(.98, 1.02)
+      }
+
+      75% {
+        transform: translateX(1.5px) scale(.98, 1.02)
+      }
+    }
+
+    @keyframes droop {
+
+      0%,
+      100% {
+        transform: scale(1.06, .94)
+      }
+
+      50% {
+        transform: scale(1.09, .91)
+      }
+    }
+
+    @keyframes hop {
+      0% {
+        transform: translateY(0) scale(1, 1)
+      }
+
+      14% {
+        transform: translateY(2px) scale(1.22, .76)
+      }
+
+      30% {
+        transform: translateY(-13px) scale(.84, 1.2)
+      }
+
+      48% {
+        transform: translateY(-18px) scale(.94, 1.06)
+      }
+
+      66% {
+        transform: translateY(-6px) scale(.86, 1.18)
+      }
+
+      80% {
+        transform: translateY(0) scale(1.24, .74)
+      }
+
+      91% {
+        transform: translateY(-3px) scale(.96, 1.06)
+      }
+
+      100% {
+        transform: translateY(0) scale(1, 1)
+      }
+    }
+
+    @keyframes bumpR {
+      0% {
+        transform: translateX(0) scale(1, 1)
+      }
+
+      22% {
+        transform: translateX(7px) scale(.66, 1.3)
+      }
+
+      46% {
+        transform: translateX(-12px) scale(1.22, .8)
+      }
+
+      70% {
+        transform: translateX(3px) scale(.92, 1.08)
+      }
+
+      88% {
+        transform: translateX(-2px) scale(1.04, .96)
+      }
+
+      100% {
+        transform: none
+      }
+    }
+
+    @keyframes bumpL {
+      0% {
+        transform: translateX(0) scale(1, 1)
+      }
+
+      22% {
+        transform: translateX(-7px) scale(.66, 1.3)
+      }
+
+      46% {
+        transform: translateX(12px) scale(1.22, .8)
+      }
+
+      70% {
+        transform: translateX(-3px) scale(.92, 1.08)
+      }
+
+      88% {
+        transform: translateX(2px) scale(1.04, .96)
+      }
+
+      100% {
+        transform: none
+      }
+    }
+
+    @keyframes splat {
+      0% {
+        transform: translateY(-420px) scale(.82, 1.3);
+        animation-timing-function: cubic-bezier(.55, 0, .9, .35)
+      }
+
+      34% {
+        transform: translateY(-14px) scale(.78, 1.36);
+        animation-timing-function: cubic-bezier(.2, 0, .1, 1)
+      }
+
+      42% {
+        transform: translateY(6px) scale(1.62, .42);
+        animation-timing-function: cubic-bezier(.3, 0, .3, 1)
+      }
+
+      62% {
+        transform: translateY(3px) scale(1.46, .56);
+        animation-timing-function: cubic-bezier(.2, .6, .3, 1)
+      }
+
+      78% {
+        transform: translateY(0) scale(1.14, .9);
+        animation-timing-function: cubic-bezier(.25, 1.2, .4, 1)
+      }
+
+      90% {
+        transform: translateY(0) scale(.96, 1.05)
+      }
+
+      100% {
+        transform: translateY(0) scale(1, 1)
+      }
+    }
+
+    @keyframes dangle {
+
+      0%,
+      100% {
+        transform: translateY(-5px) scale(.9, 1.16)
+      }
+
+      25% {
+        transform: translateY(-6px) scale(.87, 1.2) rotate(-3deg)
+      }
+
+      50% {
+        transform: translateY(-4px) scale(.94, 1.1)
+      }
+
+      75% {
+        transform: translateY(-6px) scale(.87, 1.2) rotate(3deg)
+      }
+    }
+
+    @keyframes startle {
+      0% {
+        transform: translateY(0) scale(1, 1)
+      }
+
+      45% {
+        transform: translateY(-9px) scale(.86, 1.2)
+      }
+
+      100% {
+        transform: translateY(-4px) scale(.94, 1.08)
+      }
+    }
+
+    @keyframes land {
+      0% {
+        transform: translateY(-6px) scale(.9, 1.12)
+      }
+
+      35% {
+        transform: translateY(0) scale(1.24, .76)
+      }
+
+      62% {
+        transform: translateY(-5px) scale(.94, 1.08)
+      }
+
+      100% {
+        transform: translateY(0) scale(1, 1)
+      }
+    }
+
+    @keyframes crownDrop {
+      0% {
+        opacity: 0;
+        transform: scale(.4) rotate(-14deg)
+      }
+
+      55% {
+        opacity: 1;
+        transform: scale(1.06) rotate(3deg)
+      }
+
+      100% {
+        opacity: 1;
+        transform: none
+      }
+    }
+
+    @keyframes bang {
+      0% {
+        opacity: 0;
+        transform: translateX(-50%) translateY(6px) scale(.4)
+      }
+
+      60% {
+        opacity: 1;
+        transform: translateX(-50%) translateY(-2px) scale(1.15)
+      }
+
+      100% {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0) scale(1)
+      }
+    }
+
+    @keyframes spark {
+      0% {
+        opacity: 0;
+        transform: scale(.3)
+      }
+
+      25% {
+        opacity: 1;
+        transform: scale(1)
+      }
+
+      100% {
+        opacity: 0;
+        transform: scale(1.5)
+      }
+    }
+
+    @keyframes wiggle {
+
+      0%,
+      100% {
+        transform: skewX(0) scale(1, 1)
+      }
+
+      22% {
+        transform: skewX(-6deg) scale(1.05, .96)
+      }
+
+      52% {
+        transform: skewX(5deg) scale(.97, 1.03)
+      }
+
+      78% {
+        transform: skewX(-2deg) scale(1.02, .99)
+      }
+    }
+
+    @keyframes rain {
+      from {
+        transform: translateY(-110%)
+      }
+
+      to {
+        transform: translateY(560%)
+      }
+    }
+
+    @keyframes crtOff {
+      0% {
+        transform: scale(1, 1);
+        opacity: 1
+      }
+
+      62% {
+        transform: scale(1, .006);
+        opacity: 1
+      }
+
+      100% {
+        transform: scale(.002, .006);
+        opacity: .9
+      }
+    }
+
+    @keyframes bootIn {
+      from {
+        opacity: 0
+      }
+
+      to {
+        opacity: 1
+      }
+    }
+
+    @keyframes bootLine {
+      from {
+        opacity: 0;
+        transform: translateY(5px)
+      }
+
+      to {
+        opacity: 1;
+        transform: none
+      }
+    }
+
+    @keyframes bootFill {
+      0% {
+        clip-path: inset(0 100% 0 0)
+      }
+
+      9% {
+        clip-path: inset(0 87.5% 0 0)
+      }
+
+      16% {
+        clip-path: inset(0 83.3% 0 0)
+      }
+
+      23% {
+        clip-path: inset(0 62.5% 0 0)
+      }
+
+      37% {
+        clip-path: inset(0 58.3% 0 0)
+      }
+
+      45% {
+        clip-path: inset(0 37.5% 0 0)
+      }
+
+      58% {
+        clip-path: inset(0 33.3% 0 0)
+      }
+
+      66% {
+        clip-path: inset(0 20.8% 0 0)
+      }
+
+      81% {
+        clip-path: inset(0 16.6% 0 0)
+      }
+
+      90% {
+        clip-path: inset(0 4.1% 0 0)
+      }
+
+      100% {
+        clip-path: inset(0 0 0 0)
+      }
+    }
+
+    @keyframes bootOut {
+      0% {
+        opacity: 1;
+        transform: scale(1);
+        filter: blur(0)
+      }
+
+      100% {
+        opacity: 0;
+        transform: scale(1.04);
+        filter: blur(7px)
+      }
+    }
+
+    @keyframes revealUp {
+      0% {
+        opacity: 0;
+        transform: translateY(14px) scale(.985)
+      }
+
+      100% {
+        opacity: 1;
+        transform: none
+      }
+    }
+
+    @keyframes caret {
+
+      0%,
+      49% {
+        opacity: 1
+      }
+
+      50%,
+      100% {
+        opacity: 0
+      }
+    }
+
+    @keyframes barFill {
+      0% {
+        clip-path: inset(0 100% 0 0)
+      }
+
+      22% {
+        clip-path: inset(0 75% 0 0)
+      }
+
+      48% {
+        clip-path: inset(0 50% 0 0)
+      }
+
+      72% {
+        clip-path: inset(0 25% 0 0)
+      }
+
+      100% {}
+    }
+
+    @keyframes dotPulse {
+
+      0%,
+      100% {
+        opacity: 1
+      }
+
+      50% {
+        opacity: .25
+      }
+    }
+
+    @keyframes scan {
+      from {
+        transform: translateY(-100%)
+      }
+
+      to {
+        transform: translateY(2400%)
+      }
+    }
+
+    @keyframes vtReveal {
+      from {
+        clip-path: circle(0 at var(--vt-x) var(--vt-y))
+      }
+
+      to {
+        clip-path: circle(var(--vt-r) at var(--vt-x) var(--vt-y))
+      }
+    }
+
+    html[data-vt-theme]::view-transition-old(root) {
+      animation: none;
+      z-index: 0
+    }
+
+    html[data-vt-theme]::view-transition-new(root) {
+      animation: vtReveal .62s cubic-bezier(.4, 0, .2, 1) forwards;
+      z-index: 1
+    }
+
+    .tm,
+    .tm * {
+      box-sizing: border-box
+    }
+
+    .tm ::-webkit-scrollbar {
+      width: 0;
+      height: 0
+    }
+
+    .tm * {
+      scrollbar-width: none;
+      -ms-overflow-style: none
+    }
+
+    @media (prefers-reduced-motion:reduce) {
+      * {
+        animation: none !important;
+        transition: none !important
+      }
+    }
+
+    /* Le canvas exprimait le survol et le focus en attributs style-hover et style-focus,
+       que son runtime synthétisait. Un navigateur ne sait pas les mettre en inline : ces
+       règles sont la seule chose qui sorte des styles inline. */
+    .tm [data-ctl]:focus-visible {
+      outline: 2px solid var(--acc);
+      outline-offset: 2px
+    }
+
+    .tm [data-ctl="opts"]:hover {
+      color: var(--acc);
+      border-color: var(--acc)
+    }
+
+    .tm [data-ctl="nav"]:hover {
+      background: var(--acc-soft);
+      border-left-color: var(--acc)
+    }
+
+    .tm [data-ctl="retry"]:hover {
+      background: var(--acc-soft)
+    }
+
+    .tm [data-ctl="retry"]:focus-visible {
+      outline-width: 3px
+    }
+  </style>
+</head>
+
+<body>
+  <div class="tm" x-data="terminal" :data-theme="theme" x-cloak
+    style="background:var(--bg);color:var(--fg);height:100dvh;max-height:100dvh;overflow:hidden;box-sizing:border-box;padding:14px clamp(12px,2.5vw,26px) 14px;font-size:14px;line-height:1.6;position:relative;display:flex;flex-direction:column;gap:10px">
+
+    <div
+      style="flex:1;min-height:0;display:flex;flex-wrap:nowrap;gap:10px;align-items:stretch;overflow:hidden;max-width:2400px;width:100%;margin:0 auto">
+
+      <nav data-pane="nav" aria-label="Sections"
+        style="flex:0 1 clamp(196px,17vw,280px);min-width:176px;min-height:0;display:flex;flex-direction:column;gap:10px;overflow:hidden">
+        <button type="button" data-ctl="opts" aria-haspopup="dialog" aria-expanded="false" disabled
+          style="flex:none;min-height:44px;display:flex;justify-content:space-between;align-items:center;gap:10px;padding:0 12px;border:1px solid var(--edge);border-radius:0;background:var(--panel);color:var(--fg2);font-family:inherit;font-size:11px;letter-spacing:.12em;cursor:pointer"><span>options</span><span
+            aria-hidden="true" style="font-size:17px;line-height:1">⚙</span></button>
+        <div
+          style="flex:1 1 auto;min-height:0;display:flex;flex-direction:column;gap:10px;overflow-y:auto;overflow-x:hidden">
+          <div style="flex:none;border:1px solid var(--edge);border-radius:12px;background:var(--panel);overflow:hidden">
+            <p
+              style="margin:0;padding:9px 12px;font-size:11px;letter-spacing:.12em;color:var(--fg2);border-bottom:1px solid var(--edge)">
+              sections</p>
+            <ul style="list-style:none;margin:0;padding:5px;display:grid;gap:1px">
+              <template x-for="item in sections" :key="item.id">
+                <li>
+                  <button type="button" data-ctl="nav" :aria-current="item.id === section ? 'true' : 'false'"
+                    @click="goSection(item.id)"
+                    :style="`width:100%;min-height:44px;display:grid;grid-template-columns:12px 1fr;gap:8px;align-items:center;text-align:left;padding:5px 8px;border:0;border-left:2px solid ${item.id === section ? 'var(--acc)' : 'transparent'};border-radius:0;background:${item.id === section ? 'var(--acc-soft)' : 'transparent'};color:var(--fg);font-family:inherit;font-size:14px;cursor:pointer;transition:background .18s,border-color .18s`">
+                    <span aria-hidden="true" :style="`width:8px;height:8px;background:${item.dot}`"></span>
+                    <span style="display:grid;gap:1px;min-width:0">
+                      <span :style="`font-weight:${item.id === section ? '700' : '400'}`" x-text="item.label"></span>
+                      <span
+                        style="font-size:12px;color:var(--fg2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap"
+                        x-text="item.sub"></span>
+                    </span>
+                  </button>
+                </li>
+              </template>
+            </ul>
+          </div>
+          <div style="flex:none;border:1px solid var(--edge);border-radius:12px;background:var(--panel);overflow:hidden">
+            <p
+              style="margin:0;padding:9px 12px;font-size:11px;letter-spacing:.12em;color:var(--fg2);border-bottom:1px solid var(--edge)">
+              missions</p>
+            <ul style="list-style:none;margin:0;padding:5px;display:grid;gap:1px">
+              <template x-for="item in missions" :key="item.id">
+                <li
+                  style="display:grid;grid-template-columns:12px 1fr auto;gap:8px;align-items:center;padding:5px 8px;font-size:13px">
+                  <span aria-hidden="true" :style="`width:8px;height:8px;background:${item.dot}`"></span>
+                  <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap" x-text="item.label"></span>
+                  <span style="font-size:11px;color:var(--fg2)" x-text="item.state"></span>
+                </li>
+              </template>
+            </ul>
+          </div>
+        </div>
+      </nav>
+
+      <section data-pane="main" aria-label="Session"
+        style="flex:1 1 auto;min-width:0;min-height:0;display:flex;flex-direction:column;gap:10px;border:1px solid var(--edge);border-radius:12px;background:var(--panel);padding:14px;overflow:hidden">
+        <p style="margin:0;font-size:13px;color:var(--fg2);flex:none"><span
+            style="color:var(--ok)">benjamin@portfolio</span><span style="color:var(--fg2)">:~$ </span><span
+            style="color:var(--fg)" x-text="current.cmd"></span></p>
+        <div style="flex:1 1 auto;min-height:0;overflow-y:auto;align-content:start;display:grid;gap:2px">
+          <template x-for="(line, index) in current.lines" :key="index">
+            <p
+              :style="`margin:0;display:grid;grid-template-columns:18px 1fr;gap:8px;align-items:baseline;padding-left:${line.pad}`">
+              <span aria-hidden="true" :style="`color:${line.mc}`" x-text="line.m"></span>
+              <span
+                :style="`color:${line.c};font-size:${line.size};font-weight:${line.w};letter-spacing:${line.ls};text-wrap:pretty`">
+                <template x-if="line.banner">
+                  <span role="img" :aria-label="line.banner.label"
+                    :style="`display:block;position:relative;width:${line.banner.width};height:${line.banner.height};max-width:100%`"><span
+                      aria-hidden="true"
+                      :style="`position:absolute;top:0;left:0;width:${line.banner.size};height:${line.banner.size};border-radius:50%;box-shadow:${line.banner.shadow}`"></span></span>
+                </template>
+                <template x-if="!line.banner">
+                  <span x-text="line.t"></span>
+                </template>
+              </span>
+            </p>
+          </template>
+        </div>
+      </section>
+
+      <aside data-pane="out" aria-label="Sortie"
+        style="flex:0 1 clamp(240px,24vw,380px);min-width:200px;min-height:0;display:flex;flex-direction:column;border:1px solid var(--edge);border-radius:12px;background:var(--panel);overflow:hidden">
+        <p
+          style="margin:0;padding:9px 12px;font-size:11px;letter-spacing:.12em;color:var(--fg2);border-bottom:1px solid var(--edge)"
+          x-text="current.out.title"></p>
+        <dl style="margin:0;padding:10px 12px;display:grid;gap:6px;overflow-y:auto;align-content:start;font-size:13px">
+          <template x-for="(row, index) in current.out.lines" :key="index">
+            <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr);gap:10px">
+              <dt :style="`color:${row.kc};margin:0`" x-text="row.k"></dt>
+              <dd :style="`color:${row.c};margin:0`" x-text="row.v"></dd>
+            </div>
+          </template>
+        </dl>
+      </aside>
+    </div>
+
+    <template x-if="booting">
+      <div aria-hidden="true" data-boot
+        :style="`position:absolute;inset:0;z-index:30;background:var(--bg);padding:18px clamp(12px,2.5vw,26px) 26px;box-sizing:border-box;display:flex;flex-direction:column;${power === 'fade' ? 'animation:bootOut .62s ease forwards' : ''}`">
+        <div
+          style="flex:1;border:1px solid var(--edge);border-radius:12px;background:var(--panel);padding:clamp(20px,4vw,44px);display:grid;align-content:center;gap:8px;font-size:13px;line-height:1.7">
+          <template x-if="dataErr">
+            <div style="display:grid;gap:8px">
+              <p style="margin:0;color:var(--warn);font-size:16px;font-weight:700">panic: content.json not found</p>
+              <p style="margin:0;color:var(--fg2)">goroutine 1 [running]:</p>
+              <p style="margin:0;color:var(--fg2)"> main.loadPortfolio(0x0, 0x0)</p>
+              <p style="margin:0;color:var(--fg2)"> /bd/os/boot.go:42 +0x1f</p>
+              <p style="margin:0;color:var(--fg2)" x-text="errDetail"></p>
+              <p style="margin:14px 0 0;color:var(--fg)">Le contenu de ce portfolio vit dans un JSON. Le JSON, lui, vit
+                sa vie.</p>
+              <p style="margin:0;color:var(--fg2)">Deux développeurs sur trois auraient déjà relancé. Le troisième lit
+                encore la stack trace.</p>
+              <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px">
+                <button type="button" data-ctl="retry" @click="load()"
+                  style="min-height:44px;padding:0 18px;border:1px solid var(--acc);background:transparent;color:var(--acc);font-family:inherit;font-size:13px;cursor:pointer">retry</button>
+                <a href="texte.html"
+                  style="min-height:44px;display:inline-flex;align-items:center;padding:0 18px;border:1px solid var(--edge);color:var(--fg2);font-size:13px">version
+                  texte</a>
+              </div>
+            </div>
+          </template>
+          <template x-if="!dataErr">
+            <div style="display:grid;gap:8px">
+              <p style="margin:0;color:var(--acc);font-size:16px;font-weight:700;animation:bootLine .3s ease both">bd os
+                8.0</p>
+              <p style="margin:0;color:var(--fg2);animation:bootLine .3s .18s ease both">initialisation du profil
+                benjamin-david…</p>
+              <p style="margin:0;color:var(--fg2);animation:bootLine .3s .42s ease both">mount /whoami /parcours /stack
+                /impact /formation /contact … <span style="color:var(--ok)">ok</span></p>
+              <p style="margin:0;color:var(--fg2);animation:bootLine .3s .68s ease both">fetch missions.json … <span
+                  style="color:var(--ok)">4 entrées</span></p>
+              <p style="margin:0;color:var(--fg2);animation:bootLine .3s .92s ease both">accessibilité : activée ·
+                mesure : <span style="color:var(--ok)">sans cookie</span> · empreinte : minimale</p>
+              <p style="margin:0;color:var(--fg2);animation:bootLine .3s 1.14s ease both">réveil de la mascotte … <span
+                  style="color:var(--ok)">ok</span></p>
+              <p
+                style="margin:8px 0 0;display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;animation:bootLine .3s 1.32s ease both">
+                <span style="white-space:pre;color:var(--fg2)">[<span
+                    style="position:relative;color:var(--edge)">████████████████████████<span
+                      style="position:absolute;top:0;left:0;color:var(--acc);clip-path:inset(0 100% 0 0);animation:bootFill .1s steps(1,end) 1.32s both">████████████████████████</span></span>]</span>
+                <span style="color:var(--acc)">montage de l'interface<span
+                    style="animation:caret 1s steps(1) infinite">_</span></span>
+              </p>
+            </div>
+          </template>
+        </div>
+      </div>
+    </template>
+
+    <footer
+      style="flex:none;display:flex;justify-content:space-between;align-items:baseline;gap:20px;padding:0 4px;font-size:12px;color:var(--fg2);white-space:nowrap;overflow:hidden">
+      <p style="margin:0;overflow:hidden;text-overflow:ellipsis"><span style="color:var(--acc)">←→</span> volet · <span
+          style="color:var(--acc)">↑↓</span> parcourir · <span style="color:var(--acc)">j/k</span> section · <span
+          style="color:var(--acc)">/</span> saisie · <span style="color:var(--acc)">help</span></p>
+      <p style="margin:0;display:flex;gap:14px"><a href="texte.html">texte</a><a href="llms.txt">llms.txt</a></p>
+    </footer>
+  </div>
+  <script>
+    // Valeurs figées après itération dans le canvas. Ne pas les transformer en réglages :
+    // voir DECISIONS.md, section 23.
+    const BOOT_MS = 2000;
+    const FADE_MS = 620;
+
+    const TONE = {
+      acc: "var(--acc)",
+      fg: "var(--fg)",
+      fg2: "var(--fg2)",
+      ok: "var(--ok)",
+      warn: "var(--warn)",
+    };
+
+    const GLYPHS = {
+      B: ["███ ", "█  █", "█  █", "███ ", "█  █", "█  █", "███ ", "    "],
+      E: ["████", "█   ", "█   ", "███ ", "█   ", "█   ", "████", "    "],
+      N: ["█  █", "██ █", "██ █", "█ ██", "█ ██", "█  █", "█  █", "    "],
+      J: ["████", "   █", "   █", "   █", "   █", "█  █", " ██ ", "    "],
+      A: [" ██ ", "█  █", "█  █", "████", "█  █", "█  █", "█  █", "    "],
+      M: ["█  █", "████", "████", "█  █", "█  █", "█  █", "█  █", "    "],
+      I: ["████", "  █ ", "  █ ", "  █ ", "  █ ", "  █ ", "████", "    "],
+      D: ["███ ", "█  █", "█  █", "█  █", "█  █", "█  █", "███ ", "    "],
+      V: ["█  █", "█  █", "█  █", "█  █", "█  █", " ██ ", "  █ ", "    "],
+      " ": ["  ", "  ", "  ", "  ", "  ", "  ", "  ", "  "],
+    };
+
+    function dots(word) {
+      const rows = ["", "", "", "", "", "", "", ""];
+
+      for (const character of word.toUpperCase()) {
+        const glyph = GLYPHS[character] ?? GLYPHS[" "];
+
+        for (let row = 0; row < 8; row += 1) {
+          rows[row] += glyph[row] + (character === " " ? "" : " ");
+        }
+      }
+
+      return rows.slice(0, 7);
+    }
+
+    // Le bandeau est dessiné en box-shadow, comme la mascotte : aucune image, aucun
+    // caractère. Valeurs figées du canvas : pixel de 5 px, point de 4 px.
+    const BANNER_PX = 5;
+
+    function pixels(rows, colour) {
+      const shadows = [];
+
+      rows.forEach((row, y) => {
+        [...row].forEach((character, x) => {
+          if (character === "\u2588") shadows.push(`${x * BANNER_PX}px ${y * BANNER_PX}px 0 ${colour}`);
+        });
+      });
+
+      return shadows.join(",");
+    }
+
+    function banner(raw) {
+      const rows = dots(raw.banner);
+
+      return {
+        height: `${rows.length * BANNER_PX}px`,
+        label: raw.t ?? raw.banner,
+        shadow: pixels(rows, TONE.acc),
+        size: `${BANNER_PX - 1}px`,
+        width: `${Math.max(...rows.map((row) => row.length)) * BANNER_PX}px`,
+      };
+    }
+
+    function line(raw) {
+      if (raw.banner) {
+        return { banner: banner(raw), c: TONE.acc, ls: "0", m: "", mc: "", pad: "0", size: "14px", t: raw.t ?? raw.banner, w: "400" };
+      }
+
+      // Les lignes jq rendent leur texte joint. La coloration par jeton arrive avec la
+      // section contact, au ticket 05.
+      const text = raw.jq
+        ? `"${raw.jq[1]}": ${raw.jq[3] === "num" ? raw.jq[2] : `"${raw.jq[2]}"`}${raw.jq[4] ? "," : ""}`
+        : raw.jqOpen
+          ? `"${raw.jqOpen[1]}": {`
+          : raw.jqLine
+            ? raw.jqLine[1]
+            : (raw.t ?? "");
+      const pad = raw.jq?.[0] ?? raw.jqOpen?.[0] ?? raw.jqLine?.[0] ?? raw.pad ?? "0";
+
+      return {
+        banner: undefined,
+        c: TONE[raw.tone] ?? TONE.fg,
+        ls: raw.ls ?? "0",
+        m: raw.m ?? "",
+        mc: TONE[raw.mc] ?? TONE.fg2,
+        pad,
+        size: raw.size ?? "14px",
+        t: text,
+        w: raw.w ?? "400",
+      };
+    }
+
+    function outPane(out) {
+      return {
+        lines: (out?.lines ?? []).map((row) => ({
+          c: TONE[row[3]] ?? TONE.fg,
+          k: row[0],
+          kc: TONE[row[2]] ?? TONE.fg2,
+          v: row[1],
+        })),
+        title: out?.title ?? "",
+      };
+    }
+
+    function section(raw) {
+      return {
+        cmd: raw.cmd ?? "",
+        dot: TONE[raw.dot] ?? TONE.ok,
+        id: raw.id,
+        label: raw.label,
+        lines: (raw.lines ?? []).map(line),
+        out: outPane(raw.out),
+        sub: raw.sub ?? "",
+      };
+    }
+
+    const EMPTY = { cmd: "", lines: [], out: { lines: [], title: "" } };
+
+    document.addEventListener("alpine:init", () => {
+      Alpine.data("terminal", () => ({
+        dataErr: false,
+        errDetail: "",
+        missions: [],
+        power: "boot",
+        section: "whoami",
+        sections: [],
+        theme: "dark",
+
+        get booting() {
+          return this.power !== "on";
+        },
+
+        get current() {
+          return this.sections.find((entry) => entry.id === this.section) ?? EMPTY;
+        },
+
+        init() {
+          this.load();
+        },
+
+        goSection(id) {
+          this.section = id;
+        },
+
+        async load() {
+          this.dataErr = false;
+          const started = performance.now();
+
+          try {
+            const response = await fetch("content.json");
+
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+            const content = await response.json();
+
+            if (!Array.isArray(content.sections) || content.sections.length === 0) {
+              throw new Error("sections manquantes ou vides");
+            }
+
+            this.sections = content.sections.map(section);
+            this.missions = (content.missions ?? []).map((raw) => ({
+              dot: TONE[raw.dot] ?? TONE.ok,
+              id: raw.id,
+              label: raw.label,
+              state: raw.state ?? "",
+            }));
+          } catch (error) {
+            // Le boot reste affiché : la page ne se rabat jamais sur un contenu figé.
+            this.errDetail = `caused by: ${error.message}`;
+            this.dataErr = true;
+
+            return;
+          }
+
+          const waited = performance.now() - started;
+
+          setTimeout(() => {
+            this.power = "fade";
+            setTimeout(() => {
+              this.power = "on";
+            }, FADE_MS);
+          }, Math.max(0, BOOT_MS - waited));
+        },
+      }));
+    });
+  </script>
+  <script src="vendor/alpine.js" defer></script>
+</body>
+
+</html>
