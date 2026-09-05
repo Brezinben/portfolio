@@ -810,7 +810,7 @@
 </head>
 
 <body>
-  <div class="tm" x-data="terminal" :data-theme="theme" x-cloak
+  <div class="tm" x-data="terminal" :data-theme="theme" x-cloak @keydown.window="onKey($event)"
     style="background:var(--bg);color:var(--fg);height:100dvh;max-height:100dvh;overflow:hidden;box-sizing:border-box;padding:14px clamp(12px,2.5vw,26px) 14px;font-size:14px;line-height:1.6;position:relative;display:flex;flex-direction:column;gap:10px">
 
     <div
@@ -851,11 +851,15 @@
               missions</p>
             <ul style="list-style:none;margin:0;padding:5px;display:grid;gap:1px">
               <template x-for="item in missions" :key="item.id">
-                <li
-                  style="display:grid;grid-template-columns:12px 1fr auto;gap:8px;align-items:center;padding:5px 8px;font-size:13px">
-                  <span aria-hidden="true" :style="`width:8px;height:8px;background:${item.dot}`"></span>
-                  <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap" x-text="item.label"></span>
-                  <span style="font-size:11px;color:var(--fg2)" x-text="item.state"></span>
+                <li>
+                  <button type="button" data-ctl="nav" :aria-current="item.id === section ? 'true' : 'false'"
+                    @click="goSection(item.id)"
+                    :style="`width:100%;min-height:44px;display:grid;grid-template-columns:12px 1fr auto;gap:8px;align-items:center;text-align:left;padding:5px 8px;border:0;border-left:2px solid ${item.id === section ? 'var(--acc)' : 'transparent'};border-radius:0;background:${item.id === section ? 'var(--acc-soft)' : 'transparent'};color:var(--fg);font-family:inherit;font-size:13px;cursor:pointer;transition:background .18s,border-color .18s`">
+                    <span aria-hidden="true" :style="`width:8px;height:8px;background:${item.dot}`"></span>
+                    <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap"
+                      x-text="item.label"></span>
+                    <span style="font-size:11px;color:var(--fg2)" x-text="item.state"></span>
+                  </button>
                 </li>
               </template>
             </ul>
@@ -867,8 +871,10 @@
         style="flex:1 1 auto;min-width:0;min-height:0;display:flex;flex-direction:column;gap:10px;border:1px solid var(--edge);border-radius:12px;background:var(--panel);padding:14px;overflow:hidden">
         <p style="margin:0;font-size:13px;color:var(--fg2);flex:none"><span
             style="color:var(--ok)">benjamin@portfolio</span><span style="color:var(--fg2)">:~$ </span><span
-            style="color:var(--fg)" x-text="current.cmd"></span></p>
-        <div data-result style="flex:1 1 auto;min-height:0;overflow-y:auto;align-content:start;display:grid;gap:2px">
+            style="color:var(--fg)" x-text="typed"></span><span x-show="running" aria-hidden="true"
+            style="color:var(--acc);animation:caret 1s steps(1) infinite">_</span></p>
+        <div data-result x-show="!running"
+          style="flex:1 1 auto;min-height:0;overflow-y:auto;align-content:start;display:grid;gap:2px">
           <template x-for="(line, index) in current.lines" :key="index">
             <p
               :style="`margin:0;display:grid;grid-template-columns:18px 1fr;gap:8px;align-items:baseline;padding-left:${line.pad}`">
@@ -996,6 +1002,9 @@
     // voir DECISIONS.md, section 23.
     const BOOT_MS = 2000;
     const FADE_MS = 620;
+    const PANES = ["nav", "main", "out"];
+    const TYPE_CPS = 52;
+    const EXEC_MS = 20;
 
     const TONE = {
       acc: "var(--acc)",
@@ -1127,10 +1136,15 @@
         journal: [],
         missions: [],
         power: "boot",
+        focusAt: { main: 0, nav: 0, out: 0 },
+        pane: "nav",
         recallAt: -1,
+        running: false,
         section: "whoami",
         sections: [],
+        seen: [],
         theme: "dark",
+        typed: "",
 
         get booting() {
           return this.power !== "on";
@@ -1141,11 +1155,130 @@
         },
 
         init() {
+          globalThis.addEventListener("popstate", () => this.fromHash());
           this.load();
         },
 
-        goSection(id) {
+        items(pane) {
+          return [...this.$root.querySelectorAll(`[data-pane="${pane}"] button:not(:disabled), [data-pane="${pane}"] input`)];
+        },
+
+        // Le focus est mémorisé par volet : y revenir repose le curseur où on l'avait
+        // laissé, plutôt qu'en tête de liste.
+        focusPane(pane) {
+          const entries = this.items(pane);
+
+          if (entries.length === 0) return;
+
+          this.pane = pane;
+          this.focusAt[pane] = Math.min(this.focusAt[pane], entries.length - 1);
+          entries[this.focusAt[pane]].focus();
+        },
+
+        movePane(step) {
+          const next = PANES.indexOf(this.pane) + step;
+
+          if (next >= 0 && next < PANES.length) this.focusPane(PANES[next]);
+        },
+
+        moveInPane(step) {
+          const entries = this.items(this.pane);
+
+          if (entries.length === 0) return;
+
+          this.focusAt[this.pane] = Math.max(0, Math.min(entries.length - 1, this.focusAt[this.pane] + step));
+          entries[this.focusAt[this.pane]].focus();
+        },
+
+        moveSection(step) {
+          const ids = this.sections.map((entry) => entry.id);
+          const next = ids.indexOf(this.section) + step;
+
+          if (next >= 0 && next < ids.length) this.goSection(ids[next]);
+        },
+
+        onKey(event) {
+          if (event.altKey || event.ctrlKey || event.metaKey) return;
+
+          // Dans la saisie, les flèches déplacent le curseur dans le texte. Elles ne
+          // rendent la main aux volets que si le champ est vide.
+          if (event.target === this.$refs.cli) {
+            const leaving = this.input === "" && (event.key === "ArrowLeft" || event.key === "ArrowRight");
+
+            if (!leaving) return;
+          }
+
+          const handlers = {
+            "/": () => this.$refs.cli.focus(),
+            ArrowDown: () => this.moveInPane(1),
+            ArrowLeft: () => this.movePane(-1),
+            ArrowRight: () => this.movePane(1),
+            ArrowUp: () => this.moveInPane(-1),
+            j: () => this.moveSection(1),
+            k: () => this.moveSection(-1),
+          };
+          const handler = handlers[event.key];
+
+          if (!handler) return;
+
+          event.preventDefault();
+          handler();
+        },
+
+        fromHash() {
+          const id = globalThis.location.hash.slice(1);
+
+          this.goSection(this.all.some((entry) => entry.id === id) ? id : "whoami", false);
+        },
+
+        goSection(id, push = true) {
+          if (!this.all.some((entry) => entry.id === id)) return;
+
           this.section = id;
+
+          if (push && globalThis.location.hash !== `#${id}`) {
+            globalThis.history.pushState({}, "", `#${id}`);
+          }
+
+          this.play(id);
+        },
+
+        get all() {
+          return [...this.sections, ...this.details];
+        },
+
+        // Première visite : la commande se tape, puis s'exécute. Retour sur une section
+        // déjà vue : immédiat, sans quoi l'effet devient une attente.
+        play(id) {
+          const target = this.current.cmd;
+
+          clearInterval(this.typer);
+          clearTimeout(this.latency);
+
+          if (this.seen.includes(id)) {
+            this.typed = target;
+            this.running = false;
+
+            return;
+          }
+
+          this.seen = [...this.seen, id];
+          this.typed = "";
+          this.running = true;
+
+          let typedCount = 0;
+
+          this.typer = setInterval(() => {
+            typedCount += 1;
+            this.typed = target.slice(0, typedCount);
+
+            if (typedCount < target.length) return;
+
+            clearInterval(this.typer);
+            this.latency = setTimeout(() => {
+              this.running = false;
+            }, EXEC_MS);
+          }, 1000 / TYPE_CPS);
         },
 
         submit() {
@@ -1221,6 +1354,8 @@
 
             return;
           }
+
+          this.fromHash();
 
           const waited = performance.now() - started;
 

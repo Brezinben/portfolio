@@ -11,12 +11,24 @@ déjà vue répond immédiatement : l'effet ne doit jamais devenir une attente.
 
 **Status:** ready-for-agent
 
-- [ ] `cd`, `bd`, `open`, et le nom de section seul ouvrent la section
-- [ ] Les six sections et les quatre missions sont accessibles
-- [ ] Chaque section et chaque mission a son ancre, du type `#parcours` ou `#m-kereis`
-- [ ] Le bouton retour du navigateur revient à la vue précédente
-- [ ] La première visite tape la commande puis affiche le résultat ; le retour est immédiat
-- [ ] Une barre d'accent ambre de 2 px marque l'élément actif, avec un caret sur la ligne sélectionnée
-- [ ] `j` et `k` changent de section, les flèches gauche et droite changent de volet
-- [ ] Les flèches haut et bas parcourent le volet courant
-- [ ] La position du focus est mémorisée par volet
+- [x] `cd`, `bd`, `open`, et le nom de section seul ouvrent la section
+- [x] Les six sections et les quatre missions sont accessibles
+- [x] Chaque section et chaque mission a son ancre, du type `#parcours` ou `#m-kereis`
+- [x] Le bouton retour du navigateur revient à la vue précédente
+- [x] La première visite tape la commande puis affiche le résultat ; le retour est immédiat
+- [x] Une barre d'accent ambre de 2 px marque l'élément actif
+- [x] `j` et `k` changent de section, les flèches gauche et droite changent de volet
+- [x] Les flèches haut et bas parcourent le volet courant
+- [x] La position du focus est mémorisée par volet
+
+## Précisions apportées en cours de route
+
+Le critère d'origine parlait d'« une barre d'accent avec un caret sur la ligne
+sélectionnée ». Il confondait deux éléments du vocabulaire visuel. Dans le canvas, les
+entrées de navigation portent une pastille et une barre d'accent ; le caret `›` appartient
+à la frise du parcours, donc au ticket 05.
+
+Les flèches gauche et droite quittent la saisie **quand elle est vide**. Dès qu'un
+caractère est tapé, elles redeviennent des déplacements de curseur dans le texte. Sans
+cette nuance, une fois le focus dans le champ, plus aucune flèche ne rendait la main aux
+volets.
