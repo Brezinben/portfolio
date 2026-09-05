@@ -1,5 +1,17 @@
 import { expect, test } from "@playwright/test";
 
+// La poignee ne s'affiche que si le journal deborde : une tige a deplacer dans le vide
+// ne servirait a rien.
+const fill = async (cli) => {
+  for (const _ of Array.from({ length: 6 })) {
+    // Les commandes doivent s'enchainer : les paralleliser ne remplirait pas le journal.
+    // eslint-disable-next-line no-await-in-loop
+    await cli.fill("help");
+    // eslint-disable-next-line no-await-in-loop
+    await cli.press("Enter");
+  }
+};
+
 const boot = async (page) => {
   await page.goto("/");
   await expect(page.locator("[data-boot]")).toHaveCount(0, { timeout: 10_000 });
@@ -76,7 +88,9 @@ test("un indicateur signale qu'il reste du contenu", async ({ page }) => {
 });
 
 test("le journal se redimensionne au clavier et sa hauteur est conservée", async ({ page }) => {
-  await boot(page);
+  const cli = await boot(page);
+
+  await fill(cli);
 
   const height = () => page.locator("[data-journal]").evaluate((node) => node.clientHeight);
   const before = await height();
@@ -96,7 +110,9 @@ test("le journal se redimensionne au clavier et sa hauteur est conservée", asyn
 });
 
 test("le journal ne descend jamais sous 44 px", async ({ page }) => {
-  await boot(page);
+  const cli = await boot(page);
+
+  await fill(cli);
 
   const handle = page.getByRole("separator", { name: "Redimensionner le journal" });
 

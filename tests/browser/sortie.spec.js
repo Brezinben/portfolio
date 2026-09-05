@@ -37,14 +37,22 @@ test("valider une entrée de la frise ouvre la fiche de mission", async ({ page 
   await expect(page).toHaveURL(/#m-kereis$/);
 });
 
-test("l'arbre de la stack s'affiche au centre avec ses glyphes", async ({ page }) => {
+// Le canvas dispose la stack comme la sortie d'un ls : un rail par domaine, et les
+// technologies qui coulent en colonnes. La hierarchie vient du rail, pas de glyphes.
+test("l'arbre de la stack s'affiche au centre, en colonnes", async ({ page }) => {
   await open(page, "#stack");
 
   await expect(page.locator('[data-pane="main"] [data-tree]')).toBeVisible();
   await expect(page.locator('[data-pane="out"] [data-tree]')).toHaveCount(0);
   await expect(page.locator('[data-pane="main"]')).toContainText("frontend");
-  await expect(page.locator('[data-pane="main"]')).toContainText("├");
-  await expect(page.locator('[data-pane="main"]')).toContainText("└");
+  await expect(page.locator('[data-pane="main"]')).toContainText("domaines");
+
+  const columns = await page
+    .locator("[data-tech]")
+    .first()
+    .evaluate((node) => getComputedStyle(node.parentElement).gridTemplateColumns.split(" ").length);
+
+  expect(columns, "les technologies coulent sur plusieurs colonnes").toBeGreaterThan(1);
 });
 
 // Avant l'armement, aucun texte d'invite : le volet reste muet tant que le visiteur

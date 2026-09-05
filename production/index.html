@@ -938,8 +938,8 @@
             :style="`animation:${anim ? 'dotPulse 1.2s ease-in-out infinite' : 'none'};color:var(--fg2);margin-left:10px`">exécution…</span><span
             x-show="!running && anim" aria-hidden="true"
             :style="`color:var(--acc-text);animation:${anim ? 'caret 1s steps(1) infinite' : 'none'}`">_</span></p>
-        <div data-result x-show="!running"
-          style="flex:1 1 auto;min-height:0;overflow-y:auto;align-content:start;display:grid;gap:2px;line-height:1.6">
+        <div data-result
+          :style="`flex:1 1 auto;min-height:0;overflow-y:auto;align-content:start;display:grid;gap:2px;line-height:1.6;visibility:${running ? 'hidden' : 'visible'}`">
 
           <template x-if="current.view === 'timeline'">
             <div data-timeline role="listbox" aria-label="Parcours professionnel" aria-orientation="vertical"
@@ -962,19 +962,39 @@
           </template>
 
           <template x-if="current.view === 'tree'">
-            <div data-tree style="display:grid;gap:8px;align-content:start;font-size:13px">
+            <div data-tree style="display:grid;gap:2px;align-content:start;font-size:13px">
+              <p style="margin:0 0 8px;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap">
+                <span style="font-weight:700">benjamin-david</span>
+                <span style="color:var(--fg2);font-size:12px" x-text="stackSummary"></span>
+              </p>
+
               <template x-for="root in stack" :key="root.id">
-                <div style="display:grid;gap:1px">
-                  <p style="margin:0;color:var(--acc-text)"><span x-text="root.label"></span><span
-                      style="color:var(--fg2)"> — </span><span style="color:var(--fg2)" x-text="root.note"></span></p>
-                  <template x-for="(kid, index) in root.kids" :key="kid">
-                    <button type="button" data-ctl="tech" data-tech :aria-pressed="armed && tech === kid"
-                      @click="armTech(kid)" @focus="followTech(kid)" @keydown.enter.prevent="armTech(kid)"
-                      @keydown.space.prevent="armTech(kid)"
-                      :style="`display:grid;grid-template-columns:18px 1fr;gap:6px;text-align:left;padding:2px 4px;border:0;background:${armed && tech === kid ? 'var(--acc-soft)' : 'transparent'};color:var(--fg);font-family:inherit;font-size:13px;cursor:pointer`"><span
-                        aria-hidden="true" style="color:var(--fg2)"
-                        x-text="index === root.kids.length - 1 ? '└' : '├'"></span><span x-text="kid"></span></button>
-                  </template>
+                <div style="display:grid;grid-template-columns:26px 1fr">
+                  <div aria-hidden="true"
+                    style="position:relative;display:flex;justify-content:center;border-left:1px solid var(--edge);margin-left:4px">
+                    <span style="position:absolute;top:9px;left:-1px;width:14px;border-top:1px solid var(--edge)"></span>
+                  </div>
+                  <div style="padding:0 0 18px 6px;display:grid;gap:9px">
+                    <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap">
+                      <span style="font-weight:700;color:var(--acc-text);font-size:15px" x-text="root.label"></span>
+                      <span style="font-size:12px;color:var(--fg2)" x-text="root.note"></span>
+                      <span style="font-size:11px;color:var(--fg2);border:1px solid var(--edge);padding:1px 9px"
+                        x-text="`${root.kids.length}`"></span>
+                    </div>
+
+                    <!-- Les technologies coulent en colonnes, comme la sortie d'un ls. -->
+                    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:1px 18px">
+                      <template x-for="kid in root.kids" :key="kid">
+                        <button type="button" data-ctl="tech" data-tech :aria-pressed="armed && tech === kid"
+                          @click="armTech(kid)" @focus="followTech(kid)" @keydown.enter.prevent="armTech(kid)"
+                          @keydown.space.prevent="armTech(kid)"
+                          :style="`display:grid;grid-template-columns:12px 1fr;gap:7px;align-items:baseline;text-align:left;padding:1px 4px 1px 0;border:0;background:transparent;color:var(--${techNotes[kid] ? 'fg' : 'fg2'});font-family:inherit;font-size:13px;font-weight:${armed && tech === kid ? '700' : '400'};cursor:pointer`"><span
+                            aria-hidden="true"
+                            :style="`color:var(--${armed && tech === kid ? 'acc-text' : 'fg2'})`"
+                            x-text="armed && tech === kid ? '›' : '·'"></span><span x-text="kid"></span></button>
+                      </template>
+                    </div>
+                  </div>
                 </div>
               </template>
             </div>
@@ -989,7 +1009,7 @@
                 :style="`color:var(--${(line.tone ?? 'fg') === 'acc' ? 'acc-text' : (line.tone ?? 'fg')});font-size:${line.size ?? '14px'};font-weight:${line.weight ?? '400'};letter-spacing:${line.letterSpacing ?? '0'};text-wrap:pretty`">
                 <template x-if="line.banner">
                   <span role="img" :aria-label="line.banner.label"
-                    style="margin-bottom:6px"
+                    style="margin-bottom:12px"
                     :style="`display:block;position:relative;width:${line.banner.width};height:${line.banner.height};max-width:100%`"><span
                       aria-hidden="true"
                       :style="`position:absolute;top:0;left:0;width:${line.banner.size};height:${line.banner.size};border-radius:50%;box-shadow:${line.banner.shadow}`"></span></span>
@@ -1006,7 +1026,7 @@
           </template>
         </div>
 
-        <div data-handle role="separator" aria-orientation="horizontal"
+        <div data-handle x-show="journalOverflows" role="separator" aria-orientation="horizontal"
           aria-label="Redimensionner le journal" tabindex="0" :aria-valuenow="logHeight"
           aria-valuemin="44" :aria-valuemax="600" @pointerdown.prevent="logDown($event)"
           @keydown.arrow-up.prevent="setLogHeight(logHeight + 24)"
@@ -1060,15 +1080,6 @@
           </div>
         </div>
 
-        <p data-status
-          style="flex:none;margin:0;display:flex;justify-content:space-between;align-items:baseline;gap:12px;font-size:11px;color:var(--fg2);padding-top:6px">
-          <span><span x-text="section"></span><span style="color:var(--fg2)"> · </span><span
-              :style="`color:var(--${compacting ? 'warn' : 'fg2'})`"
-              x-text="compacting ? 'compacting…' : 'ready'"></span></span>
-          <span data-gauge aria-hidden="true" style="white-space:pre"><span style="color:var(--fg2)">ctx [</span><span
-              style="color:var(--acc-text)" x-text="'█'.repeat(ctxCells)"></span><span style="color:var(--edge)"
-              x-text="'░'.repeat(10 - ctxCells)"></span><span style="color:var(--fg2)">]</span></span>
-        </p>
 
         <div x-show="suggOpen" x-transition:enter.duration.220ms x-transition:leave.duration.170ms
           data-suggestions role="listbox" aria-label="Suggestions"
@@ -1088,10 +1099,20 @@
           <span aria-hidden="true" style="color:var(--ok)">$</span>
           <input id="cli" x-ref="cli" x-model="input" @input="suggest()" @blur="closeSugg()"
             @keydown.tab.prevent="complete()" @keydown.arrow-up.prevent="up()"
-            @keydown.arrow-down.prevent="down()" @keydown.escape.prevent="onEscape()" type="text"
+            @keydown.arrow-down.prevent="down()" @keydown.arrow-right="right($event)"
+            @keydown.escape.prevent="onEscape()" type="text"
             autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="help"
             style="min-width:0;border:0;background:transparent;color:var(--fg);font-family:inherit;font-size:14px;outline:none">
         </form>
+        <p data-status
+          style="flex:none;margin:0;display:flex;justify-content:space-between;align-items:baseline;gap:12px;font-size:11px;color:var(--fg2);padding-top:6px">
+          <span><span x-text="section"></span><span style="color:var(--fg2)"> · </span><span
+              :style="`color:var(--${compacting ? 'warn' : 'fg2'})`"
+              x-text="compacting ? 'compacting…' : 'ready'"></span></span>
+          <span data-gauge aria-hidden="true" style="white-space:pre"><span style="color:var(--fg2)">ctx [</span><span
+              style="color:var(--acc-text)" x-text="'█'.repeat(ctxCells)"></span><span style="color:var(--edge)"
+              x-text="'░'.repeat(10 - ctxCells)"></span><span style="color:var(--fg2)">]</span></span>
+        </p>
       </section>
 
       <aside data-pane="out" aria-label="Sortie" x-show="out"
@@ -1271,6 +1292,13 @@
     const CTX_CELLS = 10;
     // Largeur approximative d'un caractere de JetBrains Mono a 14 px.
     const CHAR_PX = 8.4;
+
+    // Le contenu vit sur GitHub : le modifier ne demande plus d'acces au serveur. Si
+    // GitHub est injoignable ou bloque, la copie servie a cote de la page prend le
+    // relais, et l'ecran de panique ne s'affiche que si les deux echouent.
+    const REMOTE_CONTENT = "https://raw.githubusercontent.com/Brezinben/portfolio/main/production/content.json";
+    const LOCAL_CONTENT = "content.json";
+    const REMOTE_TIMEOUT_MS = 2500;
 
     const TONE = {
       acc: "var(--acc)",
@@ -1479,6 +1507,7 @@
         at: 0,
         direction: 1,
         dragging: false,
+        grabAt: 0,
         section: "whoami",
         sections: [],
         seen: [],
@@ -1488,6 +1517,8 @@
         bubble: "",
         clicks: 0,
         compacting: false,
+        contentSource: "remote",
+        journalOverflows: false,
         more: { journal: false },
         motion: "",
         resizing: undefined,
@@ -1593,6 +1624,12 @@
 
         // La stack s'arme à la première validation, puis suit le focus. Avant l'armement,
         // aucun texte d'invite ne s'affiche.
+        get stackSummary() {
+          const bricks = this.stack.reduce((total, root) => total + root.kids.length, 0);
+
+          return `${this.stack.length} domaines · ${bricks} briques`;
+        },
+
         get techNote() {
           return this.armed ? (this.techNotes[this.tech] ?? undefined) : undefined;
         },
@@ -1658,6 +1695,8 @@
           if (!node) return;
 
           this.more = { ...this.more, [name]: node.scrollHeight - node.scrollTop - node.clientHeight > 4 };
+
+          if (name === "journal") this.journalOverflows = node.scrollHeight > node.clientHeight + 4;
         },
 
         bump() {
@@ -1807,6 +1846,9 @@
         },
 
         grab(event) {
+          const box = this.$refs.mascot.getBoundingClientRect();
+
+          this.grabAt = event.clientX - box.left;
           this.dragging = true;
           this.emote("scared", 900);
           this.move("grab", 400);
@@ -1816,7 +1858,7 @@
         drag(event) {
           if (!this.dragging || !this.$refs.track) return;
 
-          this.place(event.clientX - this.$refs.track.getBoundingClientRect().left);
+          this.place(event.clientX - this.$refs.track.getBoundingClientRect().left - this.grabAt);
         },
 
         release() {
@@ -2261,8 +2303,11 @@
 
         complete() {
           if (this.sugg.length === 0) return;
-          if (this.sugg.length === 1) {
-            this.applySugg(0);
+
+          // Une proposition choisie a la fleche doit s'appliquer telle quelle : c'est
+          // pour cela qu'on l'a choisie.
+          if (this.sugg.length === 1 || this.suggAt > 0) {
+            this.applySugg(this.suggAt);
 
             return;
           }
@@ -2284,6 +2329,15 @@
           else this.recall(1);
         },
 
+        // La fleche droite valide la proposition choisie, comme la tabulation. Curseur
+        // deja en fin de ligne, elle n'a rien d'autre a faire.
+        right(event) {
+          if (!this.suggOpen) return;
+
+          event.preventDefault();
+          this.complete();
+        },
+
         onEscape() {
           if (this.suggOpen) this.closeSugg();
           else this.input = "";
@@ -2302,16 +2356,37 @@
           this.input = next < 0 ? "" : pool[next];
         },
 
+        // Distant d'abord, local ensuite. Le repli n'est pas un luxe : la page dependrait
+        // sinon de la disponibilite de GitHub pour afficher quoi que ce soit.
+        async fetchOne(url, signal) {
+          const response = await fetch(url, { signal });
+
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+          return response.json();
+        },
+
+        async fetchContent() {
+          const abort = new AbortController();
+          const timer = setTimeout(() => abort.abort(), REMOTE_TIMEOUT_MS);
+
+          try {
+            return await this.fetchOne(REMOTE_CONTENT, abort.signal);
+          } catch {
+            this.contentSource = "local";
+
+            return this.fetchOne(LOCAL_CONTENT);
+          } finally {
+            clearTimeout(timer);
+          }
+        },
+
         async load() {
           this.dataErr = false;
           const started = performance.now();
 
           try {
-            const response = await fetch("content.json");
-
-            if (!response.ok) throw new Error(`HTTP ${response.status}`);
-
-            const content = await response.json();
+            const content = await this.fetchContent();
 
             if (!Array.isArray(content.sections) || content.sections.length === 0) {
               throw new Error("sections manquantes ou vides");
