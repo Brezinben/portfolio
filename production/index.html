@@ -818,7 +818,8 @@
 
       <nav data-pane="nav" aria-label="Sections"
         style="flex:0 1 clamp(196px,17vw,280px);min-width:176px;min-height:0;display:flex;flex-direction:column;gap:10px;overflow:hidden">
-        <button type="button" data-ctl="opts" aria-haspopup="dialog" aria-expanded="false" disabled
+        <button type="button" data-ctl="opts" aria-haspopup="dialog"
+          :aria-expanded="optsOpen ? 'true' : 'false'" @click="openOpts()"
           style="flex:none;min-height:44px;display:flex;justify-content:space-between;align-items:center;gap:10px;padding:0 12px;border:1px solid var(--edge);border-radius:0;background:var(--panel);color:var(--fg2);font-family:inherit;font-size:11px;letter-spacing:.12em;cursor:pointer"><span>options</span><span
             aria-hidden="true" style="font-size:17px;line-height:1">⚙</span></button>
         <div
@@ -874,7 +875,7 @@
             style="color:var(--fg)" x-text="typed"></span><span x-show="running" aria-hidden="true"
             style="color:var(--acc);animation:caret 1s steps(1) infinite">_</span></p>
         <div data-result x-show="!running"
-          style="flex:1 1 auto;min-height:0;overflow-y:auto;align-content:start;display:grid;gap:2px">
+          :style="`flex:1 1 auto;min-height:0;overflow-y:auto;align-content:start;display:grid;gap:${dense ? '0' : '2px'};line-height:${dense ? '1.35' : '1.6'}`">
           <template x-for="(line, index) in current.lines" :key="index">
             <p
               :style="`margin:0;display:grid;grid-template-columns:18px 1fr;gap:8px;align-items:baseline;padding-left:${line.pad}`">
@@ -918,7 +919,7 @@
         </form>
       </section>
 
-      <aside data-pane="out" aria-label="Sortie"
+      <aside data-pane="out" aria-label="Sortie" x-show="out"
         style="flex:0 1 clamp(240px,24vw,380px);min-width:200px;min-height:0;display:flex;flex-direction:column;border:1px solid var(--edge);border-radius:12px;background:var(--panel);overflow:hidden">
         <p
           style="margin:0;padding:9px 12px;font-size:11px;letter-spacing:.12em;color:var(--fg2);border-bottom:1px solid var(--edge)"
@@ -933,6 +934,57 @@
         </dl>
       </aside>
     </div>
+
+    <template x-if="optsOpen">
+      <div @click="closeOpts()"
+        style="position:fixed;inset:0;z-index:40;display:grid;place-items:center;padding:20px;background:rgba(10,10,18,.62);animation:fadeIn .16s ease both">
+        <div role="dialog" aria-modal="true" aria-label="Options d'affichage" data-opts
+          @click.stop @keydown="optsKey($event)"
+          style="width:min(540px,100%);max-height:min(88dvh,620px);overflow:auto;box-sizing:border-box;border:1px solid var(--edge);border-radius:14px;background:var(--panel);padding:18px;display:grid;gap:14px;animation:popIn .24s cubic-bezier(.34,1.4,.64,1) both">
+          <p style="margin:0;font-size:12px;letter-spacing:.12em;color:var(--fg2)">options</p>
+
+          <div style="display:grid;gap:8px">
+            <div style="display:flex;justify-content:space-between;gap:12px">
+              <p style="margin:0;font-size:13px">thème</p>
+              <p style="margin:0;font-size:13px;color:var(--acc)" x-text="themeLabel"></p>
+            </div>
+            <div role="group" aria-label="Thème"
+              style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:6px">
+              <template x-for="entry in THEMES" :key="entry.id">
+                <button type="button" data-ctl="opt" data-theme-choice :aria-pressed="entry.id === theme"
+                  @click="setTheme(entry.id, $event)"
+                  :style="`min-height:44px;display:flex;align-items:center;gap:9px;padding:0 10px;border:1px solid ${entry.id === theme ? 'var(--acc)' : 'var(--edge)'};border-radius:0;background:${entry.id === theme ? 'var(--acc-soft)' : 'transparent'};color:var(--fg);font-family:inherit;font-size:13px;cursor:pointer;text-align:left`">
+                  <span aria-hidden="true"
+                    :style="`width:18px;height:18px;flex:none;border:1px solid ${entry.edge};background:${entry.bg};position:relative;overflow:hidden`"><span
+                      :style="`position:absolute;inset:auto 0 0 0;height:7px;background:${entry.acc}`"></span></span>
+                  <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap" x-text="entry.label"></span>
+                </button>
+              </template>
+            </div>
+          </div>
+
+          <div role="group" aria-label="Affichage" style="display:grid;gap:6px">
+            <template x-for="toggle in TOGGLES" :key="toggle.key">
+              <button type="button" data-ctl="opt" data-toggle :aria-pressed="value(toggle.key)"
+                @click="flip(toggle.key)"
+                :style="`width:100%;min-height:44px;display:flex;justify-content:space-between;align-items:center;gap:12px;padding:0 12px;border:1px solid var(--edge);border-left:2px solid ${value(toggle.key) ? 'var(--ok)' : 'var(--fg2)'};border-radius:0;background:transparent;color:var(--fg);font-family:inherit;font-size:13px;cursor:pointer`"><span
+                  x-text="toggle.label"></span><span
+                  :style="`color:${value(toggle.key) ? 'var(--ok)' : 'var(--fg2)'}`"
+                  x-text="value(toggle.key) ? toggle.on : toggle.off"></span></button>
+            </template>
+          </div>
+
+          <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:16px">
+            <p style="margin:0;font-size:12px;color:var(--fg2);max-width:40ch;line-height:1.5;text-wrap:pretty"><span
+                style="color:var(--acc)">← →</span> choisir · <span style="color:var(--acc)">↑ ↓</span> changer de
+              réglage · <span style="color:var(--acc)">espace</span> valider · <span
+                style="color:var(--acc)">échap</span> fermer · réglages conservés sur cet appareil</p>
+            <button type="button" data-ctl="opt" @click="closeOpts()"
+              style="min-height:44px;padding:0 18px;border:1px solid var(--edge);border-radius:0;background:transparent;color:var(--fg);font-family:inherit;font-size:13px;cursor:pointer">fermer</button>
+          </div>
+        </div>
+      </div>
+    </template>
 
     <template x-if="booting">
       <div data-boot
@@ -1003,6 +1055,29 @@
     const BOOT_MS = 2000;
     const FADE_MS = 620;
     const PANES = ["nav", "main", "out"];
+    const OPTS_KEY = "bd-term-opts";
+    // Six clés, et six seulement. La lecture filtre dessus : le canvas injectait dans
+    // l'état tout ce que le stockage contenait.
+    const KEPT = ["anim", "crowned", "dense", "logH", "out", "theme"];
+
+    const THEMES = [
+      { acc: "#F5B83B", bg: "#242538", edge: "#33344a", id: "dark", label: "ambre nuit" },
+      { acc: "#e6a000", bg: "#fff6f6", edge: "#ded2d2", id: "light", label: "ambre jour" },
+      { acc: "#49e9a6", bg: "#052c33", edge: "#0d4148", id: "noctis", label: "noctis" },
+      { acc: "#49ace9", bg: "#07273b", edge: "#0f3b52", id: "azureus", label: "azureus" },
+      { acc: "#a29bfe", bg: "#211d40", edge: "#332d5c", id: "uva", label: "uva" },
+      { acc: "#e0728c", bg: "#2d1b26", edge: "#452a39", id: "bordo", label: "bordo" },
+      { acc: "#0f7d8c", bg: "#fdf6e7", edge: "#ddd2ba", id: "lux", label: "lux" },
+      { acc: "#00707f", bg: "#f7fbfc", edge: "#cfdde1", id: "hibernus", label: "hibernus" },
+    ];
+
+    const TOGGLES = [
+      { key: "anim", label: "animations", off: "désactivées", on: "activées" },
+      { key: "out", label: "volet de sortie", off: "masqué", on: "affiché" },
+      { key: "dense", label: "densité des lignes", off: "confortable", on: "compacte" },
+    ];
+
+    const SETTINGS = ["theme", ...TOGGLES.map((toggle) => toggle.key)];
     const TYPE_CPS = 52;
     const EXEC_MS = 20;
 
@@ -1136,7 +1211,16 @@
         journal: [],
         missions: [],
         power: "boot",
+        THEMES,
+        TOGGLES,
+        anim: true,
+        crowned: false,
+        dense: false,
         focusAt: { main: 0, nav: 0, out: 0 },
+        logH: 0,
+        optAt: 0,
+        optsOpen: false,
+        out: true,
         pane: "nav",
         recallAt: -1,
         running: false,
@@ -1155,12 +1239,13 @@
         },
 
         init() {
+          this.restore();
           globalThis.addEventListener("popstate", () => this.fromHash());
           this.load();
         },
 
         items(pane) {
-          return [...this.$root.querySelectorAll(`[data-pane="${pane}"] button:not(:disabled), [data-pane="${pane}"] input`)];
+          return [...document.querySelectorAll(`[data-pane="${pane}"] button:not(:disabled), [data-pane="${pane}"] input`)];
         },
 
         // Le focus est mémorisé par volet : y revenir repose le curseur où on l'avait
@@ -1199,6 +1284,9 @@
 
         onKey(event) {
           if (event.altKey || event.ctrlKey || event.metaKey) return;
+          // La modale a son propre clavier. Sans cette garde, les deux gestionnaires
+          // traitent la même flèche et le focus s'échappe de la modale.
+          if (this.optsOpen) return;
 
           // Dans la saisie, les flèches déplacent le curseur dans le texte. Elles ne
           // rendent la main aux volets que si le champ est vide.
@@ -1223,6 +1311,126 @@
 
           event.preventDefault();
           handler();
+        },
+
+        get themeLabel() {
+          return THEMES.find((entry) => entry.id === this.theme)?.label ?? "";
+        },
+
+        restore() {
+          try {
+            const saved = JSON.parse(globalThis.localStorage.getItem(OPTS_KEY) ?? "{}");
+
+            for (const key of KEPT) {
+              if (saved[key] !== undefined) this[key] = saved[key];
+            }
+          } catch {
+            // Un stockage illisible ou refusé ne doit pas empêcher la page de démarrer.
+          }
+        },
+
+        persist() {
+          try {
+            globalThis.localStorage.setItem(
+              OPTS_KEY,
+              JSON.stringify(Object.fromEntries(KEPT.map((key) => [key, this[key]]))),
+            );
+          } catch {
+            // Navigation privée ou stockage plein : le réglage vaut pour cette visite.
+          }
+        },
+
+        openOpts() {
+          this.optsOpen = true;
+          this.optAt = 0;
+          this.$nextTick(() => this.focusSetting());
+        },
+
+        closeOpts() {
+          this.optsOpen = false;
+          this.$nextTick(() => document.querySelector("[data-ctl='opts']")?.focus());
+        },
+
+        focusSetting() {
+          const dialog = document.querySelector("[data-opts]");
+
+          if (!dialog) return;
+
+          const target = SETTINGS[this.optAt] === "theme"
+            ? dialog.querySelector("[data-theme-choice][aria-pressed='true']") ?? dialog.querySelector("[data-theme-choice]")
+            : dialog.querySelectorAll("[data-toggle]")[this.optAt - 1];
+
+          target?.focus();
+        },
+
+        value(key) {
+          return this[key];
+        },
+
+        flip(key) {
+          this[key] = !this[key];
+          this.persist();
+        },
+
+        setTheme(id, event) {
+          const apply = () => {
+            this.theme = id;
+            this.persist();
+          };
+
+          // Le réglage « animations désactivées » coupe aussi la transition de thème.
+          if (!this.anim || typeof document.startViewTransition !== "function") {
+            apply();
+
+            return;
+          }
+
+          const origin = event?.clientX ? { x: event.clientX, y: event.clientY } : this.buttonCentre(event);
+
+          document.documentElement.style.setProperty("--vt-x", `${origin.x}px`);
+          document.documentElement.style.setProperty("--vt-y", `${origin.y}px`);
+          document.startViewTransition(() => apply());
+        },
+
+        // Au clavier, la propagation part du centre du bouton et non d'un point à zéro.
+        buttonCentre(event) {
+          const box = event?.target?.getBoundingClientRect?.();
+
+          return box ? { x: box.left + box.width / 2, y: box.top + box.height / 2 } : { x: 0, y: 0 };
+        },
+
+        cycleTheme(step) {
+          const index = THEMES.findIndex((entry) => entry.id === this.theme);
+
+          this.setTheme(THEMES[(index + step + THEMES.length) % THEMES.length].id);
+          this.$nextTick(() => this.focusSetting());
+        },
+
+        optsKey(event) {
+          const key = SETTINGS[this.optAt];
+
+          if (event.key === "Escape") {
+            event.preventDefault();
+            this.closeOpts();
+          } else if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+            event.preventDefault();
+            this.optAt = Math.max(0, Math.min(SETTINGS.length - 1, this.optAt + (event.key === "ArrowDown" ? 1 : -1)));
+            this.focusSetting();
+          } else if (event.key === "Tab") {
+            // Piège à focus : la tabulation ne doit pas sortir d'une boîte de dialogue
+            // modale et laisser le visiteur perdu derrière elle.
+            const focusable = [...document.querySelectorAll("[data-opts] [data-ctl='opt']")];
+            const at = focusable.indexOf(document.activeElement);
+            const next = (at + (event.shiftKey ? -1 : 1) + focusable.length) % focusable.length;
+
+            event.preventDefault();
+            focusable[next]?.focus();
+          } else if (event.key === "ArrowRight" || event.key === "ArrowLeft") {
+            event.preventDefault();
+
+            if (key === "theme") this.cycleTheme(event.key === "ArrowRight" ? 1 : -1);
+            else this.flip(key);
+          }
         },
 
         fromHash() {
