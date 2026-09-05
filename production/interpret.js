@@ -7,6 +7,13 @@
 const YES = /^(?<yes>o|oui|y|yes|ok)$/iu;
 const NO = /^(?<no>n|non|no|annuler|cancel)$/iu;
 
+// Les tons sont interpolés dans un attribut style. Sans liste blanche, un ton venu du
+// contenu peut fermer la déclaration et injecter du CSS, jusqu'à faire sortir une requête
+// vers un serveur tiers.
+export const TONES = ["acc", "fg", "fg2", "ok", "warn"];
+
+export const safeTone = (tone, fallback = "fg") => (TONES.includes(tone) ? tone : fallback);
+
 const line = ({ marker = "", markerTone = "fg2", text, tone = "fg" }) => ({
   c: tone,
   m: marker,
@@ -285,7 +292,7 @@ export const commonPrefix = (entries) => {
 // navigateur, au même titre que les commandes.
 const JQ_TONE = { num: "warn", str: "ok" };
 
-const token = (t, c, w = "400") => ({ c, t, w });
+const token = (t, c, w = "400") => ({ c: safeTone(c), t, w });
 
 export const contentLine = (raw) => {
   if (raw.banner) {
@@ -320,11 +327,11 @@ export const contentLine = (raw) => {
   return {
     letterSpacing: raw.ls ?? "0",
     marker: raw.m ?? "",
-    markerTone: raw.mc ?? "fg2",
+    markerTone: safeTone(raw.mc, "fg2"),
     pad: raw.pad ?? "0",
     size: raw.size ?? "14px",
     text: raw.t ?? "",
-    tone: raw.tone ?? "fg",
+    tone: safeTone(raw.tone),
     weight: raw.w ?? "400",
   };
 };
@@ -429,6 +436,18 @@ export const fillTokens = (template, share) =>
     .replaceAll("{title}", encodeURIComponent(share.title ?? ""))
     .replaceAll("{text}", encodeURIComponent(share.text ?? ""));
 
+const SAFE_SCHEMES = new Set(["https:", "http:", "mailto:"]);
+
+// Une cible déclarée dans le contenu ne doit pas pouvoir exécuter de script. Sans ce
+// contrôle, une URL en javascript: passée à open() s'exécute dans notre origine.
+export const isSafeUrl = (candidate) => {
+  try {
+    return SAFE_SCHEMES.has(new URL(candidate, "https://portfolio.invalid/").protocol);
+  } catch {
+    return false;
+  }
+};
+
 export const shareTarget = (id, share) => {
   const target = (share.targets ?? []).find((entry) => entry.id === id);
 
@@ -436,12 +455,13 @@ export const shareTarget = (id, share) => {
     return undefined;
   }
 
-  return {
-    id: target.id,
-    kind: target.kind,
-    label: target.label,
-    url: fillTokens(target.url ?? "", share),
-  };
+  const url = fillTokens(target.url ?? "", share);
+
+  if (!isSafeUrl(url)) {
+    return undefined;
+  }
+
+  return { id: target.id, kind: target.kind, label: target.label, url };
 };
 
 // Consentement en deux temps : la commande dit ce qui part, ou, et ce qui ne part pas.

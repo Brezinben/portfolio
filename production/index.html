@@ -1202,7 +1202,7 @@
     </footer>
   </div>
   <script type="module">
-    import { candidates, commonPrefix, contentLine, interpret } from "./interpret.js";
+    import { candidates, commonPrefix, contentLine, interpret, safeTone } from "./interpret.js";
 
     // Valeurs figées après itération dans le canvas. Ne pas les transformer en réglages :
     // voir DECISIONS.md, section 23.
@@ -1312,9 +1312,9 @@
       return {
         lines: (out?.lines ?? []).map((row) => ({
           k: row[0],
-          kc: row[2] ?? "fg2",
+          kc: safeTone(row[2], "fg2"),
           v: row[1],
-          vc: row[3] ?? "fg",
+          vc: safeTone(row[3]),
         })),
         title: out?.title ?? "",
       };
@@ -1323,7 +1323,7 @@
     function section(raw) {
       return {
         cmd: raw.cmd ?? "",
-        dot: raw.dot ?? "ok",
+        dot: safeTone(raw.dot, "ok"),
         id: raw.id,
         label: raw.label,
         lines: (raw.lines ?? []).map(line),
@@ -2027,14 +2027,17 @@
           }
         },
 
+        // L'URL est ouverte telle qu'elle a ete construite. La decoder annulerait
+        // l'encodage des jetons et pourrait lever une exception sur une sequence
+        // pourcent invalide.
         shareTo(effect) {
           if (effect.kind === "copy") {
-            this.copy(decodeURIComponent(effect.url));
+            this.copy(this.share.url ?? "");
 
             return;
           }
 
-          globalThis.open(decodeURIComponent(effect.url), "_blank", "noopener");
+          globalThis.open(effect.url, "_blank", "noopener");
         },
 
         copy(text) {
@@ -2083,7 +2086,7 @@
             else if (effect.type === "share") this.shareTo(effect);
             else if (effect.type === "shareMenu") this.nativeShare();
             else if (effect.type === "email" || effect.type === "copy") this.copy(this.profileEmail);
-            else if (effect.type === "sendMail") globalThis.open(`mailto:${this.profileEmail}`);
+            else if (effect.type === "sendMail") globalThis.open(`mailto:${encodeURIComponent(this.profileEmail)}`);
             else if (effect.type === "cv") this.goSection("whoami");
             else if (effect.type === "say") this.say(effect.text, effect.mood);
             else if (effect.type === "emote") this.emote(effect.mood);
