@@ -1018,22 +1018,31 @@
               x-text="'░'.repeat(10 - ctxCells)"></span><span style="color:var(--fg2)">]</span></span>
         </p>
 
-        <div data-track x-ref="track"
-          @pointermove.window="drag($event); nearby($event); logMove($event)"
-          @pointerup.window="release(); logUp()" @pointercancel.window="release(); logUp()"
-          style="flex:none;position:relative;height:64px;margin-top:4px">
+        <div data-track x-ref="track" @pointermove="nearby($event)"
+          @pointermove.window="drag($event); logMove($event)" @pointerup.window="release(); logUp()"
+          @pointercancel.window="release(); logUp()"
+          style="flex:none;position:relative;height:47px;overflow:visible;border-bottom:1px solid var(--edge)">
           <template x-if="bubble">
             <span data-bubble aria-live="polite"
-              :style="`position:absolute;bottom:${20 * MASCOT_PX}px;left:0;transform:translateX(${at}px);border:1px solid var(--edge);background:var(--panel);color:var(--fg);padding:2px 8px;font-size:12px;white-space:nowrap;pointer-events:none`"
+              :style="`position:absolute;bottom:52px;left:${at}px;border:1px solid var(--edge);background:var(--panel);color:var(--fg);padding:2px 8px;font-size:12px;white-space:nowrap;pointer-events:none`"
               x-text="bubble"></span>
           </template>
-          <span data-mascot x-ref="mascot" role="img" :aria-label="mascotLabel" tabindex="0"
+
+          <!-- La mascotte est un bloc de 63 x 47, comme dans le canvas : c'est lui qui
+               porte le curseur et les evenements. Faire de la pastille de 4 px la cible
+               rendait le clic presque impossible, et la couronne inatteignable. -->
+          <div data-mascot x-ref="mascot" role="img" :aria-label="mascotLabel" tabindex="0"
             @pointerdown.prevent="grab($event)" @click="poke()" @keydown.enter.prevent="poke()"
-            :style="`position:absolute;bottom:0;left:${at}px;width:${MASCOT_PX}px;height:${MASCOT_PX}px;box-shadow:${mascotShadow};cursor:grab;touch-action:none;transform-origin:bottom center;animation:${mascotAnim}`"></span>
-          <template x-if="crowned">
-            <span data-crown aria-hidden="true"
-              :style="`position:absolute;bottom:${18 * MASCOT_PX}px;left:0;width:${MASCOT_PX}px;height:${MASCOT_PX}px;box-shadow:${crownShadow};transform:translateX(${at}px);pointer-events:none`"></span>
-          </template>
+            :style="`position:absolute;bottom:0;left:${at}px;width:63px;height:47px;transform-origin:50% 100%;touch-action:none;cursor:${dragging ? 'grabbing' : 'grab'};animation:${mascotAnim}`">
+            <span style="position:absolute;inset:0">
+              <span aria-hidden="true"
+                :style="`position:absolute;top:0;left:0;width:4px;height:4px;box-shadow:${mascotShadow}`"></span>
+              <template x-if="crowned">
+                <span data-crown aria-hidden="true"
+                  :style="`position:absolute;top:-14px;left:0;width:${MASCOT_PX}px;height:${MASCOT_PX}px;box-shadow:${crownShadow};animation:crownDrop .7s cubic-bezier(.3,1.5,.5,1) both`"></span>
+              </template>
+            </span>
+          </div>
         </div>
 
         <div x-show="suggOpen" x-transition:enter.duration.220ms x-transition:leave.duration.170ms
@@ -1745,7 +1754,7 @@
 
         trackWidth() {
           const track = this.$refs.track;
-          const sprite_width = MASCOT[0].length * MASCOT_PX;
+          const sprite_width = 63;
 
           return track ? Math.max(0, track.clientWidth - sprite_width) : 0;
         },
