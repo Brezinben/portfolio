@@ -908,12 +908,25 @@
           </template>
         </div>
 
+        <div x-show="suggOpen" x-transition:enter.duration.220ms x-transition:leave.duration.170ms
+          data-suggestions role="listbox" aria-label="Suggestions"
+          style="flex:none;display:grid;gap:1px;border:1px solid var(--edge);background:var(--panel);padding:4px;margin-bottom:-4px">
+          <template x-for="(hit, index) in sugg" :key="hit">
+            <button type="button" data-suggestion role="option" :aria-selected="index === suggAt"
+              @mousedown.prevent="applySugg(index)"
+              :style="`min-height:32px;display:flex;align-items:center;gap:8px;padding:0 8px;border:0;border-left:2px solid ${index === suggAt ? 'var(--acc)' : 'transparent'};background:${index === suggAt ? 'var(--acc-soft)' : 'transparent'};color:var(--fg);font-family:inherit;font-size:13px;text-align:left;cursor:pointer`"><span
+                style="color:var(--acc)" x-text="suggFrag"></span><span style="margin-left:-8px"
+                x-text="hit.slice(suggFrag.length)"></span></button>
+          </template>
+        </div>
+
         <form data-cli @submit.prevent="submit()"
           style="flex:none;display:grid;grid-template-columns:auto 1fr;gap:8px;align-items:baseline;border-top:1px solid var(--edge);padding-top:10px">
           <label for="cli" style="position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)">Commande</label>
           <span aria-hidden="true" style="color:var(--ok)">$</span>
-          <input id="cli" x-ref="cli" x-model="input" @keydown.arrow-up.prevent="recall(-1)"
-            @keydown.arrow-down.prevent="recall(1)" @keydown.escape.prevent="input = ''" type="text"
+          <input id="cli" x-ref="cli" x-model="input" @input="suggest()" @blur="closeSugg()"
+            @keydown.tab.prevent="complete()" @keydown.arrow-up.prevent="up()"
+            @keydown.arrow-down.prevent="down()" @keydown.escape.prevent="onEscape()" type="text"
             autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="help"
             style="min-width:0;border:0;background:transparent;color:var(--fg);font-family:inherit;font-size:14px;outline:none">
         </form>
@@ -1048,7 +1061,7 @@
     </footer>
   </div>
   <script type="module">
-    import { interpret } from "./interpret.js";
+    import { candidates, commonPrefix, interpret } from "./interpret.js";
 
     // Valeurs figées après itération dans le canvas. Ne pas les transformer en réglages :
     // voir DECISIONS.md, section 23.
@@ -1223,10 +1236,17 @@
         out: true,
         pane: "nav",
         recallAt: -1,
+        sugg: [],
+        suggAt: 0,
+        suggFrag: "",
+        suggHead: "",
+        suggOpen: false,
+        suggSlash: false,
         running: false,
         section: "whoami",
         sections: [],
         seen: [],
+        shareTargets: [],
         theme: "dark",
         typed: "",
 
@@ -1505,6 +1525,7 @@
           });
 
           this.input = "";
+          this.closeSugg();
           this.commands = [raw, ...this.commands.filter((entry) => entry !== raw)];
           this.recallAt = -1;
           this.journal = [...this.journal, ...lines];
@@ -1520,6 +1541,71 @@
             else if (effect.type === "replay") this.journal = [];
             else if (effect.type === "state") Object.assign(this, effect.patch);
           }
+        },
+
+        suggest() {
+          const result = candidates(this.input, {
+            details: this.details,
+            sections: this.sections,
+            shareTargets: this.shareTargets,
+          });
+
+          this.sugg = result.hits;
+          this.suggFrag = result.frag;
+          this.suggHead = result.head;
+          this.suggSlash = result.slash;
+          this.suggAt = 0;
+          this.suggOpen = result.hits.length > 0 && this.input !== "";
+        },
+
+        // La fermeture reste déterministe : la liste se vide, sans compteur de génération
+        // qui pourrait annuler le vidage au lieu de le protéger.
+        closeSugg() {
+          this.suggOpen = false;
+          this.sugg = [];
+          this.suggAt = 0;
+        },
+
+        rebuild(word) {
+          const prefix = this.suggSlash ? "/" : "";
+
+          return this.suggHead ? `${prefix}${this.suggHead} ${word}` : `${prefix}${word}`;
+        },
+
+        applySugg(index) {
+          this.input = `${this.rebuild(this.sugg[index])} `;
+          this.closeSugg();
+          this.$refs.cli.focus();
+        },
+
+        complete() {
+          if (this.sugg.length === 0) return;
+          if (this.sugg.length === 1) {
+            this.applySugg(0);
+
+            return;
+          }
+
+          const shared = commonPrefix(this.sugg);
+
+          if (shared.length > this.suggFrag.length) this.input = this.rebuild(shared);
+
+          this.suggOpen = true;
+        },
+
+        up() {
+          if (this.suggOpen) this.suggAt = (this.suggAt - 1 + this.sugg.length) % this.sugg.length;
+          else this.recall(-1);
+        },
+
+        down() {
+          if (this.suggOpen) this.suggAt = (this.suggAt + 1) % this.sugg.length;
+          else this.recall(1);
+        },
+
+        onEscape() {
+          if (this.suggOpen) this.closeSugg();
+          else this.input = "";
         },
 
         // La première flèche haut rappelle la commande de la section, puis l'historique.
@@ -1549,6 +1635,7 @@
             this.sections = content.sections.map(section);
             this.details = (content.details ?? []).map(section);
             this.jokes = content.jokes ?? [];
+            this.shareTargets = (content.share?.targets ?? []).map((entry) => entry.id);
             this.missions = (content.missions ?? []).map((raw) => ({
               dot: TONE[raw.dot] ?? TONE.ok,
               id: raw.id,

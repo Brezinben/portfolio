@@ -137,6 +137,125 @@ function slime(argument) {
   };
 }
 
+const VERBS = [
+  "ai",
+  "aide",
+  "ask",
+  "benjamin",
+  "blague",
+  "brezinben",
+  "cd",
+  "clear",
+  "cls",
+  "coffee",
+  "copy",
+  "cowsay",
+  "cowthink",
+  "cv",
+  "dir",
+  "email",
+  "emacs",
+  "exit",
+  "feedback",
+  "help",
+  "idee",
+  "ia",
+  "joke",
+  "ls",
+  "mascotte",
+  "matrix",
+  "mood",
+  "nano",
+  "open",
+  "options",
+  "partager",
+  "pet",
+  "poweroff",
+  "propose",
+  "reboot",
+  "restart",
+  "resume",
+  "send-mail",
+  "sendmail",
+  "set",
+  "share",
+  "shutdown",
+  "slime",
+  "sleep",
+  "sudo",
+  "theme",
+  "vim",
+  "wtf",
+];
+
+const COWSAY_FLAGS = ["-b", "-d", "-g", "-p", "-s", "-t", "-w", "-y"];
+
+export const MAX_SUGGESTIONS = 10;
+
+// Le second mot n'a de sens que pour certaines commandes. Proposer le vocabulaire entier
+// après « slime » ferait du bruit, pas de l'aide.
+function argumentsFor(command, context) {
+  const ids = [...context.sections, ...context.details].map((entry) => entry.id);
+
+  return {
+    bd: ids,
+    cd: ids,
+    cowsay: COWSAY_FLAGS,
+    cowthink: COWSAY_FLAGS,
+    mood: [...Object.keys(MOODS), "drop"],
+    open: ids,
+    partager: context.shareTargets ?? [],
+    share: context.shareTargets ?? [],
+    slime: [...Object.keys(MOODS), "drop"],
+  }[command];
+}
+
+export function candidates(value, context) {
+  const slash = /^[/:]/.test(value);
+  const bare = value.replace(/^[/:]+/, "");
+  const parts = bare.split(" ");
+  const first = parts[0].toLowerCase();
+
+  if (parts.length === 1) {
+    const pool = [
+      ...VERBS,
+      ...context.sections.map((entry) => entry.id),
+      ...context.details.map((entry) => entry.id),
+    ];
+
+    return {
+      frag: first,
+      head: "",
+      hits: [...new Set(pool)].filter((entry) => entry.startsWith(first)).slice(0, MAX_SUGGESTIONS),
+      slash,
+    };
+  }
+
+  const command = ALIASES[first] ?? first;
+  const pool = argumentsFor(command, context) ?? argumentsFor(first, context);
+  const frag = parts.at(-1).toLowerCase();
+
+  return {
+    frag,
+    head: parts.slice(0, -1).join(" "),
+    hits: (pool ?? []).filter((entry) => entry.startsWith(frag)).slice(0, MAX_SUGGESTIONS),
+    slash,
+  };
+}
+
+// Tab complète jusqu'au plus long préfixe commun, puis laisse la liste faire le reste.
+export function commonPrefix(entries) {
+  if (entries.length === 0) return "";
+
+  return entries.reduce((prefix, entry) => {
+    let index = 0;
+
+    while (index < prefix.length && prefix[index] === entry[index]) index += 1;
+
+    return prefix.slice(0, index);
+  });
+}
+
 export function interpret(raw, context) {
   const input = raw.trim().replace(/\s+/g, " ");
 
