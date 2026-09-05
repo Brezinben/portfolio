@@ -9,29 +9,18 @@ import { minify } from "html-minifier-terser";
 const SOURCE = fileURLToPath(new URL("../production/", import.meta.url));
 const TARGET = fileURLToPath(new URL("../dist/", import.meta.url));
 
-const TRANSFORMED = new Set(["index.html", "interpret.js", "texte.html"]);
+const TRANSFORMED = new Set(["app.js", "index.html", "interpret.js", "texte.html"]);
 
-const INLINE_MODULE = /<script type="module">(?<code>[\s\S]*?)<\/script>/u;
-
-// Le module en ligne n'existe pas sur le disque. Un identifiant situé dans production/
-// laisse rolldown résoudre « ./interpret.js » comme le fait le navigateur.
-const ENTRY = join(SOURCE, "index.inline.js");
+const MODULE_TAG = '<script type="module" src="app.js"></script>';
 
 // MinifyJS reste absent. Rolldown a déjà minifié le seul script en ligne du projet.
 // RemoveAttributeQuotes et removeOptionalTags rendent le balisage déroutant pour 0,3 Ko.
 const MINIFY = { collapseWhitespace: true, minifyCSS: true, removeComments: true };
 
-const inlineEntry = (code) => ({
-  load: (id) => (id === ENTRY ? code : undefined),
-  name: "inline-entry",
-  resolveId: (source) => (source === ENTRY ? ENTRY : undefined),
-});
-
-const bundle = async (code) => {
+const bundle = async () => {
   const result = await build({
-    input: ENTRY,
+    input: join(SOURCE, "app.js"),
     output: { format: "esm", minify: true },
-    plugins: [inlineEntry(code)],
     write: false,
   });
 
@@ -40,16 +29,15 @@ const bundle = async (code) => {
 
 const buildIndex = async () => {
   const page = await readFile(join(SOURCE, "index.html"), "utf8");
-  const match = page.match(INLINE_MODULE);
 
-  if (!match) {
-    throw new Error('index.html ne porte plus de <script type="module">');
+  if (!page.includes(MODULE_TAG)) {
+    throw new Error(`index.html ne porte plus ${MODULE_TAG}`);
   }
 
-  const bundled = await bundle(match.groups.code);
+  const bundled = await bundle();
   // Une fonction de remplacement, car un remplacement littéral interprète les motifs en
   // dollar. Le code source porte « $$ » dans les yeux de cowsay.
-  const replaced = page.replace(INLINE_MODULE, () => `<script type="module">${bundled}</script>`);
+  const replaced = page.replace(MODULE_TAG, () => `<script type="module">${bundled}</script>`);
 
   await writeFile(join(TARGET, "index.html"), await minify(replaced, MINIFY));
 };
