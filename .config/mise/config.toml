@@ -1,0 +1,6 @@
+# Versions exactes, et non « latest ». Ce dépôt est public et n'a pas de pipeline :
+# la seule reproductibilité disponible est celle que ce fichier déclare.
+[tools]
+node = "26.8.1"
+oxlint = "1.81.0"
+oxfmt = "0.66.0"

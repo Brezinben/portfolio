@@ -1,0 +1,39 @@
+{
+  "$schema": "https://raw.githubusercontent.com/oxc-project/oxc/main/npm/oxlint/configuration_schema.json",
+  "plugins": ["unicorn", "oxc", "promise", "import"],
+  "env": {
+    "browser": true,
+    "es2024": true
+  },
+  "globals": {
+    "Alpine": "readonly",
+    "umami": "readonly"
+  },
+  // La catégorie `style` interdit les ternaires, les nombres littéraux et impose le tri
+  // des clés. oxfmt tient déjà la mise en forme ; ces règles ne feraient que du bruit.
+  "categories": {
+    "correctness": "error",
+    "perf": "error",
+    "suspicious": "error"
+  },
+  // Activée ici pour que l'exception des tests ci-dessous ait un sens : sans cette ligne
+  // la règle n'est dans aucune catégorie active, et `production/` n'est gardé par rien.
+  "rules": {
+    "import/no-nodejs-modules": "error"
+  },
+  "ignorePatterns": [
+    "design/**",
+    "node_modules/**",
+    "playwright-report/**",
+    "production/vendor/**",
+    "test-results/**"
+  ],
+  "overrides": [
+    {
+      // L'outillage tourne sous node ; seul `production/` doit rester du code navigateur.
+      "files": ["tests/**", "playwright.config.js"],
+      "env": { "node": true },
+      "rules": { "import/no-nodejs-modules": "off" }
+    }
+  ]
+}

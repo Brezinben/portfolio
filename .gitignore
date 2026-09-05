@@ -1,0 +1,6 @@
+design/.thumbnail
+design/_ds/
+design/uploads/
+node_modules/
+playwright-report/
+test-results/
