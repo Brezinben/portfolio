@@ -4,6 +4,12 @@ const BUDGET_KO = 150;
 
 // Le budget est un test, pas un commentaire. Il se mesure sur ce qui traverse réellement
 // le réseau, compression comprise, et non sur la taille des fichiers sur le disque.
+//
+// Le contenu est hors budget par décision. Il change sans redéploiement, donc son poids ne
+// dit rien de celui du code servi. L'exclure explicitement est nécessaire : la page charge
+// le contenu depuis GitHub, qui n'envoie pas d'en-tête timing-allow-origin, donc le
+// navigateur rapporte un transferSize nul. Sans cette ligne, le total baisserait tout seul
+// et personne ne saurait dire si le code a maigri ou si la mesure a cessé de compter.
 test("le premier chargement tient dans le budget de poids", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByRole("img", { name: "Benjamin" })).toBeVisible({ timeout: 10_000 });
@@ -11,7 +17,9 @@ test("le premier chargement tient dans le budget de poids", async ({ page }) => 
 
   const measured = await page.evaluate(() => {
     const [navigation] = performance.getEntriesByType("navigation");
-    const resources = performance.getEntriesByType("resource");
+    const resources = performance
+      .getEntriesByType("resource")
+      .filter((entry) => !entry.name.endsWith("content.json"));
 
     return {
       détail: resources.map((entry) => ({
