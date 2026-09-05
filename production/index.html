@@ -810,6 +810,25 @@
     /* Le canvas exprimait le survol et le focus en attributs style-hover et style-focus,
        que son runtime synthétisait. Un navigateur ne sait pas les mettre en inline : ces
        règles sont la seule chose qui sorte des styles inline. */
+    /* La mascotte est visqueuse : sa partie haute se deforme quand on la deplace. La
+       couronne est un objet solide et garde sa forme, d'ou l'animation portee par le
+       bloc et non par la couronne. */
+    @keyframes wobble {
+
+      0%,
+      100% {
+        transform: scale(1, 1) skewX(0deg)
+      }
+
+      30% {
+        transform: scale(1.06, .94) skewX(-4deg)
+      }
+
+      65% {
+        transform: scale(.95, 1.05) skewX(3deg)
+      }
+    }
+
     .tm [data-ctl]:focus-visible {
       outline: 2px solid var(--acc);
       outline-offset: 2px
@@ -875,7 +894,8 @@
                   <button type="button" data-ctl="nav" :aria-current="item.id === section ? 'true' : 'false'"
                     @click="goSection(item.id)"
                     :style="`width:100%;min-height:44px;display:grid;grid-template-columns:12px 1fr;gap:8px;align-items:center;text-align:left;padding:5px 8px;border:0;border-left:2px solid ${item.id === section ? 'var(--acc)' : 'transparent'};border-radius:0;background:${item.id === section ? 'var(--acc-soft)' : 'transparent'};color:var(--fg);font-family:inherit;font-size:14px;cursor:pointer;transition:background .18s,border-color .18s`">
-                    <span aria-hidden="true" :style="`width:8px;height:8px;background:${item.dot}`"></span>
+                    <span aria-hidden="true"
+                      :style="`width:8px;height:8px;background:var(--${item.dot});animation:${item.dot === 'acc' && anim ? 'dotPulse 1.2s ease-in-out infinite' : 'none'}`"></span>
                     <span style="display:grid;gap:1px;min-width:0">
                       <span :style="`font-weight:${item.id === section ? '700' : '400'}`" x-text="item.label"></span>
                       <span
@@ -897,7 +917,8 @@
                   <button type="button" data-ctl="nav" :aria-current="item.id === section ? 'true' : 'false'"
                     @click="goSection(item.id)"
                     :style="`width:100%;min-height:44px;display:grid;grid-template-columns:12px 1fr auto;gap:8px;align-items:center;text-align:left;padding:5px 8px;border:0;border-left:2px solid ${item.id === section ? 'var(--acc)' : 'transparent'};border-radius:0;background:${item.id === section ? 'var(--acc-soft)' : 'transparent'};color:var(--fg);font-family:inherit;font-size:13px;cursor:pointer;transition:background .18s,border-color .18s`">
-                    <span aria-hidden="true" :style="`width:8px;height:8px;background:${item.dot}`"></span>
+                    <span aria-hidden="true"
+                      :style="`width:8px;height:8px;background:var(--${item.dot});animation:${item.dot === 'acc' && anim ? 'dotPulse 1.2s ease-in-out infinite' : 'none'}`"></span>
                     <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap"
                       x-text="item.label"></span>
                     <span style="font-size:11px;color:var(--fg2)" x-text="item.state"></span>
@@ -913,10 +934,12 @@
         style="flex:1 1 auto;min-width:0;min-height:0;display:flex;flex-direction:column;gap:10px;border:1px solid var(--edge);border-radius:12px;background:var(--panel);padding:14px;overflow:hidden">
         <p style="margin:0;font-size:13px;color:var(--fg2);flex:none"><span
             style="color:var(--ok)">benjamin@portfolio</span><span style="color:var(--fg2)">:~$ </span><span
-            style="color:var(--fg)" x-text="typed"></span><span x-show="running" aria-hidden="true"
-            style="color:var(--acc);animation:caret 1s steps(1) infinite">_</span></p>
+            style="color:var(--fg)" x-text="typed"></span><span x-show="running" style="color:var(--fg2);margin-left:10px"
+            :style="`animation:${anim ? 'dotPulse 1.2s ease-in-out infinite' : 'none'};color:var(--fg2);margin-left:10px`">exécution…</span><span
+            x-show="!running && anim" aria-hidden="true"
+            :style="`color:var(--acc-text);animation:${anim ? 'caret 1s steps(1) infinite' : 'none'}`">_</span></p>
         <div data-result x-show="!running"
-          :style="`flex:1 1 auto;min-height:0;overflow-y:auto;align-content:start;display:grid;gap:${dense ? '0' : '2px'};line-height:${dense ? '1.35' : '1.6'}`">
+          style="flex:1 1 auto;min-height:0;overflow-y:auto;align-content:start;display:grid;gap:2px;line-height:1.6">
 
           <template x-if="current.view === 'timeline'">
             <div data-timeline role="listbox" aria-label="Parcours professionnel" aria-orientation="vertical"
@@ -959,13 +982,14 @@
 
           <template x-for="(line, index) in current.lines" :key="index">
             <p
-              :style="`margin:0;display:grid;grid-template-columns:18px 1fr;gap:8px;align-items:baseline;padding-left:${line.pad ?? '0'}`">
+              :style="`margin:0;display:grid;grid-template-columns:18px 1fr;gap:8px;align-items:baseline;padding-left:${line.pad ?? '0'};animation:${anim ? `lineIn .3s cubic-bezier(.2,.7,.3,1) ${(index * 0.038).toFixed(3)}s both` : 'none'}`">
               <span aria-hidden="true" :style="`color:var(--${line.markerTone ?? 'fg2'})`"
                 x-text="line.marker ?? ''"></span>
               <span
                 :style="`color:var(--${(line.tone ?? 'fg') === 'acc' ? 'acc-text' : (line.tone ?? 'fg')});font-size:${line.size ?? '14px'};font-weight:${line.weight ?? '400'};letter-spacing:${line.letterSpacing ?? '0'};text-wrap:pretty`">
                 <template x-if="line.banner">
                   <span role="img" :aria-label="line.banner.label"
+                    style="margin-bottom:6px"
                     :style="`display:block;position:relative;width:${line.banner.width};height:${line.banner.height};max-width:100%`"><span
                       aria-hidden="true"
                       :style="`position:absolute;top:0;left:0;width:${line.banner.size};height:${line.banner.size};border-radius:50%;box-shadow:${line.banner.shadow}`"></span></span>
@@ -1008,15 +1032,6 @@
           </p>
         </template>
 
-        <p data-status
-          style="flex:none;margin:0;display:flex;justify-content:space-between;align-items:baseline;gap:12px;font-size:11px;color:var(--fg2);border-top:1px solid var(--edge);padding-top:6px">
-          <span><span x-text="section"></span><span style="color:var(--fg2)"> · </span><span
-              :style="`color:var(--${compacting ? 'warn' : 'fg2'})`"
-              x-text="compacting ? 'compacting…' : 'ready'"></span></span>
-          <span data-gauge aria-hidden="true" style="white-space:pre"><span style="color:var(--fg2)">ctx [</span><span
-              style="color:var(--acc-text)" x-text="'█'.repeat(ctxCells)"></span><span style="color:var(--edge)"
-              x-text="'░'.repeat(10 - ctxCells)"></span><span style="color:var(--fg2)">]</span></span>
-        </p>
 
         <div data-track x-ref="track" @pointermove="nearby($event)"
           @pointermove.window="drag($event); logMove($event)" @pointerup.window="release(); logUp()"
@@ -1045,6 +1060,16 @@
           </div>
         </div>
 
+        <p data-status
+          style="flex:none;margin:0;display:flex;justify-content:space-between;align-items:baseline;gap:12px;font-size:11px;color:var(--fg2);padding-top:6px">
+          <span><span x-text="section"></span><span style="color:var(--fg2)"> · </span><span
+              :style="`color:var(--${compacting ? 'warn' : 'fg2'})`"
+              x-text="compacting ? 'compacting…' : 'ready'"></span></span>
+          <span data-gauge aria-hidden="true" style="white-space:pre"><span style="color:var(--fg2)">ctx [</span><span
+              style="color:var(--acc-text)" x-text="'█'.repeat(ctxCells)"></span><span style="color:var(--edge)"
+              x-text="'░'.repeat(10 - ctxCells)"></span><span style="color:var(--fg2)">]</span></span>
+        </p>
+
         <div x-show="suggOpen" x-transition:enter.duration.220ms x-transition:leave.duration.170ms
           data-suggestions role="listbox" aria-label="Suggestions"
           style="flex:none;display:grid;gap:1px;border:1px solid var(--edge);background:var(--panel);padding:4px;margin-bottom:-4px">
@@ -1072,8 +1097,10 @@
       <aside data-pane="out" aria-label="Sortie" x-show="out"
         style="flex:0 1 clamp(240px,24vw,380px);min-width:200px;min-height:0;display:flex;flex-direction:column;border:1px solid var(--edge);border-radius:12px;background:var(--panel);overflow:hidden">
         <p
-          style="margin:0;padding:9px 12px;font-size:11px;letter-spacing:.12em;color:var(--fg2);border-bottom:1px solid var(--edge)"
-          x-text="current.out.title"></p>
+          style="margin:0;padding:9px 12px;font-size:11px;letter-spacing:.12em;color:var(--fg2);border-bottom:1px solid var(--edge);display:flex;justify-content:space-between;gap:10px">
+          <span x-text="current.out.title"></span><span
+            :style="`color:var(--${running ? 'warn' : 'ok'})`" x-text="outStatus"></span>
+        </p>
         <div tabindex="0" role="region" aria-label="Contenu de la sortie"
           style="overflow-y:auto;align-content:start;display:grid;gap:8px;padding:10px 12px">
           <dl style="margin:0;display:grid;gap:6px;align-content:start;font-size:13px">
@@ -1219,11 +1246,11 @@
     const OPTS_KEY = "bd-term-opts";
     // Six clés, et six seulement. La lecture filtre dessus : le canvas injectait dans
     // l'état tout ce que le stockage contenait.
-    const KEPT = ["anim", "crowned", "dense", "logH", "out", "theme"];
+    const KEPT = ["anim", "crowned", "logH", "out", "theme"];
 
     const THEMES = [
-      { acc: "#F5B83B", bg: "#242538", edge: "#33344a", id: "dark", label: "ambre nuit" },
-      { acc: "#e6a000", bg: "#fff6f6", edge: "#ded2d2", id: "light", label: "ambre jour" },
+      { acc: "#F5B83B", bg: "#242538", edge: "#33344a", id: "dark", label: "ambra" },
+      { acc: "#e6a000", bg: "#fff6f6", edge: "#ded2d2", id: "light", label: "solis" },
       { acc: "#49e9a6", bg: "#052c33", edge: "#0d4148", id: "noctis", label: "noctis" },
       { acc: "#49ace9", bg: "#07273b", edge: "#0f3b52", id: "azureus", label: "azureus" },
       { acc: "#a29bfe", bg: "#211d40", edge: "#332d5c", id: "uva", label: "uva" },
@@ -1236,7 +1263,6 @@
     const TOGGLES = [
       { key: "anim", label: "animations", off: "off", on: "on" },
       { key: "out", label: "output pane", off: "off", on: "on" },
-      { key: "dense", label: "dense lines", off: "off", on: "on" },
     ];
 
     const TYPE_CPS = 52;
@@ -1437,7 +1463,6 @@
         TOGGLES,
         anim: true,
         crowned: false,
-        dense: false,
         focusAt: { main: 0, nav: 0, out: 0 },
         logH: 0,
         optsOpen: false,
@@ -1486,7 +1511,7 @@
         },
 
         get current() {
-          return this.sections.find((entry) => entry.id === this.section) ?? EMPTY;
+          return this.all.find((entry) => entry.id === this.section) ?? EMPTY;
         },
 
         init() {
@@ -1664,6 +1689,10 @@
           }, mode === "shutdown" ? 2200 : 900);
         },
 
+        get outStatus() {
+          return this.running ? "waiting" : "live";
+        },
+
         get mascotShadow() {
           return sprite(face(this.mood, this.blink), MASCOT_COLORS, MASCOT_PX);
         },
@@ -1724,6 +1753,10 @@
         // Les animations viennent des keyframes du canvas, déjà dans la feuille de style.
         get mascotAnim() {
           if (!this.anim || this.reduced) return "none";
+
+          // Tant qu'on la tient, elle ondule : c'est un objet visqueux. La couronne, elle,
+          // est solide et garde sa forme.
+          if (this.dragging) return "wobble .6s ease-in-out infinite";
 
           return {
             bump: `${this.direction > 0 ? "bumpR" : "bumpL"} .5s ease both`,
@@ -2295,7 +2328,7 @@
             this.stack = content.stack ?? [];
             this.techNotes = content.techNotes ?? {};
             this.missions = (content.missions ?? []).map((raw) => ({
-              dot: TONE[raw.dot] ?? TONE.ok,
+              dot: safeTone(raw.dot, "ok"),
               id: raw.id,
               label: raw.label,
               state: raw.state ?? "",

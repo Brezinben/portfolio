@@ -186,56 +186,31 @@ const slime = (argument) => {
   };
 };
 
-const VERBS = [
+// Le vocabulaire ne propose que des commandes vivantes, et les easter eggs avec leur
+// slash : sinon l'autocompletion propose ce que le dispatcher refuse.
+const PLAIN = [
   "ai",
   "aide",
   "ask",
-  "benjamin",
-  "blague",
-  "brezinben",
   "cd",
   "clear",
   "cls",
-  "coffee",
-  "copy",
-  "cowsay",
-  "cowthink",
   "cv",
   "dir",
   "email",
-  "emacs",
-  "exit",
-  "feedback",
   "help",
-  "idee",
-  "ia",
-  "joke",
   "ls",
-  "mascotte",
-  "matrix",
-  "mood",
-  "nano",
   "open",
   "options",
-  "partager",
-  "pet",
-  "poweroff",
-  "propose",
   "reboot",
-  "restart",
   "resume",
   "send-mail",
-  "sendmail",
-  "set",
   "share",
   "shutdown",
-  "slime",
-  "sleep",
-  "sudo",
   "theme",
-  "vim",
-  "wtf",
 ];
+
+const VERBS = [...PLAIN, ...[...SLASH_ONLY].map((egg) => `/${egg}`)];
 
 export const MAX_SUGGESTIONS = 10;
 
@@ -270,11 +245,13 @@ export const candidates = (value, context) => {
       ...context.details.map((entry) => entry.id),
     ];
 
+    const typed = slash ? `/${first}` : first;
+
     return {
-      frag: first,
+      frag: typed,
       head: "",
-      hits: [...new Set(pool)].filter((entry) => entry.startsWith(first)).slice(0, MAX_SUGGESTIONS),
-      slash,
+      hits: [...new Set(pool)].filter((entry) => entry.startsWith(typed)).slice(0, MAX_SUGGESTIONS),
+      slash: false,
     };
   }
 

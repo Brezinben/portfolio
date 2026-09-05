@@ -21,16 +21,7 @@ test("les huit thèmes sont proposés", async ({ page }) => {
   await boot(page);
   await opts(page).click();
 
-  const labels = [
-    "ambre nuit",
-    "ambre jour",
-    "noctis",
-    "azureus",
-    "uva",
-    "bordo",
-    "lux",
-    "hibernus",
-  ];
+  const labels = ["ambra", "solis", "noctis", "azureus", "uva", "bordo", "lux", "hibernus"];
 
   await Promise.all(
     labels.map((label) => expect(page.getByRole("button", { name: label })).toHaveCount(1)),
@@ -90,10 +81,10 @@ test("la flèche droite modifie le réglage qui a le focus", async ({ page }) =>
   await animations.press("ArrowRight");
 
   await expect(animations).toHaveAttribute("aria-pressed", "false");
-  await expect(page.getByRole("button", { name: /dense lines/ })).toHaveAttribute(
-    "aria-pressed",
-    "false",
-  );
+  await expect(
+    page.getByRole("button", { name: /output pane/ }),
+    "le voisin ne bouge pas",
+  ).toHaveAttribute("aria-pressed", "true");
 });
 
 test("depuis la dernière ligne de thèmes, la flèche bas atteint les réglages", async ({ page }) => {
@@ -162,20 +153,6 @@ test("masquer le volet de sortie le retire de la page", async ({ page }) => {
   await page.getByRole("dialog").press("Escape");
 
   await expect(page.locator('[data-pane="out"]')).toBeHidden();
-});
-
-test("la densité compacte resserre les lignes", async ({ page }) => {
-  await boot(page);
-
-  const spacing = () =>
-    page.locator("[data-result]").evaluate((node) => getComputedStyle(node).lineHeight);
-  const comfortable = await spacing();
-
-  await opts(page).click();
-  await page.getByRole("button", { name: /dense lines/ }).click();
-  await page.getByRole("dialog").press("Escape");
-
-  expect(Number.parseFloat(await spacing())).toBeLessThan(Number.parseFloat(comfortable));
 });
 
 test("la tabulation boucle dans la modale", async ({ page }) => {
