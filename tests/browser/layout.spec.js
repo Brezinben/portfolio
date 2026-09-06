@@ -90,6 +90,9 @@ test("un indicateur signale qu'il reste du contenu", async ({ page }) => {
 // Les libelles de mission tenaient sur une ligne avec leur etat, et trois se coupaient.
 // Le nom prend sa ligne, l'etat passe dessous, comme les sections juste au-dessus.
 test("aucun libellé du volet gauche n'est coupé", async ({ page }) => {
+  // Sous 1150 px le volet gauche touche son plancher : c'est la que « numérique
+  // responsable » se coupait. Il passe desormais a la ligne.
+  await page.setViewportSize({ height: 900, width: 1024 });
   await boot(page);
 
   const cut = await page.evaluate(() =>
@@ -127,6 +130,25 @@ test("la largeur des volets ne bouge pas d'une section à l'autre", async ({ pag
         .then((seen) => expect(seen, `section ${id}`).toEqual(first)),
     Promise.resolve(),
   );
+});
+
+// Un seul rayon pilote tous les coins arrondis : la valeur se teste dans le navigateur
+// en changeant une variable, pas en chassant sept déclarations.
+test("un seul rayon pilote tous les coins arrondis", async ({ page }) => {
+  await boot(page);
+
+  const rayons = () =>
+    page.evaluate(() =>
+      ["[data-ctl='opts']", "[data-pane='main']", "[data-pane='out']"].map(
+        (cible) => getComputedStyle(document.querySelector(cible)).borderRadius,
+      ),
+    );
+
+  expect(await rayons()).toEqual(["5px", "5px", "5px"]);
+
+  await page.evaluate(() => document.querySelector(".tm").style.setProperty("--radius", "0px"));
+
+  expect(await rayons(), "la variable les mène tous").toEqual(["0px", "0px", "0px"]);
 });
 
 test("le journal se redimensionne au clavier et sa hauteur est conservée", async ({ page }) => {

@@ -5,6 +5,11 @@ import { defineConfig } from "@playwright/test";
 const PORT = Number(process.env.PORTFOLIO_PORT ?? 4173);
 const DIST = process.env.PORTFOLIO_DIST ?? "dist.test";
 
+// La machine a 8 coeurs mais 7 Go de RAM. Playwright prendrait la moitie des coeurs, soit
+// quatre navigateurs, et la memoire ne suit pas : la session entiere plante, pas seulement
+// les tests. Deux workers tiennent.
+const WORKERS = Number(process.env.PORTFOLIO_WORKERS ?? 2);
+
 export default defineConfig({
   fullyParallel: true,
   reporter: process.env.CI ? "list" : "html",
@@ -24,4 +29,5 @@ export default defineConfig({
     reuseExistingServer: false,
     url: `http://127.0.0.1:${PORT}/content.json`,
   },
+  workers: WORKERS,
 });

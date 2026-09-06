@@ -42,6 +42,17 @@ préférence ne demande — elle parle de mouvement, pas de contenu. Il est coh�
 la mascotte est décorative, et il économise toutes les images pour les visiteurs concernés.
 Sa piste reste en place, vide, pour que la page garde la même silhouette dans les deux modes.
 
+**La couronne cède la place à l'explosion.** Vingt-six clics faisaient tomber une couronne,
+gardée sur l'appareil une fois pour toutes. Cinq clics font maintenant exploser la mascotte :
+elle ne répond plus pendant cinq à dix secondes, reprend forme, puis revient au repos. Rien
+n'est conservé, et le compteur repart. Les états `crown` et `king` deviennent `boom` et
+`reform`, et la persistance de `crowned` disparaît.
+
+Ce choix retire aussi un défaut que la couronne portait : seules deux feuilles la
+dessinaient, donc toute autre animation la faisait disparaître le temps de sa passe. Il
+fallait interdire des réactions pour la garder à l'écran. L'explosion n'a pas ce problème,
+puisqu'elle est un état de passage et non un état permanent.
+
 **Le chunk C2PA est retiré des images.** Les fichiers livrés pesaient 94 391 octets, dont
 69 240 de métadonnée de provenance. Les pixels seuls font 25 151 octets. Sans ce retrait, le
 premier chargement frôlait les 150 Ko du budget.

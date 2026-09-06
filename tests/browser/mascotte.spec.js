@@ -111,6 +111,10 @@ test("la frappe dans la saisie fait taper la mascotte", async ({ page }) => {
   await cli.pressSequentially("hel");
 
   await expect(mascot(page)).toHaveClass(/slime--type/u);
+  expect(
+    await mascot(page).evaluate((node) => getComputedStyle(node).backgroundImage),
+    "la feuille de frappe remplacée",
+  ).toMatch(/slime-type-b(?:\.[\da-f]+)?\.png/u);
 });
 
 // Les evenements d'animation remontent : sans « .self », la fin de l'animation d'un
@@ -154,6 +158,74 @@ test("changer de thème déclenche la mue", async ({ page }) => {
   await page.getByRole("button", { name: "noctis" }).click();
 
   await expect(mascot(page)).toHaveClass(/slime--morph/u);
+});
+
+// Sans mascotte, changer de theme ne doit rien jouer ni rien telecharger : la promesse
+// « aucune feuille en mouvement reduit » vaut aussi quand le theme change.
+// Trop court, la personne qui tape ne voit jamais l'animation : elle regarde ses mots.
+test("la frappe tient huit cents millisecondes après la dernière touche", async ({ page }) => {
+  const cli = await boot(page);
+
+  await cli.pressSequentially("hel");
+  await expect(mascot(page)).toHaveClass(/slime--type/u);
+
+  await page.waitForTimeout(550);
+  expect(await mascot(page).getAttribute("class"), "elle tape encore à 550 ms").toBe(
+    "slime slime--type",
+  );
+
+  await page.waitForTimeout(500);
+  expect(await mascot(page).getAttribute("class"), "elle a rendu la main après 800 ms").not.toBe(
+    "slime slime--type",
+  );
+});
+
+// Anti-rebond : tant qu'on tape, le compte à rebours repart de zéro.
+test("chaque touche relance le compte à rebours de la frappe", async ({ page }) => {
+  const cli = await boot(page);
+
+  // Six touches espacées de 600 ms, moins que le délai de retour : seule la relance à
+  // chaque frappe garde la mascotte sur « type » jusqu'au bout.
+  await Array.from({ length: 6 }).reduce(
+    (chain) => chain.then(() => cli.press("h")).then(() => page.waitForTimeout(600)),
+    Promise.resolve(),
+  );
+
+  expect(await mascot(page).getAttribute("class"), "la frappe n'a pas été coupée").toBe(
+    "slime slime--type",
+  );
+});
+
+test("changer de thème sans mascotte ne charge aucune feuille", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+
+  const asked = watchSheets(page);
+
+  await boot(page);
+  await page.getByRole("button", { name: "options" }).click();
+  await page.getByRole("button", { name: "noctis" }).click();
+  await page.waitForTimeout(600);
+
+  await expect(page.locator(".tm")).toHaveAttribute("data-theme", "noctis");
+  await expect(mascot(page)).toHaveCount(0);
+  expect(asked, "aucune feuille demandée").toEqual([]);
+});
+
+// Rallumer les animations apres un changement de theme remonte la mascotte : elle doit
+// reprendre son repos, pas rester sur la mue d'un theme deja applique.
+test("rallumer les animations après un changement de thème rend le repos", async ({ page }) => {
+  await page.addInitScript(() =>
+    localStorage.setItem("bd-term-opts", JSON.stringify({ anim: false })),
+  );
+
+  await boot(page);
+  await page.getByRole("button", { name: "options" }).click();
+  await page.getByRole("button", { name: "noctis" }).click();
+  await page.getByRole("button", { name: /animations/ }).click();
+  await page.getByRole("dialog").press("Escape");
+
+  await expect(mascot(page)).toHaveCount(1);
+  await expect(mascot(page)).toHaveClass(/slime--idle/u);
 });
 
 // Les couleurs sont cuites dans les PNG : les themes sombres les font tourner.
@@ -219,51 +291,61 @@ test("la position est écrite directement dans le style", async ({ page }) => {
   await expect.poll(() => mascot(page).evaluate((node) => node.style.left)).toMatch(/px$/u);
 });
 
-test("la couronne tombe après le bon nombre de clics et survit au rechargement", async ({
-  page,
-}) => {
+// Cinq clics font exploser le slime. Il ne repond plus a rien jusqu'a sa reapparition.
+test("cinq clics font exploser la mascotte", async ({ page }) => {
   await boot(page);
 
-  const target = new Date().getFullYear() - 2000;
-
-  await Array.from({ length: target }).reduce(
+  await Array.from({ length: 5 }).reduce(
     (chain) => chain.then(() => mascot(page).click({ force: true })),
     Promise.resolve(),
   );
 
-  await expect(mascot(page)).toHaveClass(/slime--crown/u);
-  await expect(mascot(page), "le repos devient couronné").toHaveClass(/slime--king/u, {
-    timeout: 5000,
-  });
-
-  await page.reload();
-  await expect(page.locator("[data-boot]")).toHaveCount(0, { timeout: 10_000 });
-
-  await expect(mascot(page), "la couronne est conservée sur l'appareil").toHaveClass(
-    /slime--king/u,
-  );
+  await expect(mascot(page)).toHaveClass(/slime--boom/u);
 });
 
-// La couronne acquise, aucune feuille sans couronne ne doit reprendre le repos.
-test("la couronne ne se perd ni au repos demandé ni au clic", async ({ page }) => {
-  await page.addInitScript(() =>
-    localStorage.setItem("bd-term-opts", JSON.stringify({ crowned: true })),
-  );
-
+test("explosée, la mascotte ne répond plus", async ({ page }) => {
   const cli = await boot(page);
 
-  await expect(mascot(page)).toHaveClass(/slime--king/u);
+  await Array.from({ length: 5 }).reduce(
+    (chain) => chain.then(() => mascot(page).click({ force: true })),
+    Promise.resolve(),
+  );
+  await expect(mascot(page)).toHaveClass(/slime--boom/u);
 
-  // Lecture sans attente : une classe qui se corrige au bout de sa passe ne compte pas,
-  // c'est justement la seconde et demie ou la couronne disparait.
-  const classe = () => mascot(page).getAttribute("class");
-
-  await cli.fill("/slime idle");
-  await cli.press("Enter");
-  expect(await classe(), "« idle » rend le repos couronné").toBe("slime slime--king");
+  expect(
+    await mascot(page).evaluate((node) => getComputedStyle(node).pointerEvents),
+    "les débris ne se cliquent pas",
+  ).toBe("none");
 
   await mascot(page).click({ force: true });
-  expect(await classe(), "le roi ne cligne pas sans sa couronne").toBe("slime slime--king");
+  await cli.pressSequentially("he");
+
+  expect(await mascot(page).getAttribute("class"), "rien ne la déloge").toBe("slime slime--boom");
+});
+
+// Entre cinq et dix secondes plus tard, elle reprend forme, puis son repos.
+test("la mascotte reprend forme après son explosion", async ({ page }) => {
+  await boot(page);
+
+  await Array.from({ length: 5 }).reduce(
+    (chain) => chain.then(() => mascot(page).click({ force: true })),
+    Promise.resolve(),
+  );
+
+  await expect(mascot(page)).toHaveClass(/slime--reform/u, { timeout: 15_000 });
+  // Reformée, elle quitte l'explosion et se laisse de nouveau toucher. Son état exact
+  // dépend du temps écoulé : dix secondes sans geste et la veille prend la main.
+  await expect(mascot(page)).not.toHaveClass(/slime--(?:boom|reform)/u, { timeout: 5000 });
+  expect(await mascot(page).evaluate((node) => getComputedStyle(node).pointerEvents)).toBe("auto");
+});
+
+test("plus rien ne parle de couronne", async ({ page }) => {
+  await boot(page);
+
+  const garde = await page.evaluate(() => localStorage.getItem("bd-term-opts"));
+
+  expect(garde ?? "", "la couronne ne se conserve plus").not.toContain("crowned");
+  await expect(mascot(page)).not.toHaveClass(/slime--(?:king|crown)/u);
 });
 
 // Couper les animations depuis la modale retire la mascotte sur-le-champ.
