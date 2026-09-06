@@ -88,6 +88,20 @@ test.describe("au doigt", () => {
     );
   });
 
+  // Les listes sont sous le volet central : sans ce deplacement, toucher une section
+  // laissait le visiteur devant la liste, et rendait le resultat au-dessus de l'ecran.
+  for (const [quoi, nom] of [
+    ["section", /impact/],
+    ["mission", /kereis/],
+  ] as const) {
+    test(`toucher une ${quoi} amène le résultat à l'écran`, async ({ page }) => {
+      await boot(page);
+      await page.getByRole("button", { name: nom }).first().click();
+
+      await expect(page.locator("[data-result]")).toBeInViewport();
+    });
+  }
+
   // Le journal garde l'echo, et il reste des commandes qui n'ecrivent que la.
   test("le journal montre toute la réponse d'une commande introuvable", async ({ page }) => {
     await boot(page);
