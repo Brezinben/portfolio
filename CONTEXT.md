@@ -89,7 +89,9 @@ _Avoid_: tooltip, détail techno, carte.
 
 **Boot** (`boot`) :
 Séquence de démarrage. Elle attend le chargement du contenu et dure au minimum deux
-secondes.
+secondes. Ce plancher a deux sorties : une touche ou un clic l'abrège, et un visiteur qui
+demande moins de mouvement ne l'a pas du tout. Aucune des deux ne passe devant l'écran de
+panique.
 _Avoid_: chargement, splash, loader.
 
 **Écran de panique** (`panicScreen`) :

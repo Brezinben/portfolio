@@ -1361,7 +1361,9 @@
     </template>
 
     <template x-if="booting">
-      <div data-boot
+      <!-- Le clic abrege le boot comme la touche. « skipBoot » refuse quand la panique est
+           affichee : le bouton retry garde ses gestes. -->
+      <div data-boot @pointerdown="skipBoot()"
         :style="`position:absolute;inset:0;z-index:30;background:var(--bg);padding:18px clamp(12px,2.5vw,26px) 26px;box-sizing:border-box;display:flex;flex-direction:column;${power === 'fade' ? 'animation:bootOut .62s ease forwards' : ''}`">
         <div
           style="flex:1;border:1px solid var(--edge);border-radius:var(--radius);background:var(--panel);padding:clamp(20px,4vw,44px);display:grid;align-content:center;gap:8px;font-size:13px;line-height:1.7">

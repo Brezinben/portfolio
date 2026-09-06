@@ -461,6 +461,7 @@ interface State {
   reformer: Delay | undefined;
   returner: Delay | undefined;
   settler: Delay | undefined;
+  booter: Delay | undefined;
   sleeper: Delay | undefined;
   spinner: Beat | undefined;
   ticker: Beat | undefined;
@@ -562,6 +563,7 @@ document.addEventListener("alpine:init", () => {
       reformer: undefined,
       returner: undefined,
       settler: undefined,
+      booter: undefined,
       sleeper: undefined,
       spinner: undefined,
       ticker: undefined,
@@ -794,6 +796,14 @@ document.addEventListener("alpine:init", () => {
 
       onKey(event: KeyboardEvent) {
         if (event.altKey || event.ctrlKey || event.metaKey) {
+          return;
+        }
+
+        // La touche qui abrege le boot s'arrete la : sans cette sortie, elle partirait
+        // aussi dans la saisie, et le visiteur taperait une commande sans le vouloir.
+        if (this.skipBoot()) {
+          event.preventDefault();
+
           return;
         }
 
@@ -1529,6 +1539,32 @@ document.addEventListener("alpine:init", () => {
 
         this.dragging = false;
         this.mascotPlay("jump");
+      },
+
+      finishBoot() {
+        clearTimeout(this.booter);
+        clearInterval(this.ticker);
+        this.power = "fade";
+        setTimeout(
+          () => {
+            this.power = "on";
+            // Le demarrage decouvre la mascotte : elle arrive plutot qu'elle n'apparait.
+            this.mascotPlay("drop");
+          },
+          this.reduced ? 0 : FADE_MS,
+        );
+      },
+
+      // Le boot n'est pas un spectacle obligatoire. Il ne s'abrege que quand le contenu est
+      // deja la : l'ecran de panique doit rester, et son bouton doit garder ses touches.
+      skipBoot() {
+        if (this.power !== "boot" || this.dataErr || this.sections.length === 0) {
+          return false;
+        }
+
+        this.finishBoot();
+
+        return true;
       },
 
       get reduced() {
@@ -2354,17 +2390,11 @@ document.addEventListener("alpine:init", () => {
 
         const waited = performance.now() - started;
 
-        setTimeout(
-          () => {
-            clearInterval(this.ticker);
-            this.power = "fade";
-            setTimeout(() => {
-              this.power = "on";
-              // Le demarrage decouvre la mascotte : elle arrive plutot qu'elle n'apparait.
-              this.mascotPlay("drop");
-            }, FADE_MS);
-          },
-          Math.max(0, BOOT_MS - waited),
+        // Le plancher tombe quand le visiteur demande moins de mouvement : il ne reste que
+        // le temps de charger le contenu.
+        this.booter = setTimeout(
+          () => this.finishBoot(),
+          Math.max(0, (this.reduced ? 0 : BOOT_MS) - waited),
         );
       },
     }),
