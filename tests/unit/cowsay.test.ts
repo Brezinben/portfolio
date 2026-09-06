@@ -10,6 +10,7 @@ const CONTEXT: Context = {
   feedback: {},
   jokeIndex: 0,
   jokes: [],
+  mascotAway: false,
   sections: [],
   share: {},
   shareTargets: [],

@@ -49,6 +49,7 @@ export type Effect =
   | { type: "drop" }
   | { type: "email" }
   | { type: "emote"; expression: Expression }
+  | { type: "usage" }
   | { type: "options" }
   | { type: "pending"; answer?: string; payload: string }
   | { type: "power"; mode: string }
@@ -136,6 +137,9 @@ export interface CompletionContext {
 // pas un cas a traiter ici.
 export interface Context extends CompletionContext {
   columns: number;
+  // La mascotte est absente pendant son explosion et pendant son voyage en train. Sans
+  // cette information, l'interpreteur annonce des gestes que la coquille ne joue pas.
+  mascotAway: boolean;
   details: Entry[];
   sections: Entry[];
   current: { cmd?: string; id?: string; label?: string };
@@ -323,7 +327,17 @@ const line = ({
     effects: [{ expression, type: "emote" }, say(EXPRESSIONS[expression], expression)],
     lines: [done(`le slime est ${EXPRESSIONS[expression]}.`)],
   }),
-  slime = (argument: string, name: string): Told => {
+  absent: Told = {
+    effects: [{ type: "usage" }],
+    lines: [failed("le slime n'est pas la : attendez qu'il revienne.")],
+  },
+  slime = (argument: string, name: string, away: boolean): Told => {
+    // Annoncer « le slime explose » pendant qu'il est deja parti fait mentir le journal :
+    // la coquille avale le geste, la ligne reste.
+    if (away) {
+      return absent;
+    }
+
     if (argument === "drop") {
       return { effects: [{ type: "drop" }], lines: [done("le slime tombe et s'écrase.")] };
     }
@@ -335,7 +349,7 @@ const line = ({
     if (argument === "activity") {
       if (!ACTIVITIES.includes(name)) {
         return {
-          effects: [],
+          effects: [{ type: "usage" }],
           lines: [offer("/slime activity <nom>", ACTIVITIES)],
         };
       }
@@ -349,14 +363,14 @@ const line = ({
     if (argument === "expression") {
       return isExpression(name)
         ? emoted(name)
-        : { effects: [], lines: [offer("/slime expression <nom>", OFFERED)] };
+        : { effects: [{ type: "usage" }], lines: [offer("/slime expression <nom>", OFFERED)] };
     }
 
     // « /slime happy » reste un raccourci : il marche, mais l'aide annonce le chemin long,
     // symetrique de « /slime activity <nom> ».
     if (!isExpression(argument)) {
       return {
-        effects: [],
+        effects: [{ type: "usage" }],
         lines: [
           offer("/slime expression <nom>", OFFERED),
           offer("/slime activity <nom>", ACTIVITIES),
@@ -821,7 +835,7 @@ export const interpret = (raw: string, context: Context): Outcome => {
   }
 
   if (command === "slime") {
-    const result = slime(argument, (parts[2] ?? "").toLowerCase());
+    const result = slime(argument, (parts[2] ?? "").toLowerCase(), context.mascotAway);
 
     return out(result.lines, [track("easter_egg", { nom: "slime" }), ...result.effects]);
   }

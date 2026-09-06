@@ -29,6 +29,7 @@ const SHARE = {
     feedback: FEEDBACK,
     jokeIndex: 0,
     jokes: [],
+    mascotAway: false,
     sections: [{ id: "whoami", label: "whoami" }],
     share: SHARE,
     shareTargets: [],

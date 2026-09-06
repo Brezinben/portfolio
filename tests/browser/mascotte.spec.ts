@@ -743,3 +743,47 @@ test("un easter egg qui dit son expression garde son expression", async ({ page 
   await expect(mascot(page)).toHaveClass(/slime--laugh/u);
   await expect(mascot(page)).not.toHaveClass(/slime--goal/u);
 });
+
+// Lire l'aide d'une commande n'est pas une trouvaille. Le but se jouait sur l'usage, parce
+// que la coquille n'y voyait qu'un easter egg qui ne bouge pas la mascotte.
+test("lister l'usage de slime ne déclenche pas le but", async ({ page }) => {
+  const cli = await boot(page);
+
+  await cli.fill("/slime");
+  await cli.press("Enter");
+
+  await expect(page.locator("[data-journal]")).toContainText("/slime expression <nom>");
+  await expect(mascot(page)).not.toHaveClass(/slime--goal/u);
+});
+
+// Le redemarrage remettait le journal a zero mais laissait la mascotte absente, avec le
+// minuteur de l'ancienne session arme.
+test("redémarrer ramène la mascotte partie en explosant", async ({ page }) => {
+  const cli = await boot(page);
+
+  await cli.fill("/slime kill");
+  await cli.press("Enter");
+  await expect(mascot(page)).toHaveAttribute("data-gone", "true");
+
+  await cli.fill("reboot");
+  await cli.press("Enter");
+  await expect(page.locator("[data-boot]")).toHaveCount(0, { timeout: 10_000 });
+
+  // Alpine retire l'attribut quand la valeur liee est fausse : l'absence est la preuve.
+  await expect(mascot(page)).not.toHaveAttribute("data-gone", "true");
+});
+
+// Absente, la mascotte ne peut rien faire : le journal doit le dire au lieu d'annoncer un
+// geste que la coquille avale.
+test("le slime absent refuse la commande au lieu de mentir", async ({ page }) => {
+  const cli = await boot(page);
+
+  await cli.fill("/slime kill");
+  await cli.press("Enter");
+  await expect(mascot(page)).toHaveAttribute("data-gone", "true");
+
+  await cli.fill("/slime drop");
+  await cli.press("Enter");
+
+  await expect(page.locator("[data-journal]")).toContainText("le slime n'est pas la");
+});

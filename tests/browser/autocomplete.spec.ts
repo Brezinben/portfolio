@@ -49,14 +49,30 @@ test("le second mot propose le bon vocabulaire", async ({ page }) => {
 test("tabulation complète jusqu'au préfixe commun", async ({ page }) => {
   const cli = await boot(page);
 
-  await cli.fill("/b");
+  await cli.fill("/c");
   await cli.dispatchEvent("input");
   await cli.press("Tab");
 
-  await expect(cli).toHaveValue("/b");
+  await expect(cli).toHaveValue("/co");
   await expect(list(page)).toBeVisible();
-  await expect(list(page)).toContainText("benjamin");
-  await expect(list(page)).toContainText("brezinben");
+  await expect(list(page)).toContainText("coffee");
+  await expect(list(page)).toContainText("cowsay");
+});
+
+// La liste rend la premiere ligne « aria-selected ». Refuser de la prendre rendait la
+// tabulation muette des que le prefixe commun n'apportait rien : « / » met « /slime » en
+// tete, et Tab ne faisait rien.
+test("la tabulation prend la ligne en avant quand le préfixe n'apporte rien", async ({ page }) => {
+  const cli = await boot(page);
+
+  await cli.fill("/");
+  await cli.dispatchEvent("input");
+
+  await expect(list(page)).toContainText("slime");
+
+  await cli.press("Tab");
+
+  await expect(cli).toHaveValue("/slime ");
 });
 
 test("tabulation sur une seule proposition la complète", async ({ page }) => {

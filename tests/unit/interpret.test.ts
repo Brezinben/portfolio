@@ -10,6 +10,7 @@ const CONTEXT: Context = {
     feedback: {},
     jokeIndex: 0,
     jokes: ["une blague", "une autre"],
+    mascotAway: false,
     sections: [
       { id: "whoami", label: "whoami" },
       { id: "stack", label: "stack" },
@@ -535,4 +536,30 @@ test("slime jump n'est plus un second nom pour drop", () => {
 
 test("matrix n'émet plus que son expression", () => {
   assert.deepEqual(kinds(interpret("/matrix", CONTEXT)), ["track", "track", "emote"]);
+});
+
+// Le journal ne doit pas annoncer un geste que la coquille avale. La mascotte est absente
+// pendant son explosion et pendant son voyage en train.
+test("le slime absent refuse la commande au lieu de mentir", () => {
+  const away = { ...CONTEXT, mascotAway: true };
+
+  for (const command of ["/slime kill", "/slime drop", "/slime expression happy"]) {
+    const result = interpret(command, away);
+
+    assert.match(texts(result)[1] ?? "", /le slime n'est pas la/u, command);
+    assert.equal(effectOf(result, "emote"), undefined, command);
+    assert.equal(effectOf(result, "blowUp"), undefined, command);
+    assert.equal(effectOf(result, "drop"), undefined, command);
+  }
+});
+
+// Le but se jouait sur l'aide : la coquille en deduisait « easter egg trouve, rien ne
+// bouge ». Une commande qui liste son usage le dit maintenant.
+test("lister l'usage de slime le signale comme tel", () => {
+  for (const command of ["/slime", "/slime bogus", "/slime expression", "/slime activity"]) {
+    assert.ok(effectOf(interpret(command, CONTEXT), "usage"), command);
+  }
+
+  assert.equal(effectOf(interpret("/slime kill", CONTEXT), "usage"), undefined);
+  assert.equal(effectOf(interpret("/coffee", CONTEXT), "usage"), undefined);
 });
