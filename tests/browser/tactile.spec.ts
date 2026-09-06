@@ -66,16 +66,39 @@ test.describe("au doigt", () => {
   });
 
   // Le journal tenait dans 120 px : une réponse de 490 px n'en montrait que trois lignes.
-  test("le journal montre toute la réponse d'une commande", async ({ page }) => {
+  // « aide » réclame maintenant le résultat, et c'est là que la réponse doit tenir entière.
+  test("le résultat montre toute la réponse d'une commande", async ({ page }) => {
     await boot(page);
     const cli = page.getByLabel("Commande");
 
     await cli.fill("aide");
     await cli.press("Enter");
 
+    const result = page.locator("[data-result]");
+
+    await expect(result).toContainText("à vos risques");
+
+    const shown = await result.evaluate((node) => ({
+      client: node.clientHeight,
+      scroll: node.scrollHeight,
+    }));
+
+    expect(shown.scroll, "rien ne reste caché sous le pli du résultat").toBeLessThanOrEqual(
+      shown.client + 1,
+    );
+  });
+
+  // Le journal garde l'echo, et il reste des commandes qui n'ecrivent que la.
+  test("le journal montre toute la réponse d'une commande introuvable", async ({ page }) => {
+    await boot(page);
+    const cli = page.getByLabel("Commande");
+
+    await cli.fill("xyzzy");
+    await cli.press("Enter");
+
     const journal = page.locator("[data-journal]");
 
-    await expect(journal).toContainText("à vos risques");
+    await expect(journal).toContainText("commande introuvable");
 
     const shown = await journal.evaluate((node) => ({
       client: node.clientHeight,
@@ -85,7 +108,6 @@ test.describe("au doigt", () => {
     expect(shown.scroll, "rien ne reste caché sous le pli du journal").toBeLessThanOrEqual(
       shown.client + 1,
     );
-    expect(shown.client).toBeGreaterThan(300);
   });
 
   test("la page ne dépasse jamais la hauteur de la fenêtre", async ({ page }) => {

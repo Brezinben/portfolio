@@ -1095,7 +1095,7 @@
             </div>
           </template>
 
-          <template x-for="(line, index) in current.lines" :key="`${section}-${index}`">
+          <template x-for="(line, index) in current.lines" :key="`${current.id}-${index}`">
             <p
               :style="`margin:0;display:grid;grid-template-columns:18px 1fr;gap:8px;align-items:baseline;padding-left:${line.pad ?? '0'}`">
               <span aria-hidden="true" :style="`color:var(--${line.markerTone ?? 'fg2'})`"
@@ -1228,7 +1228,7 @@
         <p data-status
           style="flex:none;margin:0;display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:11px;color:var(--fg2);padding-top:6px">
           <span data-branch style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><span
-              x-text="`~/${section}`"></span> <span style="color:var(--acc-text)">main</span> ✳ </span>
+              x-text="`~/${current.id || section}`"></span> <span style="color:var(--acc-text)">main</span> ✳ </span>
           <!-- Pendant la compaction, l'animation prend la place des cellules : le cadre
                « ctx [ … ] » ne bouge pas, et une seule barre reste a l'ecran. -->
           <span data-gauge aria-hidden="true" style="flex:none;white-space:pre"><span

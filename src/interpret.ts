@@ -99,6 +99,9 @@ export interface Told {
 export interface Outcome {
   effects: Effect[];
   lines: Line[];
+  // Une commande peut reclamer le resultat au lieu du journal. Le journal garde l'echo, le
+  // corps de la reponse va dans le volet central, ou la place existe.
+  result?: ContentLine[];
 }
 
 // La cible de partage declaree dans le contenu.
@@ -156,9 +159,8 @@ export interface Context extends CompletionContext {
 // Une cle libre dans une table fermee. La table garde le type que l'inference lui donne,
 // et l'appelant recoit undefined quand la cle n'y est pas.
 const lookup = <V>(table: Readonly<Record<string, V>>, key: string): V | undefined =>
-  Object.hasOwn(table, key) ? table[key] : undefined;
-
-const isTone = (value: string): value is Tone => TONES.some((tone) => tone === value);
+    Object.hasOwn(table, key) ? table[key] : undefined,
+  isTone = (value: string): value is Tone => TONES.some((tone) => tone === value);
 
 export const safeTone = (tone: string | undefined, fallback: Tone = "fg"): Tone =>
   tone !== undefined && isTone(tone) ? tone : fallback;
@@ -224,6 +226,8 @@ const line = ({
     "/joke · /cowsay                   — le reste",
     "/pet · /slime · /matrix · shutdown — à vos risques",
   ],
+  KEYBOARD =
+    "Clavier : / cible la saisie · j / k changent de section · Tab complète · ↑ ↓ rappellent l'historique.",
   EGGS = {
     benjamin: {
       egg: "nom",
@@ -431,90 +435,88 @@ const line = ({
     "sleep",
     "theme",
   ],
-  VERBS = [...PLAIN, ...[...SLASH_ONLY].map((egg) => `/${egg}`)];
+  VERBS = [...PLAIN, ...[...SLASH_ONLY].map((egg) => `/${egg}`)],
+  // Le vocabulaire dépend du chemin déjà tapé, et pas seulement du premier mot : « slime »
+  // propose ses sous-commandes, « slime expression » les expressions, « slime activity » les
+  // activités. Proposer le vocabulaire entier après l'un ou l'autre ferait du bruit.
+  argumentsFor = (path: string, context: CompletionContext): string[] | undefined => {
+    const ids = [...context.sections, ...context.details].map((entry) => entry.id),
+      // Quatre sous-commandes claires valent mieux que dix mots melanges : les expressions
+      // vivent un niveau plus bas, derriere « expression ».
+      slimeArguments = ["expression", "activity", "evolve", "drop", "kill"];
 
-// Le vocabulaire dépend du chemin déjà tapé, et pas seulement du premier mot : « slime »
-// propose ses sous-commandes, « slime expression » les expressions, « slime activity » les
-// activités. Proposer le vocabulaire entier après l'un ou l'autre ferait du bruit.
-const argumentsFor = (path: string, context: CompletionContext): string[] | undefined => {
-  const ids = [...context.sections, ...context.details].map((entry) => entry.id),
-    // Quatre sous-commandes claires valent mieux que dix mots melanges : les expressions
-    // vivent un niveau plus bas, derriere « expression ».
-    slimeArguments = ["expression", "activity", "evolve", "drop", "kill"];
-
-  return {
-    bd: ids,
-    cd: ids,
-    open: ids,
-    share: context.shareTargets ?? [],
-    slime: slimeArguments,
-    "slime activity": ACTIVITIES,
-    "slime expression": OFFERED,
-    theme: context.themes,
-  }[path];
-};
-
-// La liste ne montre que des noms, et un nom n'apprend rien : ni « bd », ni « goal ». Une
-// ligne sous la liste dit ce que fait la proposition choisie. Les noms venus du contenu
-// n'y sont pas : leur identifiant est deja leur libelle.
-const HINTS = {
-  "": {
-    "/benjamin": "qui je suis, en trois lignes",
-    "/brezinben": "qui je suis, en trois lignes",
-    "/coffee": "un café ? pas ici",
-    "/cowsay": "une vache dit ce que vous tapez",
-    "/joke": "une blague de développeur",
-    "/matrix": "réveille-toi, Néo",
-    "/pet": "caresse la mascotte",
-    "/propose": "suggérez un ajout à ce portfolio",
-    "/slime": "commande la mascotte",
-    "/sudo": "non.",
-    "/vim": "le piège classique",
-    "?": "la liste des commandes",
-    aide: "la liste des commandes",
-    bd: "ouvre une section",
-    cd: "ouvre une section",
-    clear: "vide le journal",
-    cls: "vide le journal",
-    cv: "mon CV",
-    dir: "liste les sections et les fiches",
-    email: "copie mon adresse",
-    help: "la liste des commandes",
-    ls: "liste les sections et les fiches",
-    open: "ouvre une section",
-    options: "ouvre les réglages",
-    reboot: "redémarre le terminal",
-    resume: "mon CV",
-    "send-mail": "ouvre votre logiciel de courrier",
-    share: "partage ce portfolio",
-    shutdown: "éteint le terminal",
-    sleep: "endort la mascotte",
-    theme: "change de thème",
+    return {
+      bd: ids,
+      cd: ids,
+      open: ids,
+      share: context.shareTargets ?? [],
+      slime: slimeArguments,
+      "slime activity": ACTIVITIES,
+      "slime expression": OFFERED,
+      theme: context.themes,
+    }[path];
   },
-  slime: {
-    activity: "lui donne une occupation",
-    drop: "le fait tomber du plafond",
-    evolve: "lui fait changer de forme",
-    expression: "change son visage",
-    kill: "le fait exploser, il revient",
-  },
-  "slime activity": {
-    bike: "il pédale",
-    coffee: "il prend un café",
-    goal: "il marque un but",
-    juggle: "il jongle",
-    lift: "il soulève de la fonte",
-    train: "il prend le train",
-  },
-  "slime expression": {
-    alert: "il sursaute",
-    happy: "il est content",
-    laugh: "il rit",
-    sad: "il est triste",
-    scared: "il prend peur",
-    sleep: "il s'endort",
-  },
-};
+  // La liste ne montre que des noms, et un nom n'apprend rien : ni « bd », ni « goal ». Une
+  // ligne sous la liste dit ce que fait la proposition choisie. Les noms venus du contenu
+  // n'y sont pas : leur identifiant est deja leur libelle.
+  HINTS = {
+    "": {
+      "/benjamin": "qui je suis, en trois lignes",
+      "/brezinben": "qui je suis, en trois lignes",
+      "/coffee": "un café ? pas ici",
+      "/cowsay": "une vache dit ce que vous tapez",
+      "/joke": "une blague de développeur",
+      "/matrix": "réveille-toi, Néo",
+      "/pet": "caresse la mascotte",
+      "/propose": "suggérez un ajout à ce portfolio",
+      "/slime": "commande la mascotte",
+      "/sudo": "non.",
+      "/vim": "le piège classique",
+      "?": "la liste des commandes",
+      aide: "la liste des commandes",
+      bd: "ouvre une section",
+      cd: "ouvre une section",
+      clear: "vide le journal",
+      cls: "vide le journal",
+      cv: "mon CV",
+      dir: "liste les sections et les fiches",
+      email: "copie mon adresse",
+      help: "la liste des commandes",
+      ls: "liste les sections et les fiches",
+      open: "ouvre une section",
+      options: "ouvre les réglages",
+      reboot: "redémarre le terminal",
+      resume: "mon CV",
+      "send-mail": "ouvre votre logiciel de courrier",
+      share: "partage ce portfolio",
+      shutdown: "éteint le terminal",
+      sleep: "endort la mascotte",
+      theme: "change de thème",
+    },
+    slime: {
+      activity: "lui donne une occupation",
+      drop: "le fait tomber du plafond",
+      evolve: "lui fait changer de forme",
+      expression: "change son visage",
+      kill: "le fait exploser, il revient",
+    },
+    "slime activity": {
+      bike: "il pédale",
+      coffee: "il prend un café",
+      goal: "il marque un but",
+      juggle: "il jongle",
+      lift: "il soulève de la fonte",
+      train: "il prend le train",
+    },
+    "slime expression": {
+      alert: "il sursaute",
+      happy: "il est content",
+      laugh: "il rit",
+      sad: "il est triste",
+      scared: "il prend peur",
+      sleep: "il s'endort",
+    },
+  };
 
 export const hintFor = (head: string, value: string): string =>
   lookup(lookup<Record<string, string>>(HINTS, head) ?? {}, value) ?? "";
@@ -812,19 +814,16 @@ export const interpret = (raw: string, context: Context): Outcome => {
       (entry) => entry.id === command || (NAVIGATORS.has(command) && entry.id === argument),
     );
 
+  // Sept lignes ne tiennent pas dans le journal d'un ecran large. La reponse va donc dans
+  // le resultat, et le journal ne garde que l'echo.
   if (command === "help") {
-    return out(
-      [
-        ...HELP.map((text) => info(text)),
-        line({
-          marker: "›",
-          markerTone: "acc",
-          text: "Clavier : / cible la saisie · j / k changent de section · Tab complète · ↑ ↓ rappellent l'historique.",
-          tone: "fg2",
-        }),
+    return {
+      ...out([], [say("essaie « /joke »", "happy")]),
+      result: [
+        ...HELP.map((text) => ({ m: "·", t: text })),
+        { m: "›", mc: "acc", t: KEYBOARD, tone: "fg2" },
       ],
-      [say("essaie « /joke »", "happy")],
-    );
+    };
   }
 
   if (command === "ls") {
