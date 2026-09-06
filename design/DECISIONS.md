@@ -206,9 +206,13 @@ remonte l'historique. Les commandes ne s'empilent pas.
 **Décisions :**
 - Filtrage progressif sur le préfixe, dix propositions maximum, sans défilement.
 - Le préfixe `/` est reconnu et complété.
-- **Suggestions contextuelles au second mot** : `/slime ` ne propose que les
-  humeurs, `cd ` que les sections et missions, `share ` que les cibles,
-  `cowsay ` que les modes de tête, `ask ` rien (texte libre).
+- **Suggestions contextuelles, niveau par niveau** : `/slime ` ne propose que ses
+  quatre sous-commandes, `/slime mood ` que les humeurs, `/slime activity ` que
+  les activités, `cd ` que les sections et missions, `share ` que les cibles,
+  `theme ` que les thèmes. `cowsay ` ne propose rien : c'est du texte libre.
+- **Une ligne sous la liste décrit la proposition choisie.** Un nom n'apprend
+  rien : ni `bd`, ni `goal`. Elle se tait devant un nom venu du contenu, dont
+  l'identifiant est déjà le libellé.
 - Espaces multiples normalisés en un seul.
 - `↑ ↓` changent de proposition, `Tab` complète, `Échap` referme.
 - Dépliement en 220 ms, repliement en 170 ms depuis la base.
@@ -356,12 +360,14 @@ les deux fois. Le sprite actuel est validé, ne pas le redessiner.
 > le bon ASCII si il faut : en.wikipedia.org/wiki/Cowsay »
 
 **Décisions :**
-- `joke` `wtf` `sudo` `coffee` `vim` `pet` `matrix` `benjamin` (alias
-  `brezinben`) `slime <humeur>` `shutdown` `reboot`.
-- `cowsay` conforme à l'original : retour à la ligne adaptatif à la largeur du
-  volet, bulle qui change de forme selon le nombre de lignes, modes de tête
-  `-b` borg `-d` mort `-g` cupide `-p` paranoïaque `-s` défoncé `-t` fatigué
-  `-w` méfiant `-y` jeune. `cowthink` pour la bulle de pensée.
+- `joke` `sudo` `coffee` `vim` `pet` `matrix` `benjamin` (alias `brezinben`)
+  `slime` `shutdown` `reboot`. `wtf` et `cowthink` sont retirés.
+- `cowsay` conforme à l'original pour la bulle : retour à la ligne adaptatif à la
+  largeur du volet, forme qui change selon le nombre de lignes. Les huit visages
+  restent, mais **sans drapeau à retenir** : la commande en tire un à chaque
+  appel. Un portfolio n'est pas une page de manuel.
+- `slime` porte quatre sous-commandes : `mood <humeur>`, `activity <nom>`,
+  `drop`, `kill`. L'alias `/mood` est retiré.
 - `shutdown` : extinction CRT puis séquence de boot complète.
 
 **Deux pièges techniques résolus :**
@@ -732,3 +738,48 @@ paramétrables, Benjamin a demandé leur figeage.
 
 Props restantes sur la version terminal : `startSection`, `showOutputPane`,
 `contentUrl`, `holdBootScreen` (maintien de l'écran de chargement pour revue).
+
+---
+
+## 24. La version texte, et le seul script qu'elle porte
+
+> « cette version est à destination des personnes qui ont un lecteur d'écran. Il
+> faut que tu utilises un maximum d'éléments HTML pour améliorer l'accessibilité
+> de cette page. Il faut que le site respecte le thème choisi par l'utilisateur
+> sur la page terminal, pas besoin de picker sur cette page, parce que ce qu'ils
+> vont faire, c'est soit rester sur cette page, soit l'imprimer, soit passer en
+> mode lecture. »
+
+**Décisions :**
+- La page devient un document balisé : `header`, `nav`, `main`, `section`,
+  `article`, `address`, `footer`. Aucun attribut `style` en ligne — le mode
+  lecture les ignore, et le balisage doit porter le sens seul.
+- Les paires clé/valeur du volet de sortie et les 57 fiches techno passent en
+  `<dl>`. Une fiche techno ne prend pas de titre : 57 titres de plus
+  encombreraient la navigation par titres d'un lecteur d'écran.
+- Les changements de langue sont déclarés (`lang="en"`), les dates sont en
+  `<time>`, et les sigles portent un `<abbr>` à leur première occurrence.
+- Les marqueurs du terminal (`·`, `›`, `✓`, `◆`) ne se recopient pas. Ce sont des
+  formes visuelles ; une liste dit la même chose et s'annonce correctement.
+- Un seul script, en tête, qui lit `bd-term-opts` et pose `data-theme`. Il ne fait
+  rien d'autre : ni écouteur, ni interaction, ni sélecteur de thème.
+- Sans JavaScript, `light-dark()` donne le couple `light` / `dark` selon
+  `prefers-color-scheme`. La page reste entière.
+- Une feuille `@media print` : fond blanc, URL des liens en suffixe, et aucune
+  mission coupée entre deux pages.
+
+**Pourquoi le script entre :** le thème vit dans `localStorage`, et aucune règle
+CSS ne sait lire `localStorage`. Le critère « aucun script » du ticket 11 visait
+la fragilité du repli, pas le langage. Il devient : aucune ressource externe, et
+un script dont la panne ne coûte rien.
+
+**Duplication assumée :** les huit thèmes sont recopiés de `index.html` dans
+`texte.html`. Une feuille partagée coûterait une requête de plus sur la page de
+repli. Un test unitaire compare les deux relevés et casse si une couleur dérive.
+
+**La police :** Atkinson Hyperlegible Next, dessinée par le Braille Institute pour
+la basse vision — chaque lettre porte une forme que ses voisines n'ont pas. Elle
+remplace Georgia sur cette page, et elle seule : la version terminal garde
+JetBrains Mono. Fichier variable, sous-ensemble latin, auto-hébergé sous SIL Open
+Font License 1.1, licence servie à côté du fichier. La flèche `→` manque au
+sous-ensemble et retombe sur la police système.
