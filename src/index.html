@@ -505,7 +505,7 @@
       --acc-text: var(--acc)
     }
 
-    /* Mascotte : neuf feuilles de 32 px par frame, affichées à ×2, soit 64 px. Le pas
+    /* Mascotte : trente-deux feuilles de 32 px par frame, affichées à ×2, soit 64 px. Le pas
        d'un keyframe est lié à la taille d'affichage : à ×2 ce sont -768px et -1024px, et
        non les -1536px / -2048px de la spécification, calés sur ×4. */
     /* La mascotte ne sort jamais de sa piste : elle s'y place en absolu, et « left » vient
@@ -535,7 +535,7 @@
     }
 
     /* Le défilement ne touche qu'un axe. L'autre reste libre : la construction fusionne
-       les neuf feuilles en une seule image, où il désigne l'état. */
+       les trente-deux feuilles en une seule image, où il désigne l'état. */
     @keyframes slime-8 {
       to {
         background-position-x: -512px
@@ -551,6 +551,40 @@
     @keyframes slime-16 {
       to {
         background-position-x: -1024px
+      }
+    }
+
+    @keyframes slime-20 {
+      to {
+        background-position-x: -1280px
+      }
+    }
+
+    @keyframes slime-24 {
+      to {
+        background-position-x: -1536px
+      }
+    }
+
+    /* Une animation qui tient sa dernière case a besoin d'un pas différent. « steps(n) »
+       finit sa course sur la case n + 1, qui n'existe pas : la mascotte disparaissait sous
+       la main qui la retenait. « jump-none » répartit n valeurs de la première case à la
+       dernière incluse, donc le keyframe s'arrête une case plus tôt. */
+    @keyframes slime-12-hold {
+      to {
+        background-position-x: -704px
+      }
+    }
+
+    @keyframes slime-16-hold {
+      to {
+        background-position-x: -960px
+      }
+    }
+
+    @keyframes slime-24-hold {
+      to {
+        background-position-x: -1472px
       }
     }
 
@@ -609,7 +643,7 @@
     .slime--boom {
       background-image: url("assets/sprites/slime-boom.png");
       background-size: 1024px 64px;
-      animation: slime-16 1.12s steps(16) 1 forwards
+      animation: slime-16-hold 1.12s steps(16, jump-none) 1 forwards
     }
 
     .slime--reform {
@@ -618,8 +652,89 @@
       animation: slime-16 1.6s steps(16) 1
     }
 
+    /* Expressions de commande. Elles répondent à une action, pas à un survol : elles
+       peuvent durer, et elles portent de vraies phases plutôt qu'une simple boucle.
+       « laugh », « sad » et « scared » bouclent : leur seule sortie est le minuteur du
+       script, une animation infinie n'émettant jamais « animationend ». */
+    .slime--alert {
+      background-image: url("assets/sprites/slime-alert.png");
+      background-size: 1024px 64px;
+      animation: slime-16 .96s steps(16) 1
+    }
+
+    .slime--happy {
+      background-image: url("assets/sprites/slime-happy.png");
+      background-size: 1280px 64px;
+      animation: slime-20 1.2s steps(20) 1
+    }
+
+    .slime--laugh {
+      background-image: url("assets/sprites/slime-laugh.png");
+      background-size: 1536px 64px;
+      animation: slime-24 1.44s steps(24) infinite
+    }
+
+    .slime--sad {
+      background-image: url("assets/sprites/slime-sad.png");
+      background-size: 1536px 64px;
+      animation: slime-24 2.88s steps(24) infinite
+    }
+
+    .slime--scared {
+      background-image: url("assets/sprites/slime-scared.png");
+      background-size: 1280px 64px;
+      animation: slime-20 1s steps(20) infinite
+    }
+
+    .slime--drop {
+      background-image: url("assets/sprites/slime-drop.png");
+      background-size: 1536px 64px;
+      animation: slime-24 1.44s steps(24) 1
+    }
+
+    /* Activités. Une expression se lit sur le visage, une activité demande un accessoire :
+       le corps rétrécit pour lui faire de la place. « bike » et « juggle » bouclent, et le
+       minuteur du script est leur seule sortie. */
+    .slime--goal {
+      background-image: url("assets/sprites/slime-goal.png");
+      background-size: 1536px 64px;
+      animation: slime-24 1.44s steps(24) 1
+    }
+
+    .slime--bike {
+      background-image: url("assets/sprites/slime-bike.png");
+      background-size: 1024px 64px;
+      animation: slime-16 .96s steps(16) infinite
+    }
+
+    .slime--coffee {
+      background-image: url("assets/sprites/slime-coffee.png");
+      background-size: 1280px 64px;
+      animation: slime-20 1.2s steps(20) 1
+    }
+
+    .slime--lift {
+      background-image: url("assets/sprites/slime-lift.png");
+      background-size: 1536px 64px;
+      animation: slime-24 1.44s steps(24) 1
+    }
+
+    .slime--juggle {
+      background-image: url("assets/sprites/slime-juggle.png");
+      background-size: 1024px 64px;
+      animation: slime-16 .96s steps(16) infinite
+    }
+
+    /* Le train part avec la mascotte et laisse le quai vide. Sa dernière case doit tenir,
+       comme celle de l'explosion : le script la ramène ensuite par « drop ». */
+    .slime--train {
+      background-image: url("assets/sprites/slime-train.png");
+      background-size: 1536px 64px;
+      animation: slime-24-hold 1.44s steps(24, jump-none) 1 forwards
+    }
+
     /* Manipulation à la souris. « attrapé » et les deux déplacements bouclent tant que le
-       bouton reste enfoncé. Les quatre plaquages tiennent leur dernière case : la mascotte
+       bouton reste enfoncé. Les huit plaquages tiennent leur dernière case : la mascotte
        reste écrasée tant qu'elle est plaquée contre la paroi. */
     .slime--grab {
       background-image: url("assets/sprites/slime-grab.png");
@@ -642,25 +757,52 @@
     .slime--splatRight {
       background-image: url("assets/sprites/slime-splat-right.png");
       background-size: 768px 64px;
-      animation: slime-12 .96s steps(12) 1 forwards
+      animation: slime-12-hold .96s steps(12, jump-none) 1 forwards
     }
 
     .slime--splatLeft {
       background-image: url("assets/sprites/slime-splat-left.png");
       background-size: 768px 64px;
-      animation: slime-12 .96s steps(12) 1 forwards
+      animation: slime-12-hold .96s steps(12, jump-none) 1 forwards
     }
 
     .slime--splatFloor {
       background-image: url("assets/sprites/slime-splat-floor.png");
       background-size: 768px 64px;
-      animation: slime-12 .96s steps(12) 1 forwards
+      animation: slime-12-hold .96s steps(12, jump-none) 1 forwards
     }
 
     .slime--splatCeiling {
       background-image: url("assets/sprites/slime-splat-ceiling.png");
       background-size: 768px 64px;
-      animation: slime-12 .96s steps(12) 1 forwards
+      animation: slime-12-hold .96s steps(12, jump-none) 1 forwards
+    }
+
+    /* Un coin n'est pas la somme de deux plaquages : la matière n'a plus qu'une direction
+       pour s'échapper, la diagonale. Le dessin le rend, le script les teste avant les
+       murs. */
+    .slime--splatCeilingLeft {
+      background-image: url("assets/sprites/slime-splat-tl.png");
+      background-size: 768px 64px;
+      animation: slime-12-hold .96s steps(12, jump-none) 1 forwards
+    }
+
+    .slime--splatCeilingRight {
+      background-image: url("assets/sprites/slime-splat-tr.png");
+      background-size: 768px 64px;
+      animation: slime-12-hold .96s steps(12, jump-none) 1 forwards
+    }
+
+    .slime--splatFloorLeft {
+      background-image: url("assets/sprites/slime-splat-bl.png");
+      background-size: 768px 64px;
+      animation: slime-12-hold .96s steps(12, jump-none) 1 forwards
+    }
+
+    .slime--splatFloorRight {
+      background-image: url("assets/sprites/slime-splat-br.png");
+      background-size: 768px 64px;
+      animation: slime-12-hold .96s steps(12, jump-none) 1 forwards
     }
 
     /* Les couleurs sont cuites dans les PNG. Les thèmes sombres les font tourner ;

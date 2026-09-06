@@ -8,7 +8,7 @@ const boot = async (page: Page) => {
     return page.getByLabel("Commande");
   },
   mascot = (page: Page) => page.locator("[data-mascot]"),
-  // La construction fusionne les neuf feuilles en une image. Ce n'est plus l'URL qui dit
+  // La construction fusionne les feuilles en une image. Ce n'est plus l'URL qui dit
   // l'etat, c'est la bande : chaque etat lit sa tranche par background-position-y.
   bande = (page: Page) =>
     mascot(page).evaluate((node) => getComputedStyle(node).backgroundPositionY),
@@ -56,8 +56,8 @@ test("la mascotte est une feuille de sprites, jouée au repos", async ({ page })
   expect(await bande(page), "le repos ouvre l'image").toBe("0px");
 });
 
-// Les seize etats tiennent dans une image : une requete, pas seize.
-test("une seule image porte les seize états", async ({ page }) => {
+// Les trente-deux etats tiennent dans une image : une requete, pas trente-deux.
+test("une seule image porte les trente-deux états", async ({ page }) => {
   const asked = watchSheets(page);
 
   await boot(page);
@@ -338,16 +338,40 @@ test("la commande sleep endort vraiment la mascotte", async ({ page }) => {
   await expect(mascot(page)).toHaveClass(/slime--sleep/u);
 });
 
-test("les humeurs hilare et triste ont leur état", async ({ page }) => {
+// Trois humeurs jouaient « jump » et une quatrieme « wink » : la commande annoncait une
+// emotion et rendait le geste d'a cote. Chacune porte maintenant sa feuille.
+for (const humeur of ["alert", "happy", "laugh", "sad", "scared", "sleep"]) {
+  test(`l'humeur ${humeur} joue sa propre feuille`, async ({ page }) => {
+    const cli = await boot(page);
+
+    await cli.fill(`/slime ${humeur}`);
+    await cli.press("Enter");
+
+    await expect(mascot(page)).toHaveClass(new RegExp(`slime--${humeur}\\b`, "u"));
+  });
+}
+
+// Une animation infinie n'emet jamais animationend. Sans le minuteur, ces trois-la
+// tourneraient jusqu'a la fin de la visite.
+test("les humeurs qui bouclent rendent la main au repos", async ({ page }) => {
   const cli = await boot(page);
 
-  await cli.fill("/slime laugh");
+  await cli.fill("/slime scared");
   await cli.press("Enter");
-  await expect(mascot(page)).toHaveClass(/slime--jump/u);
+  await expect(mascot(page)).toHaveClass(/slime--scared/u);
+  // Trois cycles d'une seconde, plus le filet.
+  await expect(mascot(page)).toHaveClass(/slime--idle/u, { timeout: 6000 });
+});
 
-  await cli.fill("/slime sad");
+test("slime kill fait exploser la mascotte, qui revient d'elle-même", async ({ page }) => {
+  const cli = await boot(page);
+
+  await cli.fill("/slime kill");
   await cli.press("Enter");
-  await expect(mascot(page)).toHaveClass(/slime--sleep/u);
+  await expect(mascot(page)).toHaveClass(/slime--boom/u);
+
+  await expect(mascot(page)).toHaveClass(/slime--reform/u, { timeout: 15_000 });
+  await expect(mascot(page)).not.toHaveClass(/slime--(?:boom|reform)/u, { timeout: 5000 });
 });
 
 test("une commande fait parler la mascotte", async ({ page }) => {
@@ -472,16 +496,67 @@ test("le curseur hors de la piste plaque la mascotte contre ce bord", async ({ p
   await attraper(page);
 
   await pousser(page, milieuX, piste.y - dehors);
-  await expect(mascot(page), "au-dessus").toHaveClass(/slime--splatCeiling/u);
+  await expect(mascot(page), "au-dessus").toHaveClass(/slime--splatCeiling$/u);
 
   await pousser(page, milieuX, piste.y + piste.height + dehors);
-  await expect(mascot(page), "en dessous").toHaveClass(/slime--splatFloor/u);
+  await expect(mascot(page), "en dessous").toHaveClass(/slime--splatFloor$/u);
 
   await pousser(page, piste.x - dehors, milieuY);
-  await expect(mascot(page), "à gauche").toHaveClass(/slime--splatLeft/u);
+  await expect(mascot(page), "à gauche").toHaveClass(/slime--splatLeft$/u);
 
   await pousser(page, piste.x + piste.width + dehors, milieuY);
-  await expect(mascot(page), "à droite").toHaveClass(/slime--splatRight/u);
+  await expect(mascot(page), "à droite").toHaveClass(/slime--splatRight$/u);
+
+  await page.mouse.up();
+});
+
+// « steps(12) » finit sa course sur la treizieme case, qui n'existe pas : la bande fait
+// douze cases, et le douzieme pas s'arrete a -768px, hors du dessin. Le plaquage tenait donc
+// du vide, et la mascotte disparaissait sous la main qui la retenait.
+test("un plaquage tenu longtemps garde sa dernière case", async ({ page }) => {
+  await boot(page);
+
+  const piste = (await page.locator("[data-track]").boundingBox())!;
+
+  await attraper(page);
+  await pousser(page, piste.x - 40, piste.y + piste.height / 2);
+  await expect(mascot(page)).toHaveClass(/slime--splatLeft$/u);
+
+  // La passe dure 0,96 s. On attend bien au-dela, comme une main qui ne lache pas.
+  await page.waitForTimeout(1600);
+
+  const arret = await mascot(page).evaluate((node) => getComputedStyle(node).backgroundPositionX);
+
+  expect(arret, "la douzième case, pas la treizième").toBe("-704px");
+
+  await page.mouse.up();
+});
+
+// Curseur en diagonale, les deux lectures sont vraies au meme instant. Sans les quatre
+// coins, la mascotte jouait un mur alors qu'elle est collee aux deux.
+test("le curseur en diagonale plaque la mascotte dans le coin", async ({ page }) => {
+  await boot(page);
+
+  const piste = (await page.locator("[data-track]").boundingBox())!,
+    dehors = 40,
+    gauche = piste.x - dehors,
+    droite = piste.x + piste.width + dehors,
+    haut = piste.y - dehors,
+    bas = piste.y + piste.height + dehors;
+
+  await attraper(page);
+
+  await pousser(page, gauche, haut);
+  await expect(mascot(page), "haut-gauche").toHaveClass(/slime--splatCeilingLeft/u);
+
+  await pousser(page, droite, haut);
+  await expect(mascot(page), "haut-droit").toHaveClass(/slime--splatCeilingRight/u);
+
+  await pousser(page, gauche, bas);
+  await expect(mascot(page), "bas-gauche").toHaveClass(/slime--splatFloorLeft/u);
+
+  await pousser(page, droite, bas);
+  await expect(mascot(page), "bas-droit").toHaveClass(/slime--splatFloorRight/u);
 
   await page.mouse.up();
 });
@@ -618,4 +693,53 @@ test("traîner la mascotte ne compte pas pour un clic", async ({ page }) => {
   await mascot(page).click({ force: true });
 
   await expect(mascot(page)).toHaveClass(/slime--wink/u);
+});
+
+// Une activite demande un accessoire. « bike » boucle : le minuteur est sa seule sortie.
+test("slime activity joue l'activité, puis rend la main", async ({ page }) => {
+  const cli = await boot(page);
+
+  await cli.fill("/slime activity bike");
+  await cli.press("Enter");
+  await expect(mascot(page)).toHaveClass(/slime--bike/u);
+  // Trois cycles de 0,96 s, plus le filet.
+  await expect(mascot(page)).toHaveClass(/slime--idle/u, { timeout: 6000 });
+});
+
+// Le train est la seule feuille qui finit sans mascotte. Un decor vide sans retour serait
+// un piege : « drop » la ramene.
+test("le train emmène la mascotte, puis la chute la ramène", async ({ page }) => {
+  const cli = await boot(page);
+
+  await cli.fill("/slime activity train");
+  await cli.press("Enter");
+  await expect(mascot(page)).toHaveClass(/slime--train/u);
+
+  await expect(mascot(page), "le quai reste vide").toHaveAttribute("data-gone", "true", {
+    timeout: 4000,
+  });
+  await expect(mascot(page), "elle revient en tombant").toHaveClass(/slime--drop/u, {
+    timeout: 6000,
+  });
+  await expect(mascot(page)).toHaveClass(/slime--idle/u, { timeout: 4000 });
+});
+
+// Une trouvaille vaut une celebration, sauf quand la commande dit deja une humeur.
+test("un easter egg sans humeur déclenche le but", async ({ page }) => {
+  const cli = await boot(page);
+
+  await cli.fill("/wtf");
+  await cli.press("Enter");
+
+  await expect(mascot(page)).toHaveClass(/slime--goal/u);
+});
+
+test("un easter egg qui dit son humeur garde son humeur", async ({ page }) => {
+  const cli = await boot(page);
+
+  await cli.fill("/joke");
+  await cli.press("Enter");
+
+  await expect(mascot(page)).toHaveClass(/slime--laugh/u);
+  await expect(mascot(page)).not.toHaveClass(/slime--goal/u);
 });

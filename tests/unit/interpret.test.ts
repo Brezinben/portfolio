@@ -232,3 +232,56 @@ test("l'interprétation reste synchrone et sans effet de bord", () => {
 
   assert.equal(JSON.stringify(CONTEXT), before, "le contexte ne doit pas être muté");
 });
+
+// Chaque humeur proposée doit jouer sa propre feuille. Une commande qui annonce quelque
+// chose et ne le fait pas est pire que son absence.
+test("chaque humeur proposée rend son propre état", () => {
+  for (const mood of ["alert", "happy", "laugh", "sad", "scared", "sleep"]) {
+    const result = interpret(`/slime ${mood}`, CONTEXT),
+      emote = effectOf(result, "emote");
+
+    assert.equal(emote?.mood, mood, `« ${mood} » doit émettre son humeur`);
+  }
+});
+
+// « idle » reste dans le type, « say » s'en sert. La commande, elle, ne le propose plus :
+// il ne montrait rien.
+test("slime idle n'est plus une humeur proposée", () => {
+  const result = interpret("/slime idle", CONTEXT);
+
+  assert.equal(effectOf(result, "emote"), undefined);
+  // La première ligne est l'écho de la saisie : elle porte « idle » quoi qu'il arrive.
+  assert.ok(
+    texts(result)
+      .slice(1)
+      .some((text) => text.includes("slime <humeur>")),
+  );
+  assert.ok(
+    !texts(result)
+      .slice(1)
+      .some((text) => text.includes("idle")),
+  );
+});
+
+test("slime kill fait exploser la mascotte", () => {
+  assert.ok(kinds(interpret("/slime kill", CONTEXT)).includes("blowUp"));
+});
+
+test("slime drop fait tomber la mascotte", () => {
+  assert.ok(kinds(interpret("/slime drop", CONTEXT)).includes("drop"));
+});
+
+test("slime activity joue l'activité nommée", () => {
+  const activity = effectOf(interpret("/slime activity bike", CONTEXT), "activity");
+
+  assert.equal(activity?.name, "bike");
+});
+
+// Une activité demande un accessoire : elle ne se tire jamais au hasard, et un nom inconnu
+// rend la liste plutôt qu'une animation prise au hasard.
+test("slime activity sans nom connu liste les activités", () => {
+  const result = interpret("/slime activity xyzzy", CONTEXT);
+
+  assert.equal(effectOf(result, "activity"), undefined);
+  assert.ok(texts(result).some((text) => text.includes("slime activity <nom>")));
+});

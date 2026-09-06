@@ -60,7 +60,7 @@ const ROOT = fileURLToPath(new URL("../", import.meta.url)),
     /(?<indent>[^\S\n]*)background-image: url\("assets\/sprites\/slime-[^"]+\.png"\);\n[^\S\n]*background-size: \d+px \d+px;\n/gu,
   SHEET_URL = /assets\/sprites\/slime-[^"]+\.png/gu,
   // La règle de base porte la position de départ. Elle reçoit l'image fusionnée, que les
-  // neuf règles d'état ne déclarent plus.
+  // règles d'état ne déclarent plus.
   SLIME_RULE = /(?<indent>[^\S\n]*)background-position: 0 0;\n/u,
   // MinifyJS reste absent. Rolldown a déjà minifié le seul script en ligne du projet.
   // RemoveAttributeQuotes et removeOptionalTags rendent le balisage déroutant pour 0,3 Ko.
@@ -93,7 +93,7 @@ const ROOT = fileURLToPath(new URL("../", import.meta.url)),
 
     return chunk.code;
   },
-  // Les neuf feuilles sont en 8 bits RGBA, non entrelacées : le cas le plus simple du
+  // Les feuilles sont en 8 bits RGBA, non entrelacées : le cas le plus simple du
   // format. Les lire et les réécrire à la main coûte moins qu'une dépendance de plus.
   BYTES_PER_PIXEL = 4,
   BYTE = 255,
@@ -264,9 +264,9 @@ const unfilter = (filter: number, value: number, around: Around) => {
 
     return { bytes: writeSheets(width, height, pixels), height, width };
   },
-  // Une seule requête au lieu de neuf, et trois fois moins d'octets : un seul flux deflate
-  // exploite la ressemblance entre les feuilles. src/ garde ses neuf fichiers, lisibles un
-  // par un et servables tels quels ; seul l'artefact les fusionne.
+  // Une seule requête au lieu d'une par état, et trois fois moins d'octets : un seul flux
+  // deflate exploite la ressemblance entre les feuilles. src/ garde un fichier par état,
+  // lisible un par un ; seul l'artefact les fusionne.
   foldSheets = async (staging: string, page: string) => {
     const files = page.match(SHEET_URL) ?? [];
 

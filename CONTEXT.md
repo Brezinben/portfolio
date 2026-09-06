@@ -103,16 +103,27 @@ moins de mouvement.
 _Avoid_: slime, avatar, personnage.
 
 **État de la mascotte** (`mascotState`) :
-Ce que la mascotte fait à un instant donné. Seize états, un seul à la fois. Neuf états de
-vie : `idle`, `wink`, `jump`, `type`, `load`, `sleep`, `morph`, `boom`, `reform`. Sept états
-de manipulation : `grab`, `dragLeft`, `dragRight`, et les quatre plaquages `splatLeft`,
-`splatRight`, `splatFloor`, `splatCeiling`.
+Ce que la mascotte fait à un instant donné. Trente-deux états, un seul à la fois.
+
+Neuf états de vie : `idle`, `wink`, `jump`, `type`, `load`, `sleep`, `morph`, `boom`,
+`reform`. Onze états de manipulation : `grab`, `dragLeft`, `dragRight`, les quatre plaquages
+de bord `splatLeft`, `splatRight`, `splatFloor`, `splatCeiling`, et les quatre plaquages de
+coin `splatCeilingLeft`, `splatCeilingRight`, `splatFloorLeft`, `splatFloorRight`. Six
+expressions de commande : `alert`, `happy`, `laugh`, `sad`, `scared`, `drop`. Six activités :
+`bike`, `coffee`, `goal`, `juggle`, `lift`, `train`.
 _Avoid_: humeur, mood, émotion, pose.
 
 **Plaquage** (`splat`) :
-L'écrasement de la mascotte contre un bord de la fenêtre. Le sprite ne dessine aucun mur :
-le côté plat est le bord de l'image, qui doit toucher le bord exact.
+L'écrasement de la mascotte contre un bord de sa piste, ou contre un coin. Le sprite ne
+dessine aucun mur : le côté plat est le bord de l'image, qui doit toucher le bord exact. Un
+coin se teste avant un bord, sinon il se lit toujours comme un mur.
 _Avoid_: collision, impact, choc.
+
+**Activité** (`activity`) :
+Un état où la mascotte manipule un accessoire, par opposition à une expression, qui se lit
+sur le visage. Une activité raconte quelque chose : elle demande un contexte, elle ne se
+tire jamais au hasard.
+_Avoid_: action, occupation, animation.
 
 **Feuille** (`sheet`) :
 Image qui porte toutes les cases d'un état de la mascotte, sur une seule ligne. Une feuille

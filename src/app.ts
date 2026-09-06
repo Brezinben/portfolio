@@ -276,9 +276,9 @@ const BOOT_MS = 2000,
     suggest: raw.suggest ?? "",
     view: raw.view ?? "pairs",
   }),
-  // Seize feuilles de sprites remplacent le dessin en ombres portees. Les durees et les
-  // images vivent dans la feuille de style : le script ne choisit que l'etat.
-  // Neuf etats de vie, puis sept de manipulation.
+  // Trente-deux feuilles de sprites remplacent le dessin en ombres portees. Les durees et
+  // les images vivent dans la feuille de style : le script ne choisit que l'etat.
+  // Neuf etats de vie, six expressions de commande, six activites, onze de manipulation.
   MASCOT_STATES = new Set([
     "idle",
     "wink",
@@ -289,6 +289,18 @@ const BOOT_MS = 2000,
     "morph",
     "boom",
     "reform",
+    "alert",
+    "happy",
+    "laugh",
+    "sad",
+    "scared",
+    "drop",
+    "goal",
+    "bike",
+    "coffee",
+    "lift",
+    "juggle",
+    "train",
     "grab",
     "dragLeft",
     "dragRight",
@@ -296,6 +308,10 @@ const BOOT_MS = 2000,
     "splatRight",
     "splatFloor",
     "splatCeiling",
+    "splatCeilingLeft",
+    "splatCeilingRight",
+    "splatFloorLeft",
+    "splatFloorRight",
   ]),
   MASCOT_REST = "idle",
   // Une case affichee fait 64 px, soit la hauteur de la piste.
@@ -309,22 +325,39 @@ const BOOT_MS = 2000,
   // marge n'existe que sur la verticale : en largeur, la piste est trop longue pour qu'on
   // en sorte par accident.
   SPLAT_MARGIN = 24,
-  // Le vocabulaire d'humeurs de l'interpreteur se traduit en etats de feuille.
-  // « idle » n'y figure pas : le repos depend de la couronne, il se lit sur mascotRest.
-  // Aucune feuille ne dit la tristesse ; la veille, paupieres closes, en approche le plus.
-  MOOD_STATE = {
-    alert: "wink",
-    happy: "jump",
-    laugh: "jump",
-    sad: "sleep",
-    scared: "jump",
-    sleep: "sleep",
-  },
   // Au cinquieme clic le slime explose. Il reprend forme entre cinq et dix secondes plus
   // tard : le hasard evite que l'attente devienne une horloge.
-  // Duree de chaque passe unique. « boom » n'y figure pas : l'explosion tient jusqu'a ce
-  // que le minuteur de reapparition la releve.
-  ONE_SHOT_MS = { jump: 1280, morph: 2400, reform: 1600, wink: 1680 },
+  // Combien de temps un etat de passage tient avant de rendre le repos.
+  //
+  // Pour une passe unique, c'est la duree de sa feuille : le minuteur n'est qu'un filet
+  // derriere animationend, qu'une page en arriere-plan peut avaler.
+  //
+  // Pour « laugh », « sad » et « scared », qui bouclent, le minuteur est la SEULE sortie :
+  // une animation infinie n'emet jamais animationend. Deux a trois cycles, puis le repos.
+  // Retirer une de ces trois lignes laisse la mascotte tourner sans fin.
+  //
+  // « boom » n'y figure pas : l'explosion tient jusqu'a ce que le minuteur de reapparition
+  // la releve.
+  HOLD_MS = {
+    alert: 960,
+    bike: 2880,
+    coffee: 1200,
+    drop: 1440,
+    goal: 1440,
+    happy: 1200,
+    juggle: 2880,
+    jump: 1280,
+    laugh: 4320,
+    lift: 1440,
+    morph: 2400,
+    reform: 1600,
+    sad: 5760,
+    scared: 3000,
+    train: 1440,
+    wink: 1680,
+  },
+  // Le quai reste vide le temps qu'on remarque le depart, puis « drop » la ramene.
+  AWAY_MS = 3000,
   BOOM_AT = 5,
   REFORM_MIN_MS = 5000,
   REFORM_SPREAD_MS = 5000,
@@ -376,6 +409,7 @@ interface State {
   morphTimer: Delay | undefined;
   motionTimer: Delay | undefined;
   reformer: Delay | undefined;
+  returner: Delay | undefined;
   settler: Delay | undefined;
   sleeper: Delay | undefined;
   spinner: Beat | undefined;
@@ -467,6 +501,7 @@ document.addEventListener("alpine:init", () => {
       morphTimer: undefined,
       motionTimer: undefined,
       reformer: undefined,
+      returner: undefined,
       settler: undefined,
       sleeper: undefined,
       spinner: undefined,
@@ -1039,9 +1074,7 @@ document.addEventListener("alpine:init", () => {
 
         clearTimeout(this.settler);
 
-        // Filet pour les passes uniques : un `animationend` perdu — page en arriere-plan,
-        // machine chargee — laisserait la mascotte collee sur sa feuille.
-        const passe = lookup(ONE_SHOT_MS, state);
+        const passe = lookup(HOLD_MS, state);
 
         if (passe) {
           this.settler = setTimeout(() => {
@@ -1068,7 +1101,31 @@ document.addEventListener("alpine:init", () => {
           return;
         }
 
+        // Le train emmene la mascotte : sa derniere case est un quai vide. Elle n'a donc
+        // pas de repos a reprendre, elle est partie.
+        if (this.mascotState === "train") {
+          this.leave();
+
+          return;
+        }
+
         this.mascotPlay(MASCOT_REST);
+      },
+
+      // La feuille du train fait la paire avec celle de la chute : l'une emmene la
+      // mascotte, l'autre la ramene. Un decor vide sans retour serait un piege.
+      leave() {
+        if (this.gone) {
+          return;
+        }
+
+        clearTimeout(this.settler);
+        this.gone = true;
+        clearTimeout(this.returner);
+        this.returner = setTimeout(() => {
+          this.gone = false;
+          this.drop();
+        }, AWAY_MS);
       },
 
       // La ligne porte son humeur : « mise en veille » doit endormir, pas faire cligner.
@@ -1088,13 +1145,17 @@ document.addEventListener("alpine:init", () => {
         }, 2600);
       },
 
+      // La chute repose la mascotte ailleurs sur sa piste : elle arrive, elle ne saute pas.
       drop() {
         this.place(Math.random() * this.trackWidth());
-        this.mascotPlay("jump");
+        this.mascotPlay("drop");
       },
 
+      // Chaque humeur porte le nom de sa feuille, et l'ADR 0004 exige qu'une humeur sans
+      // feuille ramene au repos en coupant ce qui etait en cours. « idle » suit ce chemin :
+      // le repos est deja son etat.
       emote(mood?: Mood) {
-        this.mascotPlay((mood && lookup(MOOD_STATE, mood)) ?? MASCOT_REST);
+        this.mascotPlay(mood && MASCOT_STATES.has(mood) ? mood : MASCOT_REST);
       },
 
       poke() {
@@ -1123,6 +1184,12 @@ document.addEventListener("alpine:init", () => {
 
       // Le compte repart de zero : le slime peut exploser autant de fois qu'on veut.
       blowUp() {
+        // Deja absente, une seconde explosion repousserait son retour sans rien montrer.
+        // Le clic passait par poke(), qui garde deja ; la commande arrive ici en direct.
+        if (this.gone) {
+          return;
+        }
+
         this.clicks = 0;
         this.gone = true;
         this.mascotPlay("boom");
@@ -1252,22 +1319,44 @@ document.addEventListener("alpine:init", () => {
       },
 
       // Le plaquage nait du curseur qui sort de la piste, et non d'une collision entre le
-      // sprite et un bord. Aux quatre coins les deux lectures sont vraies au meme instant :
-      // la verticale l'emporte, et cet ordre n'a pas besoin de mieux.
+      // sprite et un bord. Les quatre coins se testent avant les quatre murs : sur une
+      // diagonale les deux lectures sont vraies au meme instant, et un coin place apres un
+      // mur ne serait jamais atteint.
       dragState(event: PointerEvent, box: DOMRect, step: number) {
-        if (event.clientY < box.top - SPLAT_MARGIN) {
+        const above = event.clientY < box.top - SPLAT_MARGIN,
+          below = event.clientY > box.bottom + SPLAT_MARGIN,
+          left = event.clientX < box.left,
+          right = event.clientX > box.right;
+
+        if (above && left) {
+          return "splatCeilingLeft";
+        }
+
+        if (above && right) {
+          return "splatCeilingRight";
+        }
+
+        if (below && left) {
+          return "splatFloorLeft";
+        }
+
+        if (below && right) {
+          return "splatFloorRight";
+        }
+
+        if (above) {
           return "splatCeiling";
         }
 
-        if (event.clientY > box.bottom + SPLAT_MARGIN) {
+        if (below) {
           return "splatFloor";
         }
 
-        if (event.clientX < box.left) {
+        if (left) {
           return "splatLeft";
         }
 
-        if (event.clientX > box.right) {
+        if (right) {
           return "splatRight";
         }
 
@@ -1795,6 +1884,17 @@ document.addEventListener("alpine:init", () => {
       // La coquille applique ce que l'interpréteur décrit. Les effets des tickets à
       // venir sont ignorés ici plutôt que simulés.
       apply(effects: Effect[]) {
+        // Trouver un easter egg vaut une celebration. Mais plusieurs d'entre eux disent
+        // deja une humeur, et le but jouerait une fraction de seconde avant de se faire
+        // ecraser : il ne se joue que si rien d'autre ne bouge la mascotte, et apres la
+        // boucle, pour ne pas dependre de l'ordre des effets.
+        const found = effects.some(
+            (effect) => effect.type === "track" && effect.event === "easter_egg",
+          ),
+          moved = effects.some((entry) =>
+            ["activity", "blowUp", "drop", "emote", "say"].includes(entry.type),
+          );
+
         for (const effect of effects) {
           if (effect.type === "track") {
             this.track(effect.event, effect.props);
@@ -1819,6 +1919,10 @@ document.addEventListener("alpine:init", () => {
             this.emote(effect.mood);
           } else if (effect.type === "drop") {
             this.drop();
+          } else if (effect.type === "blowUp") {
+            this.blowUp();
+          } else if (effect.type === "activity") {
+            this.mascotPlay(effect.name);
           } else if (effect.type === "navigate") {
             this.goSection(effect.id);
           } else if (effect.type === "clear") {
@@ -1832,6 +1936,10 @@ document.addEventListener("alpine:init", () => {
           } else if (effect.type === "matrix") {
             this.emote("scared");
           }
+        }
+
+        if (found && !moved) {
+          this.mascotPlay("goal");
         }
       },
 
@@ -2021,6 +2129,8 @@ document.addEventListener("alpine:init", () => {
             this.power = "fade";
             setTimeout(() => {
               this.power = "on";
+              // Le demarrage decouvre la mascotte : elle arrive plutot qu'elle n'apparait.
+              this.mascotPlay("drop");
             }, FADE_MS);
           },
           Math.max(0, BOOT_MS - waited),
