@@ -528,7 +528,8 @@
 
     /* Les trois formes partagent les regles d'etat : leurs feuilles portent les memes
        trente-deux etats, dans le meme ordre, avec le meme nombre de cases. Seule l'image
-       change ici, et la construction l'y pose. */
+       change ici, et la construction l'y pose. Elle n'y pose pas de position : ces regles
+       sont plus specifiques que « .slime--<etat> », et ecraseraient sa bande. */
     .slime[data-form="cube"] {
       background-position: 0 0
     }
