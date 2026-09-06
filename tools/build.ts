@@ -38,6 +38,7 @@ const ROOT = fileURLToPath(new URL("../", import.meta.url)),
   FIXED_NAMES = new Set([
     "apple-touch-icon.png",
     "content.json",
+    "llms-full.txt",
     "llms.txt",
     "robots.txt",
     "sitemap.xml",

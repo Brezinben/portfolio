@@ -12,6 +12,7 @@ const SOURCE = new URL("../../src/", import.meta.url),
   sitemap = read("sitemap.xml"),
   robots = read("robots.txt"),
   llms = read("llms.txt"),
+  llmsFull = read("llms-full.txt"),
   texte = read("texte.html"),
   locs = [...sitemap.matchAll(/<loc>(?<url>[^<]+)<\/loc>/gu)].map((found) => found.groups?.url);
 
@@ -55,17 +56,52 @@ test("llms.txt ne nomme que des adresses qui existent", () => {
 });
 
 // Le contresens le plus coûteux : croire que ce domaine héberge un serveur MCP parce que
-// Benjamin en conçoit pour ses clients.
+// Benjamin en conçoit pour ses clients. Le démenti tient dans le bloc de détails, que la
+// convention réserve à ce qui aide un agent à interpréter les documents listés.
 test("llms.txt dit ce que le site n'expose pas", () => {
   assert.ok(llms.includes("## Quand ce site répond à votre question"), "la section manque");
   assert.ok(llms.includes("n'en héberge aucun"), "llms.txt ne dément pas le serveur MCP hébergé");
   assert.ok(llms.includes("ni produit, ni API"), "llms.txt ne dément pas l'API");
+  assert.ok(llmsFull.includes("n'en héberge aucun"), "le contenu complet ne porte pas le démenti");
+  assert.ok(llmsFull.includes("ni produit, ni API"), "le contenu complet ne dément pas l'API");
+});
+
+// https://llmstxt.org/ : un H1, un résumé en blockquote, des détails sans titre, puis des
+// sections H2 qui ne contiennent que des listes de liens. Sans ce test, llms.txt redevient
+// le document qu'il était, et plus aucun analyseur ne sait le lire.
+const LIEN = /^- \[[^\]]+\]\(https:\/\/[^)]+\)(?<notes>: .+)?$/su;
+
+test("llms.txt suit la grammaire de la convention", () => {
+  const [titre, vide, resume] = llms.split("\n");
+
+  assert.match(titre ?? "", /^# \S/u, "la première ligne n'est pas le titre");
+  assert.equal(vide, "", "le titre n'est pas suivi d'une ligne vide");
+  assert.match(resume ?? "", /^> \S/u, "le résumé en blockquote ne suit pas le titre");
+
+  const sections = llms.split(/^## .+$/mu).slice(1);
+
+  assert.ok(sections.length >= 1, "llms.txt ne porte aucune section");
+
+  for (const section of sections) {
+    const entrees = section.trim().split(/\n(?=- )/u);
+
+    for (const entree of entrees) {
+      assert.match(entree, LIEN, "une section ne porte pas qu'une liste de liens");
+    }
+  }
+
+  assert.ok(llms.includes("## Optional"), "la section réservée au secondaire manque");
+  assert.ok(
+    llms.includes(`${ORIGINE}/llms-full.txt`),
+    "llms.txt ne renvoie pas vers le contenu complet",
+  );
 });
 
 test("llms.txt et la version texte donnent le même contact", () => {
   const contact = "benjamin.david1@hotmail.fr";
 
   assert.ok(llms.includes(contact), "llms.txt ne donne pas le contact attendu");
+  assert.ok(llmsFull.includes(contact), "llms-full.txt ne donne pas le contact attendu");
   assert.ok(texte.includes(contact), "texte.html ne donne pas le contact attendu");
 });
 
@@ -116,8 +152,9 @@ test("les huit thèmes de la version texte reprennent les couleurs de la version
 });
 
 // Le contenu de la version texte est écrit en dur. content.json reste la source de vérité :
-// sans ce test, la page dériverait en silence au prochain changement de contenu.
-test("la version texte porte tout le contenu de content.json", () => {
+// sans ce test, la page dériverait en silence au prochain changement de contenu. Le contenu
+// complet servi aux agents est une seconde copie, tenue par la même mesure.
+test("la version texte et le contenu complet portent tout le contenu de content.json", () => {
   // SAFETY: content.json est un artefact du dépôt, versionné à côté de ce test, et son
   // schéma est tenu par tests/unit/content.test.ts. Seules trois clés sont lues ici.
   const contenu = JSON.parse(read("content.json")) as {
@@ -125,7 +162,8 @@ test("la version texte porte tout le contenu de content.json", () => {
       techNotes: Record<string, { note: string; where: string }>;
       timeline: { org: string }[];
     },
-    absent = (valeur: string) => !texte.includes(valeur.replaceAll("&", "&amp;"));
+    absent = (valeur: string) =>
+      !texte.includes(valeur.replaceAll("&", "&amp;")) || !llmsFull.includes(valeur);
 
   assert.deepEqual(Object.keys(contenu.techNotes).filter(absent), [], "des fiches techno manquent");
   assert.deepEqual(

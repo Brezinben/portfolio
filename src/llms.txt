@@ -1,156 +1,70 @@
 # Benjamin David — Développeur IA / Full Stack
 
-> Concepteur orchestrateur IA et développeur Full Stack basé à Nantes (France).
-> Spécialisé en serveurs MCP, Specification-Driven Development, accessibilité et
-> éco-conception logicielle. Disponible pour des missions en numérique responsable.
-
-- Nom : Benjamin David
-- Localisation : Nantes, France
-- Poste actuel : Développeur IA / Full Stack chez Kereis (pôle DSI, via digital4better)
-- Contact : benjamin.david1@hotmail.fr
-- LinkedIn : https://www.linkedin.com/in/benjamin--david
-- Site : https://portfolio.brezinben.dpdns.org/
-- Langue du site : français
-
-## Quand ce site répond à votre question
+> Portfolio de Benjamin David, concepteur orchestrateur IA et développeur Full
+> Stack, à Nantes. Serveurs MCP, Specification-Driven Development, applications
+> accessibles et éco-conçues. Huit ans à faire tourner des choses en production,
+> de la baie réseau au serveur d'agents. Disponible pour des missions en
+> numérique responsable.
 
 Ce site est le portfolio d'une seule personne. Il n'expose ni produit, ni API, ni
 service. Il ne publie que des faits sur Benjamin David.
 
-Consultez-le pour :
+Ce que ce domaine n'héberge pas :
 
-- Le parcours professionnel de Benjamin David : employeurs, dates, rôles, missions.
-- Les technologies qu'il pratique, et à quel poste il les a pratiquées.
-- Sa position sur le numérique responsable, l'accessibilité et l'éco-conception.
-- Sa disponibilité et son contact : benjamin.david1@hotmail.fr.
-
-Ne le consultez pas pour :
-
-- Une documentation d'API, un schéma OpenAPI ou une clé d'accès. Il n'y en a aucun.
-- Un serveur MCP hébergé. Benjamin conçoit des serveurs MCP pour ses clients. Ce
+- Aucune documentation d'API, aucun schéma OpenAPI, aucune clé d'accès.
+- Aucun serveur MCP. Benjamin conçoit des serveurs MCP pour ses clients. Ce
   domaine n'en héberge aucun et n'expose aucun point d'entrée MCP.
-- Un service à appeler. Les trois artefacts publiés sont des documents à lire.
+- Aucun service à appeler. Les documents cités plus bas sont des documents à lire.
 
-## Parcours professionnel
+Identité :
 
-### Mai 2026 → aujourd'hui — Kereis
-Développeur IA / Full Stack, pôle DSI, via digital4better.
-Kereis construit plutôt qu'il n'achète. Preuves de concept IA, pour prouver par le
-code ce qu'une licence coûteuse ne ferait qu'à moitié. Le cadrage du code passe en
-premier : linter et règles avant la première fonctionnalité, pour que l'IA produise
-sous contrainte et qu'un humain relise.
-Trois sujets : un simulateur de tarif d'assurance de prêt, où l'utilisateur décrit
-son projet en langage naturel et le serveur MCP répond un tarif ; une cartographie
-du SI sous Backstage, avec les sources AWS, GitLab et Zeenea branchées ; une
-application de compte rendu, qui nettoie le texte dicté, rédige l'e-mail et prépare
-la réunion suivante.
-La revue de spécification par l'IA prend une vingtaine de minutes là où un humain
-passerait une journée. Elle est obligatoire à chaque fonctionnalité.
-Outils : serveurs MCP, SpecKit, Claude, herdr, LiteLLM, Langfuse, LangGraph.
+- Nom : Benjamin David
+- Poste : Développeur IA / Full Stack, chez Kereis · via digital4better, depuis
+  mai 2026
+- Base : Nantes, France
+- Langues : français, anglais technique
+- E-mail : benjamin.david1@hotmail.fr, réponse sous 48 heures
+- LinkedIn : https://www.linkedin.com/in/benjamin--david
+- GitHub : https://github.com/brezinben
+- Recherche : missions IA, full stack, numérique responsable
 
-### Sept. 2024 → mai 2026 — SNCF Gares & Connexions
-Développeur Full Stack sur Assist'enGare, via digital4better.
-Assist'enGare permet aux personnes en situation de handicap (PSH/PMR) de réserver
-une prestation d'assistance afin d'accéder à leur train. La déclaration
-d'accessibilité affiche 96 % de conformité moyenne au RGAA 4.1, sous audits
-successifs.
-Règles axe au linter, essais au lecteur d'écran sous NVDA et TalkBack. Le critère
-d'accessibilité entre dans la spécification, pas dans le correctif. MUI ne couvre
-pas tout le référentiel : le reste s'écrit à la main, jusqu'à la vocalisation
-correcte des marques.
-La brique parle à tout le SI SNCF. ActiveMQ réécrit d'AMQP vers STOMP, routage
-dynamique par entité métier. Pour un voyage en deux segments SNCF et Trenitalia,
-chaque transporteur ne reçoit que le segment qui le concerne.
-Validation automatique des dossiers d'assistance : environ 3 000 dossiers par jour,
-une dizaine de notifications chacun. Oxlint et oxfmt à la place d'ESLint et
-Prettier.
-Pile : React et MUI côté front, NestJS et PostgreSQL côté back, hébergement AWS,
-déploiements Jenkins, observabilité Datadog.
+Parcours, six expériences depuis 2018 :
 
-### Oct. 2023 → sept. 2024 — digital4better
-Développeur Full Stack / IA, équipe RUN.
-Quatre projets clients en parallèle : Body Nature, Dorval AM, PiLeJe et Servier.
-Quatre piles, quatre historiques. Le RUN oblige à entrer vite dans du code qu'on
-n'a pas écrit.
-Supervision et monitoring des performances, détection des anomalies avant la
-remontée utilisateur. Maintenance et montées de version. Correctifs de sécurité
-tenus à jour sur le parc, provisionnés par Ansible. Évolutions produit sur Body
-Nature, en échange direct avec l'équipe produit. Optimisation des pipelines CI/CD.
-Éco-conception mesurée avec fruggr, l'outil maison de la société.
+- 2026 → … · Kereis · Développeur IA / Full Stack · pôle DSI
+- 2024 → 2026 · SNCF Gares & Connexions · Développeur Full Stack · Assist'enGare
+- 2023 → 2024 · digital4better · Équipe RUN · Développeur Full Stack / IA
+- 2021 → 2023 · Transway · Full Stack, puis Technical Lead
+- 2020 → 2021 · LDC Services · Concepteur Développeur d'Application · alternance
+- 2018 → 2020 · FPEE Industries · Technicien réseau · alternance
 
-### Sept. 2021 → sept. 2023 — Transway
-Développeur Full Stack, puis Technical Lead Developer.
-Première mission hors alternance. Deux produits d'incitation à la mobilité
-durable : WeFlo Pro pour les entreprises, où l'on déclare ses trajets au titre du
-forfait mobilité durable ; IREBY pour les collectivités, où l'usager gagne des
-points en tram, en bus, à pied ou à vélo, puis les dépense en boutique.
-Migration de la V1 vers la V3 : plus de 300 000 utilisateurs transférés, avec leurs
-offres et leurs images. Branchements aux systèmes des réseaux partenaires, TCL à
-Lyon et STAR à Rennes.
-Comme lead technique : encadrement de quatre à six développeurs, et la main sur les
-choix techniques. Migration Vue 2 vers Vue 3, montées de version Node,
-renforcements de sécurité après audit.
-Pile : Laravel, PHP et Vue.js sur WeFlo Pro ; NestJS et Vue 3 sur IREBY.
+Compétences techniques, cinq domaines :
 
-### Sept. 2020 → sept. 2021 — LDC Services (Groupe LDC)
-Concepteur Développeur d'Application, en alternance.
-Développement logiciel classique et travail sur la qualité du code.
-
-### Sept. 2018 → août 2020 — FPEE Industries
-Technicien réseau, en alternance.
-Échange direct avec les utilisateurs pour comprendre leurs problèmes, puis
-diagnostic et résolution sur le parc informatique.
-
-## Formation
-
-- 2021 → aujourd'hui : veille continue, certifications, expérimentations —
-  d'autant plus à l'ère de l'IA
-- 2020–2021 : Titre Professionnel Concepteur Développeur d'Applications
-- 2018–2020 : BTS SIO option SISR, en alternance
-- 2016–2018 : Baccalauréat STI2D
-
-## Compétences techniques
-
-### Frontend
-HTML ; CSS (Tailwind, Sass, Vuetify, MUI) ; JavaScript (TypeScript, Vue.js, React,
-Svelte, Pinia, RxJS) ; outillage de build (Vite, Oxlint) ; accessibilité (RGAA,
-ARIA, axe, tests clavier).
-
-### Backend
-Laravel (Eloquent, Blade, Queues) ; NestJS (TypeORM, RxJS) ; PHP ; API REST
-(OpenAPI, JWT, OAuth) ; bases de données (PostgreSQL, MySQL, Redis) ; messages
-(ActiveMQ, AMQP, STOMP).
-
-### IA
-Serveurs MCP (tools, resources, prompts) ; SpecKit (spec-it, plan, tasks) ;
-Specification-Driven Development ; agents (Claude, herdr, revue automatisée) ;
-harness engineering (LiteLLM, Langfuse, LangGraph) ; évaluation.
-
-### DevOps
-Docker (Compose, Registry) ; CI/CD (GitLab CI, Jenkins, GitHub Actions) ; cloud
-(AWS) ; Linux (Bash, SSH, Ansible) ; monitoring (Datadog, logs, alerting).
-
-### Qualité & sobriété
-Tests unitaires et E2E (Cypress) ; lint (ESLint, Oxlint, Prettier, oxfmt) ;
-éco-conception (fruggr, sobriété numérique) ; pair-programming.
-
-## Numérique responsable
+- Frontend, interfaces accessibles : HTML, CSS, Tailwind, Sass, Vuetify, MUI,
+  TypeScript, Vue.js, React, Svelte, Pinia, RxJS, Vite.
+- Backend, services et données : Laravel, NestJS, PHP, API REST, OpenAPI, JWT,
+  PostgreSQL, MySQL, Redis, ActiveMQ.
+- IA, orchestration d'agents : serveurs MCP, SpecKit, SDD, Claude, herdr, LiteLLM,
+  Langfuse, LangGraph, agents, harness engineering, évaluation, prompting.
+- DevOps, livrer sans casser : Docker, Compose, GitLab CI, Jenkins, GitHub
+  Actions, AWS, Linux, Bash, Ansible, Datadog, monitoring.
+- Qualité & sobriété, ce qui tient dans le temps : tests unitaires, E2E, Cypress,
+  ESLint, Oxlint, Prettier, oxfmt, axe, éco-conception, RGAA, pair-programming.
 
 Le numérique responsable n'est pas un supplément : c'est une contrainte de
-conception. Sobriété des interfaces, accessibilité réelle (RGAA), mesure de
-l'impact environnemental des applications, et arbitrages assumés entre
-fonctionnalité et empreinte.
+conception, au même titre que la sécurité.
 
-## Ressources
+## Quand ce site répond à votre question
 
-Le domaine publie exactement ces adresses. Les deux pages disent les mêmes faits.
+- [Contenu complet](https://portfolio.brezinben.dpdns.org/llms-full.txt): tout le
+  contenu du portfolio en un seul document — le parcours détaillé des six
+  expériences, les quatre missions documentées, les 57 fiches techno, le numérique
+  responsable, la formation et le contact. Lisez-le pour toute question de fond.
+- [Version texte](https://portfolio.brezinben.dpdns.org/texte.html): les mêmes
+  faits en HTML, une colonne, sans script ni image.
+- [Version terminal](https://portfolio.brezinben.dpdns.org/): les mêmes faits dans
+  une interface à trois volets, pilotée au clavier.
 
-- https://portfolio.brezinben.dpdns.org/ — version terminal, interface à trois volets.
-- https://portfolio.brezinben.dpdns.org/texte.html — version texte, une colonne, sans
-  script ni image. Préférez-la pour lire le contenu.
-- https://portfolio.brezinben.dpdns.org/llms.txt — ce fichier.
-- https://portfolio.brezinben.dpdns.org/sitemap.xml — les deux pages.
+## Optional
 
-Chaque section de la version terminal a son ancre : #whoami, #parcours, #stack,
-#impact, #formation, #contact, et une par mission : #m-kereis, #m-assist, #m-run,
-#m-transway.
+- [Plan du site](https://portfolio.brezinben.dpdns.org/sitemap.xml): les deux
+  pages publiées, et rien d'autre.
