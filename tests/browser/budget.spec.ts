@@ -2,8 +2,8 @@ import { expect, test } from "@playwright/test";
 import { readFile, readdir } from "node:fs/promises";
 
 const BUDGET_KO = 150,
-  SPRITES_KO = 22,
-  FUSION_KO = 8,
+  SPRITES_KO = 32,
+  FUSION_KO = 10,
   // Un hôte tiers qui n'envoie pas timing-allow-origin fait rapporter un transferSize nul au
   // navigateur. Le poids de ces ressources est invisible, pas nul. Les nommer ici empêche
   // qu'un nouveau tiers entre dans la page et échappe au budget sans que personne ne le voie.
@@ -61,7 +61,7 @@ test("le premier chargement tient dans le budget de poids", async ({ page }) => 
 // source, et non sur ce qui part sur le réseau : il borne ce que la fusion aura à digérer,
 // et il signale une feuille qui grossit.
 test("les feuilles de la mascotte tiennent dans leur plafond", async () => {
-  const dossier = new URL("../../src/sprites/", import.meta.url),
+  const dossier = new URL("../../src/assets/sprites/", import.meta.url),
     feuilles = await readdir(dossier),
     poids = await Promise.all(
       feuilles.map(async (nom) => {

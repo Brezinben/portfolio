@@ -132,25 +132,73 @@ test("la largeur des volets ne bouge pas d'une section à l'autre", async ({ pag
   );
 });
 
-// Un seul rayon pilote tous les coins arrondis : la valeur se teste dans le navigateur
-// en changeant une variable, pas en chassant sept déclarations.
-test("un seul rayon pilote tous les coins arrondis", async ({ page }) => {
+// Un seul rayon pilote les coins des zones : la valeur se teste dans le navigateur en
+// changeant une variable, pas en chassant six déclarations.
+test("un seul rayon pilote les coins arrondis des zones", async ({ page }) => {
   await boot(page);
+  await page.locator("[data-ctl='opts']").click();
+  await expect(page.locator("[data-opts]")).toBeVisible();
 
   const rayons = () =>
     page.evaluate(() =>
-      ["[data-ctl='opts']", "[data-pane='main']", "[data-pane='out']", "[data-ctl='nav']"].map(
-        (cible) => getComputedStyle(document.querySelector<HTMLElement>(cible)!)!.borderRadius,
-      ),
+      [
+        "[data-pane='nav'] > div > div:nth-child(1)",
+        "[data-pane='nav'] > div > div:nth-child(2)",
+        "[data-pane='main']",
+        "[data-pane='out']",
+        "[data-opts]",
+      ].map((cible) => getComputedStyle(document.querySelector<HTMLElement>(cible)!).borderRadius),
     );
 
-  expect(await rayons(), "y compris les contrôles").toEqual(["5px", "5px", "5px", "5px"]);
+  expect(await rayons(), "les cinq zones visibles portent le rayon").toEqual(
+    Array.from({ length: 5 }, () => "5px"),
+  );
 
   await page.evaluate(() =>
     document.querySelector<HTMLElement>(".tm")!.style.setProperty("--radius", "0px"),
   );
 
-  expect(await rayons(), "la variable les mène tous").toEqual(["0px", "0px", "0px", "0px"]);
+  expect(await rayons(), "la variable les mène toutes").toEqual(
+    Array.from({ length: 5 }, () => "0px"),
+  );
+});
+
+// Le cadre de démarrage est la sixième zone. Il meurt avec le boot : son rayon ne se lit
+// que pendant.
+test("le cadre de démarrage porte le rayon", async ({ page }) => {
+  await page.goto("/");
+
+  const cadre = page.locator("[data-boot] > div"),
+    rayon = () => cadre.evaluate((node) => getComputedStyle(node).borderRadius);
+
+  await expect(cadre).toBeVisible();
+
+  expect(await rayon(), "la zone porte le rayon").toBe("5px");
+
+  await page.evaluate(() =>
+    document.querySelector<HTMLElement>(".tm")!.style.setProperty("--radius", "0px"),
+  );
+
+  expect(await rayon(), "la variable la mène aussi").toBe("0px");
+});
+
+// L'invariant de CONTEXT.md : focalisable ⇒ élément intérieur ⇒ carré. Un outline suit le
+// rayon de l'élément qu'il entoure, et un rayon sur un contrôle se voit d'abord à l'état
+// sélectionné, où la frise reste carrée et la section ne l'était plus.
+test("aucun élément focalisable n'a de coin arrondi", async ({ page }) => {
+  await boot(page);
+  // La modale porte quatre des six contrôles corrigés : sans elle le parcours les rate.
+  await page.locator("[data-ctl='opts']").click();
+  await expect(page.locator("[data-opts]")).toBeVisible();
+
+  const arrondis = await page.evaluate(() =>
+    [...document.querySelectorAll<HTMLElement>('button, input, a[href], [tabindex="0"]')]
+      .filter((node) => node.offsetParent !== null)
+      .filter((node) => getComputedStyle(node).borderRadius !== "0px")
+      .map((node) => `${node.tagName.toLowerCase()}[${node.dataset.ctl ?? "?"}]`),
+  );
+
+  expect(arrondis, "focalisable ⇒ intérieur ⇒ carré").toEqual([]);
 });
 
 test("le journal se redimensionne au clavier et sa hauteur est conservée", async ({ page }) => {

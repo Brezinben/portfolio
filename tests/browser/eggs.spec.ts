@@ -47,12 +47,16 @@ test("les ligatures restent désactivées", async ({ page }) => {
   expect(`${settings.features} ${settings.ligatures}`).toMatch(/none|liga/);
 });
 
-test("un mode de tête change la vache", async ({ page }) => {
+// La commande n'a plus de drapeau : elle tire un visage au hasard parmi les huit. Le test
+// verifie donc l'appartenance, pas l'identite. La variete est prouvee cote unitaire.
+test("la vache porte un des huit visages", async ({ page }) => {
   const cli = await boot(page);
 
-  await run(cli, "/cowsay -d mort");
+  await run(cli, "/cowsay bonjour");
 
-  await expect(page.locator("[data-journal]")).toContainText("(xx)");
+  await expect(page.locator("[data-journal]")).toContainText(
+    /\((?:==|xx|\$\$|@@|\*\*|--|OO|\.\.)\)/u,
+  );
 });
 
 test("cowthink rend une bulle de pensée", async ({ page }) => {
@@ -257,10 +261,10 @@ test("shutdown éteint puis rejoue le démarrage", async ({ page }) => {
 // Les yeux du mode cupide valent « $$ », qui est un motif de remplacement en JavaScript.
 // Un build qui passe par String.replace avec un remplacement litteral les reduit a « $ ».
 // Ce test s'execute sur l'artefact servi, la ou les tests unitaires lisent la source.
-test("les yeux du mode cupide survivent au build", async ({ page }) => {
-  const cli = await boot(page);
+test("les yeux du mode cupide survivent au build", async ({ request }) => {
+  const page = await request.get("/");
+  const servi = await page.text();
 
-  await run(cli, "/cowsay -g argent");
-
-  await expect(page.locator("[data-journal]")).toContainText("($$)");
+  // Le minifieur choisit ses guillemets : on cherche la paire de dollars, pas sa mise en forme.
+  expect(servi, "le double dollar ne doit pas être réduit à un seul").toMatch(/eyes:.\$\$./u);
 });

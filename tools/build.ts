@@ -32,7 +32,7 @@ const ROOT = fileURLToPath(new URL("../", import.meta.url)),
   LEGACY = join(ROOT, ".versions", `${OUTPUT}.reprise`),
   KEPT_VERSIONS = 3,
   CONTENT = "content.json",
-  TRANSFORMED = new Set(["app.js", CONTENT, "index.html", "texte.html"]),
+  TRANSFORMED = new Set([CONTENT, "index.html", "texte.html"]),
   // Ces noms sont des contrats avec l'extérieur : iOS demande /apple-touch-icon.png sans
   // balise, la page charge content.json par une URL relative, et les robots lisent llms.txt.
   FIXED_NAMES = new Set([
@@ -44,21 +44,21 @@ const ROOT = fileURLToPath(new URL("../", import.meta.url)),
   ]),
   STAMPED_EXTENSIONS = new Set([".css", ".js", ".pdf", ".png", ".svg", ".woff2"]),
   PAGES = ["index.html", "texte.html"],
-  MODULE_TAG = '<script type="module" src="app.js"></script>',
+  MODULE_TAG = '<script type="module" src="app.ts"></script>',
   // Une case de mascotte fait 32 px natifs et s'affiche à x2. Voir l'ADR 0004.
   FRAME = 32,
   SCALE = 2,
   BAND = FRAME * SCALE,
   // Le préfixe « slime- » est tenu par le budget, qui compte les images de mascotte sur ce
   // nom. Le changer rendrait ces tests silencieusement vrais.
-  SHEETS = "sprites/slime-sheets.png",
+  SHEETS = "assets/sprites/slime-sheets.png",
   // Le CSS de src/ nomme une feuille par état, dans l'ordre des bandes attendues. La
   // construction empile les feuilles dans cet ordre, puis remplace chaque paire par le
   // décalage de sa bande. La liste des feuilles et l'ordre des bandes sortent du même
   // balayage : ils ne peuvent pas diverger.
   SHEET_RULE =
-    /(?<indent>[^\S\n]*)background-image: url\("sprites\/slime-[^"]+\.png"\);\n[^\S\n]*background-size: \d+px \d+px;\n/gu,
-  SHEET_URL = /sprites\/slime-[^"]+\.png/gu,
+    /(?<indent>[^\S\n]*)background-image: url\("assets\/sprites\/slime-[^"]+\.png"\);\n[^\S\n]*background-size: \d+px \d+px;\n/gu,
+  SHEET_URL = /assets\/sprites\/slime-[^"]+\.png/gu,
   // La règle de base porte la position de départ. Elle reçoit l'image fusionnée, que les
   // neuf règles d'état ne déclarent plus.
   SLIME_RULE = /(?<indent>[^\S\n]*)background-position: 0 0;\n/u,
@@ -81,14 +81,14 @@ const ROOT = fileURLToPath(new URL("../", import.meta.url)),
       : undefined,
   bundle = async () => {
     const result = await build({
-        input: join(SOURCE, "app.js"),
+        input: join(SOURCE, "app.ts"),
         output: { format: "esm", minify: true },
         write: false,
       }),
       [chunk] = result.output;
 
     if (!chunk) {
-      throw new Error("Rolldown n'a rien produit pour app.js");
+      throw new Error("Rolldown n'a rien produit pour app.ts");
     }
 
     return chunk.code;

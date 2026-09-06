@@ -9,8 +9,8 @@
     content="Benjamin David, développeur IA et Full Stack à Nantes. Serveurs MCP, Specification-Driven Development, accessibilité et numérique responsable.">
   <meta name="author" content="Benjamin David">
   <link rel="canonical" href="https://portfolio.brezinben.dpdns.org/">
-  <link rel="icon" href="favicon.svg" type="image/svg+xml">
-  <link rel="icon" href="favicon-32.png" sizes="32x32">
+  <link rel="icon" href="assets/icons/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="assets/icons/favicon-32.png" sizes="32x32">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <meta property="og:type" content="profile">
   <meta property="og:title" content="Benjamin David — Développeur IA &amp; Full Stack">
@@ -18,7 +18,7 @@
     content="Serveurs MCP, Specification-Driven Development, accessibilité et numérique responsable. Portfolio en interface terminal.">
   <meta property="og:url" content="https://portfolio.brezinben.dpdns.org/">
   <meta property="og:locale" content="fr_FR">
-  <meta property="og:image" content="https://portfolio.brezinben.dpdns.org/share.png">
+  <meta property="og:image" content="https://portfolio.brezinben.dpdns.org/assets/share.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta property="og:image:alt"
@@ -26,7 +26,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Benjamin David — Développeur IA &amp; Full Stack">
   <meta name="twitter:description" content="Serveurs MCP, SDD, accessibilité, numérique responsable.">
-  <meta name="twitter:image" content="https://portfolio.brezinben.dpdns.org/share.png">
+  <meta name="twitter:image" content="https://portfolio.brezinben.dpdns.org/assets/share.png">
   <!-- Mesure d'audience auto-hébergée, sans cookie ni identifiant. Différée, et hors du
        budget de poids : si elle est bloquée, la page ne change pas d'un octet. -->
   <script defer src="https://umami.brezinben.dpdns.org/script.js"
@@ -37,7 +37,7 @@
        recomposent. */
     @font-face {
       font-family: "JetBrains Mono";
-      src: url("fonts/jetbrains-mono.woff2") format("woff2");
+      src: url("assets/fonts/jetbrains-mono.woff2") format("woff2");
       font-weight: 400 800;
       font-style: normal;
       font-display: swap;
@@ -508,12 +508,30 @@
     /* Mascotte : neuf feuilles de 32 px par frame, affichées à ×2, soit 64 px. Le pas
        d'un keyframe est lié à la taille d'affichage : à ×2 ce sont -768px et -1024px, et
        non les -1536px / -2048px de la spécification, calés sur ×4. */
+    /* La mascotte ne sort jamais de sa piste : elle s'y place en absolu, et « left » vient
+       du script. Cet élément ne porte aucune liaison « :style ». N'en ajoutez pas. Une
+       liaison réécrit l'attribut entier dès qu'une de ses dépendances bouge : elle
+       effacerait la position au moment même de la prise, quand « dragging » bascule. C'est
+       le piège de « className », un cran plus haut. Une part variable passe donc par un
+       attribut de données et une règle. */
     .slime {
+      position: absolute;
+      bottom: 0;
       width: 64px;
       height: 64px;
       background-repeat: no-repeat;
       background-position: 0 0;
-      image-rendering: pixelated
+      image-rendering: pixelated;
+      touch-action: none;
+      cursor: grab
+    }
+
+    .slime[data-held="true"] {
+      cursor: grabbing
+    }
+
+    .slime[data-gone="true"] {
+      pointer-events: none
     }
 
     /* Le défilement ne touche qu'un axe. L'autre reste libre : la construction fusionne
@@ -541,57 +559,61 @@
        donc le seul qui existe, et le CSS ne peut pas se décaler par rapport à l'image.
        Servi tel quel, sans construction, src/ tire une feuille par état déclenché. */
     .slime--idle {
-      background-image: url("sprites/slime-idle.png");
+      background-image: url("assets/sprites/slime-idle.png");
       background-size: 768px 64px;
       animation: slime-12 1.44s steps(12) infinite
     }
 
     .slime--type {
-      background-image: url("sprites/slime-type-b.png");
+      background-image: url("assets/sprites/slime-type-b.png");
       background-size: 768px 64px;
       animation: slime-12 .72s steps(12) infinite
     }
 
     .slime--load {
-      background-image: url("sprites/slime-load.png");
+      background-image: url("assets/sprites/slime-load.png");
       background-size: 1024px 64px;
       animation: slime-16 1.6s steps(16) infinite
     }
 
     .slime--sleep {
-      background-image: url("sprites/slime-sleep.png");
+      background-image: url("assets/sprites/slime-sleep.png");
       background-size: 1024px 64px;
       animation: slime-16 3.2s steps(16) infinite
     }
 
     .slime--wink {
-      background-image: url("sprites/slime-wink.png");
+      background-image: url("assets/sprites/slime-wink.png");
       background-size: 768px 64px;
       animation: slime-12 1.68s steps(12) 1
     }
 
     .slime--jump {
-      background-image: url("sprites/slime-jump.png");
+      background-image: url("assets/sprites/slime-jump.png");
       background-size: 1024px 64px;
       animation: slime-16 1.28s steps(16) 1
     }
 
+    /* La mue est la transition entre deux teintes : elle part de l'ancienne et arrive sur
+       la nouvelle, au lieu de sauter au premier instant. Le fondu tient la passe, et lui
+       seul : un changement de thème sans mue garde sa teinte immédiate. */
     .slime--morph {
-      background-image: url("sprites/slime-morph.png");
+      background-image: url("assets/sprites/slime-morph.png");
       background-size: 1024px 64px;
-      animation: slime-16 2.4s steps(16) 1
+      animation: slime-16 2.4s steps(16) 1;
+      transition: filter 2.4s linear
     }
 
     /* L'explosion s'arrête sur sa dernière frame : le slime reste absent le temps que
        le minuteur lui rende sa forme. */
     .slime--boom {
-      background-image: url("sprites/slime-boom.png");
+      background-image: url("assets/sprites/slime-boom.png");
       background-size: 1024px 64px;
       animation: slime-16 1.12s steps(16) 1 forwards
     }
 
     .slime--reform {
-      background-image: url("sprites/slime-reform.png");
+      background-image: url("assets/sprites/slime-reform.png");
       background-size: 1024px 64px;
       animation: slime-16 1.6s steps(16) 1
     }
@@ -600,43 +622,43 @@
        bouton reste enfoncé. Les quatre plaquages tiennent leur dernière case : la mascotte
        reste écrasée tant qu'elle est plaquée contre la paroi. */
     .slime--grab {
-      background-image: url("sprites/slime-grab.png");
+      background-image: url("assets/sprites/slime-grab.png");
       background-size: 768px 64px;
       animation: slime-12 1.2s steps(12) infinite
     }
 
-    .slime--drag-right {
-      background-image: url("sprites/slime-drag-right.png");
+    .slime--dragRight {
+      background-image: url("assets/sprites/slime-drag-right.png");
       background-size: 512px 64px;
       animation: slime-8 .4s steps(8) infinite
     }
 
-    .slime--drag-left {
-      background-image: url("sprites/slime-drag-left.png");
+    .slime--dragLeft {
+      background-image: url("assets/sprites/slime-drag-left.png");
       background-size: 512px 64px;
       animation: slime-8 .4s steps(8) infinite
     }
 
-    .slime--splat-right {
-      background-image: url("sprites/slime-splat-right.png");
+    .slime--splatRight {
+      background-image: url("assets/sprites/slime-splat-right.png");
       background-size: 768px 64px;
       animation: slime-12 .96s steps(12) 1 forwards
     }
 
-    .slime--splat-left {
-      background-image: url("sprites/slime-splat-left.png");
+    .slime--splatLeft {
+      background-image: url("assets/sprites/slime-splat-left.png");
       background-size: 768px 64px;
       animation: slime-12 .96s steps(12) 1 forwards
     }
 
-    .slime--splat-floor {
-      background-image: url("sprites/slime-splat-floor.png");
+    .slime--splatFloor {
+      background-image: url("assets/sprites/slime-splat-floor.png");
       background-size: 768px 64px;
       animation: slime-12 .96s steps(12) 1 forwards
     }
 
-    .slime--splat-ceiling {
-      background-image: url("sprites/slime-splat-ceiling.png");
+    .slime--splatCeiling {
+      background-image: url("assets/sprites/slime-splat-ceiling.png");
       background-size: 768px 64px;
       animation: slime-12 .96s steps(12) 1 forwards
     }
@@ -944,9 +966,10 @@
         </template>
 
 
-        <div data-track x-ref="track" @pointermove="nearby($event)"
-          @pointermove.window="drag($event); logMove($event)" @pointerup.window="release(); logUp()"
-          @pointercancel.window="release(); logUp()"
+        <div data-track x-ref="track"
+          @pointermove="nearby($event)"
+          @pointermove.window="logMove($event)" @pointerup.window="logUp()"
+          @pointercancel.window="logUp()"
           style="flex:none;position:relative;height:64px;overflow:visible;border-bottom:1px solid var(--edge)">
           <template x-if="bubble">
             <span data-bubble aria-live="polite"
@@ -954,22 +977,27 @@
               x-text="bubble"></span>
           </template>
 
-          <!-- Animations coupées ou mouvement réduit : la mascotte ne s'affiche pas du
-               tout, et aucune feuille ne part sur le réseau. La piste garde sa place,
-               vide. La mascotte est décorative : elle sort du parcours clavier et du nom
-               accessible. « .self » écarte les animations de décor, qui remontent
-               jusqu'ici et rendraient la main au repos au milieu d'une boucle. -->
+          <!-- Animations coupées ou mouvement réduit : la mascotte ne s'affiche pas du tout,
+               et aucune feuille ne part sur le réseau. La piste garde sa place, vide. Elle
+               est décorative : elle sort du parcours clavier et du nom accessible.
+               « .self » écarte les animations de décor, qui remontent jusqu'ici et
+               rendraient la main au repos au milieu d'une boucle.
+               La capture du pointeur porte tout le plaquage : l'état se lit sur un curseur
+               sorti de la piste, et sans capture le navigateur cesserait de livrer
+               « pointermove » dès la sortie. Ne la retirez pas. -->
           <template x-if="anim && !reduced">
             <div data-mascot x-ref="mascot" aria-hidden="true" class="slime"
-              x-init="$nextTick(() => settle())" @pointerdown.prevent="grab($event)"
-              @click="poke()" @animationend.self="settle()"
-              :style="`position:absolute;bottom:0;left:${at}px;touch-action:none;pointer-events:${gone ? 'none' : 'auto'};cursor:${dragging ? 'grabbing' : 'grab'}`">
+              :data-held="dragging" :data-gone="gone"
+              x-init="$nextTick(() => { place(at); settle() })" @pointerdown.prevent="grab($event)"
+              @pointermove="drag($event)" @pointerup="release()" @pointercancel="release()"
+              @click="poke()" @animationend.self="settle()">
               <template x-if="motion === 'bump' && anim">
                 <span data-bang aria-hidden="true"
                   style="position:absolute;left:50%;top:-20px;transform:translateX(-50%);color:var(--warn);font-size:19px;font-weight:700;animation:bang .4s cubic-bezier(.34,1.6,.64,1) both">!</span>
               </template>
             </div>
           </template>
+
           <template x-if="motion === 'bump' && anim">
             <span data-spark aria-hidden="true"
               :style="`position:absolute;bottom:14px;${direction > 0 ? 'right:2px' : 'left:2px'};color:var(--warn);font-size:15px;animation:spark .6s ease-out both`">✳</span>
@@ -1178,7 +1206,7 @@
       <p style="margin:0;display:flex;gap:14px"><a href="texte.html">texte</a><a href="llms.txt">llms.txt</a></p>
     </footer>
   </div>
-  <script type="module" src="app.js"></script>
+  <script type="module" src="app.ts"></script>
   <script src="vendor/alpine.js" defer></script>
 </body>
 
