@@ -254,8 +254,8 @@ test("shutdown éteint puis rejoue le démarrage", async ({ page }) => {
 // Un build qui passe par String.replace avec un remplacement litteral les reduit a « $ ».
 // Ce test s'execute sur l'artefact servi, la ou les tests unitaires lisent la source.
 test("les yeux du mode cupide survivent au build", async ({ request }) => {
-  const page = await request.get("/");
-  const servi = await page.text();
+  const page = await request.get("/"),
+    servi = await page.text();
 
   // Le minifieur choisit ses guillemets : on cherche la paire de dollars, pas sa mise en forme.
   expect(servi, "le double dollar ne doit pas être réduit à un seul").toMatch(/eyes:.\$\$./u);

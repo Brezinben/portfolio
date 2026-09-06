@@ -2,12 +2,13 @@ import type { Locator, Page } from "@playwright/test";
 import { expect, test } from "@playwright/test";
 
 // La poignee ne s'affiche que si le journal deborde : une tige a deplacer dans le vide
-// ne servirait a rien.
+// ne servirait a rien. « help » ne remplit plus le journal, il reclame le resultat : une
+// commande introuvable y laisse deux lignes, et c'est elle qui le fait deborder.
 const fill = async (cli: Locator) => {
     for (const _ of Array.from({ length: 6 })) {
       // Les commandes doivent s'enchainer : les paralleliser ne remplirait pas le journal.
       // eslint-disable-next-line no-await-in-loop
-      await cli.fill("help");
+      await cli.fill("xyzzy");
       // eslint-disable-next-line no-await-in-loop
       await cli.press("Enter");
     }
@@ -31,6 +32,51 @@ test("la page ne dépasse jamais la hauteur de la fenêtre", async ({ page }) =>
   const overflow = await page.evaluate(() => document.body.scrollHeight - window.innerHeight);
 
   expect(overflow, "aucun débordement vertical").toBeLessThanOrEqual(1);
+});
+
+// Sur deux colonnes le journal tient dans 119 px, et la reponse de help en fait sept fois
+// plus. Le resultat a la place, il la prend : le journal ne garde que l'echo.
+test("la réponse de help se lit en entier dans le résultat", async ({ page }) => {
+  const cli = await boot(page);
+
+  await cli.fill("help");
+  await cli.press("Enter");
+
+  const result = page.locator("[data-result]");
+
+  await expect(result).toContainText("à vos risques");
+  await expect(result).toContainText("Clavier");
+  await expect(page.locator("[data-journal]")).not.toContainText("à vos risques");
+
+  const shown = await result.evaluate((node) => ({
+    client: node.clientHeight,
+    scroll: node.scrollHeight,
+  }));
+
+  expect(shown.scroll, "rien ne reste caché sous le pli du résultat").toBeLessThanOrEqual(
+    shown.client + 1,
+  );
+});
+
+test("la barre d'état nomme la commande qui occupe le résultat", async ({ page }) => {
+  const cli = await boot(page);
+
+  await cli.fill("help");
+  await cli.press("Enter");
+
+  await expect(page.locator('[data-pane="main"]')).toContainText("~/help");
+});
+
+// Le resultat appartient a la derniere demande : ouvrir une section le reprend.
+test("ouvrir une section reprend le résultat à la commande", async ({ page }) => {
+  const cli = await boot(page);
+
+  await cli.fill("help");
+  await cli.press("Enter");
+  await page.getByRole("button", { name: /stack/ }).first().click();
+
+  await expect(page.locator("[data-result]")).not.toContainText("à vos risques");
+  await expect(page.locator('[data-pane="main"]')).toContainText("~/stack");
 });
 
 test("le contenu reste collé en haut de son volet", async ({ page }) => {

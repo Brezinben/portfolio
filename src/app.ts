@@ -393,7 +393,7 @@ const BOOT_MS = 2000,
   SLEEP_MS = 10_000,
   TWITCH_MS = 5000,
   TWITCH_ODDS = 0.04,
-  EMPTY = { cmd: "", lines: [], out: { lines: [], title: "" }, suggest: "", view: "pairs" };
+  EMPTY = { cmd: "", id: "", lines: [], out: { lines: [], title: "" }, suggest: "", view: "pairs" };
 
 // Alpine vient du script vendu a cote de la page : il n'apporte pas ses types.
 declare const Alpine: {
@@ -468,6 +468,8 @@ interface State {
   bubble: string;
   clicks: number;
   commands: string[];
+  // Le resultat d'une commande qui l'a reclame. La navigation le reprend.
+  commandResult: Section | undefined;
   compacting: boolean;
   bootTick: number;
   compactTick: number;
@@ -567,6 +569,7 @@ document.addEventListener("alpine:init", () => {
       bubble: "",
       clicks: 0,
       commands: [],
+      commandResult: undefined,
       compacting: false,
       bootTick: 0,
       compactTick: 0,
@@ -629,7 +632,11 @@ document.addEventListener("alpine:init", () => {
       },
 
       get current() {
-        return this.all.find((entry: Section) => entry.id === this.section) ?? EMPTY;
+        return (
+          this.commandResult ??
+          this.all.find((entry: Section) => entry.id === this.section) ??
+          EMPTY
+        );
       },
 
       init() {
@@ -1433,11 +1440,10 @@ document.addEventListener("alpine:init", () => {
           return;
         }
 
-        const box = track.getBoundingClientRect();
-
-        // Plaquee, la mascotte suit encore le curseur en abscisse : elle est retenue, pas
-        // figee.
-        const was = this.at;
+        const box = track.getBoundingClientRect(),
+          // Plaquee, la mascotte suit encore le curseur en abscisse : elle est retenue, pas
+          // figee.
+          was = this.at;
 
         this.place(event.clientX - box.left - this.grabAt);
 
@@ -1827,6 +1833,8 @@ document.addEventListener("alpine:init", () => {
           return;
         }
 
+        // La navigation reprend le resultat : une reponse de commande n'y survit pas.
+        this.commandResult = undefined;
         this.section = id;
 
         if (push && globalThis.location.hash !== `#${id}`) {
@@ -1893,6 +1901,17 @@ document.addEventListener("alpine:init", () => {
         }, 1000 / TYPE_CPS);
       },
 
+      // La reponse prend la place de la section dans le resultat. La frappe en cours
+      // s'arrete : sans cela, le minuteur de « play » reecrirait la commande affichee.
+      showResult(raw: string, lines: ContentLine[]) {
+        clearInterval(this.typer);
+        clearTimeout(this.latency);
+        this.typed = raw;
+        this.running = false;
+        this.commandResult = section({ id: raw, label: raw, lines });
+        this.$nextTick(() => this.setLogHeight(this.logHeight));
+      },
+
       submit() {
         const raw = this.input;
 
@@ -1900,7 +1919,7 @@ document.addEventListener("alpine:init", () => {
           return;
         }
 
-        const { effects, lines } = interpret(raw, {
+        const { effects, lines, result } = interpret(raw, {
           columns: Math.floor((this.$refs["cli"]?.clientWidth ?? 400) / CHAR_PX),
           current: this.current,
           details: this.details,
@@ -1927,6 +1946,11 @@ document.addEventListener("alpine:init", () => {
           this.checkMore("journal");
         });
         this.bump(printed(lines));
+
+        if (result) {
+          this.showResult(raw, result);
+        }
+
         this.apply(effects);
       },
 
@@ -2088,6 +2112,7 @@ document.addEventListener("alpine:init", () => {
             this.journal = [];
           } else if (effect.type === "replay") {
             this.journal = [];
+            this.commandResult = undefined;
             this.seen = this.seen.filter((entry) => entry !== this.section);
             this.play(this.section);
           } else if (effect.type === "state") {

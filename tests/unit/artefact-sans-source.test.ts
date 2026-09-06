@@ -5,21 +5,20 @@ import { relative } from "node:path";
 import { test } from "node:test";
 
 const OUTPUT = fileURLToPath(
-  new URL(`../../${process.env["PORTFOLIO_DIST"] ?? "dist.test"}/`, import.meta.url),
-);
+    new URL(`../../${process.env["PORTFOLIO_DIST"] ?? "dist.test"}/`, import.meta.url),
+  ),
+  walk = async (directory: string): Promise<string[]> => {
+    const entries = await readdir(directory, { withFileTypes: true }),
+      found = await Promise.all(
+        entries.map(async (entry) => {
+          const full = `${directory}/${entry.name}`;
 
-const walk = async (directory: string): Promise<string[]> => {
-  const entries = await readdir(directory, { withFileTypes: true });
-  const found = await Promise.all(
-    entries.map(async (entry) => {
-      const full = `${directory}/${entry.name}`;
+          return entry.isDirectory() ? walk(full) : [full];
+        }),
+      );
 
-      return entry.isDirectory() ? walk(full) : [full];
-    }),
-  );
-
-  return found.flat();
-};
+    return found.flat();
+  };
 
 // Le bundle absorbe les modules : aucune source ne doit atteindre l'artefact. Une liste
 // de noms ne le garantissait pas — un renommage a suffi pour publier 23 Ko de TypeScript.

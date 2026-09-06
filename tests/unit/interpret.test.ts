@@ -20,6 +20,8 @@ const CONTEXT: Context = {
     themes: ["dark", "light", "noctis"],
   },
   texts = (result: Outcome) => result.lines.map((line) => line.t),
+  // Ce qu'une commande met dans le resultat, la ou le journal ne recoit que l'echo.
+  resultTexts = (result: Outcome) => (result.result ?? []).map((line) => line.t ?? ""),
   kinds = (result: Outcome) => result.effects.map((effect) => effect.type),
   // Retrouver un effet par son genre, en gardant le type precis que l'union lui donne.
   effectOf = <K extends Effect["type"]>(result: Outcome, kind: K) =>
@@ -71,20 +73,27 @@ test("ls liste les sections puis les fiches", () => {
   assert.equal(result.lines[2]?.t, "m-kereis");
 });
 
-test("help liste les commandes et rappelle le clavier", () => {
+// La reponse de help ne tient pas dans le journal d'un ecran large : elle reclame le
+// resultat, et le journal ne garde que l'echo de la commande.
+test("help liste les commandes et rappelle le clavier dans le résultat", () => {
   const result = interpret("help", CONTEXT),
-    body = texts(result).join("\n");
+    body = resultTexts(result).join("\n");
 
   assert.match(body, /ls · cd <section>/);
   assert.match(body, /Clavier/);
+  assert.deepEqual(texts(result), ["help"]);
   assert.ok(result.effects.some((effect) => effect.type === "say"));
+});
+
+test("une commande ordinaire laisse le résultat à la section", () => {
+  assert.equal(interpret("ls", CONTEXT).result, undefined);
 });
 
 test("aide et point d'interrogation sont des alias de help", () => {
   for (const alias of ["aide", "?"]) {
     assert.deepEqual(
-      texts(interpret(alias, CONTEXT)).slice(1),
-      texts(interpret("help", CONTEXT)).slice(1),
+      resultTexts(interpret(alias, CONTEXT)),
+      resultTexts(interpret("help", CONTEXT)),
     );
   }
 });
@@ -364,11 +373,11 @@ test("matrix réveille Néo et effraie la mascotte", () => {
 test("l'aide n'annonce jamais un easter egg sans son slash", () => {
   const result = interpret("help", CONTEXT),
     // La bulle de la mascotte est un texte d'aide de plus : elle nomme une commande.
-    shown = [...texts(result).slice(1), effectOf(result, "say")?.text ?? ""].join(" ");
+    body = [...resultTexts(result), effectOf(result, "say")?.text ?? ""].join(" ");
 
   for (const egg of ["cowsay", "joke", "matrix", "pet", "propose", "slime"]) {
-    assert.ok(shown.includes(`/${egg}`), `help doit écrire /${egg}`);
-    assert.doesNotMatch(shown, new RegExp(`(?<!/)\\b${egg}\\b`, "u"), `${egg} sans slash`);
+    assert.ok(body.includes(`/${egg}`), `help doit écrire /${egg}`);
+    assert.doesNotMatch(body, new RegExp(`(?<!/)\\b${egg}\\b`, "u"), `${egg} sans slash`);
   }
 });
 

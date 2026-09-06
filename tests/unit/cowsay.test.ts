@@ -4,26 +4,24 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 
 const CONTEXT: Context = {
-  columns: 40,
-  current: { cmd: "bd whoami --verbose", id: "whoami" },
-  details: [],
-  feedback: {},
-  jokeIndex: 0,
-  jokes: [],
-  mascot: "here",
-  sections: [],
-  share: {},
-  shareTargets: [],
-  themes: [],
-};
-
-const YEUX = /\((?<yeux>..)\)\\_______/u;
-
-const body = (lines: string[]) =>
-  lines.slice(
-    0,
-    lines.findIndex((row: string) => row.includes("^__^")),
-  );
+    columns: 40,
+    current: { cmd: "bd whoami --verbose", id: "whoami" },
+    details: [],
+    feedback: {},
+    jokeIndex: 0,
+    jokes: [],
+    mascot: "here",
+    sections: [],
+    share: {},
+    shareTargets: [],
+    themes: [],
+  },
+  YEUX = /\((?<yeux>..)\)\\_______/u,
+  body = (lines: string[]) =>
+    lines.slice(
+      0,
+      lines.findIndex((row: string) => row.includes("^__^")),
+    );
 
 test("une phrase courte tient dans une bulle à chevrons", () => {
   const lines = cowsay("Moo", { columns: 40 });
@@ -91,22 +89,21 @@ test("un mot plus long que la largeur ne boucle pas", () => {
 // plus. Le visage se tire au hasard, donc le test verifie l'appartenance, pas l'identite.
 test("la commande tire un visage parmi les huit", () => {
   const yeux = new Set(
-    Array.from({ length: 60 }, () => {
-      const rendu = interpret("/cowsay bonjour", CONTEXT)
-        .lines.map((row) => row.t ?? "")
-        .find((texte) => texte.includes(String.raw`)\_______`));
+      Array.from({ length: 60 }, () => {
+        const rendu = interpret("/cowsay bonjour", CONTEXT)
+          .lines.map((row) => row.t ?? "")
+          .find((texte) => texte.includes(String.raw`)\_______`));
 
-      return YEUX.exec(rendu ?? "")?.groups?.yeux ?? "";
-    }),
-  );
+        return YEUX.exec(rendu ?? "")?.groups?.yeux ?? "";
+      }),
+    ),
+    connus = new Set(
+      COW_HEAD_MODES.map((mode) => {
+        const tete = cowsay("x", { mode }).find((row) => row.includes(String.raw`)\_______`));
 
-  const connus = new Set(
-    COW_HEAD_MODES.map((mode) => {
-      const tete = cowsay("x", { mode }).find((row) => row.includes(String.raw`)\_______`));
-
-      return YEUX.exec(tete ?? "")?.groups?.yeux ?? "";
-    }),
-  );
+        return YEUX.exec(tete ?? "")?.groups?.yeux ?? "";
+      }),
+    );
 
   assert.ok(yeux.size > 1, "soixante appels doivent sortir plusieurs visages");
   for (const oeil of yeux) {
