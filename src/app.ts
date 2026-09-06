@@ -1,5 +1,10 @@
-import type { ContentLine, Effect, Expression, Line, Tone, TrackValue } from "./interpret.ts";
 import {
+  type ContentLine,
+  type Effect,
+  type Expression,
+  type Line,
+  type Tone,
+  type TrackValue,
   candidates,
   commonPrefix,
   contentLine,
