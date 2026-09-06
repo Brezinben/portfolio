@@ -343,6 +343,17 @@ rejects it. `src/app.ts` imports both from `src/interpret.ts`, so one rule had t
 `no-duplicate-imports` off instead: a test that imports the type and the value separately
 names what it checks.
 
+The `@stylistic` recommended set is applied in full — 65 rules, taken from the plugin's own
+`configs.recommended` rather than retyped from the documentation. Eight of them are then
+turned off: `quotes`, `semi`, `member-delimiter-style`, `arrow-parens`, `brace-style`,
+`operator-linebreak`, `indent` and `quote-props`. Each decides a matter oxfmt already
+decides, and each decides it the other way: those eight alone reported 7 106 errors on a
+freshly formatted repository, `quotes` and `semi` accounting for 4 310. Keeping them would
+put the linter and the formatter in permanent disagreement, and `bun run format` would undo
+every fix. The remaining rules hold on the repository as it stands, with no reformatting.
+`padding-line-between-statements` keeps the project's own configuration, which is stricter
+than the recommended one.
+
 One operational note that cost an hour to find: the `@stylistic` rules are a JavaScript
 plugin, and the standalone oxlint binary loads no JavaScript plugin. Run through `npx oxlint`
 and they fire; run the bare binary and **they are silently inert** — no error, no warning, no
