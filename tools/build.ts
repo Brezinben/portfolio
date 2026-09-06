@@ -50,19 +50,31 @@ const ROOT = fileURLToPath(new URL("../", import.meta.url)),
   FRAME = 32,
   SCALE = 2,
   BAND = FRAME * SCALE,
-  // Le préfixe « slime- » est tenu par le budget, qui compte les images de mascotte sur ce
-  // nom. Le changer rendrait ces tests silencieusement vrais.
-  SHEETS = "assets/sprites/slime-sheets.png",
+  // Trois formes, une feuille fusionnée chacune. Le dossier porte le nom de la forme, le
+  // fichier porte le préfixe que le designer emploie. Le préfixe « -sheets » est tenu par le
+  // budget, qui compte les images de mascotte dessus.
+  FORMS = [
+    { dir: "slime", prefix: "slime" },
+    { dir: "cube", prefix: "cube" },
+    { dir: "pingouin", prefix: "peng" },
+  ],
+  sheetsOf = (dir: string) => `assets/sprites/${dir}-sheets.png`,
+  dirOf = (file: string) => file.split("/")[2] ?? "",
   // Le CSS de src/ nomme une feuille par état, dans l'ordre des bandes attendues. La
   // construction empile les feuilles dans cet ordre, puis remplace chaque paire par le
   // décalage de sa bande. La liste des feuilles et l'ordre des bandes sortent du même
   // balayage : ils ne peuvent pas diverger.
   SHEET_RULE =
-    /(?<indent>[^\S\n]*)background-image: url\("assets\/sprites\/slime-[^"]+\.png"\);\n[^\S\n]*background-size: \d+px \d+px;\n/gu,
-  SHEET_URL = /assets\/sprites\/slime-[^"]+\.png/gu,
-  // La règle de base porte la position de départ. Elle reçoit l'image fusionnée, que les
-  // règles d'état ne déclarent plus.
-  SLIME_RULE = /(?<indent>[^\S\n]*)background-position: 0 0;\n/u,
+    /(?<indent>[^\S\n]*)background-image: url\("assets\/sprites\/(?<dir>[a-z]+)\/[^"]+\.png"\);\n[^\S\n]*background-size: \d+px \d+px;\n/gu,
+  SHEET_URL = /assets\/sprites\/(?:[a-z]+)\/[^"]+\.png/gu,
+  // La règle de base d'une forme porte la position de départ. Elle reçoit l'image fusionnée,
+  // que les règles d'état ne déclarent plus. Le slime est la forme par défaut, sans attribut.
+  BASE_RULE = {
+    cube: /(?<head>\.slime\[data-form="cube"\] \{\n)(?<indent>[^\S\n]*)background-position: 0 0\n/u,
+    pingouin:
+      /(?<head>\.slime\[data-form="pingouin"\] \{\n)(?<indent>[^\S\n]*)background-position: 0 0\n/u,
+    slime: /(?<head>)(?<indent>[^\S\n]*)background-position: 0 0;\n/u,
+  },
   // MinifyJS reste absent. Rolldown a déjà minifié le seul script en ligne du projet.
   // RemoveAttributeQuotes et removeOptionalTags rendent le balisage déroutant pour 0,3 Ko.
   MINIFY = { collapseWhitespace: true, minifyCSS: true, removeComments: true },
@@ -269,40 +281,72 @@ const unfilter = (filter: number, value: number, around: Around) => {
   // deflate exploite la ressemblance entre les feuilles. src/ garde un fichier par état,
   // lisible un par un ; seul l'artefact les fusionne.
   foldSheets = async (staging: string, page: string) => {
-    const files = page.match(SHEET_URL) ?? [];
+    const declared = page.match(SHEET_URL) ?? [],
+      // Les trente-deux etats communs ne sont ecrits qu'une fois, sous le slime : les trois
+      // formes portent les memes, dans le meme ordre, avec le meme nombre de cases. Les
+      // autres formes les deduisent par leur prefixe, et n'ecrivent que leurs transitions.
+      common = declared.filter((file) => dirOf(file) === "slime");
 
-    if (files.length === 0) {
+    if (common.length === 0) {
       throw new Error("index.html ne déclare plus de feuille de mascotte");
     }
 
-    const merged = await mergeSheets(files);
-    let band = 0;
-    const folded = page.replace(SHEET_RULE, (_rule, indent: string) => {
-      const offset = band * BAND;
+    // La bande d'une regle depend de sa forme : une transition suit les trente-deux etats
+    // communs de la feuille ou elle vit.
+    const seen = new Map(FORMS.map(({ dir }) => [dir, dir === "slime" ? 0 : common.length])),
+      folded = page.replace(SHEET_RULE, (_rule, indent: string, dir: string) => {
+        const band = seen.get(dir) ?? 0;
 
-      band += 1;
+        seen.set(dir, band + 1);
 
-      return `${indent}background-position-y: ${-offset}px;\n`;
+        return `${indent}background-position-y: ${-(band * BAND)}px;\n`;
+      }),
+      forms = FORMS.map(({ dir, prefix }) => {
+        const files = [
+          ...common.map((file) => file.replace(`/slime/slime-`, `/${dir}/${prefix}-`)),
+          ...declared.filter((file) => dirOf(file) === dir && !common.includes(file)),
+        ];
+
+        if ((seen.get(dir) ?? 0) !== files.length) {
+          throw new Error(`${dir} : ${files.length} feuilles, mais ${seen.get(dir)} bandes`);
+        }
+
+        return { dir, files };
+      }),
+      merges = await Promise.all(forms.map(({ files }) => mergeSheets(files)));
+
+    let based = folded;
+
+    forms.forEach(({ dir }, index) => {
+      const merged = merges[index],
+        // SAFETY: « dir » vient de FORMS, dont les trois noms sont exactement les clefs de
+        // BASE_RULE. Une forme ajoutee sans sa regle de base ne compilerait pas.
+        next = based.replace(
+          BASE_RULE[dir as keyof typeof BASE_RULE],
+          (_rule: string, head: string, indent: string) =>
+            `${head}${indent}background-image: url("${sheetsOf(dir)}");\n` +
+            `${indent}background-position: 0 0;\n` +
+            `${indent}background-size: ${(merged?.width ?? 0) * SCALE}px ` +
+            `${(merged?.height ?? 0) * SCALE}px;\n`,
+        );
+
+      if (next === based) {
+        throw new Error(`La règle de base de ${dir} ne porte plus « background-position: 0 0 »`);
+      }
+
+      based = next;
     });
 
-    if (band !== files.length) {
-      throw new Error(`${files.length} feuilles déclarées, mais ${band} règles reconnues`);
-    }
-
-    const based = folded.replace(
-      SLIME_RULE,
-      (_rule, indent: string) =>
-        `${indent}background-image: url("${SHEETS}");\n` +
-        `${indent}background-position: 0 0;\n` +
-        `${indent}background-size: ${merged.width * SCALE}px ${merged.height * SCALE}px;\n`,
-    );
-
-    if (based === folded) {
-      throw new Error("La règle .slime ne porte plus « background-position: 0 0 »");
-    }
-
-    await writeFile(join(staging, SHEETS), merged.bytes);
-    await Promise.all(files.map((file) => rm(join(staging, file))));
+    // Les feuilles source sortent de l'artefact : leur dossier ne sert plus a rien une fois
+    // les bandes empilees.
+    await Promise.all([
+      ...forms.map(({ dir }, index) =>
+        writeFile(join(staging, sheetsOf(dir)), merges[index]?.bytes ?? Buffer.alloc(0)),
+      ),
+      ...forms.map(({ dir }) =>
+        rm(join(staging, "assets/sprites", dir), { force: true, recursive: true }),
+      ),
+    ]);
 
     return based;
   },

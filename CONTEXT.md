@@ -102,15 +102,24 @@ Décorative : un lecteur d'écran ne l'annonce jamais. Elle disparaît quand le 
 moins de mouvement.
 _Avoid_: slime, avatar, personnage.
 
+**Forme** (`form`) :
+La créature que la mascotte montre. Trois valeurs : `slime`, `cube`, `pingouin`. La commande
+`/slime evolve` monte d'un cran, le troisième appel referme le cycle. La forme ne survit pas
+à un rechargement, et chaque forme a sa propre feuille fusionnée, tirée à la demande.
+_Avoid_: espèce, créature, skin, apparence, shape.
+
 **État de la mascotte** (`mascotState`) :
-Ce que la mascotte fait à un instant donné. Trente-deux états, un seul à la fois.
+Ce que la mascotte fait à un instant donné. Trente-cinq états, un seul à la fois. Les trois
+formes portent les mêmes, dans le même ordre, avec le même nombre de cases.
 
 Neuf états de vie : `idle`, `wink`, `jump`, `type`, `load`, `sleep`, `morph`, `boom`,
 `reform`. Onze états de manipulation : `grab`, `dragLeft`, `dragRight`, les quatre plaquages
 de bord `splatLeft`, `splatRight`, `splatFloor`, `splatCeiling`, et les quatre plaquages de
 coin `splatCeilingLeft`, `splatCeilingRight`, `splatFloorLeft`, `splatFloorRight`. Six
 expressions de commande : `alert`, `happy`, `laugh`, `sad`, `scared`, `drop`. Six activités :
-`bike`, `coffee`, `goal`, `juggle`, `lift`, `train`.
+`bike`, `coffee`, `goal`, `juggle`, `lift`, `train`. Trois transitions de forme :
+`evolveCube`, `evolvePingouin`, `devolve`. Une transition bloque : rien ne la déloge avant
+son terme.
 _Avoid_: humeur, mood, émotion, pose.
 
 **Plaquage** (`splat`) :
@@ -127,7 +136,8 @@ _Avoid_: action, occupation, animation.
 
 **Feuille** (`sheet`) :
 Image qui porte toutes les cases d'un état de la mascotte, sur une seule ligne. Une feuille
-par état. Le dossier qui les réunit garde le nom technique `src/assets/sprites/`.
+par état, un dossier par forme sous `src/assets/sprites/`. La construction les empile en une
+image par forme ; seule celle du slime part au premier chargement.
 _Avoid_: spritesheet, planche, atlas.
 
 **Jauge de contexte** (`contextGauge`) :

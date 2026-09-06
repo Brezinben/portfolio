@@ -56,8 +56,9 @@ test("la mascotte est une feuille de sprites, jouée au repos", async ({ page })
   expect(await bande(page), "le repos ouvre l'image").toBe("0px");
 });
 
-// Les trente-deux etats tiennent dans une image : une requete, pas trente-deux.
-test("une seule image porte les trente-deux états", async ({ page }) => {
+// Les trente-deux etats d'une forme tiennent dans une image : une requete, pas trente-deux.
+// Et une seule forme part au demarrage.
+test("une seule image porte les trente-deux états du slime", async ({ page }) => {
   const asked = watchSheets(page);
 
   await boot(page);
@@ -786,4 +787,98 @@ test("le slime absent refuse la commande au lieu de mentir", async ({ page }) =>
   await cli.press("Enter");
 
   await expect(page.locator("[data-journal]")).toContainText("le slime n'est pas la");
+});
+
+// La chaine des formes : slime -> cube -> pingouin -> slime. Chaque appel monte d'un cran, le
+// troisieme referme le cycle.
+test("evolve fait monter la mascotte d'un cran dans la chaîne", async ({ page }) => {
+  const cli = await boot(page);
+
+  await cli.fill("/slime evolve");
+  await cli.press("Enter");
+
+  await expect(mascot(page)).toHaveClass(/slime--evolveCube\b/u);
+  await expect(mascot(page)).toHaveAttribute("data-form", "cube");
+  await expect(mascot(page)).toHaveClass(/slime--idle\b/u, { timeout: 6000 });
+
+  await cli.fill("/slime evolve");
+  await cli.press("Enter");
+
+  await expect(mascot(page)).toHaveClass(/slime--evolvePingouin\b/u);
+  await expect(mascot(page)).toHaveAttribute("data-form", "pingouin");
+  await expect(mascot(page)).toHaveClass(/slime--idle\b/u, { timeout: 6000 });
+
+  await cli.fill("/slime evolve");
+  await cli.press("Enter");
+
+  await expect(mascot(page)).toHaveClass(/slime--devolve\b/u);
+  await expect(mascot(page)).toHaveClass(/slime--idle\b/u, { timeout: 6000 });
+  await expect(mascot(page)).toHaveAttribute("data-form", "slime");
+});
+
+// La feuille d'une forme ne part qu'a la demande, et une seule fois.
+test("la feuille du cube ne part qu'à la commande, et une seule fois", async ({ page }) => {
+  const asked = watchSheets(page),
+    cli = await boot(page);
+
+  await page.waitForTimeout(600);
+  expect(asked).toEqual(["slime-sheets.png"]);
+
+  await cli.fill("/slime evolve");
+  await cli.press("Enter");
+  await expect(mascot(page)).toHaveClass(/slime--idle\b/u, { timeout: 6000 });
+
+  expect(asked).toEqual(["slime-sheets.png", "cube-sheets.png"]);
+
+  // Redevenir slime puis recommencer ne retire pas la feuille du cache.
+  await cli.fill("/slime evolve");
+  await cli.press("Enter");
+  await expect(mascot(page)).toHaveClass(/slime--idle\b/u, { timeout: 8000 });
+
+  expect(asked).toEqual(["slime-sheets.png", "cube-sheets.png", "pingouin-sheets.png"]);
+});
+
+// Une transformation tient ses 2,4 s : la frappe, une section ou un clic la couperaient au
+// milieu. C'est le seul etat qui bloque sans faire disparaitre la mascotte.
+test("rien ne coupe une transformation en cours", async ({ page }) => {
+  const cli = await boot(page);
+
+  await cli.fill("/slime evolve");
+  await cli.press("Enter");
+  await expect(mascot(page)).toHaveClass(/slime--evolveCube\b/u);
+
+  await cli.fill("bonjour");
+  await page.locator("[data-mascot]").click({ force: true });
+
+  await expect(mascot(page)).toHaveClass(/slime--evolveCube\b/u);
+  await expect(mascot(page)).toHaveClass(/slime--idle\b/u, { timeout: 6000 });
+});
+
+// Le journal ne doit pas annoncer un geste que la coquille avale, ni dire que la mascotte
+// est absente alors qu'elle est la, en train de changer.
+test("pendant la transformation, la commande est refusée sans mentir", async ({ page }) => {
+  const cli = await boot(page);
+
+  await cli.fill("/slime evolve");
+  await cli.press("Enter");
+  await expect(mascot(page)).toHaveClass(/slime--evolveCube\b/u);
+
+  await cli.fill("/slime kill");
+  await cli.press("Enter");
+
+  await expect(page.locator("[data-journal]")).toContainText("la mascotte change de forme");
+  await expect(page.locator("[data-journal]")).not.toContainText("le slime explose");
+});
+
+// L'evolution est un easter egg : la retrouver fait partie du jeu.
+test("l'évolution ne survit pas à un rechargement", async ({ page }) => {
+  const cli = await boot(page);
+
+  await cli.fill("/slime evolve");
+  await cli.press("Enter");
+  await expect(mascot(page)).toHaveAttribute("data-form", "cube");
+
+  await boot(page);
+
+  await expect(mascot(page)).toHaveAttribute("data-form", "slime");
 });

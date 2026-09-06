@@ -77,7 +77,7 @@ Chaque section et chaque mission a son ancre (`#parcours`, `#m-kereis`) : lien d
 
 **Interface** — `theme` · `options` · `clear` · `reboot` · `shutdown`
 
-**Easter eggs** — `joke` · `cowsay <texte>` · `sudo` · `coffee` · `vim` · `pet` · `slime expression <nom>` · `slime activity <nom>` · `slime drop` · `slime kill` · `matrix` · `benjamin`
+**Easter eggs** — `joke` · `cowsay <texte>` · `sudo` · `coffee` · `vim` · `pet` · `slime expression <nom>` · `slime activity <nom>` · `slime evolve` · `slime drop` · `slime kill` · `matrix` · `benjamin`
 
 `help` liste tout. Tab complète (préfixe commun, puis candidats), ↑ ↓ rappellent l'historique.
 

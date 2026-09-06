@@ -50,6 +50,7 @@ export type Effect =
   | { type: "email" }
   | { type: "emote"; expression: Expression }
   | { type: "usage" }
+  | { type: "evolve" }
   | { type: "options" }
   | { type: "pending"; answer?: string; payload: string }
   | { type: "power"; mode: string }
@@ -139,7 +140,9 @@ export interface Context extends CompletionContext {
   columns: number;
   // La mascotte est absente pendant son explosion et pendant son voyage en train. Sans
   // cette information, l'interpreteur annonce des gestes que la coquille ne joue pas.
-  mascotAway: boolean;
+  // « away » : explosee ou partie en train. « busy » : en train de changer de forme, donc
+  // presente mais indisponible. La coquille sait, l'interpreteur ne devine pas.
+  mascot: "away" | "busy" | "here";
   details: Entry[];
   sections: Entry[];
   current: { cmd?: string; id?: string; label?: string };
@@ -331,11 +334,28 @@ const line = ({
     effects: [{ type: "usage" }],
     lines: [failed("le slime n'est pas la : attendez qu'il revienne.")],
   },
-  slime = (argument: string, name: string, away: boolean): Told => {
+  changing: Told = {
+    effects: [{ type: "usage" }],
+    lines: [failed("la mascotte change de forme : laissez-la finir.")],
+  },
+  // Trois etats possibles, un seul a la fois : la coquille dit lequel plutot que de passer
+  // deux booleens dont la moitie des combinaisons n'existe pas.
+  slime = (argument: string, name: string, mascot: "away" | "busy" | "here"): Told => {
     // Annoncer « le slime explose » pendant qu'il est deja parti fait mentir le journal :
     // la coquille avale le geste, la ligne reste.
-    if (away) {
+    if (mascot === "away") {
       return absent;
+    }
+
+    if (mascot === "busy") {
+      return changing;
+    }
+
+    if (argument === "evolve") {
+      return {
+        effects: [{ type: "evolve" }],
+        lines: [done("la mascotte change de forme.")],
+      };
     }
 
     if (argument === "drop") {
@@ -374,6 +394,7 @@ const line = ({
         lines: [
           offer("/slime expression <nom>", OFFERED),
           offer("/slime activity <nom>", ACTIVITIES),
+          info("/slime evolve — lui fait changer de forme"),
           info("/slime drop — le fait tomber du plafond"),
           info("/slime kill — le fait exploser, il revient de lui-même"),
         ],
@@ -419,7 +440,7 @@ const argumentsFor = (path: string, context: CompletionContext): string[] | unde
   const ids = [...context.sections, ...context.details].map((entry) => entry.id),
     // Quatre sous-commandes claires valent mieux que dix mots melanges : les expressions
     // vivent un niveau plus bas, derriere « expression ».
-    slimeArguments = ["expression", "activity", "drop", "kill"];
+    slimeArguments = ["expression", "activity", "evolve", "drop", "kill"];
 
   return {
     bd: ids,
@@ -473,6 +494,7 @@ const HINTS = {
   slime: {
     activity: "lui donne une occupation",
     drop: "le fait tomber du plafond",
+    evolve: "lui fait changer de forme",
     expression: "change son visage",
     kill: "le fait exploser, il revient",
   },
@@ -835,7 +857,7 @@ export const interpret = (raw: string, context: Context): Outcome => {
   }
 
   if (command === "slime") {
-    const result = slime(argument, (parts[2] ?? "").toLowerCase(), context.mascotAway);
+    const result = slime(argument, (parts[2] ?? "").toLowerCase(), context.mascot);
 
     return out(result.lines, [track("easter_egg", { nom: "slime" }), ...result.effects]);
   }

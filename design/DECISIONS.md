@@ -783,3 +783,37 @@ remplace Georgia sur cette page, et elle seule : la version terminal garde
 JetBrains Mono. Fichier variable, sous-ensemble latin, auto-hébergé sous SIL Open
 Font License 1.1, licence servie à côté du fichier. La flèche `→` manque au
 sous-ensemble et retombe sur la police système.
+
+---
+
+## 25. Les trois formes de la mascotte
+
+> « on va introduire la commande slash slime evolve, ça va changer l'aspect du slime […] il
+> faudra rajouter un nouvel état sur la machine à état pour l'évolution parce que c'est un
+> état qui bloque également […] pas besoin de charger tout le sprite au départ, le pingouin
+> et le cube seront chargés que si l'utilisateur fait la commande, parce qu'à mon avis il y a
+> peu de chance que ça soit fait, donc là c'est juste un petit easter egg. »
+
+> « l'évolution ne survit pas à un rechargement »
+
+**Décisions :**
+- La chaîne : `slime → cube → pingouin → slime`. Chaque `/slime evolve` monte d'un cran, le
+  troisième referme le cycle.
+- Trois états de transition, tous bloquants : `evolveCube` et `evolvePingouin` durent 2,4 s,
+  `devolve` 1,44 s. Rien ne les déloge avant leur terme.
+- Le blocage ne passe pas par le drapeau d'absence. Une mascotte qui change de forme est
+  présente : le journal répond « la mascotte change de forme », pas « le slime n'est pas là ».
+  L'interpréteur reçoit un état à trois valeurs — `here`, `away`, `busy` — plutôt que deux
+  booléens dont la moitié des combinaisons n'existe pas.
+- La forme ne se stocke pas. Chaque visite repart du slime : c'est un easter egg, le
+  retrouver fait partie du jeu, et le premier chargement reste inchangé.
+- Les trois repos repeints par thème ne sont pas câblés. Le `hue-rotate` en place couvre
+  déjà quatre thèmes, dont `bordo` que l'export ignore, et les trois formes partagent la même
+  palette. Les six feuilles restent dans `docs/mascotte/variantes-de-theme/`.
+
+**Le nettoyage des exports :** chaque PNG du designer porte un chunk C2PA de 5 758 octets,
+réécrit à chaque export. Sur 73 fichiers, 411 Ko de métadonnée, soit plus que les pixels.
+`tools/strip-c2pa.ts` les retire à l'intégration.
+
+**Renommage :** `slime-type-b.png` devient `slime-type.png`, le nom que les trois formes
+partagent.

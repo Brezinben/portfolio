@@ -3,7 +3,9 @@ import { readFile, readdir } from "node:fs/promises";
 
 const BUDGET_KO = 150,
   TEXTE_KO = 60,
-  SPRITES_KO = 80,
+  // Un plafond par forme, sur la source : il borne ce que la fusion aura a digerer et
+  // signale une feuille qui grossit. Le slime est le seul qui parte au premier chargement.
+  SPRITES_KO = { cube: 112, pingouin: 132, slime: 80 },
   FUSION_KO = 24,
   // Un hôte tiers qui n'envoie pas timing-allow-origin fait rapporter un transferSize nul au
   // navigateur. Le poids de ces ressources est invisible, pas nul. Les nommer ici empêche
@@ -58,25 +60,26 @@ test("le premier chargement tient dans le budget de poids", async ({ page }) => 
   expect(inconnus, `tiers vus : ${JSON.stringify(measured.tiers)}`).toEqual([]);
 });
 
-// La construction fusionne les neuf feuilles en une seule image. Ce plafond porte sur la
-// source, et non sur ce qui part sur le réseau : il borne ce que la fusion aura à digérer,
-// et il signale une feuille qui grossit.
-test("les feuilles de la mascotte tiennent dans leur plafond", async () => {
-  const dossier = new URL("../../src/assets/sprites/", import.meta.url),
-    feuilles = await readdir(dossier),
-    poids = await Promise.all(
-      feuilles.map(async (nom) => {
-        const octets = await readFile(new URL(nom, dossier));
+// La construction fusionne les feuilles d'une forme en une seule image. Ce plafond porte sur
+// la source, et non sur ce qui part sur le réseau.
+for (const [forme, plafond] of Object.entries(SPRITES_KO)) {
+  test(`les feuilles du ${forme} tiennent dans leur plafond`, async () => {
+    const dossier = new URL(`../../src/assets/sprites/${forme}/`, import.meta.url),
+      feuilles = await readdir(dossier),
+      poids = await Promise.all(
+        feuilles.map(async (nom) => {
+          const octets = await readFile(new URL(nom, dossier));
 
-        return octets.byteLength;
-      }),
-    ),
-    total = poids.reduce((somme, octets) => somme + octets, 0);
+          return octets.byteLength;
+        }),
+      ),
+      total = poids.reduce((somme, octets) => somme + octets, 0);
 
-  expect(Math.round(total / 102.4) / 10, `${feuilles.length} feuilles`).toBeLessThanOrEqual(
-    SPRITES_KO,
-  );
-});
+    expect(Math.round(total / 102.4) / 10, `${feuilles.length} feuilles`).toBeLessThanOrEqual(
+      plafond,
+    );
+  });
+}
 
 // Le premier rendu tire une image de mascotte, et une seule. Elle porte les neuf états,
 // donc elle pèse dès le démarrage : le nombre de requêtes ne suffit plus à la surveiller,
@@ -90,7 +93,7 @@ test("le premier chargement ne tire qu'une image de mascotte", async ({ page }) 
     const resources = performance.getEntriesByType("resource") as PerformanceResourceTiming[];
 
     return resources
-      .filter((entry) => new URL(entry.name).pathname.includes("/slime-"))
+      .filter((entry) => new URL(entry.name).pathname.includes("-sheets"))
       .map((entry) => ({
         ko: Math.round(entry.transferSize / 102.4) / 10,
         url: new URL(entry.name).pathname,
@@ -100,6 +103,24 @@ test("le premier chargement ne tire qu'une image de mascotte", async ({ page }) 
   expect(images).toHaveLength(1);
   expect(images[0]?.url).toContain("slime-sheets");
   expect(images[0]?.ko, `mesure : ${JSON.stringify(images)}`).toBeLessThanOrEqual(FUSION_KO);
+});
+
+// Le cube et le pingouin pesent plus que le slime, et presque personne ne tapera la
+// commande. Leur feuille ne doit partir qu'a la demande.
+test("les autres formes ne partent pas au premier chargement", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.locator("[data-boot]")).toHaveCount(0, { timeout: 10_000 });
+
+  const tirees = await page.evaluate(() => {
+    // SAFETY: la specification garantit PerformanceResourceTiming pour « resource ».
+    const resources = performance.getEntriesByType("resource") as PerformanceResourceTiming[];
+
+    return resources
+      .map((entry) => new URL(entry.name).pathname)
+      .filter((path) => path.includes("cube-sheets") || path.includes("pingouin-sheets"));
+  });
+
+  expect(tirees).toEqual([]);
 });
 
 // Le mouvement réduit retire la mascotte. Aucune feuille ne doit donc partir : c'est tout
@@ -113,7 +134,7 @@ test("le mouvement réduit ne charge aucune feuille", async ({ page }) => {
     performance
       .getEntriesByType("resource")
       .map((entry) => new URL(entry.name).pathname)
-      .filter((chemin) => chemin.includes("/slime-")),
+      .filter((chemin) => chemin.includes("-sheets")),
   );
 
   expect(feuilles).toEqual([]);
