@@ -508,30 +508,12 @@
     /* Mascotte : neuf feuilles de 32 px par frame, affichées à ×2, soit 64 px. Le pas
        d'un keyframe est lié à la taille d'affichage : à ×2 ce sont -768px et -1024px, et
        non les -1536px / -2048px de la spécification, calés sur ×4. */
-    /* Fixe, parce qu'elle se plaque contre les bords de la fenêtre. « left » et « top »
-       viennent du script, et cet élément ne porte aucune liaison « :style ».
-       N'en ajoutez pas. Une liaison réécrit l'attribut entier dès qu'une de ses
-       dépendances bouge : elle effacerait la position au moment même de la prise, quand
-       « dragging » bascule. C'est le piège de « className », un cran plus haut. Une part
-       variable passe donc par un attribut de données et une règle. */
     .slime {
-      position: fixed;
-      z-index: 45;
       width: 64px;
       height: 64px;
       background-repeat: no-repeat;
       background-position: 0 0;
-      image-rendering: pixelated;
-      touch-action: none;
-      cursor: grab
-    }
-
-    .slime[data-held="true"] {
-      cursor: grabbing
-    }
-
-    .slime[data-gone="true"] {
-      pointer-events: none
+      image-rendering: pixelated
     }
 
     /* Le défilement ne touche qu'un axe. L'autre reste libre : la construction fusionne
@@ -594,14 +576,10 @@
       animation: slime-16 1.28s steps(16) 1
     }
 
-    /* La mue est la transition entre deux teintes : elle part de l'ancienne et arrive sur
-       la nouvelle, au lieu de sauter au premier instant. Le fondu tient la passe, et lui
-       seul : un changement de thème sans mue garde sa teinte immédiate. */
     .slime--morph {
       background-image: url("sprites/slime-morph.png");
       background-size: 1024px 64px;
-      animation: slime-16 2.4s steps(16) 1;
-      transition: filter 2.4s linear
+      animation: slime-16 2.4s steps(16) 1
     }
 
     /* L'explosion s'arrête sur sa dernière frame : le slime reste absent le temps que
@@ -627,37 +605,37 @@
       animation: slime-12 1.2s steps(12) infinite
     }
 
-    .slime--dragRight {
+    .slime--drag-right {
       background-image: url("sprites/slime-drag-right.png");
       background-size: 512px 64px;
       animation: slime-8 .4s steps(8) infinite
     }
 
-    .slime--dragLeft {
+    .slime--drag-left {
       background-image: url("sprites/slime-drag-left.png");
       background-size: 512px 64px;
       animation: slime-8 .4s steps(8) infinite
     }
 
-    .slime--splatRight {
+    .slime--splat-right {
       background-image: url("sprites/slime-splat-right.png");
       background-size: 768px 64px;
       animation: slime-12 .96s steps(12) 1 forwards
     }
 
-    .slime--splatLeft {
+    .slime--splat-left {
       background-image: url("sprites/slime-splat-left.png");
       background-size: 768px 64px;
       animation: slime-12 .96s steps(12) 1 forwards
     }
 
-    .slime--splatFloor {
+    .slime--splat-floor {
       background-image: url("sprites/slime-splat-floor.png");
       background-size: 768px 64px;
       animation: slime-12 .96s steps(12) 1 forwards
     }
 
-    .slime--splatCeiling {
+    .slime--splat-ceiling {
       background-image: url("sprites/slime-splat-ceiling.png");
       background-size: 768px 64px;
       animation: slime-12 .96s steps(12) 1 forwards
@@ -966,9 +944,9 @@
         </template>
 
 
-        <div data-track x-ref="track"
-          @pointermove.window="nearby($event); logMove($event)" @pointerup.window="logUp()"
-          @pointercancel.window="logUp()"
+        <div data-track x-ref="track" @pointermove="nearby($event)"
+          @pointermove.window="drag($event); logMove($event)" @pointerup.window="release(); logUp()"
+          @pointercancel.window="release(); logUp()"
           style="flex:none;position:relative;height:64px;overflow:visible;border-bottom:1px solid var(--edge)">
           <template x-if="bubble">
             <span data-bubble aria-live="polite"
@@ -976,6 +954,22 @@
               x-text="bubble"></span>
           </template>
 
+          <!-- Animations coupées ou mouvement réduit : la mascotte ne s'affiche pas du
+               tout, et aucune feuille ne part sur le réseau. La piste garde sa place,
+               vide. La mascotte est décorative : elle sort du parcours clavier et du nom
+               accessible. « .self » écarte les animations de décor, qui remontent
+               jusqu'ici et rendraient la main au repos au milieu d'une boucle. -->
+          <template x-if="anim && !reduced">
+            <div data-mascot x-ref="mascot" aria-hidden="true" class="slime"
+              x-init="$nextTick(() => settle())" @pointerdown.prevent="grab($event)"
+              @click="poke()" @animationend.self="settle()"
+              :style="`position:absolute;bottom:0;left:${at}px;touch-action:none;pointer-events:${gone ? 'none' : 'auto'};cursor:${dragging ? 'grabbing' : 'grab'}`">
+              <template x-if="motion === 'bump' && anim">
+                <span data-bang aria-hidden="true"
+                  style="position:absolute;left:50%;top:-20px;transform:translateX(-50%);color:var(--warn);font-size:19px;font-weight:700;animation:bang .4s cubic-bezier(.34,1.6,.64,1) both">!</span>
+              </template>
+            </div>
+          </template>
           <template x-if="motion === 'bump' && anim">
             <span data-spark aria-hidden="true"
               :style="`position:absolute;bottom:14px;${direction > 0 ? 'right:2px' : 'left:2px'};color:var(--warn);font-size:15px;animation:spark .6s ease-out both`">✳</span>
@@ -1072,30 +1066,6 @@
       </aside>
     </div>
 
-    <!-- La mascotte se déplace dans toute la fenêtre, donc elle est fixe. Elle vit hors
-         des volets : « revealUp » transforme [data-panes] pendant le démarrage, et un
-         ancêtre transformé devient le bloc conteneur d'un élément fixe, qui se ferait
-         alors rogner par le volet central. Sa piste garde sa place, vide, et donne son
-         point de repos.
-         Elle passe au-dessus de la modale, qui doit laisser voir la mue, et sous le lien
-         d'évitement : un élément décoratif ne couvre jamais le premier élément focalisable.
-         Animations coupées ou mouvement réduit : elle ne s'affiche pas du tout, et aucune
-         feuille ne part sur le réseau. Elle est décorative : elle sort du parcours clavier
-         et du nom accessible. « .self » écarte les animations de décor, qui remontent
-         jusqu'ici et rendraient la main au repos au milieu d'une boucle. -->
-    <template x-if="anim && !reduced">
-      <div data-mascot x-ref="mascot" aria-hidden="true" class="slime"
-        :data-held="dragging" :data-gone="gone"
-        x-init="$nextTick(() => { pin(); settle() })" @pointerdown.prevent="grab($event)"
-        @pointermove="drag($event)" @pointerup="release()" @pointercancel="release()"
-        @click="poke()" @animationend.self="settle()">
-        <template x-if="motion === 'bump' && anim">
-          <span data-bang aria-hidden="true"
-            style="position:absolute;left:50%;top:-20px;transform:translateX(-50%);color:var(--warn);font-size:19px;font-weight:700;animation:bang .4s cubic-bezier(.34,1.6,.64,1) both">!</span>
-        </template>
-      </div>
-    </template>
-
     <template x-if="optsOpen">
       <div @click="closeOpts()"
         style="position:fixed;inset:0;z-index:40;display:grid;place-items:center;padding:20px;background:rgba(10,10,18,.62);animation:fadeIn .16s ease both">
@@ -1149,7 +1119,7 @@
 
     <template x-if="booting">
       <div data-boot
-        :style="`position:absolute;inset:0;z-index:46;background:var(--bg);padding:18px clamp(12px,2.5vw,26px) 26px;box-sizing:border-box;display:flex;flex-direction:column;${power === 'fade' ? 'animation:bootOut .62s ease forwards' : ''}`">
+        :style="`position:absolute;inset:0;z-index:30;background:var(--bg);padding:18px clamp(12px,2.5vw,26px) 26px;box-sizing:border-box;display:flex;flex-direction:column;${power === 'fade' ? 'animation:bootOut .62s ease forwards' : ''}`">
         <div
           style="flex:1;border:1px solid var(--edge);border-radius:var(--radius);background:var(--panel);padding:clamp(20px,4vw,44px);display:grid;align-content:center;gap:8px;font-size:13px;line-height:1.7">
           <template x-if="dataErr">
