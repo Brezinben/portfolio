@@ -68,3 +68,74 @@ test("llms.txt et la version texte donnent le même contact", () => {
   assert.ok(llms.includes(contact), "llms.txt ne donne pas le contact attendu");
   assert.ok(texte.includes(contact), "texte.html ne donne pas le contact attendu");
 });
+
+// La version texte recopie les huit thèmes de la version terminal, pour ne pas tirer une
+// feuille de style de plus sur la page de repli. Ce test paie la duplication : une couleur
+// qui change d'un côté doit changer de l'autre.
+const CLES = ["--bg", "--panel", "--edge", "--fg", "--fg2", "--acc"],
+  // Un thème peut s'écrire en plusieurs blocs : index.html surcharge « light » plus bas dans
+  // la feuille. Les blocs de même nom se fondent, sinon le dernier efface le premier.
+  themes = (html: string, prefixe: string) => {
+    const releve: Record<string, Record<string, string>> = {};
+
+    for (const bloc of html.matchAll(
+      new RegExp(`${prefixe}\\[data-theme="(?<nom>[^"]+)"\\]\\s*\\{(?<corps>[^}]*)\\}`, "gu"),
+    )) {
+      const nom = bloc.groups?.nom ?? "",
+        regles = [
+          ...(bloc.groups?.corps ?? "").matchAll(/(?<cle>--[\w-]+):\s*(?<valeur>[^;\n]+)/gu),
+        ];
+
+      releve[nom] ??= {};
+
+      for (const regle of regles) {
+        releve[nom][regle.groups?.cle ?? ""] = regle.groups?.valeur?.trim() ?? "";
+      }
+    }
+
+    return releve;
+  };
+
+test("les huit thèmes de la version texte reprennent les couleurs de la version terminal", () => {
+  const source = themes(read("index.html"), String.raw`\.tm`),
+    copie = themes(texte, ":root"),
+    noms = Object.keys(source);
+
+  assert.equal(noms.length, 8, "index.html ne déclare plus huit thèmes");
+  assert.deepEqual(Object.keys(copie), noms, "texte.html ne déclare pas les mêmes thèmes");
+
+  for (const nom of noms) {
+    for (const cle of CLES) {
+      assert.equal(copie[nom]?.[cle], source[nom]?.[cle], `${nom} : ${cle} a dérivé`);
+    }
+  }
+
+  // L'ambre décoratif du thème clair ne passe pas le contraste sur du texte. Les deux pages
+  // doivent porter la même variante sombre.
+  assert.equal(copie["light"]?.["--acc-text"], "#8f5f00");
+});
+
+// Le contenu de la version texte est écrit en dur. content.json reste la source de vérité :
+// sans ce test, la page dériverait en silence au prochain changement de contenu.
+test("la version texte porte tout le contenu de content.json", () => {
+  // SAFETY: content.json est un artefact du dépôt, versionné à côté de ce test, et son
+  // schéma est tenu par tests/unit/content.test.ts. Seules trois clés sont lues ici.
+  const contenu = JSON.parse(read("content.json")) as {
+      stack: { kids: string[] }[];
+      techNotes: Record<string, { note: string; where: string }>;
+      timeline: { org: string }[];
+    },
+    absent = (valeur: string) => !texte.includes(valeur.replaceAll("&", "&amp;"));
+
+  assert.deepEqual(Object.keys(contenu.techNotes).filter(absent), [], "des fiches techno manquent");
+  assert.deepEqual(
+    contenu.stack.flatMap((groupe) => groupe.kids).filter(absent),
+    [],
+    "des technos de la stack manquent",
+  );
+  assert.deepEqual(
+    contenu.timeline.map((entree) => entree.org).filter(absent),
+    [],
+    "des expériences de la frise manquent",
+  );
+});

@@ -159,8 +159,11 @@ La page principale, interface à trois volets. Seule variante qui lit le contenu
 _Avoid_: version principale, app.
 
 **Version texte** (`texte.html`) :
-Repli en une colonne, sans script et sans image. Cible du lien de secours de l'écran de
-panique. Contenu écrit en dur.
+Repli en une colonne, sans image. Cible du lien de secours de l'écran de panique. Contenu
+écrit en dur, recopié de `content.json`. Composée en Atkinson Hyperlegible Next, la police
+que la version terminal n'emploie pas. Un seul script, en tête : il pose `data-theme` à
+partir du thème choisi sur la version terminal, et rien d'autre. La page reste entière sans
+lui.
 _Avoid_: version simple, version accessible, fallback.
 
 **Source** (`src/`) :

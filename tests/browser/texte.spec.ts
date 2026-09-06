@@ -1,13 +1,27 @@
 import { expect, test } from "@playwright/test";
+import type { Page } from "@playwright/test";
 
-test("la version texte se charge sans script ni image", async ({ page }) => {
+const THEMES = ["dark", "light", "noctis", "azureus", "uva", "bordo", "lux", "hibernus"],
+  fond = (page: Page) => page.evaluate(() => getComputedStyle(document.body).backgroundColor);
+
+// La page est le repli du portfolio : elle ne dépend d'aucune ressource externe, et son seul
+// script ne fait que reprendre le thème. Une panne de ce script ne coûte rien.
+test("la version texte se charge sans image ni script externe", async ({ page }) => {
   await page.goto("/texte.html");
 
   await expect(page).toHaveTitle(/Benjamin David/);
   await expect(page.locator("html")).toHaveAttribute("lang", "fr");
-  await expect(page.locator("script")).toHaveCount(0);
   await expect(page.locator("img")).toHaveCount(0);
+  await expect(page.locator("script[src]")).toHaveCount(0);
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Benjamin David");
+
+  const scripts = await page
+    .locator("script")
+    .evaluateAll((nodes) => nodes.map((node) => node.textContent ?? ""));
+
+  expect(scripts).toHaveLength(1);
+  expect(scripts[0]).toContain("dataset.theme");
+  expect(scripts[0]?.split("\n")).toHaveLength(1);
 });
 
 test("la version texte renvoie vers la version terminal et vers llms.txt", async ({ page }) => {
@@ -30,6 +44,98 @@ test("aucun lien ne pointe vers le canvas", async ({ page }) => {
     .evaluateAll((links) => links.map((link) => link.getAttribute("href")));
 
   expect(hrefs.filter((href) => href?.includes(".dc.html"))).toEqual([]);
+});
+
+// La personne a déjà choisi son thème sur la version terminal. La page le reprend, et ne
+// propose aucun sélecteur : elle sera lue, imprimée, ou passée en mode lecture.
+for (const theme of THEMES) {
+  test(`la version texte reprend le thème ${theme}`, async ({ page }) => {
+    await page.addInitScript((chosen) => {
+      localStorage.setItem("bd-term-opts", JSON.stringify({ theme: chosen }));
+    }, theme);
+    await page.goto("/texte.html");
+
+    await expect(page.locator("html")).toHaveAttribute("data-theme", theme);
+
+    const couleur = await fond(page);
+
+    expect(couleur).not.toBe("rgba(0, 0, 0, 0)");
+  });
+}
+
+// Deux thèmes suffisent à prouver que le relevé distingue vraiment les huit blocs : sans ce
+// test, une feuille qui ignorerait data-theme passerait la boucle ci-dessus.
+test("deux thèmes ne donnent pas le même fond", async ({ page }) => {
+  const lire = async (theme: string) => {
+    await page.addInitScript((chosen) => {
+      localStorage.setItem("bd-term-opts", JSON.stringify({ theme: chosen }));
+    }, theme);
+    await page.goto("/texte.html");
+
+    return fond(page);
+  };
+
+  expect(await lire("noctis")).not.toBe(await lire("bordo"));
+});
+
+// Le script est un confort, pas une dépendance. Sans lui, la page garde ses couleurs et tout
+// son contenu.
+test("la page reste entière sans JavaScript", async ({ browser }) => {
+  const context = await browser.newContext({ javaScriptEnabled: false }),
+    page = await context.newPage();
+
+  await page.goto("/texte.html");
+
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Benjamin David");
+  await expect(page.getByRole("heading", { level: 2, name: "Contact" })).toBeVisible();
+  expect(await fond(page)).not.toBe("rgba(0, 0, 0, 0)");
+
+  await context.close();
+});
+
+// La page porte Atkinson Hyperlegible Next, dessinée pour la basse vision. Elle est
+// auto-hébergée : un CDN de polices remettrait la requête tierce que le portage a supprimée.
+test("la police est auto-hébergée, et rien d'autre ne sort", async ({ page }) => {
+  const vues: string[] = [];
+
+  page.on("request", (requete) => vues.push(requete.url()));
+  await page.goto("/texte.html");
+  await page.evaluate(() => document.fonts.ready);
+
+  const origine = new URL(page.url()).origin,
+    tiers = vues.filter((url) => new URL(url).origin !== origine),
+    polices = vues.filter((url) => url.endsWith(".woff2"));
+
+  expect(tiers, `tiers vus : ${JSON.stringify(tiers)}`).toEqual([]);
+  expect(polices).toHaveLength(1);
+  expect(polices[0]).toContain("atkinson-hyperlegible-next");
+
+  const famille = await page.evaluate(() => getComputedStyle(document.body).fontFamily);
+
+  expect(famille).toContain("Atkinson Hyperlegible Next");
+});
+
+// Un lecteur d'écran navigue par repères et par titres. Les deux doivent tenir.
+test("la page offre ses repères de navigation", async ({ page }) => {
+  await page.goto("/texte.html");
+
+  await expect(page.getByRole("banner")).toHaveCount(1);
+  await expect(page.getByRole("navigation")).toHaveCount(1);
+  await expect(page.getByRole("main")).toHaveCount(1);
+  await expect(page.getByRole("contentinfo")).toHaveCount(1);
+  await expect(page.getByRole("heading", { level: 1 })).toHaveCount(1);
+});
+
+test("aucun niveau de titre n'est sauté", async ({ page }) => {
+  await page.goto("/texte.html");
+
+  const niveaux = await page
+      .locator("h1, h2, h3, h4, h5, h6")
+      .evaluateAll((nodes) => nodes.map((node) => Number(node.tagName.slice(1)))),
+    sauts = niveaux.filter((niveau, index) => index > 0 && niveau - Number(niveaux[index - 1]) > 1);
+
+  expect(niveaux[0]).toBe(1);
+  expect(sauts).toEqual([]);
 });
 
 // L'image de partage porte une empreinte du contenu dans son nom et vit dans un dossier,

@@ -26,6 +26,23 @@ for (const theme of THEMES) {
   });
 }
 
+// La version texte reprend les huit thèmes de la version terminal. Elle les porte sur du
+// texte de lecture, pas sur une interface : le contraste s'y mesure séparément.
+for (const theme of THEMES) {
+  test(`aucune violation d'accessibilité sur la version texte, thème ${theme}`, async ({
+    page,
+  }) => {
+    await page.addInitScript((chosen) => {
+      localStorage.setItem("bd-term-opts", JSON.stringify({ theme: chosen }));
+    }, theme);
+    await page.goto("/texte.html");
+
+    const { violations } = await scan(page);
+
+    expect(violations.map((entry) => `${entry.id}: ${entry.nodes.length}`)).toEqual([]);
+  });
+}
+
 test("le mouvement réduit coupe les animations", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await boot(page);
