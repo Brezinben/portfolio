@@ -280,10 +280,14 @@ const BOOT_MS = 2000,
     suggest: raw.suggest ?? "",
     view: raw.view ?? "pairs",
   }),
-  // Trente-deux feuilles de sprites remplacent le dessin en ombres portees. Les durees et
+  // Trente-cinq feuilles de sprites remplacent le dessin en ombres portees. Les durees et
   // les images vivent dans la feuille de style : le script ne choisit que l'etat.
-  // Neuf etats de vie, six expressions de commande, six activites, onze de manipulation.
+  // Neuf etats de vie, six expressions de commande, six activites, onze de manipulation,
+  // trois transitions de forme.
   MASCOT_STATES = new Set([
+    "evolveCube",
+    "evolvePingouin",
+    "devolve",
     "idle",
     "wink",
     "jump",
@@ -318,6 +322,16 @@ const BOOT_MS = 2000,
     "splatFloorRight",
   ]),
   MASCOT_REST = "idle",
+  // La chaine des formes. Chaque appel monte d'un cran, le troisieme referme le cycle. Une
+  // transition se joue depuis la feuille qui la porte : « evolveCube » vit dans celle du
+  // cube, « devolve » dans celle du pingouin. D'ou « sheet », qui n'est pas toujours
+  // « next ».
+  CHAIN = {
+    cube: { next: "pingouin", sheet: "pingouin", state: "evolvePingouin" },
+    pingouin: { next: "slime", sheet: "pingouin", state: "devolve" },
+    slime: { next: "cube", sheet: "cube", state: "evolveCube" },
+  },
+  TRANSITIONS = new Set(["devolve", "evolveCube", "evolvePingouin"]),
   // Une case affichee fait 64 px, soit la hauteur de la piste.
   SPRITE = 64,
   // Sous ce pas la mascotte garderait sa prise plutot que de trembler entre deux feuilles.
@@ -346,7 +360,10 @@ const BOOT_MS = 2000,
     alert: 960,
     bike: 2880,
     coffee: 1200,
+    devolve: 1440,
     drop: 1440,
+    evolveCube: 2400,
+    evolvePingouin: 2400,
     goal: 1440,
     happy: 1200,
     juggle: 2880,
@@ -478,6 +495,11 @@ interface State {
   motion: string;
   used: number;
   optsOpen: boolean;
+  // La forme affichee, la forme visee pendant une transition, et les feuilles deja tirees.
+  // Aucune des trois n'est persistee : chaque visite repart du slime.
+  form: string;
+  becoming: string;
+  loaded: Set<string>;
   // Qui a ouvert la modale : le bouton de l'en-tete, ou la saisie via la commande.
   optsReturn: HTMLElement | undefined;
   out: boolean;
@@ -573,6 +595,9 @@ document.addEventListener("alpine:init", () => {
       used: 0,
       optsOpen: false,
       optsReturn: undefined,
+      form: "slime",
+      becoming: "",
+      loaded: new Set(["slime"]),
       out: true,
       pane: "nav",
       pending: undefined,
@@ -1101,6 +1126,12 @@ document.addEventListener("alpine:init", () => {
         }
 
         // Explose, le slime ne repond plus : rien ne le rejoue avant qu'il reprenne forme.
+        // Une transition de forme tient ses 2,4 s : la frappe, une section, un clic ou un
+        // changement de theme la couperaient au milieu. Meme forme de garde que « gone ».
+        if (TRANSITIONS.has(this.mascotState) && this.mascotState !== state) {
+          return;
+        }
+
         if (this.gone && state !== "boom") {
           return;
         }
@@ -1152,6 +1183,17 @@ document.addEventListener("alpine:init", () => {
         // pas de repos a reprendre, elle est partie.
         if (this.mascotState === "train") {
           this.leave();
+
+          return;
+        }
+
+        // La derniere case d'une transition montre deja la forme d'arrivee : il ne reste
+        // qu'a la poser, puis a rendre le repos.
+        if (TRANSITIONS.has(this.mascotState)) {
+          this.form = this.becoming;
+          this.becoming = "";
+          this.mascotState = "";
+          this.mascotPlay(MASCOT_REST);
 
           return;
         }
@@ -1235,6 +1277,56 @@ document.addEventListener("alpine:init", () => {
       },
 
       // Le compte repart de zero : le slime peut exploser autant de fois qu'on veut.
+      // La feuille d'une forme ne part qu'a la demande : le cube et le pingouin pesent chacun
+      // plus que le slime, et presque personne ne tapera la commande. L'adresse empreintee
+      // est posee par la construction sur la piste, qui la reecrit comme tout chemin d'actif.
+      async loadForm(form: string) {
+        if (this.loaded.has(form)) {
+          return;
+        }
+
+        const source =
+          this.$refs["mascot"]?.dataset[`sheet${form[0]?.toUpperCase()}${form.slice(1)}`];
+
+        if (!source) {
+          throw new Error(`la piste ne declare aucune feuille pour ${form}`);
+        }
+
+        this.mascotPlay("load");
+
+        const sheet = new Image();
+
+        sheet.src = source;
+        await sheet.decode();
+        this.loaded.add(form);
+      },
+
+      // Ce que la coquille sait de la mascotte, et que l'interpreteur ne peut pas deviner.
+      mascotStanding(): "away" | "busy" | "here" {
+        if (this.gone) {
+          return "away";
+        }
+
+        return TRANSITIONS.has(this.mascotState) ? "busy" : "here";
+      },
+
+      // Un cran dans la chaine. La feuille arrive avant la transition : sans cela, les
+      // premieres cases se joueraient sur une image absente.
+      async evolve() {
+        const step = lookup(CHAIN, this.form);
+
+        if (!step || this.gone || TRANSITIONS.has(this.mascotState)) {
+          return;
+        }
+
+        await this.loadForm(step.sheet);
+
+        this.becoming = step.next;
+        this.form = step.sheet;
+        this.mascotState = "";
+        this.mascotPlay(step.state);
+      },
+
       blowUp() {
         // Deja absente, une seconde explosion repousserait son retour sans rien montrer.
         // Le clic passait par poke(), qui garde deja ; la commande arrive ici en direct.
@@ -1815,7 +1907,7 @@ document.addEventListener("alpine:init", () => {
           feedback: this.feedback,
           jokeIndex: this.jokeIndex,
           jokes: this.jokes,
-          mascotAway: this.gone,
+          mascot: this.mascotStanding(),
           pending: this.pending,
           sections: this.sections,
           share: this.share,
@@ -2004,6 +2096,8 @@ document.addEventListener("alpine:init", () => {
             this.powerDown(effect.mode);
           } else if (effect.type === "theme") {
             this.setTheme(effect.name);
+          } else if (effect.type === "evolve") {
+            void this.evolve();
           } else if (effect.type === "options") {
             this.openOpts();
           }

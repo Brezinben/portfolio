@@ -10,7 +10,7 @@ const CONTEXT: Context = {
     feedback: {},
     jokeIndex: 0,
     jokes: ["une blague", "une autre"],
-    mascotAway: false,
+    mascot: "here",
     sections: [
       { id: "whoami", label: "whoami" },
       { id: "stack", label: "stack" },
@@ -541,9 +541,14 @@ test("matrix n'émet plus que son expression", () => {
 // Le journal ne doit pas annoncer un geste que la coquille avale. La mascotte est absente
 // pendant son explosion et pendant son voyage en train.
 test("le slime absent refuse la commande au lieu de mentir", () => {
-  const away = { ...CONTEXT, mascotAway: true };
+  const away = { ...CONTEXT, mascot: "away" } as const;
 
-  for (const command of ["/slime kill", "/slime drop", "/slime expression happy"]) {
+  for (const command of [
+    "/slime kill",
+    "/slime drop",
+    "/slime expression happy",
+    "/slime evolve",
+  ]) {
     const result = interpret(command, away);
 
     assert.match(texts(result)[1] ?? "", /le slime n'est pas la/u, command);
@@ -561,5 +566,30 @@ test("lister l'usage de slime le signale comme tel", () => {
   }
 
   assert.equal(effectOf(interpret("/slime kill", CONTEXT), "usage"), undefined);
+  assert.equal(effectOf(interpret("/slime evolve", CONTEXT), "usage"), undefined);
   assert.equal(effectOf(interpret("/coffee", CONTEXT), "usage"), undefined);
+});
+
+// La chaine des formes. La coquille pose l'effet, l'interpreteur ne connait ni la forme
+// courante ni la suivante : il ne dit que « change de forme ».
+test("slime evolve demande le changement de forme", () => {
+  const result = interpret("/slime evolve", CONTEXT);
+
+  assert.ok(effectOf(result, "evolve"), "l'effet manque");
+  assert.match(texts(result)[1] ?? "", /change de forme/u);
+});
+
+// Occupee n'est pas absente : la mascotte est la, elle finit sa transformation. Le journal
+// doit le dire, et non annoncer un geste que la coquille avale.
+test("pendant un changement de forme, la commande est refusée sans mentir", () => {
+  const busy = { ...CONTEXT, mascot: "busy" } as const;
+
+  for (const command of ["/slime evolve", "/slime kill", "/slime expression happy"]) {
+    const result = interpret(command, busy);
+
+    assert.match(texts(result)[1] ?? "", /change de forme/u, command);
+    assert.ok(effectOf(result, "usage"), command);
+    assert.equal(effectOf(result, "evolve"), undefined, command);
+    assert.equal(effectOf(result, "blowUp"), undefined, command);
+  }
 });

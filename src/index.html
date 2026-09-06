@@ -526,6 +526,17 @@
       cursor: grab
     }
 
+    /* Les trois formes partagent les regles d'etat : leurs feuilles portent les memes
+       trente-deux etats, dans le meme ordre, avec le meme nombre de cases. Seule l'image
+       change ici, et la construction l'y pose. */
+    .slime[data-form="cube"] {
+      background-position: 0 0
+    }
+
+    .slime[data-form="pingouin"] {
+      background-position: 0 0
+    }
+
     .slime[data-held="true"] {
       cursor: grabbing
     }
@@ -582,6 +593,12 @@
       }
     }
 
+    @keyframes slime-40-hold {
+      to {
+        background-position-x: -2496px
+      }
+    }
+
     @keyframes slime-24-hold {
       to {
         background-position-x: -1472px
@@ -593,37 +610,37 @@
        donc le seul qui existe, et le CSS ne peut pas se décaler par rapport à l'image.
        Servi tel quel, sans construction, src/ tire une feuille par état déclenché. */
     .slime--idle {
-      background-image: url("assets/sprites/slime-idle.png");
+      background-image: url("assets/sprites/slime/slime-idle.png");
       background-size: 768px 64px;
       animation: slime-12 1.44s steps(12) infinite
     }
 
     .slime--type {
-      background-image: url("assets/sprites/slime-type-b.png");
+      background-image: url("assets/sprites/slime/slime-type.png");
       background-size: 768px 64px;
       animation: slime-12 .72s steps(12) infinite
     }
 
     .slime--load {
-      background-image: url("assets/sprites/slime-load.png");
+      background-image: url("assets/sprites/slime/slime-load.png");
       background-size: 1024px 64px;
       animation: slime-16 1.6s steps(16) infinite
     }
 
     .slime--sleep {
-      background-image: url("assets/sprites/slime-sleep.png");
+      background-image: url("assets/sprites/slime/slime-sleep.png");
       background-size: 1024px 64px;
       animation: slime-16 3.2s steps(16) infinite
     }
 
     .slime--wink {
-      background-image: url("assets/sprites/slime-wink.png");
+      background-image: url("assets/sprites/slime/slime-wink.png");
       background-size: 768px 64px;
       animation: slime-12 1.68s steps(12) 1
     }
 
     .slime--jump {
-      background-image: url("assets/sprites/slime-jump.png");
+      background-image: url("assets/sprites/slime/slime-jump.png");
       background-size: 1024px 64px;
       animation: slime-16 1.28s steps(16) 1
     }
@@ -632,7 +649,7 @@
        la nouvelle, au lieu de sauter au premier instant. Le fondu tient la passe, et lui
        seul : un changement de thème sans mue garde sa teinte immédiate. */
     .slime--morph {
-      background-image: url("assets/sprites/slime-morph.png");
+      background-image: url("assets/sprites/slime/slime-morph.png");
       background-size: 1024px 64px;
       animation: slime-16 2.4s steps(16) 1;
       transition: filter 2.4s linear
@@ -641,13 +658,13 @@
     /* L'explosion s'arrête sur sa dernière frame : le slime reste absent le temps que
        le minuteur lui rende sa forme. */
     .slime--boom {
-      background-image: url("assets/sprites/slime-boom.png");
+      background-image: url("assets/sprites/slime/slime-boom.png");
       background-size: 1024px 64px;
       animation: slime-16-hold 1.12s steps(16, jump-none) 1 forwards
     }
 
     .slime--reform {
-      background-image: url("assets/sprites/slime-reform.png");
+      background-image: url("assets/sprites/slime/slime-reform.png");
       background-size: 1024px 64px;
       animation: slime-16 1.6s steps(16) 1
     }
@@ -657,37 +674,37 @@
        « laugh », « sad » et « scared » bouclent : leur seule sortie est le minuteur du
        script, une animation infinie n'émettant jamais « animationend ». */
     .slime--alert {
-      background-image: url("assets/sprites/slime-alert.png");
+      background-image: url("assets/sprites/slime/slime-alert.png");
       background-size: 1024px 64px;
       animation: slime-16 .96s steps(16) 1
     }
 
     .slime--happy {
-      background-image: url("assets/sprites/slime-happy.png");
+      background-image: url("assets/sprites/slime/slime-happy.png");
       background-size: 1280px 64px;
       animation: slime-20 1.2s steps(20) 1
     }
 
     .slime--laugh {
-      background-image: url("assets/sprites/slime-laugh.png");
+      background-image: url("assets/sprites/slime/slime-laugh.png");
       background-size: 1536px 64px;
       animation: slime-24 1.44s steps(24) infinite
     }
 
     .slime--sad {
-      background-image: url("assets/sprites/slime-sad.png");
+      background-image: url("assets/sprites/slime/slime-sad.png");
       background-size: 1536px 64px;
       animation: slime-24 2.88s steps(24) infinite
     }
 
     .slime--scared {
-      background-image: url("assets/sprites/slime-scared.png");
+      background-image: url("assets/sprites/slime/slime-scared.png");
       background-size: 1280px 64px;
       animation: slime-20 1s steps(20) infinite
     }
 
     .slime--drop {
-      background-image: url("assets/sprites/slime-drop.png");
+      background-image: url("assets/sprites/slime/slime-drop.png");
       background-size: 1536px 64px;
       animation: slime-24 1.44s steps(24) 1
     }
@@ -696,31 +713,31 @@
        le corps rétrécit pour lui faire de la place. « bike » et « juggle » bouclent, et le
        minuteur du script est leur seule sortie. */
     .slime--goal {
-      background-image: url("assets/sprites/slime-goal.png");
+      background-image: url("assets/sprites/slime/slime-goal.png");
       background-size: 1536px 64px;
       animation: slime-24 1.44s steps(24) 1
     }
 
     .slime--bike {
-      background-image: url("assets/sprites/slime-bike.png");
+      background-image: url("assets/sprites/slime/slime-bike.png");
       background-size: 1024px 64px;
       animation: slime-16 .96s steps(16) infinite
     }
 
     .slime--coffee {
-      background-image: url("assets/sprites/slime-coffee.png");
+      background-image: url("assets/sprites/slime/slime-coffee.png");
       background-size: 1280px 64px;
       animation: slime-20 1.2s steps(20) 1
     }
 
     .slime--lift {
-      background-image: url("assets/sprites/slime-lift.png");
+      background-image: url("assets/sprites/slime/slime-lift.png");
       background-size: 1536px 64px;
       animation: slime-24 1.44s steps(24) 1
     }
 
     .slime--juggle {
-      background-image: url("assets/sprites/slime-juggle.png");
+      background-image: url("assets/sprites/slime/slime-juggle.png");
       background-size: 1024px 64px;
       animation: slime-16 .96s steps(16) infinite
     }
@@ -728,7 +745,7 @@
     /* Le train part avec la mascotte et laisse le quai vide. Sa dernière case doit tenir,
        comme celle de l'explosion : le script la ramène ensuite par « drop ». */
     .slime--train {
-      background-image: url("assets/sprites/slime-train.png");
+      background-image: url("assets/sprites/slime/slime-train.png");
       background-size: 1536px 64px;
       animation: slime-24-hold 1.44s steps(24, jump-none) 1 forwards
     }
@@ -737,43 +754,43 @@
        bouton reste enfoncé. Les huit plaquages tiennent leur dernière case : la mascotte
        reste écrasée tant qu'elle est plaquée contre la paroi. */
     .slime--grab {
-      background-image: url("assets/sprites/slime-grab.png");
+      background-image: url("assets/sprites/slime/slime-grab.png");
       background-size: 768px 64px;
       animation: slime-12 1.2s steps(12) infinite
     }
 
     .slime--dragRight {
-      background-image: url("assets/sprites/slime-drag-right.png");
+      background-image: url("assets/sprites/slime/slime-drag-right.png");
       background-size: 512px 64px;
       animation: slime-8 .4s steps(8) infinite
     }
 
     .slime--dragLeft {
-      background-image: url("assets/sprites/slime-drag-left.png");
+      background-image: url("assets/sprites/slime/slime-drag-left.png");
       background-size: 512px 64px;
       animation: slime-8 .4s steps(8) infinite
     }
 
     .slime--splatRight {
-      background-image: url("assets/sprites/slime-splat-right.png");
+      background-image: url("assets/sprites/slime/slime-splat-right.png");
       background-size: 768px 64px;
       animation: slime-12-hold .96s steps(12, jump-none) 1 forwards
     }
 
     .slime--splatLeft {
-      background-image: url("assets/sprites/slime-splat-left.png");
+      background-image: url("assets/sprites/slime/slime-splat-left.png");
       background-size: 768px 64px;
       animation: slime-12-hold .96s steps(12, jump-none) 1 forwards
     }
 
     .slime--splatFloor {
-      background-image: url("assets/sprites/slime-splat-floor.png");
+      background-image: url("assets/sprites/slime/slime-splat-floor.png");
       background-size: 768px 64px;
       animation: slime-12-hold .96s steps(12, jump-none) 1 forwards
     }
 
     .slime--splatCeiling {
-      background-image: url("assets/sprites/slime-splat-ceiling.png");
+      background-image: url("assets/sprites/slime/slime-splat-ceiling.png");
       background-size: 768px 64px;
       animation: slime-12-hold .96s steps(12, jump-none) 1 forwards
     }
@@ -782,27 +799,49 @@
        pour s'échapper, la diagonale. Le dessin le rend, le script les teste avant les
        murs. */
     .slime--splatCeilingLeft {
-      background-image: url("assets/sprites/slime-splat-tl.png");
+      background-image: url("assets/sprites/slime/slime-splat-tl.png");
       background-size: 768px 64px;
       animation: slime-12-hold .96s steps(12, jump-none) 1 forwards
     }
 
     .slime--splatCeilingRight {
-      background-image: url("assets/sprites/slime-splat-tr.png");
+      background-image: url("assets/sprites/slime/slime-splat-tr.png");
       background-size: 768px 64px;
       animation: slime-12-hold .96s steps(12, jump-none) 1 forwards
     }
 
     .slime--splatFloorLeft {
-      background-image: url("assets/sprites/slime-splat-bl.png");
+      background-image: url("assets/sprites/slime/slime-splat-bl.png");
       background-size: 768px 64px;
       animation: slime-12-hold .96s steps(12, jump-none) 1 forwards
     }
 
     .slime--splatFloorRight {
-      background-image: url("assets/sprites/slime-splat-br.png");
+      background-image: url("assets/sprites/slime/slime-splat-br.png");
       background-size: 768px 64px;
       animation: slime-12-hold .96s steps(12, jump-none) 1 forwards
+    }
+
+    /* Les trois transitions de la chaine slime -> cube -> pingouin -> slime. Chacune vit
+       dans la feuille de la forme sous laquelle elle se joue, apres les trente-deux etats
+       communs. Elles tiennent leur derniere case : la forme d'arrivee prend la main
+       ensuite. */
+    .slime--evolveCube {
+      background-image: url("assets/sprites/cube/slime-evolve-cube.png");
+      background-size: 2560px 64px;
+      animation: slime-40-hold 2.4s steps(40, jump-none) 1 forwards
+    }
+
+    .slime--evolvePingouin {
+      background-image: url("assets/sprites/pingouin/cube-evolve-pingouin.png");
+      background-size: 2560px 64px;
+      animation: slime-40-hold 2.4s steps(40, jump-none) 1 forwards
+    }
+
+    .slime--devolve {
+      background-image: url("assets/sprites/pingouin/peng-devolve.png");
+      background-size: 1536px 64px;
+      animation: slime-24-hold 1.44s steps(24, jump-none) 1 forwards
     }
 
     /* Les couleurs sont cuites dans les PNG. Les thèmes sombres les font tourner ;
@@ -1128,8 +1167,13 @@
                sorti de la piste, et sans capture le navigateur cesserait de livrer
                « pointermove » dès la sortie. Ne la retirez pas. -->
           <template x-if="anim && !reduced">
+            <!-- Les deux adresses ci-dessous ne sont pas des feuilles d'etat : la
+                 construction les reecrit comme tout chemin d'actif, et « loadForm » les y
+                 lit pour tirer la forme demandee sans reconstruire son empreinte. -->
             <div data-mascot x-ref="mascot" aria-hidden="true" class="slime"
-              :data-held="dragging" :data-gone="gone"
+              data-sheet-cube="assets/sprites/cube-sheets.png"
+              data-sheet-pingouin="assets/sprites/pingouin-sheets.png"
+              :data-held="dragging" :data-gone="gone" :data-form="form"
               x-init="$nextTick(() => { place(at); settle() })" @pointerdown.prevent="grab($event)"
               @pointermove="drag($event)" @pointerup="release()" @pointercancel="release()"
               @click="poke()" @animationend.self="settle()">

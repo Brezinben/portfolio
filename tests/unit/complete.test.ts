@@ -38,12 +38,12 @@ test("les deux-points sont acceptés comme le slash", () => {
   assert.deepEqual(candidates(":su", CONTEXT).hits, ["/sudo"]);
 });
 
-// Au second mot, seul le vocabulaire de la commande a du sens. Quatre sous-commandes
-// claires valent mieux que dix mots mélangés : les expressions vivent un niveau plus bas.
-test("slime ne propose que ses quatre sous-commandes", () => {
+// Au second mot, seul le vocabulaire de la commande a du sens. Cinq sous-commandes claires
+// valent mieux que dix mots mélangés : les expressions vivent un niveau plus bas.
+test("slime ne propose que ses cinq sous-commandes", () => {
   const result = candidates("slime ", CONTEXT);
 
-  assert.deepEqual(result.hits, ["expression", "activity", "drop", "kill"]);
+  assert.deepEqual(result.hits, ["expression", "activity", "evolve", "drop", "kill"]);
   assert.equal(result.head, "slime");
 });
 
