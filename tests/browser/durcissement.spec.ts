@@ -3,6 +3,16 @@ import type { Page } from "@playwright/test";
 
 // Compose plutot qu'ecrit en clair : no-script-url interdit le litteral, alors qu'il est
 // ici la charge utile du test.
+// Ce que le test sert a la place de content.json. La forme est celle d'un contenu
+// normal : ce sont les valeurs qui sont hostiles, et c'est tout le sujet.
+interface ContenuServi {
+  feedback?: Record<string, string>;
+  jokes?: string[];
+  profile?: { email: string };
+  sections?: unknown[];
+  share?: unknown;
+}
+
 const SCRIPT = ["java", "script:"].join(""),
   HOSTILE = {
     feedback: { fallbackEmail: "a@b.c", tool: "Umami", umamiHost: "https://u.test" },
@@ -30,7 +40,7 @@ const SCRIPT = ["java", "script:"].join(""),
       url: "https://exemple.test/",
     },
   },
-  serve = (page: Page, body: object) =>
+  serve = (page: Page, body: ContenuServi) =>
     page.route("**/content.json", (route) =>
       route.fulfill({ body: JSON.stringify(body), contentType: "application/json" }),
     ),

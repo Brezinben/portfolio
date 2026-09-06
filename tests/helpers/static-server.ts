@@ -25,6 +25,9 @@ const ROOT = resolve(
   // Le budget de poids se mesure après compression. Sans ces types compressés ici, le test
   // du budget mesurerait deux à quatre fois le poids réel et ne voudrait plus rien dire.
   COMPRESSIBLE = new Set([".css", ".html", ".js", ".json", ".svg", ".txt"]),
+  // Une extension libre dans une table fermee : la table garde le type que l'inference
+  // lui donne, et l'appelant recoit undefined quand l'extension n'y est pas.
+  lookup = <V>(table: Readonly<Record<string, V>>, key: string): V | undefined => table[key],
   resolveTarget = (rawUrl: string) => {
     let pathname = "";
 
@@ -55,7 +58,7 @@ const ROOT = resolve(
     size: number;
     target: string;
   }) => {
-    const type = TYPES[extname(target)] ?? "application/octet-stream",
+    const type = lookup(TYPES, extname(target)) ?? "application/octet-stream",
       stream = createReadStream(target);
 
     // Stat() peut réussir là où open() échoue. Sans cet écouteur, l'erreur est non gérée
