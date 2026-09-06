@@ -56,6 +56,19 @@
       top: 0
     }
 
+    /* Le titre de la page. Le bandeau de whoami est une image de points : il ne porte pas
+       le niveau un. Masqué à l'œil, jamais au lecteur d'écran, et hors du flux pour ne pas
+       peser sur la mise en page des volets. */
+    .titre {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      margin: 0;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap
+    }
+
     .skip:focus {
       left: 10px;
       top: 10px;
@@ -945,13 +958,19 @@
 </head>
 
 <body>
-  <a class="skip" href="texte.html">Aller à la version texte, plus simple avec un lecteur
-    d'écran.</a>
+  <!-- Le lien de saut est le seul contenu hors des volets. Sans ce reperage, il reste
+       hors de tout reperage, et le scan le signale. -->
+  <header>
+    <a class="skip" href="texte.html">Aller à la version texte, plus simple avec un lecteur
+      d'écran.</a>
+  </header>
   <div class="tm" x-data="terminal" :data-theme="theme" x-cloak @keydown.window="onKey($event)"
     style="background:var(--bg);color:var(--fg);height:100dvh;max-height:100dvh;overflow:hidden;box-sizing:border-box;padding:14px clamp(12px,2.5vw,26px) 14px;font-size:14px;line-height:1.6;position:relative;display:flex;flex-direction:column;gap:10px">
 
-    <div data-panes
+    <main data-panes
       :style="`flex:1;min-height:0;display:flex;flex-wrap:nowrap;gap:10px;align-items:stretch;overflow:var(--panes-overflow,hidden);max-width:2400px;width:100%;margin:0;animation:${power === 'fade' && anim ? 'revealUp .62s cubic-bezier(.2,.7,.3,1) both' : 'none'}`">
+
+      <h1 class="titre">Benjamin David — Développeur IA et Full Stack</h1>
 
       <nav data-pane="nav" aria-label="Sections"
         style="flex:var(--pane-flex,0 1 clamp(196px,17vw,280px));min-width:176px;min-height:var(--pane-min,0px);display:flex;flex-direction:column;gap:10px;overflow:hidden">
@@ -1288,7 +1307,7 @@
           </template>
         </div>
       </aside>
-    </div>
+    </main>
 
     <template x-if="optsOpen">
       <div @click="closeOpts()"
