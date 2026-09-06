@@ -95,7 +95,7 @@
           ["—", "43 briques résolues · 0 dépendance décorative", "fg2", "ok"]
         ]
       },
-      "ask": "Frontend : HTML, CSS, Tailwind, Sass, Vuetify, TypeScript, Vue.js, React, Svelte, Pinia, RxJS, Vite. Backend : Laravel, NestJS, PHP, API REST, OpenAPI, JWT, PostgreSQL, MySQL, Redis. IA : serveurs MCP, SpecKit, SDD, agents, évaluation. DevOps : Docker, GitLab CI, GitHub Actions, Linux, Bash, Ansible, monitoring. Qualité : tests unitaires et E2E, Cypress, ESLint, Prettier, éco-conception, RGAA, pair-programming."
+      "ask": "Frontend : HTML, CSS, Tailwind, Sass, Vuetify, TypeScript, Vue.js, React, Svelte, Pinia, RxJS, Vite. Backend : Laravel, NestJS, PHP, API REST, OpenAPI, JWT, PostgreSQL, MySQL, Redis. IA : serveurs MCP, SpecKit, SDD, Claude, herdr, LiteLLM, Langfuse, LangGraph, agents, harness engineering, évaluation. DevOps : Docker, GitLab CI, GitHub Actions, Linux, Bash, Ansible, monitoring. Qualité : tests unitaires et E2E, Cypress, ESLint, Prettier, éco-conception, RGAA, pair-programming."
     },
     {
       "id": "impact", "label": "impact", "sub": "numérique responsable", "dot": "ok", "state": "audit",
@@ -188,25 +188,28 @@
     {
       "id": "m-kereis", "label": "kereis", "parent": "parcours", "cmd": "bd show mission/kereis",
       "lines": [
-        { "t": "Kereis — équipe Urbanisme", "size": "clamp(22px,2.6vw,30px)", "w": "700", "ls": "-.02em" },
+        { "t": "Kereis — pôle DSI", "size": "clamp(22px,2.6vw,30px)", "w": "700", "ls": "-.02em" },
         { "t": "mai 2026 → aujourd'hui · Développeur IA / Full Stack · via fruggr", "tone": "acc" },
-        { "m": "·", "t": "Conception de serveurs MCP : exposer les outils internes aux agents, avec les garde-fous qui vont avec." },
-        { "m": "·", "t": "Mise en place du Specification-Driven Development avec SpecKit — spec-it, plan, tasks." },
-        { "m": "·", "t": "Revue de spécification par l'IA : ~20 min là où un humain passerait une journée. Étape obligatoire à chaque fonctionnalité." },
-        { "m": "·", "t": "Accompagnement des équipes produit sur l'usage outillé de l'IA." }
+        { "m": "·", "t": "Kereis construit plutôt qu'il n'achète. On me demande de prouver par le code ce qu'une licence coûteuse ferait à moitié." },
+        { "m": "·", "t": "Le cadrage du code passe en premier. Linter et règles avant la première fonctionnalité : l'IA produit sous contrainte, un humain relit." },
+        { "m": "·", "t": "Serveurs MCP : les outils internes s'ouvrent aux agents. Le point dur est l'autorisation, pas l'exposition." },
+        { "m": "·", "t": "Simulateur de tarif d'assurance de prêt. L'utilisateur décrit son projet en langage naturel, le MCP répond un tarif." },
+        { "m": "·", "t": "Cartographie du SI sous Backstage. Sources AWS, GitLab et Zeenea branchées, puis un MCP pour que les agents lisent la carte." },
+        { "m": "·", "t": "Application de compte rendu. Le texte dicté est nettoyé, l'e-mail rédigé, la réunion suivante préparée." },
+        { "m": "·", "t": "Revue de spécification par l'IA : ~20 min là où un humain passerait une journée. Étape obligatoire à chaque fonctionnalité." }
       ],
       "out": {
         "title": "mission",
         "lines": [
           ["statut", "en cours", "fg2", "acc"],
           ["rôle", "développeur IA / full stack"],
-          ["client", "Kereis"],
+          ["client", "Kereis · pôle DSI"],
           ["via", "fruggr"],
-          ["pile", "MCP, SpecKit, agents"],
-          ["apport", "revue de spec automatisée"]
+          ["pile", "MCP, SpecKit, LiteLLM, Langfuse"],
+          ["apport", "cadrer l'IA par la spec"]
         ]
       },
-      "ask": "Chez Kereis depuis mai 2026, équipe Urbanisme, via fruggr : conception de serveurs MCP et mise en place du Specification-Driven Development avec SpecKit. La revue de spécification par l'IA prend une vingtaine de minutes là où un humain passerait une journée."
+      "ask": "Chez Kereis depuis mai 2026, via fruggr : des preuves de concept IA pour une DSI qui construit plutôt qu'elle n'achète. Serveurs MCP, Specification-Driven Development, et le cadrage du code écrit avant la première fonctionnalité. Trois sujets livrés : un simulateur de tarif d'assurance de prêt, une cartographie du SI sous Backstage, une application de compte rendu."
     },
     {
       "id": "m-assist", "label": "assist'enGare", "parent": "parcours", "cmd": "bd show mission/assist-engare",
@@ -276,7 +279,7 @@
   ],
 
   "timeline": [
-    { "id": "t0", "years": "2026 → …", "org": "Kereis", "role": "Développeur IA / Full Stack · équipe Urbanisme", "note": "Serveurs MCP et Specification-Driven Development. La revue de spec par l'IA prend ~20 min là où un humain passerait une journée — étape obligatoire à chaque feature.", "detail": "m-kereis" },
+    { "id": "t0", "years": "2026 → …", "org": "Kereis", "role": "Développeur IA / Full Stack · pôle DSI", "note": "Preuves de concept IA pour une DSI qui construit plutôt qu'elle n'achète. Serveurs MCP, Specification-Driven Development, et le cadrage du code écrit avant la première fonctionnalité.", "detail": "m-kereis" },
     { "id": "t1", "years": "2024 → 2026", "org": "SNCF Gares & Connexions", "role": "Développeur Full Stack · Assist'enGare", "note": "Réservation d'assistance pour les personnes en situation de handicap (PSH/PMR). Un service qui doit fonctionner pour tout le monde, sur tous les écrans, à toute heure.", "detail": "m-assist" },
     { "id": "t2", "years": "2023 → 2024", "org": "fruggr by digital4better", "role": "Gestion du RUN", "note": "Supervision, support, correctifs de sécurité, optimisation des pipelines CI/CD.", "detail": "m-run" },
     { "id": "t3", "years": "2021 → 2023", "org": "Transway", "role": "Full Stack, puis Technical Lead", "note": "Mobilité douce : vélo, marche et transports en commun, points gagnés et CO2 évité.", "detail": "m-transway" },
@@ -290,7 +293,7 @@
     { "id": "back", "label": "backend", "note": "services et données",
       "kids": ["Laravel", "NestJS", "PHP", "API REST", "OpenAPI", "JWT", "PostgreSQL", "MySQL", "Redis"] },
     { "id": "ia", "label": "ia", "note": "orchestration d'agents",
-      "kids": ["Serveurs MCP", "SpecKit", "SDD", "Agents", "Évaluation", "Prompting"] },
+      "kids": ["Serveurs MCP", "SpecKit", "SDD", "Claude", "herdr", "LiteLLM", "Langfuse", "LangGraph", "Agents", "Harness engineering", "Évaluation", "Prompting"] },
     { "id": "ops", "label": "devops", "note": "livrer sans casser",
       "kids": ["Docker", "Compose", "GitLab CI", "GitHub Actions", "Linux", "Bash", "Ansible", "Monitoring"] },
     { "id": "qa", "label": "qualité & sobriété", "note": "ce qui tient dans le temps",
@@ -314,7 +317,13 @@
     "Serveurs MCP": { "where": "Kereis, 2026", "note": "Exposition des outils internes aux agents : tools, resources, prompts, avec les garde-fous d'accès." },
     "SpecKit": { "where": "Kereis, 2026", "note": "spec-it, plan, tasks. La spécification devient l'artefact de référence, le code en découle." },
     "SDD": { "where": "Kereis", "note": "Specification-Driven Development : décrire l'intention, faire valider, puis générer et vérifier." },
+    "Claude": { "where": "Kereis, 2026", "note": "Toute la gamme Anthropic : l'agent en terminal pour le code, l'application pour la spec. Les règles du dépôt le cadrent, pas le prompt du jour." },
+    "herdr": { "where": "Kereis, 2026", "note": "Multiplexeur de terminal en Rust. Plusieurs agents travaillent en parallèle et leur état reste lisible." },
+    "LiteLLM": { "where": "Kereis, 2026", "note": "Passerelle unique devant plusieurs fournisseurs de modèles. Le code ne dépend d'aucun d'eux." },
+    "Langfuse": { "where": "Kereis, 2026", "note": "Traces et évaluation des appels de modèle. Sans mesure, la qualité d'un agent reste une opinion." },
+    "LangGraph": { "where": "Kereis, 2026", "note": "Enchaînements conditionnels entre prompts. L'agent devient un graphe que l'on peut relire." },
     "Agents": { "where": "Kereis", "note": "Revue automatisée de spécification : ~20 min contre une journée humaine, à chaque fonctionnalité." },
+    "Harness engineering": { "where": "Kereis, 2026", "note": "Construire la machinerie autour du modèle : nettoyage de l'entrée, enchaînement des étapes, contrôle de la sortie. Le modèle seul ne produit rien de livrable." },
     "Docker": { "where": "depuis 2020", "note": "Environnements reproductibles en local comme en CI. Compose pour les dépendances." },
     "GitLab CI": { "where": "fruggr, SNCF", "note": "Pipelines de test, build et déploiement. Optimisation des durées pour limiter le gaspillage." },
     "Linux": { "where": "depuis FPEE, 2018", "note": "Administration, scripts Bash, accès SSH. Le socle du reste." },
