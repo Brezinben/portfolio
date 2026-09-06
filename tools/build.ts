@@ -67,7 +67,15 @@ const ROOT = fileURLToPath(new URL("../", import.meta.url)),
   MINIFY = { collapseWhitespace: true, minifyCSS: true, removeComments: true },
   // Le code d'erreur de Node ne figure pas dans le type Error : on le retrecit plutot que
   // de l'affirmer.
+  //
+  // Les deux regles desactivees ici demandent de parser l'entree a sa frontiere et de
+  // brancher sur une valeur de domaine. Il n'y a pas de frontiere : TypeScript impose
+  // « unknown » sur la liaison d'un catch, et c'est precisement ce rétrécissement-la qui
+  // etablit le contrat. Une valeur de domaine exigerait de faire confiance a la forme de
+  // l'erreur avant de l'avoir verifiee, donc d'ecrire moins sur que ce code.
+  // oxlint-disable-next-line anti-slop/no-unknown-parameters
   errorCode = (error: unknown): string | undefined =>
+    // oxlint-disable-next-line anti-slop/no-runtime-typeof
     error instanceof Error && "code" in error && typeof error.code === "string"
       ? error.code
       : undefined,
