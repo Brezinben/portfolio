@@ -1,4 +1,4 @@
-import { MAX_SUGGESTIONS, candidates, commonPrefix } from "../../production/interpret.js";
+import { MAX_SUGGESTIONS, candidates, commonPrefix } from "../../src/interpret.js";
 import assert from "node:assert/strict";
 import { test } from "node:test";
 

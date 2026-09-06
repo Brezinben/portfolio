@@ -32,16 +32,25 @@ test("aucun lien ne pointe vers le canvas", async ({ page }) => {
   expect(hrefs.filter((href) => href.includes(".dc.html"))).toEqual([]);
 });
 
-const ANNEXES = [
-  ["/llms.txt", "text/plain"],
-  ["/share.png", "image/png"],
-];
+// L'image de partage porte une empreinte du contenu dans son nom, donc le test la lit dans
+// la balise qui la déclare. llms.txt garde un nom fixe : les robots le demandent par ce nom.
+const PARTAGE = /property="og:image" content="[^"]*?(?<nom>[^"/]+\.png)"/u;
 
 test("les fichiers annexes sont servis", async ({ request }) => {
-  const responses = await Promise.all(ANNEXES.map(([path]) => request.get(path)));
+  const page = await request.get("/texte.html");
+  const html = await page.text();
+  const partage = html.match(PARTAGE)?.groups?.nom;
+
+  expect(partage, "texte.html doit déclarer une image de partage").toBeDefined();
+
+  const annexes = [
+    ["/llms.txt", "text/plain"],
+    [`/${partage}`, "image/png"],
+  ];
+  const responses = await Promise.all(annexes.map(([path]) => request.get(path)));
 
   for (const [index, response] of responses.entries()) {
-    const [path, type] = ANNEXES[index];
+    const [path, type] = annexes[index];
 
     expect(response.status(), `${path} doit être servi`).toBe(200);
     expect(response.headers()["content-type"]).toContain(type);

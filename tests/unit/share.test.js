@@ -1,4 +1,4 @@
-import { fillTokens, interpret, proposalPrompt, shareTarget } from "../../production/interpret.js";
+import { fillTokens, interpret, proposalPrompt, shareTarget } from "../../src/interpret.js";
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
@@ -88,7 +88,37 @@ test("propose annonce ce qui part, où, et ce qui ne part pas", () => {
 });
 
 test("propose sans texte explique la commande", () => {
-  assert.match(interpret("/propose", CONTEXT).lines[1].t, /propose <idée>/u);
+  assert.match(interpret("/propose", CONTEXT).lines[1].t, /propose \[-y\] <idée>/u);
+});
+
+// La reponse attendue est deja ecrite : la validation tient en une touche.
+test("propose pré-écrit la réponse dans la saisie", () => {
+  const pending = interpret("/propose ajouter une section", CONTEXT).effects.find(
+    (entry) => entry.type === "pending",
+  );
+
+  assert.equal(pending.answer, "oui");
+});
+
+// -y vaut consentement : le drapeau a ete tape avec l'idee.
+test("propose -y envoie sans poser la question", () => {
+  const result = interpret("/propose -y ajouter une section", CONTEXT);
+
+  assert.ok(result.effects.some((entry) => entry.type === "send"));
+  assert.ok(!result.effects.some((entry) => entry.type === "pending"));
+  assert.match(result.lines.at(-1).t, /« ajouter une section »/u);
+});
+
+test("propose -y sans idée explique la commande", () => {
+  assert.match(interpret("/propose -y", CONTEXT).lines[1].t, /propose \[-y\] <idée>/u);
+});
+
+// Le drapeau est un mot entier : une idee qui commence par « -y » reste intacte.
+test("propose ne coupe pas une idée qui commence par -y", () => {
+  const result = interpret("/propose -yeux plus grands", CONTEXT);
+
+  assert.ok(result.effects.some((entry) => entry.type === "pending"));
+  assert.match(result.lines.map((entry) => entry.t).join("\n"), /« -yeux plus grands »/u);
 });
 
 test("oui envoie, non annule", () => {
@@ -100,6 +130,10 @@ test("oui envoie, non annule", () => {
 
   assert.ok(!refused.effects.some((entry) => entry.type === "send"));
   assert.match(refused.lines.at(-1).t, /rien n'a été envoyé/u);
+  assert.ok(
+    refused.effects.some((entry) => entry.type === "state" && entry.patch.pending === undefined),
+    "refuser libère l'attente, sinon la commande suivante passe pour une réponse",
+  );
 });
 
 test("une réponse hors oui/non redemande sans rien envoyer", () => {

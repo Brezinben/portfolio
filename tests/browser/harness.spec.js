@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-test("le serveur statique sert production/ et refuse ce qui n'existe pas", async ({ request }) => {
+test("le serveur statique sert src/ et refuse ce qui n'existe pas", async ({ request }) => {
   const missing = await request.get("/pas-de-fichier-ici.html");
 
   expect(missing.status()).toBe(404);

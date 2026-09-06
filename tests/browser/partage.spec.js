@@ -55,6 +55,28 @@ test("propose annonce ce qui part et attend la confirmation", async ({ page }) =
   await expect(journal).toContainText("oui ou non");
 });
 
+// La reponse attendue est deja ecrite : valider tient en une touche.
+test("propose pré-écrit « oui » dans la saisie", async ({ page }) => {
+  const cli = await boot(page);
+
+  await run(cli, "/propose une idée");
+
+  await expect(cli).toHaveValue("oui");
+});
+
+// -y vaut consentement : le drapeau a ete tape avec l'idee.
+test("propose -y n'attend aucune confirmation", async ({ page }) => {
+  const cli = await boot(page);
+
+  await run(cli, "/propose -y une idée pressée");
+
+  const journal = page.locator("[data-journal]");
+
+  await expect(journal).toContainText("une idée pressée");
+  await expect(journal).not.toContainText("oui ou non");
+  await expect(cli, "la saisie reste libre").toHaveValue("");
+});
+
 test("répondre non n'envoie rien", async ({ page }) => {
   const cli = await boot(page);
 

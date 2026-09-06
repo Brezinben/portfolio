@@ -9,7 +9,7 @@ Domaine cible : `https://portfolio.brezinben.dpdns.org/`
 
 | Dossier | Rôle |
 |---|---|
-| `production/` | La source. Lisible, sans dépendance, servable telle quelle. |
+| `src/` | La source. Lisible, sans dépendance, servable telle quelle. |
 | `dist/` | L'artefact compact, produit par `npm run build`. Hors de git. |
 | `design/` | Le canvas Claude Design, **gelé**. Référence visuelle et de comportement, plus une source de code. |
 | `docs/adr/` | Décisions d'architecture. |
@@ -32,7 +32,7 @@ Playwright et les deux outils de construction.
 ## Commandes
 
 ```
-npm run build         # produit dist/ à partir de production/
+npm run build         # produit dist/ à partir de src/
 npm run lint          # oxlint, via npx : voir la note ci-dessous
 npm run format        # oxfmt, écriture en place
 npm run format:check  # oxfmt, vérification seule
@@ -57,17 +57,31 @@ démarrage, le clavier, le focus, l'accessibilité et le budget de poids.
 
 Playwright sert `dist/` et lance la construction avant. Le seam exerce donc la page compacte, celle
 que le visiteur reçoit, et non la source. Le seam interpréteur, lui, garde
-`production/interpret.js`.
+`src/interpret.js`.
 
 Le serveur de test compresse comme le ferait un serveur de production : le budget de poids
 se mesure après compression, sinon le chiffre ne veut rien dire.
 
 ## Déploiement
 
-Un conteneur Caddy monte `/mnt/portfolio/production` en lecture seule et le publie. Chaque
-sauvegarde part donc en ligne dans la seconde.
+Un conteneur Caddy monte le dépôt en lecture seule et sert `dist/`. Publier, c'est donc
+`npm run build`. Une sauvegarde de fichier ne part plus en ligne.
 
-`npm run build` produit `dist/`, la même page sous forme compacte. Le montage ne pointe pas
-encore dessus. Voir `docs/adr/0002-un-artefact-compact-plutot-qu-un-dossier-servi-tel-quel.md`.
+`dist` est un lien symbolique vers `.versions/dist/<horodatage>/`. La construction écrit la
+version neuve à côté, puis remplace le lien en une seule opération. Le chemin servi désigne
+donc toujours une version complète, même si la construction meurt.
+
+La construction pose une empreinte du contenu dans le nom des actifs. `content.json`,
+`llms.txt`, `robots.txt`, `sitemap.xml` et `apple-touch-icon.png` gardent le leur : ce sont
+des adresses fixes par convention.
+
+Les tests construisent dans `dist.test/` et ne publient rien. `PORTFOLIO_DIST` choisit la
+sortie, `PORTFOLIO_PORT` le port.
+
+`npm test` ne lance que les tests unitaires. Les tests navigateur coûtent deux minutes pour
+une page et trois fichiers : ils restent disponibles sous `npm run test:browser`, à lancer
+quand le rendu change.
+
+Voir `docs/adr/0003-publier-par-bascule-d-un-lien-symbolique.md`.
 
 `content.json` doit rester à côté de la page. La page le charge par une URL relative.

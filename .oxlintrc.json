@@ -89,10 +89,12 @@
   },
   "ignorePatterns": [
     "design/**",
-    "dist/**",
+    "dist*/**",
+    ".versions/**",
     "node_modules/**",
     "playwright-report/**",
-    "production/vendor/**",
+    "src/vendor/**",
+    "docs/mascotte/**",
     "test-results/**"
   ],
   "overrides": [

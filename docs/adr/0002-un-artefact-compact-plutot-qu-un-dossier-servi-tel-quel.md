@@ -34,6 +34,7 @@ projet. Il n'y a donc pas de graphe à résoudre. Rolldown ne sert qu'à fusionn
 `interpret.js` dans la page.
 
 **Le montage Docker ne bouge pas encore.** Le conteneur continue de servir `production/`.
+Périmé : la bascule a eu lieu. Voir l'ADR 0003.
 Tant que la bascule n'est pas faite, sauvegarder publie toujours, et cet ADR décrit une
 intention plus qu'un état. La bascule demande de recréer le conteneur, et elle attend que
 `dist/` ait vécu.
@@ -54,4 +55,4 @@ ne passe par une constante de portée module.
 
 Un clone frais ne porte pas `dist/`, qui est hors de git. Playwright le construit avant de
 servir, donc les tests fonctionnent. Le jour où le montage basculera, un `dist/` absent
-deviendra un site en 404.
+deviendra un site en 404. Ce jour est arrivé. Voir l'ADR 0003.

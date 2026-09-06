@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { interpret } from "../../production/interpret.js";
+import { interpret } from "../../src/interpret.js";
 import { test } from "node:test";
 
 const CONTEXT = {
