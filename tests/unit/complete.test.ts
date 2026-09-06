@@ -43,7 +43,9 @@ test("slime ne propose que des humeurs", () => {
 
   assert.ok(result.hits.includes("happy"));
   assert.ok(result.hits.includes("drop"));
+  assert.ok(result.hits.includes("kill"));
   assert.ok(!result.hits.includes("wtf"));
+  assert.ok(!result.hits.includes("idle"), "idle n'est plus proposé : il ne montrait rien");
   assert.equal(result.head, "slime");
 });
 
@@ -70,4 +72,28 @@ test("le plus long préfixe commun sert à compléter", () => {
   assert.equal(commonPrefix(["wtf"]), "wtf");
   assert.equal(commonPrefix([]), "");
   assert.equal(commonPrefix(["ls", "cd"]), "");
+});
+
+// Le second niveau : « slime » propose des humeurs, « slime activity » des activités.
+test("slime activity ne propose que des activités", () => {
+  const result = candidates("slime activity ", CONTEXT);
+
+  assert.deepEqual(result.hits, ["bike", "coffee", "goal", "juggle", "lift", "train"]);
+  assert.equal(result.head, "slime activity");
+});
+
+test("slime propose activity comme second mot", () => {
+  assert.ok(candidates("slime ", CONTEXT).hits.includes("activity"));
+});
+
+test("l'alias mood hérite aussi du second niveau", () => {
+  assert.deepEqual(
+    candidates("mood activity b", CONTEXT).hits,
+    candidates("slime activity b", CONTEXT).hits,
+  );
+});
+
+// Un troisième mot ne propose rien : le chemin « slime happy » n'a pas de vocabulaire.
+test("un mot de trop ne propose rien", () => {
+  assert.deepEqual(candidates("slime happy x", CONTEXT).hits, []);
 });

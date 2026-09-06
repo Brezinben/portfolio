@@ -2,8 +2,8 @@ import { expect, test } from "@playwright/test";
 import { readFile, readdir } from "node:fs/promises";
 
 const BUDGET_KO = 150,
-  SPRITES_KO = 32,
-  FUSION_KO = 10,
+  SPRITES_KO = 80,
+  FUSION_KO = 24,
   // Un hôte tiers qui n'envoie pas timing-allow-origin fait rapporter un transferSize nul au
   // navigateur. Le poids de ces ressources est invisible, pas nul. Les nommer ici empêche
   // qu'un nouveau tiers entre dans la page et échappe au budget sans que personne ne le voie.

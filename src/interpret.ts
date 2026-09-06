@@ -37,7 +37,9 @@ export interface Token {
 // Ce que la coquille doit faire. L'interpreteur ne touche jamais au DOM : il decrit, elle
 // applique. Cette union est le contrat entre les deux seams.
 export type Effect =
+  | { type: "activity"; name: string }
   | { type: "ask"; query: string }
+  | { type: "blowUp" }
   | { type: "clear" }
   | { type: "copy" }
   | { type: "cv" }
@@ -186,6 +188,14 @@ const line = ({
     scared: "apeuré",
     sleep: "endormi",
   },
+  // Deux listes, et elles disent deux choses différentes. « MOODS » nomme toutes les
+  // humeurs, « idle » compris, parce que « say » s'en sert pour ramener la mascotte au
+  // repos. « OFFERED » est ce que la commande propose, et « idle » n'y est pas : il
+  // n'aurait rien montré, la mascotte y est déjà. Ne les refusionnez pas.
+  OFFERED: Mood[] = ["alert", "happy", "laugh", "sad", "scared", "sleep"],
+  // Une activité demande un accessoire, là où une humeur se lit sur le visage. Le glossaire
+  // les sépare, et la commande aussi : « slime activity <nom> ».
+  ACTIVITIES = ["bike", "coffee", "goal", "juggle", "lift", "train"],
   HELP = [
     "ls · cd <section> · bd <section>  — naviguer",
     "theme · clear · options          — affichage",
@@ -311,18 +321,38 @@ const line = ({
 
     return { effects: [], lines: [muted("répondez « oui » ou « non » — Échap annule.")] };
   },
-  isMood = (value: string): value is Mood => Object.hasOwn(MOODS, value),
-  slime = (argument: string): Told => {
+  isMood = (value: string): value is Mood => OFFERED.some((mood) => mood === value),
+  slime = (argument: string, name: string): Told => {
     if (argument === "drop" || argument === "jump") {
-      return { effects: [{ type: "drop" }], lines: [done("le slime saute et s'écrase.")] };
+      return { effects: [{ type: "drop" }], lines: [done("le slime tombe et s'écrase.")] };
+    }
+
+    if (argument === "kill") {
+      return { effects: [{ type: "blowUp" }], lines: [done("le slime explose.")] };
+    }
+
+    if (argument === "activity") {
+      if (!ACTIVITIES.includes(name)) {
+        return {
+          effects: [],
+          lines: [info(`slime activity <nom> — ${ACTIVITIES.join(" · ")}`)],
+        };
+      }
+
+      return {
+        effects: [{ name, type: "activity" }],
+        lines: [done(`le slime s'y met : ${name}.`)],
+      };
     }
 
     if (!isMood(argument)) {
       return {
         effects: [],
         lines: [
-          info(`slime <humeur> — ${Object.keys(MOODS).join(" · ")}`),
+          info(`slime <humeur> — ${OFFERED.join(" · ")}`),
+          info(`slime activity <nom> — ${ACTIVITIES.join(" · ")}`),
           info("slime drop — le fait tomber du plafond"),
+          info("slime kill — le fait exploser, il revient de lui-même"),
         ],
       };
     }
@@ -359,20 +389,24 @@ const line = ({
 
 export const MAX_SUGGESTIONS = 10;
 
-// Le second mot n'a de sens que pour certaines commandes. Proposer le vocabulaire entier
-// après « slime » ferait du bruit, pas de l'aide.
-const argumentsFor = (command: string, context: CompletionContext): string[] | undefined => {
-  const ids = [...context.sections, ...context.details].map((entry) => entry.id);
+// Le vocabulaire dépend du chemin déjà tapé, et pas seulement du premier mot : « slime »
+// propose des humeurs, « slime activity » propose des activités. Proposer le vocabulaire
+// entier après l'un ou l'autre ferait du bruit, pas de l'aide.
+const argumentsFor = (path: string, context: CompletionContext): string[] | undefined => {
+  const ids = [...context.sections, ...context.details].map((entry) => entry.id),
+    slimeArguments = [...OFFERED, "activity", "drop", "kill"];
 
   return {
     bd: ids,
     cd: ids,
-    mood: [...Object.keys(MOODS), "drop"],
+    mood: slimeArguments,
+    "mood activity": ACTIVITIES,
     open: ids,
     partager: context.shareTargets ?? [],
     share: context.shareTargets ?? [],
-    slime: [...Object.keys(MOODS), "drop"],
-  }[command];
+    slime: slimeArguments,
+    "slime activity": ACTIVITIES,
+  }[path];
 };
 
 export const candidates = (value: string, context: CompletionContext) => {
@@ -398,12 +432,16 @@ export const candidates = (value: string, context: CompletionContext) => {
   }
 
   const command = lookup(ALIASES, first) ?? first,
-    pool = argumentsFor(command, context) ?? argumentsFor(first, context),
+    typed = parts.slice(0, -1),
+    // L'alias ne porte que sur le premier mot : « mood activity » suit le meme chemin que
+    // « slime activity ».
+    path = [command, ...typed.slice(1)].join(" "),
+    pool = argumentsFor(path, context) ?? argumentsFor(typed.join(" "), context),
     frag = (parts.at(-1) ?? "").toLowerCase();
 
   return {
     frag,
-    head: parts.slice(0, -1).join(" "),
+    head: typed.join(" "),
     hits: (pool ?? []).filter((entry) => entry.startsWith(frag)).slice(0, MAX_SUGGESTIONS),
     slash,
   };
@@ -699,7 +737,7 @@ export const interpret = (raw: string, context: Context): Outcome => {
   }
 
   if (command === "slime") {
-    const result = slime(argument);
+    const result = slime(argument, (parts[2] ?? "").toLowerCase());
 
     return out(result.lines, [track("easter_egg", { nom: "slime" }), ...result.effects]);
   }
