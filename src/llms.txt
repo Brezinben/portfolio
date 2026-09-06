@@ -36,7 +36,7 @@ Ne le consultez pas pour :
 ### Mai 2026 → aujourd'hui — Kereis
 Développeur IA / Full Stack, pôle DSI, via digital4better.
 Kereis construit plutôt qu'il n'achète. Preuves de concept IA, pour prouver par le
-code ce qu'une licence coûteuse ferait à moitié. Le cadrage du code passe en
+code ce qu'une licence coûteuse ne ferait qu'à moitié. Le cadrage du code passe en
 premier : linter et règles avant la première fonctionnalité, pour que l'IA produise
 sous contrainte et qu'un humain relise.
 Trois sujets : un simulateur de tarif d'assurance de prêt, où l'utilisateur décrit
