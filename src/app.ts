@@ -2158,7 +2158,8 @@ document.addEventListener("alpine:init", () => {
           } else if (effect.type === "sendMail") {
             globalThis.open(`mailto:${encodeURIComponent(this.profileEmail)}`);
           } else if (effect.type === "cv") {
-            this.goSection("whoami");
+            // Un nouvel onglet : le terminal reste ouvert derriere, avec son journal.
+            globalThis.open("texte.html", "_blank", "noopener");
           } else if (effect.type === "say") {
             this.say(effect.text, effect.expression);
           } else if (effect.type === "emote") {

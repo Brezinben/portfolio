@@ -447,13 +447,13 @@ test("l'aide n'annonce plus les commandes sans résultat", () => {
   assert.doesNotMatch(shown, /\bai\b/u);
 });
 
-// Le CV n'est pas encore servi. La commande navigue vers whoami en attendant, et le dit :
-// une navigation muette se lit comme une commande cassée.
+// Il n'y a pas de PDF à servir. La commande ouvre la version texte, qui porte le parcours
+// complet, et le dit : une navigation muette se lit comme une commande cassée.
 test("cv annonce ce qu'il fait au lieu de se taire", () => {
   const result = interpret("cv", CONTEXT);
 
   assert.ok(kinds(result).includes("cv"));
-  assert.match(texts(result)[1] ?? "", /whoami/u);
+  assert.match(texts(result)[1] ?? "", /version texte/u);
 });
 
 // « cd » est une commande, et l'aide l'annonce. Répondre « commande introuvable » à

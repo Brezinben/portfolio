@@ -935,13 +935,10 @@ export const interpret = (raw: string, context: Context): Outcome => {
     ]);
   }
 
-  // Le CV n'est pas encore servi. La commande ouvre whoami en attendant, et l'annonce :
-  // une navigation muette se lit comme une commande cassée.
+  // Il n'y a pas de PDF a servir, et la version texte porte deja tout le parcours. La
+  // commande l'ouvre, et l'annonce : une navigation muette se lit comme une commande cassee.
   if (command === "cv") {
-    return out(
-      [info("le CV arrive. En attendant, « whoami » en donne l'essentiel.")],
-      [{ type: "cv" }],
-    );
+    return out([info("le parcours complet s'ouvre dans la version texte.")], [{ type: "cv" }]);
   }
 
   if (command === "theme") {
