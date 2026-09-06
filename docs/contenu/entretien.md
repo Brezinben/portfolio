@@ -172,7 +172,66 @@ Ce qu'un recruteur doit retenir : **l'accessibilité tenue sous audit.**
 
 ## Transway · 2021 → 2023
 
-À recueillir.
+> Donc Transway, c'était la première mission hors alternance. Je suis arrivé là-bas pour
+> travailler sur le produit qui techniquement s'appelle V2, et son nom c'était Ireby Pro.
+> Donc c'était pour faire du FMD, forfait mobilité durable. Et du coup c'était un
+> formulaire où on venait déclarer ses différents trajets. C'était fait avec du Laravel et
+> du Vue.
+>
+> Ensuite je suis passé sur V3, donc là c'est juste une suite qui s'appelle également
+> Ireby. Le premier était à destination des entreprises, et là c'était à destination des
+> collectivités. Tu peux regarder sur ireby.fr, ça explique ce qu'ils font.
+>
+> Et là du coup on avait des branchements à faire avec les systèmes informatiques des
+> différents partenaires. Par exemple on avait TCL pour le transport à Lyon, il me semble,
+> ou la STAR pour Rennes.
+>
+> Il y avait une partie de migration entre V1 et V3. Du coup là en l'occurrence, c'est moi
+> qui l'ai fait. C'est un script qui venait migrer de la donnée avec de la transformation
+> de données : il fallait migrer des users, des offres, les images, différents services.
+> Ça c'était ma partie.
+>
+> Puis après, tous les jours on avait des crons qui faisaient l'ajout de points. Parce que
+> V3 c'est une brique de fidélité où les utilisateurs se connectent et pouvaient gagner des
+> points en se déplaçant, via le tram ou le bus de la commune du client. Et avec ces
+> points-là ils pouvaient acheter des offres sur notre boutique. Du coup tous les jours on
+> avait un système de points qui venaient récompenser l'utilisateur.
+>
+> Ensuite on avait un troisième projet où là je n'ai pas trop travaillé, parce que je suis
+> arrivé plus tard : c'était WeFlo. C'est une application mobile qui était branchée avec la
+> V3, donc qui avait quand même une partie interconnexion. Mais je crois que ça a évolué
+> depuis.
+>
+> Et j'étais passé Tech Lead pour justement uniformiser la qualité du code, avoir la main
+> sur les choix techniques qui sont faits.
+>
+> En termes de techno : V2 c'était du Laravel, du Vue.js et du PHP derrière. Et V3 c'était
+> du NestJS avec du Vue 3 — on a fait une migration. Il y avait toute une partie
+> configuration de l'interface de l'utilisateur : on crée depuis l'admin, on pouvait
+> configurer la vue du client, et la page elle était générique. On avait fait des
+> renforcements de sécurité suite à des audits, des migrations de Node par exemple.
+
+Sources publiques données par Benjamin : <https://ireby.fr/> et
+<https://www.transway.fr/produits>.
+
+Le catalogue Transway de 2026 nomme les produits **WeFlo l'appli**, **WeFlo Pro**,
+**IREBY — Incitation et Fidélité**, **IREBY.SHOP**, **Covoit.net** et **QRCode-NFC**.
+La marque a bougé depuis 2023 : ce que Benjamin appelle « Ireby Pro » pour les
+entreprises correspond au produit aujourd'hui nommé WeFlo Pro. À trancher avant
+publication.
+
+Tranché : on emploie les noms du catalogue d'aujourd'hui, pour qu'un lecteur retrouve
+les produits en ligne. V2 devient WeFlo Pro, V3 devient IREBY, le mobile devient WeFlo.
+
+Chiffres publiables :
+
+- **4 à 6 développeurs** encadrés comme lead technique.
+- **Plus de 300 000 utilisateurs** migrés de la V1 vers la V3, avec leurs offres et
+  leurs images.
+
+Ce que le rôle de lead a changé, d'après Benjamin : **l'encadrement des développeurs.**
+Pas la migration Vue 2 vers Vue 3 ni les renforcements de sécurité, qui restent du
+travail de développement.
 
 ## RUN fruggr · 2023 → 2024
 
