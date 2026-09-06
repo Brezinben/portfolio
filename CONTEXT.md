@@ -74,7 +74,7 @@ _Avoid_: slime, avatar, personnage.
 
 **État de la mascotte** (`mascotState`) :
 Ce que la mascotte fait à un instant donné. Neuf états : `idle`, `wink`, `jump`, `type`,
-`load`, `sleep`, `morph`, `crown`, `king`. Un seul à la fois. Remplace les humeurs.
+`load`, `sleep`, `morph`, `boom`, `reform`. Un seul à la fois. Remplace les humeurs.
 _Avoid_: humeur, mood, émotion, pose.
 
 **Feuille** (`sheet`) :

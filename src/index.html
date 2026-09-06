@@ -374,51 +374,6 @@
       }
     }
 
-    @keyframes bootFill {
-      0% {
-        clip-path: inset(0 100% 0 0)
-      }
-
-      9% {
-        clip-path: inset(0 87.5% 0 0)
-      }
-
-      16% {
-        clip-path: inset(0 83.3% 0 0)
-      }
-
-      23% {
-        clip-path: inset(0 62.5% 0 0)
-      }
-
-      37% {
-        clip-path: inset(0 58.3% 0 0)
-      }
-
-      45% {
-        clip-path: inset(0 37.5% 0 0)
-      }
-
-      58% {
-        clip-path: inset(0 33.3% 0 0)
-      }
-
-      66% {
-        clip-path: inset(0 20.8% 0 0)
-      }
-
-      81% {
-        clip-path: inset(0 16.6% 0 0)
-      }
-
-      90% {
-        clip-path: inset(0 4.1% 0 0)
-      }
-
-      100% {
-        clip-path: inset(0 0 0 0)
-      }
-    }
 
     @keyframes bootOut {
       0% {
@@ -581,14 +536,8 @@
       animation: slime-12 1.44s steps(12) infinite
     }
 
-    .slime--king {
-      background-image: url("sprites/slime-idle-crown.png");
-      background-size: 768px 64px;
-      animation: slime-12 1.44s steps(12) infinite
-    }
-
     .slime--type {
-      background-image: url("sprites/slime-type.png");
+      background-image: url("sprites/slime-type-b.png");
       background-size: 768px 64px;
       animation: slime-12 .72s steps(12) infinite
     }
@@ -623,10 +572,18 @@
       animation: slime-16 2.4s steps(16) 1
     }
 
-    .slime--crown {
-      background-image: url("sprites/slime-crown.png");
+    /* L'explosion s'arrête sur sa dernière frame : le slime reste absent le temps que
+       le minuteur lui rende sa forme. */
+    .slime--boom {
+      background-image: url("sprites/slime-boom.png");
       background-size: 1024px 64px;
-      animation: slime-16 1.44s steps(16) 1
+      animation: slime-16 1.12s steps(16) 1 forwards
+    }
+
+    .slime--reform {
+      background-image: url("sprites/slime-reform.png");
+      background-size: 1024px 64px;
+      animation: slime-16 1.6s steps(16) 1
     }
 
     /* Les couleurs sont cuites dans les PNG. Les thèmes sombres les font tourner ;
@@ -648,11 +605,14 @@
       filter: hue-rotate(306deg)
     }
 
-    /* DECISIONS.md §4.1 arrête les coins carrés. Le bouton des options est la seule
-       divergence en cours, et elle attend un arbitrage : 0 rend la règle, 12px garde
-       l'état actuel. Une ligne à changer, pas une chasse dans le balisage. */
+    /* Un seul rayon pour toute la page : les deux cartes du volet gauche, les trois
+       volets, le cadre de démarrage, la modale et le bouton des options. La valeur
+       s'essaie dans le navigateur sans chasser sept déclarations.
+       Ce que la variable ne couvre pas : les contrôles que design/DECISIONS.md §4.1 veut
+       carrés, laissés à 0, et le lien d'évitement, qui vit hors de .tm pour survivre à
+       l'absence de thème. */
     .tm {
-      --opts-radius: 12px
+      --radius: 5px
     }
 
     .tm[data-theme="light"] {
@@ -730,11 +690,11 @@
         style="flex:0 1 clamp(196px,17vw,280px);min-width:176px;min-height:0;display:flex;flex-direction:column;gap:10px;overflow:hidden">
         <button type="button" data-ctl="opts" aria-haspopup="dialog"
           :aria-expanded="optsOpen ? 'true' : 'false'" @click="openOpts()"
-          style="flex:none;min-height:44px;display:flex;justify-content:space-between;align-items:center;gap:10px;padding:0 12px;border:1px solid var(--edge);border-radius:var(--opts-radius);background:var(--panel);color:var(--fg2);font-family:inherit;font-size:11px;letter-spacing:.12em;cursor:pointer"><span>options</span><span
+          style="flex:none;min-height:44px;display:flex;justify-content:space-between;align-items:center;gap:10px;padding:0 12px;border:1px solid var(--edge);border-radius:var(--radius);background:var(--panel);color:var(--fg2);font-family:inherit;font-size:11px;letter-spacing:.12em;cursor:pointer"><span>options</span><span
             aria-hidden="true" style="font-size:17px;line-height:1">⚙</span></button>
         <div
           style="flex:1 1 auto;min-height:0;display:flex;flex-direction:column;gap:10px;overflow-y:auto;overflow-x:hidden">
-          <div style="flex:none;border:1px solid var(--edge);border-radius:12px;background:var(--panel);overflow:hidden">
+          <div style="flex:none;border:1px solid var(--edge);border-radius:var(--radius);background:var(--panel);overflow:hidden">
             <p
               style="margin:0;padding:9px 12px;font-size:11px;letter-spacing:.12em;color:var(--fg2);border-bottom:1px solid var(--edge)">
               sections</p>
@@ -749,7 +709,7 @@
                     <span style="display:grid;gap:1px;min-width:0">
                       <span :style="`font-weight:${item.id === section ? '700' : '400'}`" x-text="item.label"></span>
                       <span
-                        :style="`font-size:12px;color:var(--${item.id === section ? 'fg' : 'fg2'});overflow:hidden;text-overflow:ellipsis;white-space:nowrap`"
+                        :style="`font-size:12px;color:var(--${item.id === section ? 'fg' : 'fg2'});overflow-wrap:anywhere`"
                         x-text="item.sub"></span>
                     </span>
                   </button>
@@ -757,7 +717,7 @@
               </template>
             </ul>
           </div>
-          <div style="flex:none;border:1px solid var(--edge);border-radius:12px;background:var(--panel);overflow:hidden">
+          <div style="flex:none;border:1px solid var(--edge);border-radius:var(--radius);background:var(--panel);overflow:hidden">
             <p
               style="margin:0;padding:9px 12px;font-size:11px;letter-spacing:.12em;color:var(--fg2);border-bottom:1px solid var(--edge)">
               missions</p>
@@ -785,7 +745,7 @@
       </nav>
 
       <section data-pane="main" aria-label="Session"
-        style="position:relative;flex:3 1 360px;min-width:0;min-height:0;display:flex;flex-direction:column;gap:10px;border:1px solid var(--edge);border-radius:12px;background:var(--panel);padding:14px;overflow:hidden">
+        style="position:relative;flex:3 1 360px;min-width:0;min-height:0;display:flex;flex-direction:column;gap:10px;border:1px solid var(--edge);border-radius:var(--radius);background:var(--panel);padding:14px;overflow:hidden">
         <div aria-hidden="true" style="position:absolute;inset:0;pointer-events:none;overflow:hidden;opacity:.5">
           <div
             :style="`height:2px;background:linear-gradient(90deg,transparent,var(--acc),transparent);opacity:.16;animation:${anim ? 'scan 9s linear infinite' : 'none'}`">
@@ -938,9 +898,9 @@
                jusqu'ici et rendraient la main au repos au milieu d'une boucle. -->
           <template x-if="anim && !reduced">
             <div data-mascot x-ref="mascot" aria-hidden="true" class="slime"
-              x-init="$nextTick(() => mascotPlay(mascotRest))" @pointerdown.prevent="grab($event)"
+              x-init="$nextTick(() => settle())" @pointerdown.prevent="grab($event)"
               @click="poke()" @animationend.self="settle()"
-              :style="`position:absolute;bottom:0;left:${at}px;touch-action:none;cursor:${dragging ? 'grabbing' : 'grab'}`">
+              :style="`position:absolute;bottom:0;left:${at}px;touch-action:none;pointer-events:${gone ? 'none' : 'auto'};cursor:${dragging ? 'grabbing' : 'grab'}`">
               <template x-if="motion === 'bump' && anim">
                 <span data-bang aria-hidden="true"
                   style="position:absolute;left:50%;top:-20px;transform:translateX(-50%);color:var(--warn);font-size:19px;font-weight:700;animation:bang .4s cubic-bezier(.34,1.6,.64,1) both">!</span>
@@ -990,8 +950,8 @@
                   x-text="'█'.repeat(ctxCells)"></span><span style="color:var(--edge)"
                   x-text="'░'.repeat(10 - ctxCells)"></span></span></template><template
               x-if="compacting"><span data-compacting><span style="color:var(--warn)"
-                  x-text="compactBar"></span><span style="color:var(--edge)"
-                  x-text="compactRest"></span></span></template><span
+                  x-text="compactBar.filled"></span><span style="color:var(--edge)"
+                  x-text="compactBar.hollow"></span></span></template><span
               style="color:var(--fg2)" x-text="`] ${ctxPct}`"></span></span>
         </p>
       </section>
@@ -1001,7 +961,7 @@
            le droit prenant 641 px contre 346 px a gauche. Fixes, elles gardent la mise en
            page identique d'une section a l'autre. -->
       <aside data-pane="out" aria-label="Sortie" x-show="out"
-        style="flex:1.3 1 230px;min-width:0;min-height:0;display:flex;flex-direction:column;border:1px solid var(--edge);border-radius:12px;background:var(--panel);overflow:hidden">
+        style="flex:1.3 1 230px;min-width:0;min-height:0;display:flex;flex-direction:column;border:1px solid var(--edge);border-radius:var(--radius);background:var(--panel);overflow:hidden">
         <p
           style="margin:0;padding:9px 12px;font-size:11px;letter-spacing:.12em;color:var(--fg2);border-bottom:1px solid var(--edge);display:flex;justify-content:space-between;gap:10px">
           <span x-text="current.out.title"></span><span
@@ -1011,14 +971,6 @@
         </p>
         <div tabindex="0" role="region" aria-label="Contenu de la sortie"
           style="overflow-y:auto;align-content:start;display:grid;gap:8px;padding:10px 12px">
-          <!-- La compaction se declenche pendant qu'on tape : elle doit se voir la ou le
-               regard est, pas seulement dans la barre d'etat. Le journal, lui, la dit en
-               toutes lettres. -->
-          <template x-if="compacting">
-            <p data-compacting-out aria-hidden="true"
-              style="margin:0;white-space:pre;font-size:13px"><span style="color:var(--warn)"
-                x-text="compactBar"></span><span style="color:var(--edge)" x-text="compactRest"></span></p>
-          </template>
           <template x-if="running">
             <p data-waiting
               style="margin:0;display:grid;grid-template-columns:auto 1fr;gap:10px;font-size:13px;color:var(--fg2)"><span
@@ -1056,7 +1008,7 @@
         style="position:fixed;inset:0;z-index:40;display:grid;place-items:center;padding:20px;background:rgba(10,10,18,.62);animation:fadeIn .16s ease both">
         <div role="dialog" aria-modal="true" aria-label="Options d'affichage" data-opts
           @click.stop @keydown="optsKey($event)"
-          style="width:min(540px,100%);max-height:min(88dvh,620px);overflow:auto;box-sizing:border-box;border:1px solid var(--edge);border-radius:14px;background:var(--panel);padding:18px;display:grid;gap:14px;animation:popIn .24s cubic-bezier(.34,1.4,.64,1) both">
+          style="width:min(540px,100%);max-height:min(88dvh,620px);overflow:auto;box-sizing:border-box;border:1px solid var(--edge);border-radius:var(--radius);background:var(--panel);padding:18px;display:grid;gap:14px;animation:popIn .24s cubic-bezier(.34,1.4,.64,1) both">
           <p style="margin:0;font-size:12px;letter-spacing:.12em;color:var(--fg2)">options</p>
 
           <div style="display:grid;gap:8px">
@@ -1106,7 +1058,7 @@
       <div data-boot
         :style="`position:absolute;inset:0;z-index:30;background:var(--bg);padding:18px clamp(12px,2.5vw,26px) 26px;box-sizing:border-box;display:flex;flex-direction:column;${power === 'fade' ? 'animation:bootOut .62s ease forwards' : ''}`">
         <div
-          style="flex:1;border:1px solid var(--edge);border-radius:12px;background:var(--panel);padding:clamp(20px,4vw,44px);display:grid;align-content:center;gap:8px;font-size:13px;line-height:1.7">
+          style="flex:1;border:1px solid var(--edge);border-radius:var(--radius);background:var(--panel);padding:clamp(20px,4vw,44px);display:grid;align-content:center;gap:8px;font-size:13px;line-height:1.7">
           <template x-if="dataErr">
             <div role="alert" style="display:grid;gap:8px">
               <p style="margin:0;color:var(--warn);font-size:16px;font-weight:700">panic: content.json not found</p>
@@ -1143,9 +1095,9 @@
                   style="color:var(--ok)">ok</span></p>
               <p
                 style="margin:8px 0 0;display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;animation:bootLine .3s 1.32s ease both">
-                <span style="white-space:pre;color:var(--fg2)">[<span
-                    style="position:relative;color:var(--edge)">████████████████████████<span
-                      style="position:absolute;top:0;left:0;color:var(--acc);clip-path:inset(0 100% 0 0);animation:bootFill .1s steps(1,end) 1.32s both">████████████████████████</span></span>]</span>
+                <span data-boot-bar aria-hidden="true" style="white-space:pre;color:var(--fg2)">[<span
+                    style="color:var(--acc)" x-text="bootBar.filled"></span><span
+                    style="color:var(--edge)" x-text="bootBar.hollow"></span>]</span>
                 <span style="color:var(--acc)">montage de l'interface<span
                     style="animation:caret 1s steps(1) infinite">_</span></span>
               </p>

@@ -1,15 +1,15 @@
 import { candidates, commonPrefix, contentLine, interpret, safeTone } from "./interpret.js";
 
 // Valeurs figées après itération dans le canvas. Ne pas les transformer en réglages :
-// voir DECISIONS.md, section 23.
+// voir design/DECISIONS.md, section 23.
 const BOOT_MS = 2000;
 const FADE_MS = 620;
 const PANES = ["nav", "main", "out"];
 const VERTICAL = new Set(["ArrowDown", "ArrowUp"]);
 const OPTS_KEY = "bd-term-opts";
-// Six clés, et six seulement. La lecture filtre dessus : le canvas injectait dans
+// Quatre clés, et quatre seulement. La lecture filtre dessus : le canvas injectait dans
 // l'état tout ce que le stockage contenait.
-const KEPT = ["anim", "crowned", "logH", "out", "theme"];
+const KEPT = ["anim", "logH", "out", "theme"];
 
 const THEMES = [
   { acc: "#F5B83B", bg: "#242538", edge: "#33344a", id: "dark", label: "ambra" },
@@ -42,7 +42,23 @@ const COMPACT_TICK_MS = 130;
 // Les huit frames braille du rotateur. Une fois la tete passee, la case se pose pleine :
 // une case a qui il manque un point donne une barre trouee, pas une barre remplie.
 const SPINNER = ["⣾", "⣽", "⣻", "⢿", "⡿", "⣟", "⣯", "⣷"];
-const SETTLED = "⣿";
+const FILLED = "⣿";
+const HOLLOW = "░";
+// Le demarrage dessine sa barre sur vingt-quatre cases, comme le canvas.
+const BOOT_CELLS = 24;
+
+// Une seule barre pour toute la page : les cases posees, la tete qui tourne tant qu'il
+// reste a faire, les cases vides. Rendue en deux morceaux, chacun avec sa couleur.
+// Sans `tick`, la barre ne progresse pas : elle n'a alors pas de tete.
+const barParts = (done, total, tick) => {
+  const posees = Math.max(0, Math.min(total, Math.floor(done)));
+  const tete = tick === undefined || posees >= total ? "" : SPINNER[tick % SPINNER.length];
+
+  return {
+    filled: FILLED.repeat(posees) + tete,
+    hollow: HOLLOW.repeat(total - posees - tete.length),
+  };
+};
 // Le journal ne prend jamais la place du resultat : celui-ci garde ce plancher.
 const RESULT_MIN_PX = 120;
 const PANE_GAP_PX = 10;
@@ -168,9 +184,11 @@ const MASCOT_STATES = new Set([
   "load",
   "sleep",
   "morph",
-  "crown",
-  "king",
+  "boom",
+  "reform",
 ]);
+
+const MASCOT_REST = "idle";
 
 // Le vocabulaire d'humeurs de l'interpreteur se traduit en etats de feuille.
 // « idle » n'y figure pas : le repos depend de la couronne, il se lit sur mascotRest.
@@ -184,16 +202,20 @@ const MOOD_STATE = {
   sleep: "sleep",
 };
 
-// Seules « crown » et « king » portent la couronne. Ces deux reactions n'en ont pas de
-// variante et n'apprennent rien : une fois la couronne acquise, elles la feraient
-// disparaitre pour rien. Les etats qui informent — frappe, reflexion, mue, veille —
-// passent quand meme.
-const CROWNLESS_REACTIONS = new Set(["wink", "jump"]);
+// Au cinquieme clic le slime explose. Il reprend forme entre cinq et dix secondes plus
+// tard : le hasard evite que l'attente devienne une horloge.
+// Duree de chaque passe unique. « boom » n'y figure pas : l'explosion tient jusqu'a ce
+// que le minuteur de reapparition la releve.
+const ONE_SHOT_MS = { jump: 1280, morph: 2400, reform: 1600, wink: 1680 };
 
-const CROWN_AT = new Date().getFullYear() - 2000;
-// La frappe rend la main au repos peu apres la derniere touche. La veille attend dix
-// secondes sans geste. Au repos, une chance sur vingt-cinq toutes les cinq secondes.
-const TYPE_REST_MS = 400;
+const BOOM_AT = 5;
+const REFORM_MIN_MS = 5000;
+const REFORM_SPREAD_MS = 5000;
+// La frappe rend la main au repos peu apres la derniere touche. Chaque touche relance le
+// compte a rebours : 400 ms coupaient l'animation au milieu d'une phrase, et la personne
+// qui tape regarde ses mots, pas la mascotte. La veille attend dix secondes sans geste.
+// Au repos, une chance sur vingt-cinq toutes les cinq secondes.
+const TYPE_REST_MS = 800;
 const SLEEP_MS = 10_000;
 const TWITCH_MS = 5000;
 const TWITCH_ODDS = 0.04;
@@ -214,8 +236,8 @@ document.addEventListener("alpine:init", () => {
     clicks: 0,
     commands: [],
     compacting: false,
+    bootTick: 0,
     compactTick: 0,
-    crowned: false,
     dataErr: false,
     details: [],
     direction: 1,
@@ -231,6 +253,7 @@ document.addEventListener("alpine:init", () => {
     journalOverflows: false,
     logH: 0,
     missions: [],
+    gone: false,
     mascotState: "idle",
     more: { journal: false },
     motion: "",
@@ -272,6 +295,9 @@ document.addEventListener("alpine:init", () => {
 
     init() {
       this.restore();
+      this.ticker = setInterval(() => {
+        this.bootTick += 1;
+      }, COMPACT_TICK_MS);
       this.startMascot();
       globalThis.addEventListener("popstate", () => this.fromHash());
       globalThis.addEventListener("resize", () => this.setLogHeight(this.logHeight));
@@ -525,21 +551,24 @@ document.addEventListener("alpine:init", () => {
     // ne se raconte simplement plus.
     get compactBar() {
       if (!this.anim || this.reduced) {
-        return SETTLED.repeat(CTX_CELLS);
+        return barParts(CTX_CELLS, CTX_CELLS);
       }
 
-      const cells = Math.min(
+      return barParts(
+        (this.compactTick * COMPACT_TICK_MS * CTX_CELLS) / COMPACT_MS,
         CTX_CELLS,
-        Math.floor((this.compactTick * COMPACT_TICK_MS * CTX_CELLS) / COMPACT_MS),
+        this.compactTick,
       );
-
-      return cells === CTX_CELLS
-        ? SETTLED.repeat(cells)
-        : SETTLED.repeat(cells) + SPINNER[this.compactTick % SPINNER.length];
     },
 
-    get compactRest() {
-      return "░".repeat(CTX_CELLS - this.compactBar.length);
+    // Meme forme que la compaction, memes durees qu'avant : la barre se remplit sur le
+    // temps minimum du demarrage, puis attend le contenu, pleine.
+    get bootBar() {
+      return barParts(
+        (this.bootTick * COMPACT_TICK_MS * BOOT_CELLS) / BOOT_MS,
+        BOOT_CELLS,
+        this.bootTick,
+      );
     },
 
     // La frise et l'arbre n'impriment aucune ligne : leur poids vient de ce qu'ils
@@ -725,11 +754,6 @@ document.addEventListener("alpine:init", () => {
       return this.running ? "waiting" : "live";
     },
 
-    // Le repos change une fois la couronne acquise, et ne revient jamais en arriere.
-    get mascotRest() {
-      return this.crowned ? "king" : "idle";
-    },
-
     // Reappliquer une classe ne redemarre pas son animation : il faut la retirer, forcer
     // une relecture de la geometrie, puis la remettre.
     mascotPlay(state) {
@@ -739,7 +763,8 @@ document.addEventListener("alpine:init", () => {
         return;
       }
 
-      if (this.crowned && CROWNLESS_REACTIONS.has(state)) {
+      // Explose, le slime ne repond plus : rien ne le rejoue avant qu'il reprenne forme.
+      if (this.gone && state !== "boom") {
         return;
       }
 
@@ -747,11 +772,23 @@ document.addEventListener("alpine:init", () => {
       void node.offsetWidth;
       node.className = `slime slime--${state}`;
       this.mascotState = state;
+
+      clearTimeout(this.settler);
+
+      // Filet pour les passes uniques : un `animationend` perdu — page en arriere-plan,
+      // machine chargee — laisserait la mascotte collee sur sa feuille.
+      if (ONE_SHOT_MS[state]) {
+        this.settler = setTimeout(() => {
+          if (this.mascotState === state) {
+            this.settle();
+          }
+        }, ONE_SHOT_MS[state] + 100);
+      }
     },
 
     // Une passe unique rend la main au repos. Les boucles, elles, ne finissent jamais.
     settle() {
-      this.mascotPlay(this.mascotRest);
+      this.mascotPlay(MASCOT_REST);
     },
 
     // La ligne porte son humeur : « mise en veille » doit endormir, pas faire cligner.
@@ -761,7 +798,7 @@ document.addEventListener("alpine:init", () => {
 
       if (mood) {
         this.emote(mood);
-      } else if (this.mascotState === this.mascotRest) {
+      } else if (this.mascotState === MASCOT_REST) {
         this.mascotPlay("wink");
       }
 
@@ -777,23 +814,38 @@ document.addEventListener("alpine:init", () => {
     },
 
     emote(mood) {
-      this.mascotPlay(MOOD_STATE[mood] ?? this.mascotRest);
+      this.mascotPlay(MOOD_STATE[mood] ?? MASCOT_REST);
     },
 
-    // La couronne tombe apres l'annee courante moins 2000 clics, et reste sur
-    // l'appareil.
     poke() {
+      if (this.gone) {
+        return;
+      }
+
       this.clicks += 1;
 
-      if (this.clicks >= CROWN_AT && !this.crowned) {
-        this.crowned = true;
-        this.persist();
-        this.mascotPlay("crown");
+      if (this.clicks >= BOOM_AT) {
+        this.blowUp();
 
         return;
       }
 
       this.mascotPlay("wink");
+    },
+
+    // Le compte repart de zero : le slime peut exploser autant de fois qu'on veut.
+    blowUp() {
+      this.clicks = 0;
+      this.gone = true;
+      this.mascotPlay("boom");
+      clearTimeout(this.reformer);
+      this.reformer = setTimeout(
+        () => {
+          this.gone = false;
+          this.mascotPlay("reform");
+        },
+        REFORM_MIN_MS + Math.random() * REFORM_SPREAD_MS,
+      );
     },
 
     // La position est ecrite directement dans le style : la faire passer par l'etat
@@ -817,7 +869,7 @@ document.addEventListener("alpine:init", () => {
     // Reaction seulement a proximite : un seuil large donnait un declenchement fantome,
     // curseur encore loin du slime.
     nearby(event) {
-      if (this.dragging || !this.$refs.mascot || this.mascotState !== this.mascotRest) {
+      if (this.dragging || !this.$refs.mascot || this.mascotState !== MASCOT_REST) {
         return;
       }
 
@@ -840,7 +892,7 @@ document.addEventListener("alpine:init", () => {
     },
 
     wander() {
-      if (this.dragging || !this.anim || this.reduced) {
+      if (this.dragging || this.gone || !this.anim || this.reduced) {
         return;
       }
 
@@ -857,6 +909,10 @@ document.addEventListener("alpine:init", () => {
     // On garde le glisser. La deformation visqueuse, elle, appartenait au dessin en
     // ombres portees : pendant le glissement la mascotte joue son repos.
     grab(event) {
+      if (this.gone) {
+        return;
+      }
+
       this.grabAt = event.clientX - this.$refs.mascot.getBoundingClientRect().left;
       this.dragging = true;
       this.settle();
@@ -913,12 +969,18 @@ document.addEventListener("alpine:init", () => {
       }
 
       clearTimeout(this.typer_rest);
-      this.typer_rest = setTimeout(() => this.settle(), TYPE_REST_MS);
+      // Rendre la main seulement si la frappe tient encore l'ecran : une commande a pu
+      // demander autre chose entre-temps, « sleep » par exemple.
+      this.typer_rest = setTimeout(() => {
+        if (this.mascotState === "type") {
+          this.settle();
+        }
+      }, TYPE_REST_MS);
     },
 
     // Un clin d'oeil ou un saut de temps en temps, jamais pendant autre chose.
     twitch() {
-      if (this.mascotState !== this.mascotRest || Math.random() >= TWITCH_ODDS) {
+      if (this.mascotState !== MASCOT_REST || Math.random() >= TWITCH_ODDS) {
         return;
       }
 
@@ -1540,6 +1602,7 @@ document.addEventListener("alpine:init", () => {
 
       setTimeout(
         () => {
+          clearInterval(this.ticker);
           this.power = "fade";
           setTimeout(() => {
             this.power = "on";

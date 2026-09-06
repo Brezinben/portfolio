@@ -193,9 +193,9 @@ test("la barre de compaction se remplit case par case sur cinq secondes", async 
   expect(Date.now() - started, "l'attente se voit").toBeGreaterThan(4000);
 });
 
-// La compaction se declenche pendant qu'on tape une commande : le regard est sur le volet
-// de sortie, pas sur la barre d'etat. La barre doit se voir aux deux endroits.
-test("la compaction se voit aussi dans le volet de sortie", async ({ page }) => {
+// Le volet de sortie garde un caractere pour dire l'attente, jamais une barre : la barre
+// de compaction vit dans la barre d'etat, et nulle part ailleurs.
+test("le volet de sortie n'affiche pas de barre de compaction", async ({ page }) => {
   const cli = await boot(page);
   const bar = page.locator("[data-compacting]");
 
@@ -205,11 +205,23 @@ test("la compaction se voit aussi dans le volet de sortie", async ({ page }) => 
     Promise.resolve(),
   );
 
-  const sortie = page.locator('[data-pane="out"] [data-compacting-out]');
+  await expect(bar).toHaveCount(1);
+  await expect(page.locator('[data-pane="out"] [data-compacting-out]')).toHaveCount(0);
+  await expect(page.locator('[data-pane="out"]')).not.toContainText("⣿");
+});
 
-  await expect(sortie).toHaveCount(1);
-  await expect(sortie).toHaveAttribute("aria-hidden", "true");
-  expect(await sortie.textContent()).toMatch(/^⣿*[⣾⣽⣻⢿⡿⣟⣯⣷]?░*$/u);
+// L'ecran de demarrage prend la forme de la compaction : cases pleines, tete qui tourne,
+// cases vides. Meme taille, meme place, memes durees qu'avant.
+test("la barre du démarrage est dessinée en points", async ({ page }) => {
+  // Le demarrage dure deux secondes au minimum : la barre est a l'ecran sans qu'on ait a
+  // retarder quoi que ce soit.
+  await page.goto("/");
+
+  const barre = page.locator("[data-boot-bar]");
+
+  await expect(barre).toBeVisible();
+  await expect(barre).toHaveAttribute("aria-hidden", "true");
+  expect(await barre.textContent()).toMatch(/^\[⣿*[⣾⣽⣻⢿⡿⣟⣯⣷]?░*\]$/u);
 });
 
 // Un redemarrage annule la compaction : sinon son resume s'ecrit dans un journal qu'on
