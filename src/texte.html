@@ -54,25 +54,50 @@ a:hover{color:#242538}
 <h2 id="t-parcours" style="margin:52px 0 0;font-size:15px;letter-spacing:.12em;text-transform:uppercase;font-weight:400">Parcours</h2>
 
 <h3 style="margin:28px 0 0;font-size:22px;font-weight:400">Kereis</h3>
-<p style="margin:4px 0 0;font-size:16px;opacity:.75">Mai 2026 → aujourd'hui · Développeur IA / Full Stack · équipe Urbanisme · via fruggr</p>
-<p style="margin:12px 0 0">Conception de serveurs MCP et mise en place du Specification-Driven Development. La revue de spécification par l'IA prend une vingtaine de minutes là où un humain passerait une journée, et devient une étape obligatoire à chaque fonctionnalité.</p>
+<p style="margin:4px 0 0;font-size:16px;opacity:.75">Mai 2026 → aujourd'hui · Développeur IA / Full Stack · pôle DSI · via digital4better</p>
+<p style="margin:12px 0 0">Kereis construit plutôt qu'il n'achète. On me demande de prouver par le code ce qu'une licence coûteuse ferait à moitié. Le cadrage du code passe en premier : linter et règles avant la première fonctionnalité, pour que l'IA produise sous contrainte et qu'un humain relise.</p>
+<ul style="margin:12px 0 0;padding-left:22px;display:grid;gap:6px">
+  <li>Serveurs MCP : les outils internes s'ouvrent aux agents. Le point dur est l'autorisation, pas l'exposition</li>
+  <li>Simulateur de tarif d'assurance de prêt : l'utilisateur décrit son projet en langage naturel, le MCP répond un tarif</li>
+  <li>Cartographie du SI sous Backstage : sources AWS, GitLab et Zeenea branchées, puis un MCP pour que les agents lisent la carte</li>
+  <li>Application de compte rendu : le texte dicté est nettoyé, l'e-mail rédigé, la réunion suivante préparée</li>
+  <li>Revue de spécification par l'IA : une vingtaine de minutes là où un humain passerait une journée, à chaque fonctionnalité</li>
+</ul>
 
 <h3 style="margin:28px 0 0;font-size:22px;font-weight:400">SNCF Gares &amp; Connexions</h3>
-<p style="margin:4px 0 0;font-size:16px;opacity:.75">Sept. 2024 → mai 2026 · Développeur Full Stack · Assist'enGare · via fruggr</p>
-<p style="margin:12px 0 0">Assist'enGare permet aux personnes en situation de handicap (PSH/PMR) de réserver une prestation d'assistance afin d'accéder à leur train. Accessibilité au cœur du produit : un service qui doit fonctionner pour tout le monde, sur tous les écrans, à toute heure.</p>
-
-<h3 style="margin:28px 0 0;font-size:22px;font-weight:400">fruggr by digital4better</h3>
-<p style="margin:4px 0 0;font-size:16px;opacity:.75">Oct. 2023 → sept. 2024 · Développeur Full Stack / IA · Gestion du RUN</p>
-<p style="margin:12px 0 0">Assurer la disponibilité des services et la satisfaction des utilisateurs, en appliquant les principes du numérique responsable.</p>
+<p style="margin:4px 0 0;font-size:16px;opacity:.75">Sept. 2024 → mai 2026 · Développeur Full Stack · Assist'enGare · via digital4better</p>
+<p style="margin:12px 0 0">Assist'enGare permet aux personnes en situation de handicap (PSH/PMR) de réserver une prestation d'assistance afin d'accéder à leur train. La déclaration d'accessibilité affiche 96 % de conformité moyenne au RGAA 4.1, sous audits successifs.</p>
 <ul style="margin:12px 0 0;padding-left:22px;display:grid;gap:6px">
-  <li>Supervision : monitoring des performances, détection et analyse des anomalies</li>
-  <li>Support &amp; maintenance : correction des bugs, mises à jour de sécurité, nouvelles fonctionnalités</li>
-  <li>Optimisation : pipelines CI/CD, bonnes pratiques de développement</li>
+  <li>Règles axe au linter, essais au lecteur d'écran sous NVDA et TalkBack. Le critère d'accessibilité entre dans la spécification, pas dans le correctif</li>
+  <li>MUI ne couvre pas tout le référentiel : le reste s'écrit à la main, jusqu'à la vocalisation correcte des marques</li>
+  <li>La brique parle à tout le SI SNCF. ActiveMQ réécrit d'AMQP vers STOMP, routage dynamique par entité métier</li>
+  <li>Voyage en deux segments SNCF et Trenitalia : chaque transporteur ne reçoit que le segment qui le concerne</li>
+  <li>Validation automatique des dossiers d'assistance : environ 3 000 dossiers par jour, une dizaine de notifications chacun</li>
+  <li>Oxlint et oxfmt à la place d'ESLint et Prettier. Le code était bon, mais rien n'empêchait le mauvais code</li>
+</ul>
+<p style="margin:12px 0 0">Front React et MUI, back NestJS et PostgreSQL, hébergement AWS, déploiements Jenkins, observabilité Datadog.</p>
+
+<h3 style="margin:28px 0 0;font-size:22px;font-weight:400">digital4better</h3>
+<p style="margin:4px 0 0;font-size:16px;opacity:.75">Oct. 2023 → sept. 2024 · Développeur Full Stack / IA · équipe RUN</p>
+<p style="margin:12px 0 0">Quatre projets clients en parallèle : Body Nature, Dorval AM, PiLeJe et Servier. Quatre piles, quatre historiques. Le RUN oblige à entrer vite dans du code qu'on n'a pas écrit.</p>
+<ul style="margin:12px 0 0;padding-left:22px;display:grid;gap:6px">
+  <li>Supervision : monitoring des performances, détection et analyse des anomalies avant la remontée utilisateur</li>
+  <li>Maintenance et montées de version. Correctifs de sécurité tenus à jour sur le parc, provisionnés par Ansible</li>
+  <li>Évolutions produit sur Body Nature, en échange direct avec l'équipe produit</li>
+  <li>Éco-conception mesurée avec fruggr, l'outil maison. L'impact d'une application se constate, il ne se déclare pas</li>
+  <li>Optimisation des pipelines CI/CD : moins de temps de calcul, donc moins de gaspillage</li>
 </ul>
 
 <h3 style="margin:28px 0 0;font-size:22px;font-weight:400">Transway</h3>
 <p style="margin:4px 0 0;font-size:16px;opacity:.75">Sept. 2021 → sept. 2023 · Développeur Full Stack, puis Technical Lead Developer</p>
-<p style="margin:12px 0 0">Applications de mobilité douce : incitation au vélo, à la marche et aux transports en commun, avec suivi des points gagnés et des émissions de CO2 évitées.</p>
+<p style="margin:12px 0 0">Première mission hors alternance. Deux produits d'incitation à la mobilité durable : WeFlo Pro pour les entreprises, IREBY pour les collectivités.</p>
+<ul style="margin:12px 0 0;padding-left:22px;display:grid;gap:6px">
+  <li>WeFlo Pro : déclaration des trajets au titre du forfait mobilité durable. Laravel, PHP et Vue.js</li>
+  <li>IREBY : l'usager gagne des points en tram, en bus, à pied ou à vélo, puis les dépense en boutique. NestJS et Vue 3</li>
+  <li>Migration de la V1 vers la V3 : plus de 300 000 utilisateurs transférés, avec leurs offres et leurs images</li>
+  <li>Branchements aux systèmes des réseaux partenaires : TCL à Lyon, STAR à Rennes</li>
+  <li>Lead technique : encadrement de quatre à six développeurs, et la main sur les choix techniques</li>
+</ul>
 
 <h3 style="margin:28px 0 0;font-size:22px;font-weight:400">LDC Services · Groupe LDC</h3>
 <p style="margin:4px 0 0;font-size:16px;opacity:.75">Sept. 2020 → sept. 2021 · Concepteur Développeur d'Application · alternance</p>
@@ -89,23 +114,23 @@ a:hover{color:#242538}
 <dl style="margin:16px 0 0;display:grid;gap:16px">
   <div>
     <dt style="font-weight:700">Frontend</dt>
-    <dd style="margin:4px 0 0">HTML ; CSS (Tailwind, Sass, Vuetify, Material Design) ; JavaScript (TypeScript, Vue.js, React, Svelte, Pinia, RxJS) ; build (Vite, ESLint) ; accessibilité (RGAA, ARIA, tests clavier).</dd>
+    <dd style="margin:4px 0 0">HTML ; CSS (Tailwind, Sass, Vuetify, MUI) ; JavaScript (TypeScript, Vue.js, React, Svelte, Pinia, RxJS) ; build (Vite, Oxlint) ; accessibilité (RGAA, ARIA, axe, tests clavier).</dd>
   </div>
   <div>
     <dt style="font-weight:700">Backend</dt>
-    <dd style="margin:4px 0 0">Laravel (Eloquent, Blade, Queues) ; NestJS (TypeORM, RxJS) ; PHP ; API REST (OpenAPI, JWT, OAuth) ; données (PostgreSQL, MySQL, Redis).</dd>
+    <dd style="margin:4px 0 0">Laravel (Eloquent, Blade, Queues) ; NestJS (TypeORM, RxJS) ; PHP ; API REST (OpenAPI, JWT, OAuth) ; données (PostgreSQL, MySQL, Redis) ; messages (ActiveMQ, AMQP, STOMP).</dd>
   </div>
   <div>
     <dt style="font-weight:700">IA</dt>
-    <dd style="margin:4px 0 0">Serveurs MCP (tools, resources, prompts) ; SpecKit (spec-it, plan, tasks) ; Specification-Driven Development ; agents (Claude Code, revue automatisée) ; évaluation.</dd>
+    <dd style="margin:4px 0 0">Serveurs MCP (tools, resources, prompts) ; SpecKit (spec-it, plan, tasks) ; Specification-Driven Development ; agents (Claude, herdr, revue automatisée) ; harness engineering (LiteLLM, Langfuse, LangGraph) ; évaluation.</dd>
   </div>
   <div>
     <dt style="font-weight:700">DevOps</dt>
-    <dd style="margin:4px 0 0">Docker (Compose, Registry) ; CI/CD (GitLab CI, GitHub Actions) ; Linux (Bash, SSH, Ansible) ; monitoring (logs, alerting).</dd>
+    <dd style="margin:4px 0 0">Docker (Compose, Registry) ; CI/CD (GitLab CI, Jenkins, GitHub Actions) ; cloud (AWS) ; Linux (Bash, SSH, Ansible) ; monitoring (Datadog, logs, alerting).</dd>
   </div>
   <div>
     <dt style="font-weight:700">Qualité &amp; sobriété</dt>
-    <dd style="margin:4px 0 0">Tests unitaires et E2E (Cypress) ; lint (ESLint, Prettier) ; éco-conception (fruggr, sobriété) ; pair-programming.</dd>
+    <dd style="margin:4px 0 0">Tests unitaires et E2E (Cypress) ; lint (ESLint, Oxlint, Prettier, oxfmt) ; éco-conception (fruggr, sobriété) ; pair-programming.</dd>
   </div>
 </dl>
 

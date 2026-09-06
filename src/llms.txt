@@ -6,7 +6,7 @@
 
 - Nom : Benjamin David
 - Localisation : Nantes, France
-- Poste actuel : Développeur IA / Full Stack chez Kereis (équipe Urbanisme, via fruggr)
+- Poste actuel : Développeur IA / Full Stack chez Kereis (pôle DSI, via digital4better)
 - Contact : benjamin.david1@hotmail.fr
 - LinkedIn : https://www.linkedin.com/in/benjamin--david
 - Site : https://portfolio.brezinben.dpdns.org/
@@ -34,29 +34,63 @@ Ne le consultez pas pour :
 ## Parcours professionnel
 
 ### Mai 2026 → aujourd'hui — Kereis
-Développeur IA / Full Stack, équipe Urbanisme, via fruggr.
-Conception et mise en œuvre de serveurs MCP, Specification-Driven Development
-(SpecKit), revue automatisée de spécifications par l'IA, accompagnement des
-équipes produit sur l'usage outillé de l'IA.
+Développeur IA / Full Stack, pôle DSI, via digital4better.
+Kereis construit plutôt qu'il n'achète. Preuves de concept IA, pour prouver par le
+code ce qu'une licence coûteuse ferait à moitié. Le cadrage du code passe en
+premier : linter et règles avant la première fonctionnalité, pour que l'IA produise
+sous contrainte et qu'un humain relise.
+Trois sujets : un simulateur de tarif d'assurance de prêt, où l'utilisateur décrit
+son projet en langage naturel et le serveur MCP répond un tarif ; une cartographie
+du SI sous Backstage, avec les sources AWS, GitLab et Zeenea branchées ; une
+application de compte rendu, qui nettoie le texte dicté, rédige l'e-mail et prépare
+la réunion suivante.
+La revue de spécification par l'IA prend une vingtaine de minutes là où un humain
+passerait une journée. Elle est obligatoire à chaque fonctionnalité.
+Outils : serveurs MCP, SpecKit, Claude, herdr, LiteLLM, Langfuse, LangGraph.
 
 ### Sept. 2024 → mai 2026 — SNCF Gares & Connexions
-Développeur Full Stack sur Assist'enGare, via fruggr.
+Développeur Full Stack sur Assist'enGare, via digital4better.
 Assist'enGare permet aux personnes en situation de handicap (PSH/PMR) de réserver
-une prestation d'assistance afin d'accéder à leur train. Accessibilité au cœur du
-produit : un service qui doit fonctionner pour tout le monde, sur tous les écrans,
-à toute heure.
+une prestation d'assistance afin d'accéder à leur train. La déclaration
+d'accessibilité affiche 96 % de conformité moyenne au RGAA 4.1, sous audits
+successifs.
+Règles axe au linter, essais au lecteur d'écran sous NVDA et TalkBack. Le critère
+d'accessibilité entre dans la spécification, pas dans le correctif. MUI ne couvre
+pas tout le référentiel : le reste s'écrit à la main, jusqu'à la vocalisation
+correcte des marques.
+La brique parle à tout le SI SNCF. ActiveMQ réécrit d'AMQP vers STOMP, routage
+dynamique par entité métier. Pour un voyage en deux segments SNCF et Trenitalia,
+chaque transporteur ne reçoit que le segment qui le concerne.
+Validation automatique des dossiers d'assistance : environ 3 000 dossiers par jour,
+une dizaine de notifications chacun. Oxlint et oxfmt à la place d'ESLint et
+Prettier.
+Pile : React et MUI côté front, NestJS et PostgreSQL côté back, hébergement AWS,
+déploiements Jenkins, observabilité Datadog.
 
-### Oct. 2023 → sept. 2024 — fruggr by digital4better
-Développeur Full Stack / IA, gestion du RUN.
-Assurer la disponibilité des services et la satisfaction des utilisateurs, en
-appliquant les principes du numérique responsable : supervision et monitoring des
-performances, support et maintenance (correction de bugs, mises à jour de
-sécurité, nouvelles fonctionnalités), optimisation des pipelines CI/CD.
+### Oct. 2023 → sept. 2024 — digital4better
+Développeur Full Stack / IA, équipe RUN.
+Quatre projets clients en parallèle : Body Nature, Dorval AM, PiLeJe et Servier.
+Quatre piles, quatre historiques. Le RUN oblige à entrer vite dans du code qu'on
+n'a pas écrit.
+Supervision et monitoring des performances, détection des anomalies avant la
+remontée utilisateur. Maintenance et montées de version. Correctifs de sécurité
+tenus à jour sur le parc, provisionnés par Ansible. Évolutions produit sur Body
+Nature, en échange direct avec l'équipe produit. Optimisation des pipelines CI/CD.
+Éco-conception mesurée avec fruggr, l'outil maison de la société.
 
 ### Sept. 2021 → sept. 2023 — Transway
 Développeur Full Stack, puis Technical Lead Developer.
-Applications de mobilité douce : incitation au vélo, à la marche et aux transports
-en commun, avec suivi des points gagnés et des émissions de CO2 évitées.
+Première mission hors alternance. Deux produits d'incitation à la mobilité
+durable : WeFlo Pro pour les entreprises, où l'on déclare ses trajets au titre du
+forfait mobilité durable ; IREBY pour les collectivités, où l'usager gagne des
+points en tram, en bus, à pied ou à vélo, puis les dépense en boutique.
+Migration de la V1 vers la V3 : plus de 300 000 utilisateurs transférés, avec leurs
+offres et leurs images. Branchements aux systèmes des réseaux partenaires, TCL à
+Lyon et STAR à Rennes.
+Comme lead technique : encadrement de quatre à six développeurs, et la main sur les
+choix techniques. Migration Vue 2 vers Vue 3, montées de version Node,
+renforcements de sécurité après audit.
+Pile : Laravel, PHP et Vue.js sur WeFlo Pro ; NestJS et Vue 3 sur IREBY.
 
 ### Sept. 2020 → sept. 2021 — LDC Services (Groupe LDC)
 Concepteur Développeur d'Application, en alternance.
@@ -78,26 +112,27 @@ diagnostic et résolution sur le parc informatique.
 ## Compétences techniques
 
 ### Frontend
-HTML ; CSS (Tailwind, Sass, Vuetify, Material Design) ; JavaScript (TypeScript,
-Vue.js, React, Svelte, Pinia, RxJS) ; outillage de build (Vite, ESLint) ;
-accessibilité (RGAA, ARIA, tests clavier).
+HTML ; CSS (Tailwind, Sass, Vuetify, MUI) ; JavaScript (TypeScript, Vue.js, React,
+Svelte, Pinia, RxJS) ; outillage de build (Vite, Oxlint) ; accessibilité (RGAA,
+ARIA, axe, tests clavier).
 
 ### Backend
 Laravel (Eloquent, Blade, Queues) ; NestJS (TypeORM, RxJS) ; PHP ; API REST
-(OpenAPI, JWT, OAuth) ; bases de données (PostgreSQL, MySQL, Redis).
+(OpenAPI, JWT, OAuth) ; bases de données (PostgreSQL, MySQL, Redis) ; messages
+(ActiveMQ, AMQP, STOMP).
 
 ### IA
 Serveurs MCP (tools, resources, prompts) ; SpecKit (spec-it, plan, tasks) ;
-Specification-Driven Development ; agents (Claude Code, revue automatisée) ;
-évaluation.
+Specification-Driven Development ; agents (Claude, herdr, revue automatisée) ;
+harness engineering (LiteLLM, Langfuse, LangGraph) ; évaluation.
 
 ### DevOps
-Docker (Compose, Registry) ; CI/CD (GitLab CI, GitHub Actions) ; Linux (Bash,
-SSH, Ansible) ; monitoring (logs, alerting).
+Docker (Compose, Registry) ; CI/CD (GitLab CI, Jenkins, GitHub Actions) ; cloud
+(AWS) ; Linux (Bash, SSH, Ansible) ; monitoring (Datadog, logs, alerting).
 
 ### Qualité & sobriété
-Tests unitaires et E2E (Cypress) ; lint (ESLint, Prettier) ; éco-conception
-(fruggr, sobriété numérique) ; pair-programming.
+Tests unitaires et E2E (Cypress) ; lint (ESLint, Oxlint, Prettier, oxfmt) ;
+éco-conception (fruggr, sobriété numérique) ; pair-programming.
 
 ## Numérique responsable
 
