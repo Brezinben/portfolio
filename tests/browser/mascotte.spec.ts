@@ -799,7 +799,12 @@ test("evolve fait monter la mascotte d'un cran dans la chaîne", async ({ page }
 
   await expect(mascot(page)).toHaveClass(/slime--evolveCube\b/u);
   await expect(mascot(page)).toHaveAttribute("data-form", "cube");
+  // La bande, et pas seulement la classe : une regle de forme trop specifique ecrasait le
+  // decalage vertical, et toutes les bandes retombaient sur la premiere.
+  expect(await bande(page), "la transition ouvre sa propre bande").toBe("-2048px");
+
   await expect(mascot(page)).toHaveClass(/slime--idle\b/u, { timeout: 6000 });
+  expect(await bande(page), "le repos du cube ouvre la premiere bande").toBe("0px");
 
   await cli.fill("/slime evolve");
   await cli.press("Enter");
@@ -881,4 +886,23 @@ test("l'évolution ne survit pas à un rechargement", async ({ page }) => {
   await boot(page);
 
   await expect(mascot(page)).toHaveAttribute("data-form", "slime");
+});
+
+// Une forme evoluee doit jouer ses etats comme le slime : meme bande, meme feuille.
+test("le cube joue ses états sur les bonnes bandes", async ({ page }) => {
+  const cli = await boot(page);
+
+  await cli.fill("/slime evolve");
+  await cli.press("Enter");
+  await expect(mascot(page)).toHaveClass(/slime--idle\b/u, { timeout: 6000 });
+
+  await cli.fill("/slime expression sleep");
+  await cli.press("Enter");
+
+  await expect(mascot(page)).toHaveClass(/slime--sleep\b/u);
+  expect(await bande(page), "la veille n'ouvre pas la bande du repos").not.toBe("0px");
+
+  const feuille = await mascot(page).evaluate((node) => getComputedStyle(node).backgroundImage);
+
+  expect(feuille).toContain("cube-sheets");
 });

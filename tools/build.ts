@@ -324,10 +324,12 @@ const unfilter = (filter: number, value: number, around: Around) => {
         next = based.replace(
           BASE_RULE[dir as keyof typeof BASE_RULE],
           (_rule: string, head: string, indent: string) =>
-            `${head}${indent}background-image: url("${sheetsOf(dir)}");\n` +
-            `${indent}background-position: 0 0;\n` +
-            `${indent}background-size: ${(merged?.width ?? 0) * SCALE}px ` +
-            `${(merged?.height ?? 0) * SCALE}px;\n`,
+            `${head}${indent}background-image: url("${sheetsOf(dir)}");\n${ 
+            // Seule la forme par defaut pose la position de depart. Un « background-position »
+            // sur une regle d'attribut ecraserait le « background-position-y » des regles
+            // d'etat, moins specifiques : toutes les bandes retomberaient sur la premiere.
+            dir === "slime" ? `${indent}background-position: 0 0;\n` : "" 
+            }${indent}background-size: ${(merged?.width ?? 0) * SCALE}px ${(merged?.height ?? 0) * SCALE}px;\n`,
         );
 
       if (next === based) {
