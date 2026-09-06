@@ -85,6 +85,7 @@
     "import/exports-last": "off",
     "one-var": "off",
     "id-length": "off",
+    "no-duplicate-imports": "off",
     "max-statements": "off"
   },
   "ignorePatterns": [

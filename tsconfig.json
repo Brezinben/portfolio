@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "allowImportingTsExtensions": true,
+    "checkJs": false,
+    "erasableSyntaxOnly": true,
+    "exactOptionalPropertyTypes": true,
+    "lib": ["DOM", "DOM.Iterable", "ES2024"],
+    "module": "nodenext",
+    "moduleDetection": "force",
+    "noEmit": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitOverride": true,
+    "noImplicitReturns": true,
+    "noUncheckedIndexedAccess": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "target": "ES2024",
+    "types": ["node"],
+    "verbatimModuleSyntax": true
+  },
+  "exclude": ["node_modules", "dist*", ".versions", "design", "src/vendor"],
+  "include": ["src/**/*.ts", "tests/**/*.ts", "tools/**/*.ts", "playwright.config.ts"]
+}

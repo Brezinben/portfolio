@@ -516,20 +516,24 @@
       image-rendering: pixelated
     }
 
+    /* Le défilement ne touche qu'un axe. L'autre reste libre : la construction fusionne
+       les neuf feuilles en une seule image, où il désigne l'état. */
     @keyframes slime-12 {
       to {
-        background-position: -768px 0
+        background-position-x: -768px
       }
     }
 
     @keyframes slime-16 {
       to {
-        background-position: -1024px 0
+        background-position-x: -1024px
       }
     }
 
-    /* Une feuille par état. Le navigateur ne va chercher que celles qu'une classe
-       appliquée réclame : au premier rendu, une seule part sur le réseau. */
+    /* Une feuille par état, dans l'ordre où la construction les empile. Elle remplace
+       chaque image par la bande correspondante de la feuille fusionnée : cet ordre est
+       donc le seul qui existe, et le CSS ne peut pas se décaler par rapport à l'image.
+       Servi tel quel, sans construction, src/ tire une feuille par état déclenché. */
     .slime--idle {
       background-image: url("sprites/slime-idle.png");
       background-size: 768px 64px;
@@ -608,9 +612,10 @@
     /* Un seul rayon pour toute la page : les deux cartes du volet gauche, les trois
        volets, le cadre de démarrage, la modale et le bouton des options. La valeur
        s'essaie dans le navigateur sans chasser sept déclarations.
-       Ce que la variable ne couvre pas : les contrôles que design/DECISIONS.md §4.1 veut
-       carrés, laissés à 0, et le lien d'évitement, qui vit hors de .tm pour survivre à
-       l'absence de thème. */
+       Elle couvre tout ce qui a un coin : volets, cartes, modale, et les contrôles qui
+       étaient carrés. Deux exceptions, et deux seulement : le point du bandeau, qui est
+       un cercle et non un coin, et le lien d'évitement, qui vit hors de .tm pour
+       survivre à l'absence de thème. */
     .tm {
       --radius: 5px
     }
@@ -703,7 +708,7 @@
                 <li>
                   <button type="button" data-ctl="nav" :aria-current="item.id === section ? 'true' : 'false'"
                     @click="goSection(item.id)"
-                    :style="`width:100%;min-height:44px;display:grid;grid-template-columns:12px 1fr;gap:8px;align-items:center;text-align:left;padding:5px 8px;border:0;border-left:2px solid ${item.id === section ? 'var(--acc)' : 'transparent'};border-radius:0;background:${item.id === section ? 'var(--acc-soft)' : 'transparent'};color:var(--fg);font-family:inherit;font-size:14px;cursor:pointer;transition:background .18s,border-color .18s`">
+                    :style="`width:100%;min-height:44px;display:grid;grid-template-columns:12px 1fr;gap:8px;align-items:center;text-align:left;padding:5px 8px;border:0;border-left:2px solid ${item.id === section ? 'var(--acc)' : 'transparent'};border-radius:var(--radius);background:${item.id === section ? 'var(--acc-soft)' : 'transparent'};color:var(--fg);font-family:inherit;font-size:14px;cursor:pointer;transition:background .18s,border-color .18s`">
                     <span aria-hidden="true"
                       :style="`width:8px;height:8px;background:var(--${item.dot});animation:${item.dot === 'acc' && anim ? 'dotPulse 1.2s ease-in-out infinite' : 'none'}`"></span>
                     <span style="display:grid;gap:1px;min-width:0">
@@ -726,7 +731,7 @@
                 <li>
                   <button type="button" data-ctl="nav" :aria-current="item.id === section ? 'true' : 'false'"
                     @click="goSection(item.id)"
-                    :style="`width:100%;min-height:44px;display:grid;grid-template-columns:12px 1fr;gap:8px;align-items:center;text-align:left;padding:5px 8px;border:0;border-left:2px solid ${item.id === section ? 'var(--acc)' : 'transparent'};border-radius:0;background:${item.id === section ? 'var(--acc-soft)' : 'transparent'};color:var(--fg);font-family:inherit;font-size:14px;cursor:pointer;transition:background .18s,border-color .18s`">
+                    :style="`width:100%;min-height:44px;display:grid;grid-template-columns:12px 1fr;gap:8px;align-items:center;text-align:left;padding:5px 8px;border:0;border-left:2px solid ${item.id === section ? 'var(--acc)' : 'transparent'};border-radius:var(--radius);background:${item.id === section ? 'var(--acc-soft)' : 'transparent'};color:var(--fg);font-family:inherit;font-size:14px;cursor:pointer;transition:background .18s,border-color .18s`">
                     <span aria-hidden="true"
                       :style="`width:8px;height:8px;background:var(--${item.dot});animation:${item.dot === 'acc' && anim ? 'dotPulse 1.2s ease-in-out infinite' : 'none'}`"></span>
                     <span style="display:grid;gap:1px;min-width:0">
@@ -1022,7 +1027,7 @@
                 <button type="button" data-ctl="opt" :data-theme-choice="entry.id"
                   :aria-pressed="entry.id === theme"
                   @click="setTheme(entry.id, $event)"
-                  :style="`min-height:44px;display:flex;align-items:center;gap:9px;padding:0 10px;border:1px solid ${entry.id === theme ? 'var(--acc)' : 'var(--edge)'};border-radius:0;background:${entry.id === theme ? 'var(--acc-soft)' : 'transparent'};color:var(--fg);font-family:inherit;font-size:13px;cursor:pointer;text-align:left`">
+                  :style="`min-height:44px;display:flex;align-items:center;gap:9px;padding:0 10px;border:1px solid ${entry.id === theme ? 'var(--acc)' : 'var(--edge)'};border-radius:var(--radius);background:${entry.id === theme ? 'var(--acc-soft)' : 'transparent'};color:var(--fg);font-family:inherit;font-size:13px;cursor:pointer;text-align:left`">
                   <span aria-hidden="true"
                     :style="`width:18px;height:18px;flex:none;border:1px solid ${entry.edge};background:${entry.bg};position:relative;overflow:hidden`"><span
                       :style="`position:absolute;inset:auto 0 0 0;height:7px;background:${entry.acc}`"></span></span>
@@ -1036,7 +1041,7 @@
             <template x-for="toggle in TOGGLES" :key="toggle.key">
               <button type="button" data-ctl="opt" data-toggle :aria-pressed="value(toggle.key)"
                 @click="flip(toggle.key)"
-                :style="`width:100%;min-height:44px;display:flex;justify-content:space-between;align-items:center;gap:12px;padding:0 12px;border:1px solid var(--edge);border-left:2px solid ${value(toggle.key) ? 'var(--ok)' : 'var(--fg2)'};border-radius:0;background:transparent;color:var(--fg);font-family:inherit;font-size:13px;cursor:pointer`"><span
+                :style="`width:100%;min-height:44px;display:flex;justify-content:space-between;align-items:center;gap:12px;padding:0 12px;border:1px solid var(--edge);border-left:2px solid ${value(toggle.key) ? 'var(--ok)' : 'var(--fg2)'};border-radius:var(--radius);background:transparent;color:var(--fg);font-family:inherit;font-size:13px;cursor:pointer`"><span
                   x-text="toggle.label"></span><span
                   :style="`color:${value(toggle.key) ? 'var(--ok)' : 'var(--fg2)'}`"
                   x-text="value(toggle.key) ? toggle.on : toggle.off"></span></button>
@@ -1048,7 +1053,7 @@
                 style="color:var(--acc-text)">← →</span> value · <span style="color:var(--acc-text)">↑ ↓</span> setting
               · <span style="color:var(--acc-text)">esc</span> close · kept on this device</p>
             <button type="button" data-ctl="opt" @click="closeOpts()"
-              style="min-height:44px;padding:0 18px;border:1px solid var(--edge);border-radius:0;background:transparent;color:var(--fg);font-family:inherit;font-size:13px;cursor:pointer">close</button>
+              style="min-height:44px;padding:0 18px;border:1px solid var(--edge);border-radius:var(--radius);background:transparent;color:var(--fg);font-family:inherit;font-size:13px;cursor:pointer">close</button>
           </div>
         </div>
       </div>

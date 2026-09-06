@@ -1,226 +1,204 @@
-import { candidates, commonPrefix, contentLine, interpret, safeTone } from "./interpret.js";
+import { candidates, commonPrefix, contentLine, interpret, safeTone } from "./interpret.ts";
 
 // Valeurs figées après itération dans le canvas. Ne pas les transformer en réglages :
 // voir design/DECISIONS.md, section 23.
-const BOOT_MS = 2000;
-const FADE_MS = 620;
-const PANES = ["nav", "main", "out"];
-const VERTICAL = new Set(["ArrowDown", "ArrowUp"]);
-const OPTS_KEY = "bd-term-opts";
-// Quatre clés, et quatre seulement. La lecture filtre dessus : le canvas injectait dans
-// l'état tout ce que le stockage contenait.
-const KEPT = ["anim", "logH", "out", "theme"];
+const BOOT_MS = 2000,
+  FADE_MS = 620,
+  PANES = ["nav", "main", "out"],
+  VERTICAL = new Set(["ArrowDown", "ArrowUp"]),
+  OPTS_KEY = "bd-term-opts",
+  // Quatre clés, et quatre seulement. La lecture filtre dessus : le canvas injectait dans
+  // l'état tout ce que le stockage contenait.
+  KEPT = ["anim", "logH", "out", "theme"],
+  THEMES = [
+    { acc: "#F5B83B", bg: "#242538", edge: "#33344a", id: "dark", label: "ambra" },
+    { acc: "#e6a000", bg: "#fff6f6", edge: "#ded2d2", id: "light", label: "solis" },
+    { acc: "#49e9a6", bg: "#052c33", edge: "#0d4148", id: "noctis", label: "noctis" },
+    { acc: "#49ace9", bg: "#07273b", edge: "#0f3b52", id: "azureus", label: "azureus" },
+    { acc: "#a29bfe", bg: "#211d40", edge: "#332d5c", id: "uva", label: "uva" },
+    { acc: "#e0728c", bg: "#2d1b26", edge: "#452a39", id: "bordo", label: "bordo" },
+    { acc: "#0f7d8c", bg: "#fdf6e7", edge: "#ddd2ba", id: "lux", label: "lux" },
+    { acc: "#00707f", bg: "#f7fbfc", edge: "#cfdde1", id: "hibernus", label: "hibernus" },
+  ],
+  // Les valeurs d'etat restent en anglais : c'est la langue d'un terminal.
+  TOGGLES = [
+    { key: "anim", label: "animations", off: "off", on: "on" },
+    { key: "out", label: "output pane", off: "off", on: "on" },
+  ],
+  TYPE_CPS = 52,
+  EXEC_MS = 20,
+  // La fenetre de contexte se compte en caracteres imprimes, pas en commandes : une
+  // section longue coute plus qu'un « ok ». Budget et plancher figes apres essai.
+  CTX_BUDGET = 2600,
+  CTX_FLOOR = 60,
+  CTX_CELLS = 10,
+  // Compacter prend du temps, et ca doit se voir. La barre se remplit d'une case toutes
+  // les 520 ms pendant que sa tete tourne a chaque battement : dix cases, cinq secondes.
+  COMPACT_MS = 5200,
+  COMPACT_TICK_MS = 130,
+  // Les huit frames braille du rotateur. Une fois la tete passee, la case se pose pleine :
+  // une case a qui il manque un point donne une barre trouee, pas une barre remplie.
+  SPINNER = ["⣾", "⣽", "⣻", "⢿", "⡿", "⣟", "⣯", "⣷"],
+  FILLED = "⣿",
+  HOLLOW = "░",
+  // Le demarrage dessine sa barre sur vingt-quatre cases, comme le canvas.
+  BOOT_CELLS = 24,
+  // Une seule barre pour toute la page : les cases posees, la tete qui tourne tant qu'il
+  // reste a faire, les cases vides. Rendue en deux morceaux, chacun avec sa couleur.
+  // Sans `tick`, la barre ne progresse pas : elle n'a alors pas de tete.
+  barParts = (done, total, tick) => {
+    const posees = Math.max(0, Math.min(total, Math.floor(done))),
+      tete = tick === undefined || posees >= total ? "" : SPINNER[tick % SPINNER.length];
 
-const THEMES = [
-  { acc: "#F5B83B", bg: "#242538", edge: "#33344a", id: "dark", label: "ambra" },
-  { acc: "#e6a000", bg: "#fff6f6", edge: "#ded2d2", id: "light", label: "solis" },
-  { acc: "#49e9a6", bg: "#052c33", edge: "#0d4148", id: "noctis", label: "noctis" },
-  { acc: "#49ace9", bg: "#07273b", edge: "#0f3b52", id: "azureus", label: "azureus" },
-  { acc: "#a29bfe", bg: "#211d40", edge: "#332d5c", id: "uva", label: "uva" },
-  { acc: "#e0728c", bg: "#2d1b26", edge: "#452a39", id: "bordo", label: "bordo" },
-  { acc: "#0f7d8c", bg: "#fdf6e7", edge: "#ddd2ba", id: "lux", label: "lux" },
-  { acc: "#00707f", bg: "#f7fbfc", edge: "#cfdde1", id: "hibernus", label: "hibernus" },
-];
+    return {
+      filled: FILLED.repeat(posees) + tete,
+      hollow: HOLLOW.repeat(total - posees - tete.length),
+    };
+  },
+  // Le journal ne prend jamais la place du resultat : celui-ci garde ce plancher.
+  RESULT_MIN_PX = 120,
+  PANE_GAP_PX = 10,
+  // Largeur approximative d'un caractere de JetBrains Mono a 14 px.
+  CHAR_PX = 8.4,
+  // Le contenu est servi a cote de la page. Le depot est prive : la copie distante
+  // rendait 404 et ne servait plus qu'a retarder le demarrage.
+  CONTENT_URL = "content.json",
+  TONE = {
+    acc: "var(--acc)",
+    fg: "var(--fg)",
+    fg2: "var(--fg2)",
+    ok: "var(--ok)",
+    warn: "var(--warn)",
+  },
+  GLYPHS = {
+    " ": ["  ", "  ", "  ", "  ", "  ", "  ", "  ", "  "],
+    A: [" ██ ", "█  █", "█  █", "████", "█  █", "█  █", "█  █", "    "],
+    B: ["███ ", "█  █", "█  █", "███ ", "█  █", "█  █", "███ ", "    "],
+    D: ["███ ", "█  █", "█  █", "█  █", "█  █", "█  █", "███ ", "    "],
+    E: ["████", "█   ", "█   ", "███ ", "█   ", "█   ", "████", "    "],
+    I: ["████", "  █ ", "  █ ", "  █ ", "  █ ", "  █ ", "████", "    "],
+    J: ["████", "   █", "   █", "   █", "   █", "█  █", " ██ ", "    "],
+    M: ["█  █", "████", "████", "█  █", "█  █", "█  █", "█  █", "    "],
+    N: ["█  █", "██ █", "██ █", "█ ██", "█ ██", "█  █", "█  █", "    "],
+    V: ["█  █", "█  █", "█  █", "█  █", "█  █", " ██ ", "  █ ", "    "],
+  },
+  dots = (word) => {
+    const rows = ["", "", "", "", "", "", "", ""];
 
-// Les valeurs d'etat restent en anglais : c'est la langue d'un terminal.
-const TOGGLES = [
-  { key: "anim", label: "animations", off: "off", on: "on" },
-  { key: "out", label: "output pane", off: "off", on: "on" },
-];
+    for (const character of word.toUpperCase()) {
+      const glyph = GLYPHS[character] ?? GLYPHS[" "];
 
-const TYPE_CPS = 52;
-const EXEC_MS = 20;
-// La fenetre de contexte se compte en caracteres imprimes, pas en commandes : une
-// section longue coute plus qu'un « ok ». Budget et plancher figes apres essai.
-const CTX_BUDGET = 2600;
-const CTX_FLOOR = 60;
-const CTX_CELLS = 10;
-// Compacter prend du temps, et ca doit se voir. La barre se remplit d'une case toutes
-// les 520 ms pendant que sa tete tourne a chaque battement : dix cases, cinq secondes.
-const COMPACT_MS = 5200;
-const COMPACT_TICK_MS = 130;
-// Les huit frames braille du rotateur. Une fois la tete passee, la case se pose pleine :
-// une case a qui il manque un point donne une barre trouee, pas une barre remplie.
-const SPINNER = ["⣾", "⣽", "⣻", "⢿", "⡿", "⣟", "⣯", "⣷"];
-const FILLED = "⣿";
-const HOLLOW = "░";
-// Le demarrage dessine sa barre sur vingt-quatre cases, comme le canvas.
-const BOOT_CELLS = 24;
-
-// Une seule barre pour toute la page : les cases posees, la tete qui tourne tant qu'il
-// reste a faire, les cases vides. Rendue en deux morceaux, chacun avec sa couleur.
-// Sans `tick`, la barre ne progresse pas : elle n'a alors pas de tete.
-const barParts = (done, total, tick) => {
-  const posees = Math.max(0, Math.min(total, Math.floor(done)));
-  const tete = tick === undefined || posees >= total ? "" : SPINNER[tick % SPINNER.length];
-
-  return {
-    filled: FILLED.repeat(posees) + tete,
-    hollow: HOLLOW.repeat(total - posees - tete.length),
-  };
-};
-// Le journal ne prend jamais la place du resultat : celui-ci garde ce plancher.
-const RESULT_MIN_PX = 120;
-const PANE_GAP_PX = 10;
-// Largeur approximative d'un caractere de JetBrains Mono a 14 px.
-const CHAR_PX = 8.4;
-
-// Le contenu est servi a cote de la page. Le depot est prive : la copie distante
-// rendait 404 et ne servait plus qu'a retarder le demarrage.
-const CONTENT_URL = "content.json";
-
-const TONE = {
-  acc: "var(--acc)",
-  fg: "var(--fg)",
-  fg2: "var(--fg2)",
-  ok: "var(--ok)",
-  warn: "var(--warn)",
-};
-
-const GLYPHS = {
-  " ": ["  ", "  ", "  ", "  ", "  ", "  ", "  ", "  "],
-  A: [" ██ ", "█  █", "█  █", "████", "█  █", "█  █", "█  █", "    "],
-  B: ["███ ", "█  █", "█  █", "███ ", "█  █", "█  █", "███ ", "    "],
-  D: ["███ ", "█  █", "█  █", "█  █", "█  █", "█  █", "███ ", "    "],
-  E: ["████", "█   ", "█   ", "███ ", "█   ", "█   ", "████", "    "],
-  I: ["████", "  █ ", "  █ ", "  █ ", "  █ ", "  █ ", "████", "    "],
-  J: ["████", "   █", "   █", "   █", "   █", "█  █", " ██ ", "    "],
-  M: ["█  █", "████", "████", "█  █", "█  █", "█  █", "█  █", "    "],
-  N: ["█  █", "██ █", "██ █", "█ ██", "█ ██", "█  █", "█  █", "    "],
-  V: ["█  █", "█  █", "█  █", "█  █", "█  █", " ██ ", "  █ ", "    "],
-};
-
-const dots = (word) => {
-  const rows = ["", "", "", "", "", "", "", ""];
-
-  for (const character of word.toUpperCase()) {
-    const glyph = GLYPHS[character] ?? GLYPHS[" "];
-
-    for (let row = 0; row < 8; row += 1) {
-      rows[row] += glyph[row] + (character === " " ? "" : " ");
-    }
-  }
-
-  return rows.slice(0, 7);
-};
-
-// Le bandeau est dessiné en box-shadow, comme la mascotte : aucune image, aucun
-// caractère. Valeurs figées du canvas : pixel de 5 px, point de 4 px.
-const BANNER_PX = 5;
-
-const pixels = (rows, colour) => {
-  const shadows = [];
-
-  rows.forEach((row, y) => {
-    [...row].forEach((character, x) => {
-      if (character === "\u2588") {
-        shadows.push(`${x * BANNER_PX}px ${y * BANNER_PX}px 0 ${colour}`);
+      for (let row = 0; row < 8; row += 1) {
+        rows[row] += glyph[row] + (character === " " ? "" : " ");
       }
+    }
+
+    return rows.slice(0, 7);
+  },
+  // Le bandeau est dessiné en box-shadow, comme la mascotte : aucune image, aucun
+  // caractère. Valeurs figées du canvas : pixel de 5 px, point de 4 px.
+  BANNER_PX = 5,
+  pixels = (rows, colour) => {
+    const shadows = [];
+
+    rows.forEach((row, y) => {
+      [...row].forEach((character, x) => {
+        if (character === "\u2588") {
+          shadows.push(`${x * BANNER_PX}px ${y * BANNER_PX}px 0 ${colour}`);
+        }
+      });
     });
-  });
 
-  return shadows.join(",");
-};
+    return shadows.join(",");
+  },
+  banner = (shaped) => {
+    const rows = dots(shaped.banner);
 
-const banner = (shaped) => {
-  const rows = dots(shaped.banner);
+    return {
+      height: `${rows.length * BANNER_PX}px`,
+      label: shaped.text,
+      shadow: pixels(rows, TONE.acc),
+      size: `${BANNER_PX - 1}px`,
+      width: `${Math.max(...rows.map((row) => row.length)) * BANNER_PX}px`,
+    };
+  },
+  rect = (node) => node.getBoundingClientRect(),
+  // Ce qu'une sortie a réellement imprimé, jetons compris.
+  printed = (lines) =>
+    lines.reduce((total, entry) => {
+      const text = entry.tokens
+        ? entry.tokens.map((token) => token.t).join("")
+        : (entry.t ?? entry.text ?? "");
 
-  return {
-    height: `${rows.length * BANNER_PX}px`,
-    label: shaped.text,
-    shadow: pixels(rows, TONE.acc),
-    size: `${BANNER_PX - 1}px`,
-    width: `${Math.max(...rows.map((row) => row.length)) * BANNER_PX}px`,
-  };
-};
+      return total + text.length;
+    }, 0),
+  line = (raw) => {
+    const shaped = contentLine(raw);
 
-const rect = (node) => node.getBoundingClientRect();
-
-// Ce qu'une sortie a réellement imprimé, jetons compris.
-const printed = (lines) =>
-  lines.reduce((total, entry) => {
-    const text = entry.tokens
-      ? entry.tokens.map((token) => token.t).join("")
-      : (entry.t ?? entry.text ?? "");
-
-    return total + text.length;
-  }, 0);
-
-const line = (raw) => {
-  const shaped = contentLine(raw);
-
-  return shaped.banner ? { ...shaped, banner: banner(shaped) } : shaped;
-};
-
-const outPane = (out) => ({
-  lines: (out?.lines ?? []).map((row) => ({
-    k: row[0],
-    kc: safeTone(row[2], "fg2"),
-    v: row[1],
-    vc: safeTone(row[3]),
-  })),
-  title: out?.title ?? "",
-});
-
-const section = (raw) => ({
-  cmd: raw.cmd ?? "",
-  dot: safeTone(raw.dot, "ok"),
-  id: raw.id,
-  label: raw.label,
-  lines: (raw.lines ?? []).map(line),
-  out: outPane(raw.out),
-  sub: raw.sub ?? "",
-  suggest: raw.suggest ?? "",
-  view: raw.view ?? "pairs",
-});
-
-// Neuf feuilles de sprites remplacent le dessin en ombres portees. Les durees et les
-// images vivent dans la feuille de style : le script ne choisit que l'etat.
-const MASCOT_STATES = new Set([
-  "idle",
-  "wink",
-  "jump",
-  "type",
-  "load",
-  "sleep",
-  "morph",
-  "boom",
-  "reform",
-]);
-
-const MASCOT_REST = "idle";
-
-// Le vocabulaire d'humeurs de l'interpreteur se traduit en etats de feuille.
-// « idle » n'y figure pas : le repos depend de la couronne, il se lit sur mascotRest.
-// Aucune feuille ne dit la tristesse ; la veille, paupieres closes, en approche le plus.
-const MOOD_STATE = {
-  alert: "wink",
-  happy: "jump",
-  laugh: "jump",
-  sad: "sleep",
-  scared: "jump",
-  sleep: "sleep",
-};
-
-// Au cinquieme clic le slime explose. Il reprend forme entre cinq et dix secondes plus
-// tard : le hasard evite que l'attente devienne une horloge.
-// Duree de chaque passe unique. « boom » n'y figure pas : l'explosion tient jusqu'a ce
-// que le minuteur de reapparition la releve.
-const ONE_SHOT_MS = { jump: 1280, morph: 2400, reform: 1600, wink: 1680 };
-
-const BOOM_AT = 5;
-const REFORM_MIN_MS = 5000;
-const REFORM_SPREAD_MS = 5000;
-// La frappe rend la main au repos peu apres la derniere touche. Chaque touche relance le
-// compte a rebours : 400 ms coupaient l'animation au milieu d'une phrase, et la personne
-// qui tape regarde ses mots, pas la mascotte. La veille attend dix secondes sans geste.
-// Au repos, une chance sur vingt-cinq toutes les cinq secondes.
-const TYPE_REST_MS = 800;
-const SLEEP_MS = 10_000;
-const TWITCH_MS = 5000;
-const TWITCH_ODDS = 0.04;
-
-const EMPTY = { cmd: "", lines: [], out: { lines: [], title: "" }, suggest: "", view: "pairs" };
+    return shaped.banner ? { ...shaped, banner: banner(shaped) } : shaped;
+  },
+  outPane = (out) => ({
+    lines: (out?.lines ?? []).map((row) => ({
+      k: row[0],
+      kc: safeTone(row[2], "fg2"),
+      v: row[1],
+      vc: safeTone(row[3]),
+    })),
+    title: out?.title ?? "",
+  }),
+  section = (raw) => ({
+    cmd: raw.cmd ?? "",
+    dot: safeTone(raw.dot, "ok"),
+    id: raw.id,
+    label: raw.label,
+    lines: (raw.lines ?? []).map(line),
+    out: outPane(raw.out),
+    sub: raw.sub ?? "",
+    suggest: raw.suggest ?? "",
+    view: raw.view ?? "pairs",
+  }),
+  // Neuf feuilles de sprites remplacent le dessin en ombres portees. Les durees et les
+  // images vivent dans la feuille de style : le script ne choisit que l'etat.
+  MASCOT_STATES = new Set([
+    "idle",
+    "wink",
+    "jump",
+    "type",
+    "load",
+    "sleep",
+    "morph",
+    "boom",
+    "reform",
+  ]),
+  MASCOT_REST = "idle",
+  // Le vocabulaire d'humeurs de l'interpreteur se traduit en etats de feuille.
+  // « idle » n'y figure pas : le repos depend de la couronne, il se lit sur mascotRest.
+  // Aucune feuille ne dit la tristesse ; la veille, paupieres closes, en approche le plus.
+  MOOD_STATE = {
+    alert: "wink",
+    happy: "jump",
+    laugh: "jump",
+    sad: "sleep",
+    scared: "jump",
+    sleep: "sleep",
+  },
+  // Au cinquieme clic le slime explose. Il reprend forme entre cinq et dix secondes plus
+  // tard : le hasard evite que l'attente devienne une horloge.
+  // Duree de chaque passe unique. « boom » n'y figure pas : l'explosion tient jusqu'a ce
+  // que le minuteur de reapparition la releve.
+  ONE_SHOT_MS = { jump: 1280, morph: 2400, reform: 1600, wink: 1680 },
+  BOOM_AT = 5,
+  REFORM_MIN_MS = 5000,
+  REFORM_SPREAD_MS = 5000,
+  // La frappe rend la main au repos peu apres la derniere touche. Chaque touche relance le
+  // compte a rebours : 400 ms coupaient l'animation au milieu d'une phrase, et la personne
+  // qui tape regarde ses mots, pas la mascotte. La veille attend dix secondes sans geste.
+  // Au repos, une chance sur vingt-cinq toutes les cinq secondes.
+  TYPE_REST_MS = 800,
+  SLEEP_MS = 10_000,
+  TWITCH_MS = 5000,
+  TWITCH_ODDS = 0.04,
+  EMPTY = { cmd: "", lines: [], out: { lines: [], title: "" }, suggest: "", view: "pairs" };
 
 document.addEventListener("alpine:init", () => {
   // Les proprietes sont triees, les methodes suivent un ordre de lecture : chargement,
@@ -349,8 +327,8 @@ document.addEventListener("alpine:init", () => {
     },
 
     moveSection(step) {
-      const ids = this.sections.map((entry) => entry.id);
-      const next = ids.indexOf(this.section) + step;
+      const ids = this.sections.map((entry) => entry.id),
+        next = ids.indexOf(this.section) + step;
 
       if (next >= 0 && next < ids.length) {
         this.goSection(ids[next]);
@@ -362,25 +340,25 @@ document.addEventListener("alpine:init", () => {
     // etait incomplete ou qu'on passait au domaine suivant. Les lignes se lisent donc
     // sur la position reelle des cellules.
     gridMove(selector, key) {
-      const cells = [...document.querySelectorAll(selector)];
-      const at = cells.indexOf(document.activeElement);
+      const cells = [...document.querySelectorAll(selector)],
+        at = cells.indexOf(document.activeElement);
 
       if (at === -1 || !VERTICAL.has(key)) {
         return this.rowMove(cells, at, key);
       }
 
-      const from = rect(cells[at]);
-      const beyond = cells.filter((cell) =>
-        key === "ArrowDown" ? rect(cell).top > from.top + 1 : rect(cell).top < from.top - 1,
-      );
+      const from = rect(cells[at]),
+        beyond = cells.filter((cell) =>
+          key === "ArrowDown" ? rect(cell).top > from.top + 1 : rect(cell).top < from.top - 1,
+        );
 
       if (beyond.length === 0) {
         return true;
       }
 
-      const tops = beyond.map((cell) => rect(cell).top);
-      const edge = key === "ArrowDown" ? Math.min(...tops) : Math.max(...tops);
-      const row = beyond.filter((cell) => Math.abs(rect(cell).top - edge) < 1);
+      const tops = beyond.map((cell) => rect(cell).top),
+        edge = key === "ArrowDown" ? Math.min(...tops) : Math.max(...tops),
+        row = beyond.filter((cell) => Math.abs(rect(cell).top - edge) < 1);
 
       row
         .reduce((best, cell) =>
@@ -407,8 +385,8 @@ document.addEventListener("alpine:init", () => {
     // Dans une liste a une colonne, la fleche droite valide et descend vers le volet
     // suivant : c'est ce qu'un terminal fait.
     listMove(selector, key, activate) {
-      const items = [...document.querySelectorAll(selector)];
-      const at = items.indexOf(document.activeElement);
+      const items = [...document.querySelectorAll(selector)],
+        at = items.indexOf(document.activeElement);
 
       if (at === -1) {
         return false;
@@ -609,28 +587,28 @@ document.addEventListener("alpine:init", () => {
     // La borne haute se mesure sur les freres du journal. Un nombre magique la sous-estimait
     // de pres de cent pixels : le resultat tombait a zero et le volet central debordait.
     logRoom() {
-      const { journal } = this.$refs;
-      const pane = journal?.parentElement;
+      const { journal } = this.$refs,
+        pane = journal?.parentElement;
 
       if (!pane) {
         return 400;
       }
 
-      const style = globalThis.getComputedStyle(pane);
-      const inner =
-        pane.clientHeight -
-        Number.parseFloat(style.paddingTop) -
-        Number.parseFloat(style.paddingBottom);
-      // Seules les lignes de la colonne comptent : ni les gabarits, ni les reglages
-      // masques, ni le calque de balayage qui se superpose au volet.
-      const rows = [...pane.children].filter((node) => {
-        const own = globalThis.getComputedStyle(node);
+      const style = globalThis.getComputedStyle(pane),
+        inner =
+          pane.clientHeight -
+          Number.parseFloat(style.paddingTop) -
+          Number.parseFloat(style.paddingBottom),
+        // Seules les lignes de la colonne comptent : ni les gabarits, ni les reglages
+        // masques, ni le calque de balayage qui se superpose au volet.
+        rows = [...pane.children].filter((node) => {
+          const own = globalThis.getComputedStyle(node);
 
-        return own.display !== "none" && own.position !== "absolute" && own.position !== "fixed";
-      });
-      const taken = rows
-        .filter((node) => node !== journal && !node.hasAttribute("data-result"))
-        .reduce((total, node) => total + node.getBoundingClientRect().height, 0);
+          return own.display !== "none" && own.position !== "absolute" && own.position !== "fixed";
+        }),
+        taken = rows
+          .filter((node) => node !== journal && !node.hasAttribute("data-result"))
+          .reduce((total, node) => total + node.getBoundingClientRect().height, 0);
 
       return Math.max(
         44,
@@ -873,11 +851,11 @@ document.addEventListener("alpine:init", () => {
         return;
       }
 
-      const box = this.$refs.mascot.getBoundingClientRect();
-      const distance = Math.hypot(
-        event.clientX - (box.left + box.width / 2),
-        event.clientY - (box.top + box.height / 2),
-      );
+      const box = this.$refs.mascot.getBoundingClientRect(),
+        distance = Math.hypot(
+          event.clientX - (box.left + box.width / 2),
+          event.clientY - (box.top + box.height / 2),
+        );
 
       if (distance < 60) {
         this.mascotPlay("wink");
@@ -885,8 +863,8 @@ document.addEventListener("alpine:init", () => {
     },
 
     trackWidth() {
-      const { track } = this.$refs;
-      const sheet = 64;
+      const { track } = this.$refs,
+        sheet = 64;
 
       return track ? Math.max(0, track.clientWidth - sheet) : 0;
     },
@@ -1038,8 +1016,8 @@ document.addEventListener("alpine:init", () => {
     // desynchronisait des qu'on arrivait par tabulation ou a la souris : le focus
     // etait sur « animations » et la fleche droite modifiait « dense lines ».
     focused() {
-      const active = document.activeElement;
-      const theme = this.themeButtons().indexOf(active);
+      const active = document.activeElement,
+        theme = this.themeButtons().indexOf(active);
 
       if (theme !== -1) {
         return { group: "theme", index: theme };
@@ -1059,15 +1037,15 @@ document.addEventListener("alpine:init", () => {
     // Les themes sont sur plusieurs lignes : les quatre fleches doivent y naviguer.
     // Les boutons d'une meme ligne partagent leur position verticale.
     themeColumns() {
-      const buttons = this.themeButtons();
-      const top = buttons[0]?.offsetTop;
+      const buttons = this.themeButtons(),
+        top = buttons[0]?.offsetTop;
 
       return Math.max(1, buttons.filter((button) => button.offsetTop === top).length);
     },
 
     moveTheme(index) {
-      const buttons = this.themeButtons();
-      const target = buttons[Math.max(0, Math.min(buttons.length - 1, index))];
+      const buttons = this.themeButtons(),
+        target = buttons[Math.max(0, Math.min(buttons.length - 1, index))];
 
       if (!target) {
         return;
@@ -1086,9 +1064,9 @@ document.addEventListener("alpine:init", () => {
       }
 
       if (event.key === "Tab") {
-        const focusable = [...document.querySelectorAll("[data-opts] [data-ctl='opt']")];
-        const at = focusable.indexOf(document.activeElement);
-        const next = (at + (event.shiftKey ? -1 : 1) + focusable.length) % focusable.length;
+        const focusable = [...document.querySelectorAll("[data-opts] [data-ctl='opt']")],
+          at = focusable.indexOf(document.activeElement),
+          next = (at + (event.shiftKey ? -1 : 1) + focusable.length) % focusable.length;
 
         event.preventDefault();
         focusable[next]?.focus();
@@ -1105,11 +1083,9 @@ document.addEventListener("alpine:init", () => {
       event.preventDefault();
 
       if (here.group === "theme") {
-        const columns = this.themeColumns();
-        const step = { ArrowDown: columns, ArrowLeft: -1, ArrowRight: 1, ArrowUp: -columns }[
-          event.key
-        ];
-        const next = here.index + step;
+        const columns = this.themeColumns(),
+          step = { ArrowDown: columns, ArrowLeft: -1, ArrowRight: 1, ArrowUp: -columns }[event.key],
+          next = here.index + step;
 
         // Sortir de la grille par le bas mene au premier reglage suivant.
         if (next >= this.themeButtons().length) {
@@ -1542,8 +1518,8 @@ document.addEventListener("alpine:init", () => {
     // « la premiere fois dans une section » du journal de conception, pas toujours.
     recall(step) {
       const pool =
-        this.commands.length > 0 ? [...this.commands, this.current.cmd] : [this.current.cmd];
-      const next = Math.min(pool.length - 1, Math.max(-1, this.recallAt - step));
+          this.commands.length > 0 ? [...this.commands, this.current.cmd] : [this.current.cmd],
+        next = Math.min(pool.length - 1, Math.max(-1, this.recallAt - step));
 
       this.recallAt = next;
       this.input = next < 0 ? "" : pool[next];
