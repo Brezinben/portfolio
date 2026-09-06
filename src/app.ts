@@ -2008,7 +2008,9 @@ document.addEventListener("alpine:init", () => {
           }
           this.checkMore("journal");
         });
-        this.bump(printed(lines));
+        // Le resultat compte comme le journal : deplacer une reponse ne la rend pas
+        // gratuite, et la jauge mesure ce que la commande a produit.
+        this.bump(printed(lines) + printed(result ?? []));
 
         if (result) {
           this.showResult(raw, result);
