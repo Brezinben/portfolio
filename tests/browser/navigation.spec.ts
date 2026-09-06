@@ -7,6 +7,37 @@ const boot = async (page: Page, hash = "") => {
   },
   main = (page: Page) => page.locator('[data-pane="main"]');
 
+// De gauche à droite : valider une section mène à sa première prise. La stack ouvre sur
+// sa première techno, et non sur la ligne de commande, qui est plus loin dans le volet.
+test("la flèche droite mène à la première prise de la section", async ({ page }) => {
+  await boot(page);
+  await page
+    .getByRole("button", { name: /^stack/ })
+    .first()
+    .focus();
+  await page.keyboard.press("ArrowRight");
+
+  await expect(page.locator("[data-tech]").first()).toBeFocused();
+});
+
+// Le contour du focus déborde de quatre pixels, et le résultat défile, donc il rogne.
+test("le contour du focus tient dans le résultat, jusqu'à la dernière colonne", async ({
+  page,
+}) => {
+  await boot(page, "#stack");
+
+  const debord = await page.evaluate(() => {
+    const box = document.querySelector<HTMLElement>("[data-result]")!.getBoundingClientRect();
+
+    return [...document.querySelectorAll<HTMLElement>("[data-tech]")].reduce(
+      (pire, node) => Math.max(pire, node.getBoundingClientRect().right + 4 - box.right),
+      -999,
+    );
+  });
+
+  expect(debord, "quatre pixels de contour tiennent à droite").toBeLessThanOrEqual(0);
+});
+
 test("chaque section a son ancre partageable", async ({ page }) => {
   await boot(page);
   await page.getByRole("button", { name: /^stack/ }).click();
@@ -93,6 +124,8 @@ test("la barre oblique cible la saisie", async ({ page }) => {
 
 // Dans une liste a une colonne, la fleche droite valide et descend vers le volet
 // suivant : c'est ce qu'un terminal fait.
+// La frise porte ses propres prises : la flèche droite y mène, comme elle mène à la
+// première techno sur la stack. Une section sans prise mène à la ligne de commande.
 test("la flèche droite valide une section et descend dans le volet central", async ({ page }) => {
   await boot(page);
   await page.locator('[data-ctl="nav"]').first().focus();
@@ -100,7 +133,18 @@ test("la flèche droite valide une section et descend dans le volet central", as
   await page.keyboard.press("ArrowRight");
 
   await expect(main(page)).toContainText("bd log --graph");
-  await expect(page.getByLabel("Commande"), "le focus descend dans le volet central").toBeFocused();
+  await expect(
+    page.locator('[data-ctl="tl"]').first(),
+    "le focus descend dans le volet central",
+  ).toBeFocused();
+});
+
+test("une section sans prise mène à la ligne de commande", async ({ page }) => {
+  await boot(page);
+  await page.locator('[data-ctl="nav"]').first().focus();
+  await page.keyboard.press("ArrowRight");
+
+  await expect(page.getByLabel("Commande")).toBeFocused();
 });
 
 test("les flèches haut et bas parcourent la liste des sections", async ({ page }) => {

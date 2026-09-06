@@ -251,3 +251,30 @@ test("échap rend le focus à la saisie quand la commande a ouvert la modale", a
   await expect(page.getByRole("dialog")).toBeHidden();
   await expect(cli).toBeFocused();
 });
+
+// Sous mouvement réduit, la bascule des animations ne peut plus rien changer : la page
+// coupe déjà tout. La laisser active ferait croire le contraire.
+test("le mouvement réduit verrouille la bascule des animations", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await boot(page);
+  await openOpts(page);
+
+  const anim = page.locator("[data-opts] [data-toggle]").first();
+
+  await expect(anim).toBeDisabled();
+  await expect(anim).toContainText("système");
+  await expect(page.locator("[data-opts] [data-toggle]").nth(1)).toBeEnabled();
+});
+
+// Le clavier de la modale ne doit pas contourner le verrou que le clic respecte.
+test("la flèche ne bascule pas une option verrouillée", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await boot(page);
+  await openOpts(page);
+
+  const anim = page.locator("[data-opts] [data-toggle]").first();
+
+  await page.keyboard.press("ArrowRight");
+
+  await expect(anim).toContainText("système");
+});

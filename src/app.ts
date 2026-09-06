@@ -519,6 +519,7 @@ interface State {
   resizing: { height: number; y: number } | undefined;
   running: boolean;
   section: string;
+  wantResult: boolean;
   sections: Section[];
   seen: string[];
   share: Share;
@@ -617,6 +618,7 @@ document.addEventListener("alpine:init", () => {
       resizing: undefined,
       running: false,
       section: "whoami",
+      wantResult: false,
       sections: [],
       seen: [],
       share: {},
@@ -845,9 +847,13 @@ document.addEventListener("alpine:init", () => {
           this.listMove('[data-ctl="nav"]', event.key, (at) => {
             const items = [...document.querySelectorAll<HTMLElement>('[data-ctl="nav"]')];
 
+            // De gauche a droite : valider une section amene a sa premiere prise. La stack
+            // ouvre sur sa premiere techno, la frise sur sa premiere entree. Une section
+            // sans prise dans le resultat mene a la ligne de commande.
+            // L'intention se pose avant le clic : une section deja vue s'affiche sans
+            // frappe, et la prise se ferait avant que l'intention soit connue.
+            this.wantResult = true;
             items[at]?.click();
-            // De gauche a droite : valider une section amene a la ligne de commande.
-            this.$nextTick(() => this.$refs["cli"]?.focus());
           }) ||
           this.listMove('[data-ctl="tl"]', event.key, (at) => this.openTimeline(at));
 
@@ -1627,11 +1633,21 @@ document.addEventListener("alpine:init", () => {
         this.mascotPlay(Math.random() < 0.5 ? "wink" : "jump");
       },
 
+      // Le systeme a deja tranche : sous mouvement reduit, la bascule des animations ne
+      // peut plus rien changer. La laisser active ferait croire le contraire.
+      lockedToggle(key: ToggleKey) {
+        return key === "anim" && this.reduced;
+      },
+
       value(key: ToggleKey) {
-        return this[key];
+        return this[key] && !this.lockedToggle(key);
       },
 
       flip(key: ToggleKey) {
+        if (this.lockedToggle(key)) {
+          return;
+        }
+
         this[key] = !this[key];
         this.persist();
       },
@@ -1682,7 +1698,9 @@ document.addEventListener("alpine:init", () => {
       },
 
       toggleButtons() {
-        return [...document.querySelectorAll<HTMLElement>("[data-opts] [data-toggle]")];
+        return [
+          ...document.querySelectorAll<HTMLElement>("[data-opts] [data-toggle]:not(:disabled)"),
+        ];
       },
 
       // Le reglage courant se lit sur l'element focalise. Le deduire d'un compteur le
@@ -1897,6 +1915,20 @@ document.addEventListener("alpine:init", () => {
         });
       },
 
+      // La section se tape avant de s'afficher : au tick qui suit le clic, le resultat est
+      // encore vide et le focus retomberait sur la ligne de commande. Il attend la frappe.
+      takeResult() {
+        if (!this.wantResult) {
+          return;
+        }
+
+        this.wantResult = false;
+        this.$nextTick(() => {
+          this.focusAt["main"] = 0;
+          this.focusPane("main");
+        });
+      },
+
       // Sur la colonne empilee, les listes sont sous le volet central. Choisir une section
       // rendait donc le resultat au-dessus de l'ecran, et le visiteur restait sur la liste.
       revealResult() {
@@ -1926,6 +1958,7 @@ document.addEventListener("alpine:init", () => {
           this.typed = target;
           this.running = false;
           this.stopLoading();
+          this.takeResult();
 
           return;
         }
@@ -1960,6 +1993,7 @@ document.addEventListener("alpine:init", () => {
           this.latency = setTimeout(() => {
             this.running = false;
             this.settle();
+            this.takeResult();
           }, EXEC_MS);
         }, 1000 / TYPE_CPS);
       },
