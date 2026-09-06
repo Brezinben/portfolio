@@ -80,7 +80,7 @@
       "ask": "Six expériences depuis 2018 : Kereis (2026, IA et full stack), SNCF Gares & Connexions (2024-2026, Assist'enGare), digital4better (2023-2024, équipe RUN), Transway (2021-2023, full stack puis tech lead), LDC Services (2020-2021, alternance), FPEE Industries (2018-2020, technicien réseau en alternance)."
     },
     {
-      "id": "stack", "label": "stack", "sub": "5 domaines", "dot": "ok", "state": "56 briques",
+      "id": "stack", "label": "stack", "sub": "5 domaines", "dot": "ok", "state": "57 briques",
       "view": "tree",
       "cmd": "bd stack --tree --depth=2",
       "lines": [],
@@ -92,10 +92,10 @@
           ["ia", "depuis 2024 · digital4better, Kereis", "fg2", "acc"],
           ["devops", "depuis 2018 · FPEE, équipe RUN"],
           ["qualité", "depuis 2021 · toutes les missions"],
-          ["—", "56 briques résolues · 0 dépendance décorative", "fg2", "ok"]
+          ["—", "57 briques résolues · 0 dépendance décorative", "fg2", "ok"]
         ]
       },
-      "ask": "Frontend : HTML, CSS, Tailwind, Sass, Vuetify, MUI, TypeScript, Vue.js, React, Svelte, Pinia, RxJS, Vite. Backend : Laravel, NestJS, PHP, API REST, OpenAPI, JWT, PostgreSQL, MySQL, Redis, ActiveMQ. IA : serveurs MCP, SpecKit, SDD, Claude, herdr, LiteLLM, Langfuse, LangGraph, agents, harness engineering, évaluation. DevOps : Docker, GitLab CI, Jenkins, GitHub Actions, AWS, Linux, Bash, Ansible, Datadog, monitoring. Qualité : tests unitaires et E2E, Cypress, ESLint, Oxlint, Prettier, axe, éco-conception, RGAA, pair-programming."
+      "ask": "Frontend : HTML, CSS, Tailwind, Sass, Vuetify, MUI, TypeScript, Vue.js, React, Svelte, Pinia, RxJS, Vite. Backend : Laravel, NestJS, PHP, API REST, OpenAPI, JWT, PostgreSQL, MySQL, Redis, ActiveMQ. IA : serveurs MCP, SpecKit, SDD, Claude, herdr, LiteLLM, Langfuse, LangGraph, agents, harness engineering, évaluation. DevOps : Docker, GitLab CI, Jenkins, GitHub Actions, AWS, Linux, Bash, Ansible, Datadog, monitoring. Qualité : tests unitaires et E2E, Cypress, ESLint, Oxlint, Prettier, oxfmt, axe, éco-conception, RGAA, pair-programming."
     },
     {
       "id": "impact", "label": "impact", "sub": "numérique responsable", "dot": "ok", "state": "audit",
@@ -317,7 +317,7 @@
     { "id": "ops", "label": "devops", "note": "livrer sans casser",
       "kids": ["Docker", "Compose", "GitLab CI", "Jenkins", "GitHub Actions", "AWS", "Linux", "Bash", "Ansible", "Datadog", "Monitoring"] },
     { "id": "qa", "label": "qualité & sobriété", "note": "ce qui tient dans le temps",
-      "kids": ["Tests unitaires", "E2E", "Cypress", "ESLint", "Oxlint", "Prettier", "axe", "Éco-conception", "RGAA", "Pair-programming"] }
+      "kids": ["Tests unitaires", "E2E", "Cypress", "ESLint", "Oxlint", "Prettier", "oxfmt", "axe", "Éco-conception", "RGAA", "Pair-programming"] }
   ],
 
   "techNotes": {
@@ -325,15 +325,23 @@
     "React": { "where": "Assist'enGare", "note": "Front grand public de Gares & Connexions, tenu sous audits d'accessibilité pendant vingt-et-un mois." },
     "Svelte": { "where": "veille et prototypes", "note": "Choisi quand le poids du bundle compte plus que l'écosystème." },
     "TypeScript": { "where": "toutes les missions depuis 2021", "note": "Typage strict côté front comme côté NestJS. Non négociable sur un projet à plusieurs mains." },
+    "HTML": { "where": "toutes les missions", "note": "Le bon élément avant la bonne classe. Un lecteur d'écran lit la structure, pas le style." },
+    "CSS": { "where": "toutes les missions", "note": "Grille, variables, requêtes de préférence. La page s'adapte au visiteur, pas l'inverse." },
     "Tailwind": { "where": "Transway, digital4better", "note": "Rapidité de mise en page sans feuille de style à maintenir. Attention portée à la taille finale du CSS." },
+    "Sass": { "where": "Transway, LDC Services", "note": "Variables et imbrication sur les feuilles de style héritées, avant que les variables CSS suffisent." },
     "Vuetify": { "where": "Transway", "note": "Base de composants accessibles, complétée à la main sur les points que le RGAA impose." },
     "MUI": { "where": "Assist'enGare", "note": "Base de composants React. Elle ne couvre pas tout le RGAA : le reste s'écrit à la main." },
     "Pinia": { "where": "Transway, Kereis", "note": "Gestion d'état des applications Vue : sessions, réservations, cache local." },
     "RxJS": { "where": "NestJS, formulaires réactifs", "note": "Flux asynchrones et annulation de requêtes concurrentes." },
+    "Vite": { "where": "depuis 2021", "note": "Serveur de développement et construction. Le rechargement instantané raccourcit la boucle d'essai." },
     "Laravel": { "where": "LDC Services, digital4better", "note": "API et back-offices : Eloquent, files de traitement, authentification." },
     "NestJS": { "where": "Transway, SNCF, Kereis", "note": "Architecture modulaire, injection de dépendances, TypeORM." },
+    "PHP": { "where": "LDC Services, Transway, digital4better", "note": "Langage des back-offices Laravel. Typage strict et outillage moderne depuis la 8." },
     "API REST": { "where": "toutes les missions", "note": "Contrats documentés en OpenAPI avant l'implémentation — la spec précède le code." },
+    "OpenAPI": { "where": "toutes les missions", "note": "Le contrat s'écrit avant l'implémentation. Le front et le back avancent en parallèle sans se bloquer." },
+    "JWT": { "where": "Transway, SNCF, Kereis", "note": "Jetons d'authentification entre services. Sur un MCP, l'autorisation est le vrai sujet, pas le jeton." },
     "PostgreSQL": { "where": "Transway, SNCF", "note": "Base de référence : requêtes analytiques, index, migrations versionnées." },
+    "MySQL": { "where": "LDC Services, digital4better", "note": "Base des projets hérités. Migrations versionnées et index relus avant chaque mise en production." },
     "Redis": { "where": "digital4better, Transway", "note": "Cache et files de messages. Réduit la charge serveur, donc l'empreinte." },
     "ActiveMQ": { "where": "Assist'enGare", "note": "Bus de messages entre la brique et le reste du SI SNCF. Réécriture d'AMQP vers STOMP, puis routage dynamique par entité métier." },
     "Serveurs MCP": { "where": "Kereis, 2026", "note": "Exposition des outils internes aux agents : tools, resources, prompts, avec les garde-fous d'accès." },
@@ -346,17 +354,26 @@
     "LangGraph": { "where": "Kereis, 2026", "note": "Enchaînements conditionnels entre prompts. L'agent devient un graphe que l'on peut relire." },
     "Agents": { "where": "Kereis", "note": "Revue automatisée de spécification : ~20 min contre une journée humaine, à chaque fonctionnalité." },
     "Harness engineering": { "where": "Kereis, 2026", "note": "Construire la machinerie autour du modèle : nettoyage de l'entrée, enchaînement des étapes, contrôle de la sortie. Le modèle seul ne produit rien de livrable." },
+    "Évaluation": { "where": "Kereis", "note": "Mesurer ce que produit un agent, jeu de cas après jeu de cas. Sans évaluation, une amélioration reste une impression." },
+    "Prompting": { "where": "Kereis", "note": "Le prompt porte l'intention, le dépôt porte les règles. Un prompt long ne remplace pas une spécification." },
     "Docker": { "where": "depuis 2020", "note": "Environnements reproductibles en local comme en CI. Compose pour les dépendances." },
+    "Compose": { "where": "depuis 2020", "note": "Les dépendances d'un projet démarrent en une commande. Un nouvel arrivant travaille le premier jour." },
     "GitLab CI": { "where": "digital4better, SNCF", "note": "Pipelines de test, build et déploiement. Optimisation des durées pour limiter le gaspillage." },
     "Jenkins": { "where": "Assist'enGare", "note": "Déploiements du service, en tandem avec les intégrations GitLab." },
     "AWS": { "where": "Assist'enGare, Kereis", "note": "Hébergement du service et source de la cartographie du SI." },
     "Datadog": { "where": "Assist'enGare", "note": "Observabilité d'un service à fort volume : traces, alertes, dimensionnement des instances." },
+    "GitHub Actions": { "where": "projets personnels", "note": "Mêmes étapes que GitLab CI : tests, construction, publication." },
     "Linux": { "where": "depuis FPEE, 2018", "note": "Administration, scripts Bash, accès SSH. Le socle du reste." },
+    "Bash": { "where": "depuis FPEE, 2018", "note": "Scripts de migration, de sauvegarde et de déploiement. Ce qui se répète deux fois s'écrit." },
     "Ansible": { "where": "équipe RUN, digital4better", "note": "Provisionnement et mises à jour de sécurité automatisées sur le parc." },
+    "Tests unitaires": { "where": "toutes les missions", "note": "Ils tiennent la logique métier. Un test qui échoue nomme le défaut mieux qu'un rapport de bogue." },
+    "E2E": { "where": "Transway, ce portfolio", "note": "Le parcours complet dans un vrai navigateur. Seul niveau qui prouve que les pièces tiennent ensemble." },
     "Cypress": { "where": "Transway", "note": "Tests de bout en bout sur les parcours critiques — réservation, authentification." },
     "ESLint": { "where": "toutes les missions", "note": "Règles partagées : la revue humaine se concentre sur le fond, pas sur la forme." },
     "Oxlint": { "where": "Assist'enGare, ce portfolio", "note": "Remplace ESLint. Le gain de vitesse rend le linter utilisable à chaque sauvegarde, donc réellement utilisé." },
     "axe": { "where": "Assist'enGare", "note": "Règles d'accessibilité branchées sur le linter. Une régression RGAA se voit avant la revue, pas à l'audit." },
+    "Prettier": { "where": "missions jusqu'en 2025", "note": "Mise en forme automatique. La revue humaine porte sur le fond." },
+    "oxfmt": { "where": "Assist'enGare", "note": "Remplace Prettier. Même règle, exécution plus rapide, un outil de moins à installer." },
     "Éco-conception": { "where": "digital4better", "note": "Mesure de l'impact des applications avec fruggr, l'outil maison, et arbitrages assumés entre fonctionnalité et empreinte." },
     "RGAA": { "where": "Assist'enGare", "note": "96 % de conformité moyenne à la déclaration publique. Essais au lecteur d'écran sous NVDA et TalkBack." },
     "Monitoring": { "where": "équipe RUN, digital4better", "note": "Supervision des performances, détection et analyse des anomalies avant remontée utilisateur." },
