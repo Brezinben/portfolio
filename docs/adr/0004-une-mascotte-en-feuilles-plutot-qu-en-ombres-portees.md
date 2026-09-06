@@ -68,9 +68,18 @@ ils pointeraient dans le vide après construction.
 
 ## Ce que cela coûte
 
-Neuf feuilles, 20 074 octets, contre zéro auparavant. Le budget les compte, avec un plafond
-propre de 22 Ko. Seule la feuille de repos part au premier chargement, soit 1 693 octets ;
-les huit autres arrivent à leur premier déclenchement, au prix d'un temps mort possible.
+Neuf feuilles, contre zéro auparavant. La construction les fusionne en une seule image de
+5 996 octets, qui part entière au premier chargement : 4 303 octets de plus au démarrage,
+14 078 de moins au total, et aucun temps mort au premier déclenchement d'une animation. Un
+seul flux deflate exploite la redondance entre les feuilles, d'où le facteur trois.
+
+L'ordre des bandes n'est écrit nulle part. La construction relève les neuf règles
+`.slime--<état>` dans l'ordre du document, empile les feuilles dans cet ordre, et calcule les
+décalages depuis le même relevé. Réordonner le CSS réordonne l'image ; ajouter un état ne
+demande rien d'autre. Trois gardes arrêtent la construction plutôt que de produire un atlas
+décalé, faute silencieuse qui ferait jouer la mauvaise animation.
+
+Le budget compte l'image, avec un plafond propre de 22 Ko sur les feuilles source.
 
 Sept humeurs disparaissent, redirigées vers les états des feuilles : `happy` et `scared`
 vers `jump`, `alert` vers `wink`, `laugh` vers `jump`, `sad` vers `sleep`. Le comportement

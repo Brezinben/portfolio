@@ -10,7 +10,7 @@ Domaine cible : `https://portfolio.brezinben.dpdns.org/`
 | Dossier | Rôle |
 |---|---|
 | `src/` | La source. Lisible, sans dépendance, servable telle quelle. |
-| `dist/` | L'artefact compact, produit par `npm run build`. Hors de git. |
+| `dist/` | L'artefact compact, produit par `bun run build`. Hors de git. |
 | `design/` | Le canvas Claude Design, **gelé**. Référence visuelle et de comportement, plus une source de code. |
 | `docs/adr/` | Décisions d'architecture. |
 | `.scratch/` | Spec et tickets. |
@@ -21,24 +21,24 @@ Domaine cible : `https://portfolio.brezinben.dpdns.org/`
 ## Mise en route
 
 ```
-mise install                      # node, oxlint, oxfmt
-npm install                       # Playwright et les outils de construction
+mise install                      # bun, node, oxlint, oxfmt
+bun install                       # Playwright et les outils de construction
 npx playwright install chromium   # le navigateur du seam page
 ```
 
-Les versions des outils sont figées dans `.config/mise/config.toml`. `npm` fournit
+Les versions des outils sont figées dans `.config/mise/config.toml`. `bun` fournit
 Playwright et les deux outils de construction.
 
 ## Commandes
 
 ```
-npm run build         # produit dist/ à partir de src/
-npm run lint          # oxlint, via npx : voir la note ci-dessous
-npm run format        # oxfmt, écriture en place
-npm run format:check  # oxfmt, vérification seule
-npm run test:unit     # seam interpréteur, sans navigateur
-npm run test:browser  # seam page, navigateur réel
-npm test              # les deux
+bun run build         # produit dist/ à partir de src/
+bun run lint          # oxlint, via npx : voir la note ci-dessous
+bun run format        # oxfmt, écriture en place
+bun run format:check  # oxfmt, vérification seule
+bun run test:unit     # seam interpréteur, sans navigateur
+bun run test:browser  # seam page, navigateur réel
+bun run test          # les deux
 ```
 
 Le script `lint` appelle `npx oxlint` et non `oxlint`. Les règles `@stylistic` sont un
@@ -65,7 +65,7 @@ se mesure après compression, sinon le chiffre ne veut rien dire.
 ## Déploiement
 
 Un conteneur Caddy monte le dépôt en lecture seule et sert `dist/`. Publier, c'est donc
-`npm run build`. Une sauvegarde de fichier ne part plus en ligne.
+`bun run build`. Une sauvegarde de fichier ne part plus en ligne.
 
 `dist` est un lien symbolique vers `.versions/dist/<horodatage>/`. La construction écrit la
 version neuve à côté, puis remplace le lien en une seule opération. Le chemin servi désigne
@@ -78,9 +78,14 @@ des adresses fixes par convention.
 Les tests construisent dans `dist.test/` et ne publient rien. `PORTFOLIO_DIST` choisit la
 sortie, `PORTFOLIO_PORT` le port.
 
-`npm test` ne lance que les tests unitaires. Les tests navigateur coûtent deux minutes pour
-une page et trois fichiers : ils restent disponibles sous `npm run test:browser`, à lancer
-quand le rendu change.
+`bun run test` ne lance que les tests unitaires. Les tests navigateur coûtent deux minutes
+pour une page et trois fichiers : ils restent disponibles sous `bun run test:browser`, à
+lancer quand le rendu change.
+
+Écrire `bun run test`, et non `bun test`. Sans `run`, Bun lance son propre lanceur de tests,
+qui ramasse aussi les fichiers de `tests/browser/`.
+
+Playwright garde Node. Son lanceur démarre par un shebang `node`, et Bun n'y change rien.
 
 Voir `docs/adr/0003-publier-par-bascule-d-un-lien-symbolique.md`.
 

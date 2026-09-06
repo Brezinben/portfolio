@@ -1,0 +1,109 @@
+import type { IncomingMessage, ServerResponse } from "node:http";
+import { extname, join, resolve, sep } from "node:path";
+import { createGzip } from "node:zlib";
+import { createReadStream } from "node:fs";
+import { createServer } from "node:http";
+import { fileURLToPath } from "node:url";
+import { stat } from "node:fs/promises";
+
+const ROOT = resolve(
+    fileURLToPath(new URL(`../../${process.env.PORTFOLIO_DIST ?? "dist"}/`, import.meta.url)),
+  ),
+  OK = 200,
+  NOT_FOUND = 404,
+  TYPES: Record<string, string> = {
+    ".css": "text/css; charset=utf-8",
+    ".html": "text/html; charset=utf-8",
+    ".js": "text/javascript; charset=utf-8",
+    ".json": "application/json; charset=utf-8",
+    ".pdf": "application/pdf",
+    ".png": "image/png",
+    ".svg": "image/svg+xml",
+    ".txt": "text/plain; charset=utf-8",
+    ".woff2": "font/woff2",
+  },
+  // Le budget de poids se mesure après compression. Sans ces types compressés ici, le test
+  // du budget mesurerait deux à quatre fois le poids réel et ne voudrait plus rien dire.
+  COMPRESSIBLE = new Set([".css", ".html", ".js", ".json", ".svg", ".txt"]),
+  resolveTarget = (rawUrl: string) => {
+    let pathname = "";
+
+    try {
+      pathname = decodeURIComponent(new URL(rawUrl, "http://127.0.0.1").pathname);
+    } catch {
+      return undefined;
+    }
+
+    const target = resolve(join(ROOT, pathname === "/" ? "/index.html" : pathname));
+
+    return target === ROOT || target.startsWith(ROOT + sep) ? target : undefined;
+  },
+  notFound = (response: ServerResponse) => {
+    if (!response.headersSent) {
+      response.writeHead(NOT_FOUND);
+    }
+    response.end("Not Found");
+  },
+  send = ({
+    request,
+    response,
+    size,
+    target,
+  }: {
+    request: IncomingMessage;
+    response: ServerResponse;
+    size: number;
+    target: string;
+  }) => {
+    const type = TYPES[extname(target)] ?? "application/octet-stream",
+      stream = createReadStream(target);
+
+    // Stat() peut réussir là où open() échoue. Sans cet écouteur, l'erreur est non gérée
+    // et tue le processus : le harnais tombe au milieu d'une série de tests.
+    stream.on("error", () => notFound(response));
+
+    if (
+      COMPRESSIBLE.has(extname(target)) &&
+      /\bgzip\b/.test(request.headers["accept-encoding"] ?? "")
+    ) {
+      response.writeHead(OK, {
+        "content-encoding": "gzip",
+        "content-type": type,
+        vary: "accept-encoding",
+      });
+      stream.pipe(createGzip()).pipe(response);
+
+      return;
+    }
+
+    response.writeHead(OK, { "content-length": size, "content-type": type });
+    stream.pipe(response);
+  },
+  server = createServer(async (request, response) => {
+    // Node ne garantit pas l'URL sur une requete mal formee : sans chemin, rien a servir.
+    const target = request.url === undefined ? undefined : resolveTarget(request.url);
+
+    if (!target) {
+      notFound(response);
+
+      return;
+    }
+
+    let info = undefined;
+
+    try {
+      info = await stat(target);
+    } catch {
+      notFound(response);
+
+      return;
+    }
+
+    if (info.isFile()) {
+      send({ request, response, size: info.size, target });
+    } else {
+      notFound(response);
+    }
+  });
+
+server.listen(Number(process.argv[2] ?? 4173), "127.0.0.1");

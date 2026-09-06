@@ -38,6 +38,15 @@ _Avoid_: contexte, détail.
 Historique des commandes déjà exécutées, dans le volet central. Redimensionnable.
 _Avoid_: historique, console, log.
 
+**Ligne brute** (`RawLine`) :
+Une ligne telle que l'interpréteur la rend. Trois formes : bandeau, jetons, ligne simple.
+_Avoid_: ligne, item, entrée.
+
+**Ligne mise en forme** (`ShapedLine`) :
+Une ligne brute après passage par la coquille, qui calcule ce que le balisage ne sait pas
+calculer. Un bandeau y devient un objet dessiné là où la ligne brute ne portait qu'un mot.
+_Avoid_: ligne rendue, ligne finale.
+
 **Log de boot** (`bootLog`) :
 Lignes système affichées pendant le démarrage. Sans rapport avec le journal.
 _Avoid_: journal système, console de démarrage.
@@ -120,7 +129,7 @@ Le dossier que la construction produit. Même page que `src/`, sous forme minifi
 Hors de git. Les tests navigateur servent ce dossier.
 _Avoid_: sortie, distribution, bundle.
 
-**Construction** (`npm run build`) :
+**Construction** (`bun run build`) :
 L'étape qui produit l'artefact compact à partir de `src/`.
 _Avoid_: build, compilation, packaging.
 
