@@ -58,6 +58,18 @@ test("la réponse de help se lit en entier dans le résultat", async ({ page }) 
   );
 });
 
+// La sortie appartient à la section ouverte. Une réponse qui prend le résultat vidait le
+// volet de droite, et le visiteur perdait le contexte de la section qu'il lisait.
+test("une commande qui prend le résultat ne vide pas la sortie", async ({ page }) => {
+  const cli = await boot(page);
+
+  await cli.fill("help");
+  await cli.press("Enter");
+
+  await expect(page.locator('[data-pane="out"]')).toContainText("système");
+  await expect(page.locator('[data-pane="out"]')).toContainText("Développeur IA / Full Stack");
+});
+
 test("la barre d'état nomme la commande qui occupe le résultat", async ({ page }) => {
   const cli = await boot(page);
 

@@ -641,11 +641,13 @@ document.addEventListener("alpine:init", () => {
       },
 
       get current() {
-        return (
-          this.commandResult ??
-          this.all.find((entry: Section) => entry.id === this.section) ??
-          EMPTY
-        );
+        return this.commandResult ?? this.open;
+      },
+
+      // La sortie appartient a la section ouverte, pas a la derniere commande. Une reponse
+      // qui prend le resultat ne doit pas vider le volet de droite.
+      get open() {
+        return this.all.find((entry: Section) => entry.id === this.section) ?? EMPTY;
       },
 
       init() {
