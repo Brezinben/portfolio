@@ -65,6 +65,29 @@ test.describe("au doigt", () => {
     expect(await height(page, "[data-result]")).toBeGreaterThanOrEqual(120);
   });
 
+  // Le journal tenait dans 120 px : une réponse de 490 px n'en montrait que trois lignes.
+  test("le journal montre toute la réponse d'une commande", async ({ page }) => {
+    await boot(page);
+    const cli = page.getByLabel("Commande");
+
+    await cli.fill("aide");
+    await cli.press("Enter");
+
+    const journal = page.locator("[data-journal]");
+
+    await expect(journal).toContainText("à vos risques");
+
+    const shown = await journal.evaluate((node) => ({
+      client: node.clientHeight,
+      scroll: node.scrollHeight,
+    }));
+
+    expect(shown.scroll, "rien ne reste caché sous le pli du journal").toBeLessThanOrEqual(
+      shown.client + 1,
+    );
+    expect(shown.client).toBeGreaterThan(300);
+  });
+
   test("la page ne dépasse jamais la hauteur de la fenêtre", async ({ page }) => {
     await boot(page);
 
@@ -93,6 +116,16 @@ test.describe("au bureau", () => {
     );
 
     expect(bases).toEqual(["0 1 244.8px 0px", "3 1 360px 0px", "1.3 1 230px 0px"]);
+  });
+
+  test("le journal garde son plafond", async ({ page }) => {
+    await boot(page);
+    const cli = page.getByLabel("Commande");
+
+    await cli.fill("aide");
+    await cli.press("Enter");
+
+    expect(await height(page, "[data-journal]")).toBeLessThanOrEqual(120);
   });
 
   test("les volets restent côte à côte", async ({ page }) => {

@@ -216,9 +216,7 @@ test("le journal ne descend jamais sous 44 px", async ({ page }) => {
     Promise.resolve(),
   );
 
-  // On lit la hauteur appliquée et non la hauteur rendue : le rendu arrondit au
-  // sous-pixel, ce qui n'a rien à voir avec la borne du réglage.
-  const applied = await page.locator("[data-journal]").evaluate((node) => node.style.height);
-
-  expect(Number.parseInt(applied, 10)).toBe(44);
+  // On lit le réglage lui-même, pas la hauteur rendue : le rendu arrondit au sous-pixel,
+  // et la colonne empilée remplace la hauteur par un jeton.
+  expect(await handle.getAttribute("aria-valuenow")).toBe("44");
 });
