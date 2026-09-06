@@ -13,8 +13,10 @@ const THEMES = ["dark", "light", "noctis", "azureus", "uva", "bordo", "lux", "hi
     }, theme);
     await boot(page);
   },
-  scan = (page: Page) =>
-    new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
+  // Sans les regles de bonne pratique, le scan laissait passer une page sans « main » et
+  // sans titre de niveau un. Elles ne sont pas des echecs WCAG, mais la section impact
+  // annonce « structure semantique » : le scan doit tenir la promesse, pas la contourner.
+  scan = (page: Page) => new AxeBuilder({ page }).analyze();
 
 for (const theme of THEMES) {
   test(`aucune violation d'accessibilité sur le thème ${theme}`, async ({ page }) => {
