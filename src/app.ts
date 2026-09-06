@@ -1046,6 +1046,11 @@ document.addEventListener("alpine:init", () => {
             this.journal = [];
             this.seen = [];
             this.used = 0;
+            // Une explosion ou un voyage en cours survivait au redemarrage : la mascotte
+            // restait absente, et un minuteur de l'ancienne session la ramenait plus tard.
+            clearTimeout(this.reformer);
+            clearTimeout(this.returner);
+            this.gone = false;
             this.power = "boot";
             this.load();
           },
@@ -1096,6 +1101,15 @@ document.addEventListener("alpine:init", () => {
       },
 
       // Une passe unique rend la main au repos. Les boucles, elles, ne finissent jamais.
+      // « load » boucle sans fin : couper le minuteur de la commande sans rendre la main y
+      // laisserait la mascotte pour toujours. Passer par settle() rendait aussi la main sur
+      // les autres etats, et coupait le voyage en train avant son terme.
+      stopLoading() {
+        if (this.mascotState === "load") {
+          this.settle();
+        }
+      },
+
       settle() {
         // Un plaquage tient sa derniere case tant qu'on reste colle. Sans cette sortie, son
         // animationend rendrait le repos au milieu de la prise.
@@ -1141,6 +1155,11 @@ document.addEventListener("alpine:init", () => {
       // La ligne porte son expression : « mise en veille » doit endormir, pas faire cligner.
       // Sans expression, un clin d'oeil, et seulement si la mascotte ne fait rien d'autre.
       say(text: string, expression?: Expression) {
+        // Une bulle au-dessus d'une piste vide n'a personne pour la porter.
+        if (this.gone) {
+          return;
+        }
+
         this.bubble = text;
 
         if (expression) {
@@ -1713,9 +1732,7 @@ document.addEventListener("alpine:init", () => {
         if (this.seen.includes(id)) {
           this.typed = target;
           this.running = false;
-          // « load » boucle sans fin : couper le minuteur de la commande sans rendre la
-          // main y laisserait la mascotte pour toujours.
-          this.settle();
+          this.stopLoading();
 
           return;
         }
@@ -1768,6 +1785,7 @@ document.addEventListener("alpine:init", () => {
           feedback: this.feedback,
           jokeIndex: this.jokeIndex,
           jokes: this.jokes,
+          mascotAway: this.gone,
           pending: this.pending,
           sections: this.sections,
           share: this.share,
@@ -1912,7 +1930,9 @@ document.addEventListener("alpine:init", () => {
           ),
           moved = effects.some((entry) =>
             ["activity", "blowUp", "drop", "emote", "say"].includes(entry.type),
-          );
+          ),
+          // Une commande qui a liste son usage n'a rien fait : lire l'aide ne se celebre pas.
+          listed = effects.some((entry) => entry.type === "usage");
 
         for (const effect of effects) {
           if (effect.type === "track") {
@@ -1961,7 +1981,7 @@ document.addEventListener("alpine:init", () => {
           }
         }
 
-        if (found && !moved) {
+        if (found && !moved && !listed) {
           this.mascotPlay("goal");
         }
       },
@@ -2045,6 +2065,8 @@ document.addEventListener("alpine:init", () => {
 
         const shared = commonPrefix(this.sugg);
 
+        // Tant que le prefixe commun avance, il avance : c'est ce que Tab sait faire de
+        // moins arbitraire.
         if (shared.length > this.suggFrag.length) {
           this.input = this.rebuild(shared);
           this.suggOpen = true;
@@ -2052,17 +2074,10 @@ document.addEventListener("alpine:init", () => {
           return;
         }
 
-        // Rien de tape pour cet argument : aucun prefixe commun ne peut battre le vide, et
-        // Tab restait sans effet des que la liste rouvrait sur un niveau neuf. La ligne mise
-        // en avant est alors ce que Tab peut faire de mieux. Un fragment deja tape garde
-        // l'ancienne regle : la liste montre, elle ne choisit pas a la place du visiteur.
-        if (this.suggFrag === "") {
-          this.applySugg(this.suggAt);
-
-          return;
-        }
-
-        this.suggOpen = true;
+        // Plus rien a gagner. La liste montre deja une ligne en avant, et refuser de la
+        // prendre laissait Tab sans effet : « / » met « /slime » en tete, la tabulation
+        // n'en faisait rien. Ce que la liste designe, Tab l'applique.
+        this.applySugg(this.suggAt);
       },
 
       up() {
