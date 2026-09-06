@@ -14,6 +14,8 @@ export const TONES = ["acc", "fg", "fg2", "ok", "warn"] as const;
 
 export type Tone = (typeof TONES)[number];
 
+export type TrackValue = boolean | number | string;
+
 export type Mood = "alert" | "happy" | "idle" | "laugh" | "sad" | "scared" | "sleep";
 
 // Une ligne du journal : puce, couleur de puce, texte, ton. Les noms courts viennent du
@@ -53,10 +55,40 @@ export type Effect =
   | { type: "sendMail" }
   | { type: "share"; kind: string; url: string }
   | { type: "shareMenu" }
-  | { type: "state"; patch: Record<string, unknown> }
+  | { type: "state"; patch: { jokeIndex?: number; pending?: undefined } }
   | { type: "theme" }
-  | { type: "track"; event: string; props: Record<string, unknown> }
+  | { type: "track"; event: string; props: Record<string, TrackValue> }
   | { type: "navigate"; id: string };
+
+// Ce qu'une commande dit, avant que le dispatcher n'y ajoute son echo et sa mesure.
+// Une ligne telle que content.json l'ecrit. Sept formes d'entree, dont le rendu ne tire
+// que trois : bandeau, jetons, ligne simple.
+export interface ContentLine {
+  banner?: string;
+  jq?: [string, string, number | string, string, boolean];
+  jqLine?: [string, string];
+  jqOpen?: [string, string];
+  ls?: string;
+  m?: string;
+  mc?: string;
+  pad?: string;
+  size?: string;
+  t?: string;
+  tone?: string;
+  w?: string;
+}
+
+// Un easter egg : son nom pour la mesure, ses lignes, et ce qu'il fait dire.
+export interface Egg {
+  egg: string;
+  lines: Line[];
+  say?: Effect;
+}
+
+export interface Told {
+  effects: Effect[];
+  lines: Line[];
+}
 
 export interface Outcome {
   effects: Effect[];
@@ -109,11 +141,14 @@ export interface Context extends CompletionContext {
   share: Share;
 }
 
-const isTone = (value: unknown): value is Tone =>
-  typeof value === "string" && (TONES as readonly string[]).includes(value);
+// Une cle libre dans une table fermee. La table garde le type que l'inference lui donne,
+// et l'appelant recoit undefined quand la cle n'y est pas.
+const lookup = <V>(table: Readonly<Record<string, V>>, key: string): V | undefined => table[key];
 
-export const safeTone = (tone: unknown, fallback: Tone = "fg"): Tone =>
-  isTone(tone) ? tone : fallback;
+const isTone = (value: string): value is Tone => TONES.some((tone) => tone === value);
+
+export const safeTone = (tone: string | undefined, fallback: Tone = "fg"): Tone =>
+  tone !== undefined && isTone(tone) ? tone : fallback;
 
 const line = ({
     marker = "",
@@ -136,7 +171,7 @@ const line = ({
   done = (t: string) => line({ marker: "✓", markerTone: "ok", text: t }),
   failed = (t: string) => line({ marker: "✗", markerTone: "warn", text: t }),
   echoed = (t: string) => line({ marker: "›", markerTone: "acc", text: t, tone: "fg2" }),
-  track = (event: string, props: Record<string, unknown>): Effect => ({
+  track = (event: string, props: Record<string, TrackValue>): Effect => ({
     event,
     props,
     type: "track",
@@ -162,7 +197,7 @@ const line = ({
     "joke · cowsay [-bdgpstwy] · wtf   — le reste",
     "pet · slime <x> · matrix · shutdown — à vos risques",
   ],
-  EGGS: Record<string, { egg: string; lines: Line[]; say?: Effect }> = {
+  EGGS = {
     benjamin: {
       egg: "nom",
       lines: [
@@ -234,7 +269,7 @@ const line = ({
     "vim",
     "wtf",
   ]),
-  ALIASES: Record<string, string> = {
+  ALIASES = {
     "?": "help",
     aide: "help",
     brezinben: "benjamin",
@@ -277,7 +312,7 @@ const line = ({
     return { effects: [], lines: [muted("répondez « oui » ou « non » — Échap annule.")] };
   },
   isMood = (value: string): value is Mood => Object.hasOwn(MOODS, value),
-  slime = (argument: string): { effects: Effect[]; lines: Line[] } => {
+  slime = (argument: string): Told => {
     if (argument === "drop" || argument === "jump") {
       return { effects: [{ type: "drop" }], lines: [done("le slime saute et s'écrase.")] };
     }
@@ -364,7 +399,7 @@ export const candidates = (value: string, context: CompletionContext) => {
     };
   }
 
-  const command = ALIASES[first] ?? first,
+  const command = lookup(ALIASES, first) ?? first,
     pool = argumentsFor(command, context) ?? argumentsFor(first, context),
     frag = (parts.at(-1) ?? "").toLowerCase();
 
@@ -395,12 +430,12 @@ export const commonPrefix = (entries: string[]): string => {
 
 // Mise en forme des lignes de contenu venues de content.json. Pure, donc testable sans
 // navigateur, au même titre que les commandes.
-const JQ_TONE: Record<string, Tone> = { num: "warn", str: "ok" },
-  token = (t: string, c: unknown, w = "400"): Token => ({ c: safeTone(c), t, w });
+const JQ_TONE = { num: "warn", str: "ok" } satisfies Record<string, Tone>,
+  token = (t: string, c: string | undefined, w = "400"): Token => ({ c: safeTone(c), t, w });
 
-export const contentLine = (raw: Record<string, any>) => {
+export const contentLine = (raw: ContentLine) => {
   if (raw.banner) {
-    return { banner: raw.banner, text: raw.t ?? raw.banner, tone: "acc" };
+    return { banner: raw.banner, text: raw.t ?? raw.banner, tone: "acc" as const };
   }
 
   if (raw.jq) {
@@ -411,7 +446,7 @@ export const contentLine = (raw: Record<string, any>) => {
       tokens: [
         token(`"${key}"`, "acc", "700"),
         token(": ", "fg2"),
-        token(kind === "num" ? String(value) : `"${value}"`, JQ_TONE[kind] ?? "ok"),
+        token(kind === "num" ? String(value) : `"${value}"`, lookup(JQ_TONE, String(kind)) ?? "ok"),
         ...(comma ? [token(",", "fg2")] : []),
       ],
     };
@@ -442,7 +477,7 @@ export const contentLine = (raw: Record<string, any>) => {
 
 // Cowsay, conforme a l'original : la bulle change de forme selon le nombre de lignes,
 // et le retour a la ligne suit la largeur du volet.
-const FACES_COW: Record<string, { eyes: string; tongue: string }> = {
+const FACES_COW = {
     "-b": { eyes: "==", tongue: "  " },
     "-d": { eyes: "xx", tongue: "U " },
     "-g": { eyes: "$$", tongue: "  " },
@@ -518,7 +553,7 @@ export const cowsay = (
     think = false,
   }: { columns?: number; mode?: string; think?: boolean } = {},
 ): string[] => {
-  const face = FACES_COW[mode] ?? { eyes: "oo", tongue: "  " },
+  const face = lookup(FACES_COW, mode) ?? { eyes: "oo", tongue: "  " },
     link = think ? "o" : "\\",
     body = wrap(text.trim() === "" ? "Moo." : text.trim(), Math.max(8, columns - 6));
 
@@ -598,7 +633,7 @@ export const interpret = (raw: string, context: Context): Outcome => {
   const prefixed = /^[/:]/.test(input),
     parts = input.replace(/^[/:]+/, "").split(" "),
     typed = (parts[0] ?? "").toLowerCase(),
-    command = ALIASES[typed] ?? typed,
+    command = lookup(ALIASES, typed) ?? typed,
     argument = (parts[1] ?? "").toLowerCase(),
     rest = parts.slice(1).join(" ");
 
@@ -767,7 +802,7 @@ export const interpret = (raw: string, context: Context): Outcome => {
     );
   }
 
-  const egg = EGGS[command];
+  const egg = lookup<Egg>(EGGS, command);
 
   if (egg) {
     return out(egg.lines, [track("easter_egg", { nom: egg.egg }), ...(egg.say ? [egg.say] : [])]);
@@ -775,7 +810,7 @@ export const interpret = (raw: string, context: Context): Outcome => {
 
   // Ces commandes appartiennent à d'autres tickets. Elles passent quand même par le
   // dispatcher, pour qu'il reste le point unique.
-  const deferred: Record<string, Effect> = {
+  const deferred = {
       ai: { type: "probeAI" },
       ask: { query: rest, type: "ask" },
       cv: { type: "cv" },
@@ -784,8 +819,8 @@ export const interpret = (raw: string, context: Context): Outcome => {
 
       "send-mail": { type: "sendMail" },
       theme: { type: "theme" },
-    },
-    waiting = deferred[command];
+    } satisfies Record<string, Effect>,
+    waiting = lookup<Effect>(deferred, command);
 
   if (waiting) {
     return out([], [waiting]);

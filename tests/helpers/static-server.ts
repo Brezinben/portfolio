@@ -11,7 +11,7 @@ const ROOT = resolve(
   ),
   OK = 200,
   NOT_FOUND = 404,
-  TYPES: Record<string, string> = {
+  TYPES = {
     ".css": "text/css; charset=utf-8",
     ".html": "text/html; charset=utf-8",
     ".js": "text/javascript; charset=utf-8",

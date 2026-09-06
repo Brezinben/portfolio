@@ -24,8 +24,9 @@ test("le premier chargement tient dans le budget de poids", async ({ page }) => 
   await expect(page.locator("[data-boot]")).toHaveCount(0, { timeout: 10_000 });
 
   const measured = await page.evaluate(() => {
-      // La lib DOM ne surcharge pas getEntriesByType par nom d'entrée : la spécification
-      // garantit le type que la déclaration ne sait pas exprimer.
+      // SAFETY: la specification garantit PerformanceNavigationTiming pour l'entree
+      // « navigation » et PerformanceResourceTiming pour « resource ». C'est la
+      // declaration de la lib DOM qui ne sait pas l'exprimer, pas le contrat qui manque.
       const [navigation] = performance.getEntriesByType(
           "navigation",
         ) as PerformanceNavigationTiming[],
@@ -84,6 +85,7 @@ test("le premier chargement ne tire qu'une image de mascotte", async ({ page }) 
   await expect(page.locator("[data-boot]")).toHaveCount(0, { timeout: 10_000 });
 
   const images = await page.evaluate(() => {
+    // SAFETY: la specification garantit PerformanceResourceTiming pour « resource ».
     const resources = performance.getEntriesByType("resource") as PerformanceResourceTiming[];
 
     return resources

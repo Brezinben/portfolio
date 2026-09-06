@@ -21,6 +21,7 @@
     "@stylistic/eslint-plugin": "^5.10.0",
     "@types/node": "^26.4.1",
     "html-minifier-terser": "^7.2.0",
+    "oxlint": "1.81.0",
     "rolldown": "^1.2.7",
     "typescript": "^7.0.2"
   }
