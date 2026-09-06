@@ -30,7 +30,7 @@ const SCRIPT = ["java", "script:"].join(""),
       url: "https://exemple.test/",
     },
   },
-  serve = (page: Page, body: unknown) =>
+  serve = (page: Page, body: object) =>
     page.route("**/content.json", (route) =>
       route.fulfill({ body: JSON.stringify(body), contentType: "application/json" }),
     ),
@@ -65,6 +65,8 @@ test("une cible de partage en javascript: n'est jamais ouverte", async ({ page }
   await page.evaluate(() => {
     // La page note ce qu'on a tente d'ouvrir : le test lit ce temoin ensuite. Le faux
     // n'ouvre rien et ne rend rien : c'est tout ce que le test observe.
+    // SAFETY: « opened » est pose par ces deux lignes seules ; aucun autre code de la
+    // page ne porte ce nom.
     const temoin = globalThis as typeof globalThis & { opened?: string };
 
     temoin.opened = "aucune";
@@ -81,6 +83,7 @@ test("une cible de partage en javascript: n'est jamais ouverte", async ({ page }
   await cli.press("Enter");
   await page.waitForTimeout(400);
 
+  // SAFETY: « opened » vient d'etre pose par le faux « open » installe ci-dessus.
   expect(await page.evaluate(() => (globalThis as { opened?: string }).opened)).toBe("aucune");
   await expect(page.locator("[data-journal]")).toContainText("cible inconnue");
 });

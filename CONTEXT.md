@@ -11,6 +11,16 @@ dans le code.
 
 ### Les trois zones
 
+**Zone** (`zone`) :
+Un conteneur encadré : les deux cartes du volet gauche, les trois volets, la modale
+d'options, le cadre de démarrage. Une zone porte un coin arrondi et ne prend jamais le focus.
+_Avoid_: bloc, panneau, boîte, carte.
+
+**Élément intérieur** (`inner`) :
+Tout ce qui se dessine dans une zone : boutons, bascules, entrées de liste, suggestions. Un
+élément intérieur reste à angle droit, et c'est lui qui prend le focus.
+_Avoid_: contrôle, widget, item.
+
 **Volet gauche** (`leftPane`) :
 Colonne qui porte le bouton des options, la liste des sections et la liste des missions.
 _Avoid_: menu, navigation, sidebar.
@@ -46,6 +56,16 @@ _Avoid_: ligne, item, entrée.
 Une ligne brute après passage par la coquille, qui calcule ce que le balisage ne sait pas
 calculer. Un bandeau y devient un objet dessiné là où la ligne brute ne portait qu'un mot.
 _Avoid_: ligne rendue, ligne finale.
+
+**Frise** (`timeline`) :
+La liste chronologique du volet central, dans la section parcours. Chaque entrée ouvre la
+fiche d'une mission.
+_Avoid_: parcours, chronologie, historique.
+
+**Ton** (`tone`) :
+La couleur de sens portée par une ligne ou un jeton. Cinq valeurs : `acc`, `fg`, `fg2`,
+`ok`, `warn`. Toute valeur inconnue retombe sur `fg`.
+_Avoid_: couleur, teinte, style.
 
 **Log de boot** (`bootLog`) :
 Lignes système affichées pendant le démarrage. Sans rapport avec le journal.

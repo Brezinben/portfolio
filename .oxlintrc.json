@@ -1,7 +1,13 @@
 {
   "$schema": "https://raw.githubusercontent.com/oxc-project/oxc/main/npm/oxlint/configuration_schema.json",
   "plugins": ["unicorn", "oxc", "promise", "import"],
-  "jsPlugins": ["@stylistic/eslint-plugin"],
+  "jsPlugins": [
+    "@stylistic/eslint-plugin",
+    {
+      "name": "anti-slop",
+      "specifier": "./tools/oxlint/anti-slop/index.ts"
+    }
+  ],
   "env": {
     "browser": true,
     "es2024": true
@@ -17,6 +23,21 @@
     "suspicious": "error"
   },
   "rules": {
+    "anti-slop/no-chained-type-assertions": "error",
+    "anti-slop/no-conditional-empty-object-spread": "error",
+    "anti-slop/no-known-value-widening": "error",
+    "anti-slop/no-module-mocking": "error",
+    "anti-slop/no-object-parameters": "error",
+    "anti-slop/no-reflect-apply": "error",
+    "anti-slop/no-reflect-get": "error",
+    "anti-slop/no-runtime-typeof": "error",
+    "anti-slop/no-shape-in-symbol-names": "error",
+    "anti-slop/no-unknown-parameters": "error",
+    "anti-slop/no-unknown-returns": "error",
+    "anti-slop/no-unknown-type-aliases": "error",
+    "anti-slop/no-unsafe-dictionary-type": "error",
+    "anti-slop/no-widen-then-assert": "error",
+    "anti-slop/require-safety-comment-for-type-assertion": "error",
     "@stylistic/padding-line-between-statements": [
       "error",
       {
@@ -85,10 +106,11 @@
     "import/exports-last": "off",
     "one-var": "off",
     "id-length": "off",
-    "no-duplicate-imports": "off",
     "max-statements": "off"
   },
   "ignorePatterns": [
+    ".agents/**",
+    ".claude/**",
     "design/**",
     "dist*/**",
     ".versions/**",
@@ -96,7 +118,8 @@
     "playwright-report/**",
     "src/vendor/**",
     "docs/mascotte/**",
-    "test-results/**"
+    "test-results/**",
+    "tools/oxlint/anti-slop/**"
   ],
   "overrides": [
     {

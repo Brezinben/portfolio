@@ -20,6 +20,13 @@
     "types": ["node"],
     "verbatimModuleSyntax": true
   },
-  "exclude": ["node_modules", "dist*", ".versions", "design", "src/vendor"],
+  "exclude": [
+    "node_modules",
+    "dist*",
+    ".versions",
+    "design",
+    "src/vendor",
+    "tools/oxlint/anti-slop"
+  ],
   "include": ["src/**/*.ts", "tests/**/*.ts", "tools/**/*.ts", "playwright.config.ts"]
 }

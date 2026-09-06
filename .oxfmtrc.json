@@ -3,12 +3,15 @@
   "printWidth": 100,
   "ignorePatterns": [
     "**/*.md",
+    ".agents/**",
+    ".claude/**",
     "design/**",
     "dist*/**",
     ".versions/**",
     "src/**/*.html",
     "src/content.json",
     "src/vendor/**",
-    "docs/mascotte/**"
+    "docs/mascotte/**",
+    "tools/oxlint/anti-slop/**"
   ]
 }
