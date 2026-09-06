@@ -87,6 +87,48 @@ test("un indicateur signale qu'il reste du contenu", async ({ page }) => {
   await expect(page.locator("[data-more]")).toBeVisible();
 });
 
+// Les libelles de mission tenaient sur une ligne avec leur etat, et trois se coupaient.
+// Le nom prend sa ligne, l'etat passe dessous, comme les sections juste au-dessus.
+test("aucun libellé du volet gauche n'est coupé", async ({ page }) => {
+  await boot(page);
+
+  const cut = await page.evaluate(() =>
+    [...document.querySelectorAll('[data-pane="nav"] *')]
+      .filter((node) => node.scrollWidth > node.clientWidth)
+      .map((node) => node.textContent.trim()),
+  );
+
+  expect(cut, "rien ne se coupe dans le volet gauche").toEqual([]);
+});
+
+// Les trois volets ont des bases fixes : le contenu d'une section ne decide plus de leur
+// largeur. Une base tiree du contenu faisait sauter la mise en page a chaque changement.
+test("la largeur des volets ne bouge pas d'une section à l'autre", async ({ page }) => {
+  await boot(page);
+
+  const widths = () =>
+    page.evaluate(() =>
+      ["nav", "main", "out"].map((pane) =>
+        Math.round(document.querySelector(`[data-pane="${pane}"]`).clientWidth),
+      ),
+    );
+  const first = await widths();
+
+  await ["parcours", "stack", "impact", "contact"].reduce(
+    (chain, id) =>
+      chain
+        .then(() =>
+          page
+            .getByRole("button", { name: new RegExp(id) })
+            .first()
+            .click(),
+        )
+        .then(() => widths())
+        .then((seen) => expect(seen, `section ${id}`).toEqual(first)),
+    Promise.resolve(),
+  );
+});
+
 test("le journal se redimensionne au clavier et sa hauteur est conservée", async ({ page }) => {
   const cli = await boot(page);
 
@@ -107,6 +149,34 @@ test("le journal se redimensionne au clavier et sa hauteur est conservée", asyn
   await expect(page.locator("[data-boot]")).toHaveCount(0, { timeout: 10_000 });
 
   expect(await height(), "la hauteur survit au rechargement").toBe(after);
+});
+
+// Une hauteur de journal reglee sur une autre fenetre survit dans le stockage. Trop
+// haute, elle ecrasait le resultat a zero et faisait deborder le volet central : la
+// reponse de « contact » arrivait coupee.
+test("un journal trop haut rend sa place au résultat au changement de section", async ({
+  page,
+}) => {
+  await page.addInitScript(() =>
+    localStorage.setItem("bd-term-opts", JSON.stringify({ logH: 900 })),
+  );
+  await boot(page);
+  await page
+    .getByRole("button", { name: /contact/ })
+    .first()
+    .click();
+
+  const sizes = await page.evaluate(() => {
+    const pane = document.querySelector('[data-pane="main"]');
+
+    return {
+      overflow: pane.scrollHeight - pane.clientHeight,
+      result: document.querySelector("[data-result]").clientHeight,
+    };
+  });
+
+  expect(sizes.result, "le résultat garde sa place").toBeGreaterThanOrEqual(120);
+  expect(sizes.overflow, "le volet central tient dans son cadre").toBeLessThanOrEqual(1);
 });
 
 test("le journal ne descend jamais sous 44 px", async ({ page }) => {

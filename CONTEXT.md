@@ -68,8 +68,19 @@ _Avoid_: chargement, splash, loader.
 _Avoid_: page d'erreur, écran 404.
 
 **Mascotte** (`mascot`) :
-Le slime dessiné en ombres portées, sans aucune image. Sept humeurs.
+Le slime du volet central. Décorative : un lecteur d'écran ne l'annonce jamais. Elle
+disparaît quand le visiteur demande moins de mouvement.
 _Avoid_: slime, avatar, personnage.
+
+**État de la mascotte** (`mascotState`) :
+Ce que la mascotte fait à un instant donné. Neuf états : `idle`, `wink`, `jump`, `type`,
+`load`, `sleep`, `morph`, `crown`, `king`. Un seul à la fois. Remplace les humeurs.
+_Avoid_: humeur, mood, émotion, pose.
+
+**Feuille** (`sheet`) :
+Image qui porte toutes les cases d'un état de la mascotte, sur une seule ligne. Une feuille
+par état. Le dossier qui les réunit garde le nom technique `src/sprites/`.
+_Avoid_: spritesheet, planche, atlas.
 
 **Jauge de contexte** (`contextGauge`) :
 Jauge de la barre d'état qui monte à chaque commande, et se vide avec une compaction
@@ -99,13 +110,18 @@ Repli en une colonne, sans script et sans image. Cible du lien de secours de l'�
 panique. Contenu écrit en dur.
 _Avoid_: version simple, version accessible, fallback.
 
+**Source** (`src/`) :
+Le dossier que l'on édite. Il reste servable tel quel par un serveur statique, sans étape
+de construction. S'appelait `production/` jusqu'au renommage.
+_Avoid_: production, app, sources.
+
 **Artefact compact** (`dist/`) :
-Le dossier que la construction produit. Même page que `production/`, sous forme minifiée.
+Le dossier que la construction produit. Même page que `src/`, sous forme minifiée.
 Hors de git. Les tests navigateur servent ce dossier.
 _Avoid_: sortie, distribution, bundle.
 
 **Construction** (`npm run build`) :
-L'étape qui produit l'artefact compact à partir de `production/`.
+L'étape qui produit l'artefact compact à partir de `src/`.
 _Avoid_: build, compilation, packaging.
 
 **Contenu** (`content.json`) :

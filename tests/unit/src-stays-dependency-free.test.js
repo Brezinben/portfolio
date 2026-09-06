@@ -4,7 +4,7 @@ import { readdir } from "node:fs/promises";
 import { relative } from "node:path";
 import { test } from "node:test";
 
-const PRODUCTION = fileURLToPath(new URL("../../production/", import.meta.url));
+const PRODUCTION = fileURLToPath(new URL("../../src/", import.meta.url));
 
 const FORBIDDEN = new Set(["package.json", "package-lock.json", "node_modules", "dist", "build"]);
 
@@ -25,7 +25,7 @@ const findForbidden = async (directory) => {
 
 // Production/ reste la source, servable telle quelle sans npm. La construction produit
 // dist/ et n'écrit jamais ici. Un manifeste de dépendances ou un node_modules signifierait
-// que la construction a débordé, y compris sous production/vendor/ où Alpine est figé.
-test("production/ ne contient aucune dépendance ni artefact de construction", async () => {
+// que la construction a débordé, y compris sous src/vendor/ où Alpine est figé.
+test("src/ ne contient aucune dépendance ni artefact de construction", async () => {
   assert.deepEqual(await findForbidden(PRODUCTION), []);
 });

@@ -1,10 +1,4 @@
-import {
-  TONES,
-  contentLine,
-  isSafeUrl,
-  safeTone,
-  shareTarget,
-} from "../../production/interpret.js";
+import { TONES, contentLine, isSafeUrl, safeTone, shareTarget } from "../../src/interpret.js";
 import assert from "node:assert/strict";
 import { test } from "node:test";
 

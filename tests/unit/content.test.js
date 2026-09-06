@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { contentLine } from "../../production/interpret.js";
+import { contentLine } from "../../src/interpret.js";
 import { test } from "node:test";
 
 test("une ligne simple garde son texte, son ton et sa graisse", () => {

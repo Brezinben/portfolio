@@ -3,7 +3,7 @@ import { setTimeout } from "node:timers/promises";
 
 const PANIC = "panic: content.json not found";
 
-// Les quatre cas de démarrage, servis par interception plutôt qu'en abîmant production/.
+// Les quatre cas de démarrage, servis par interception plutôt qu'en abîmant src/.
 test("un contenu valide mène jusqu'au terminal", async ({ page }) => {
   await page.goto("/");
 
@@ -49,22 +49,19 @@ test("un contenu lent garde l'écran de boot affiché", async ({ page }) => {
   await expect(page.locator("[data-boot]")).toHaveCount(0, { timeout: 15_000 });
 });
 
-// La panique n'arrive que si les deux sources echouent : c'est la chaine distant puis
-// local. Le retry rend ensuite la source locale disponible.
+// Le retry relance le meme chargement : il ne sert qu'une fois le contenu revenu.
 test("l'écran de panique offre retry et la version texte", async ({ page }) => {
   let broken = true;
 
-  await page.route("**/raw.githubusercontent.com/**", (route) => route.abort());
   await page.route("**/content.json", (route) =>
     broken ? route.fulfill({ status: 500 }) : route.continue(),
   );
   await page.goto("/");
 
   await expect(page.locator("[data-boot]")).toContainText(PANIC, { timeout: 15_000 });
-  await expect(page.getByRole("link", { name: "version texte" })).toHaveAttribute(
-    "href",
-    "texte.html",
-  );
+  await expect(
+    page.locator("[data-boot]").getByRole("link", { name: "version texte" }),
+  ).toHaveAttribute("href", "texte.html");
 
   broken = false;
   await page.getByRole("button", { name: "retry" }).click();

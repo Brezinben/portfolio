@@ -1,11 +1,27 @@
 import { expect, test } from "@playwright/test";
 
+// La premiere visite suit la preference du systeme : ces tests partent du thème sombre
+// pour ne pas dependre du reglage de la machine qui les lance.
 const boot = async (page) => {
+  await page.emulateMedia({ colorScheme: "dark" });
   await page.goto("/");
   await expect(page.locator("[data-boot]")).toHaveCount(0, { timeout: 10_000 });
 };
 
 const opts = (page) => page.getByRole("button", { name: "options" });
+
+// Le focus entre dans la modale au tick suivant. Sans cette attente, une touche envoyée
+// juste après part avant lui : la modale ne la voit pas, et la page l'ignore parce que la
+// modale est ouverte. Les deux gestionnaires laissent tomber la touche.
+const openOpts = async (page) => {
+  await opts(page).click();
+
+  const dialog = page.getByRole("dialog");
+
+  await expect(dialog.locator(":focus")).toHaveCount(1);
+
+  return dialog;
+};
 
 test("le bouton options ouvre la modale et le focus y entre", async ({ page }) => {
   await boot(page);
@@ -19,7 +35,7 @@ test("le bouton options ouvre la modale et le focus y entre", async ({ page }) =
 
 test("les huit thèmes sont proposés", async ({ page }) => {
   await boot(page);
-  await opts(page).click();
+  await openOpts(page);
 
   const labels = ["ambra", "solis", "noctis", "azureus", "uva", "bordo", "lux", "hibernus"];
 
@@ -30,7 +46,7 @@ test("les huit thèmes sont proposés", async ({ page }) => {
 
 test("choisir un thème l'applique immédiatement", async ({ page }) => {
   await boot(page);
-  await opts(page).click();
+  await openOpts(page);
   await page.getByRole("button", { name: "noctis" }).click();
 
   await expect(page.locator(".tm")).toHaveAttribute("data-theme", "noctis");
@@ -38,7 +54,7 @@ test("choisir un thème l'applique immédiatement", async ({ page }) => {
 
 test("échap ferme la modale et rend le focus au bouton", async ({ page }) => {
   await boot(page);
-  await opts(page).click();
+  await openOpts(page);
   await page.getByRole("dialog").press("Escape");
 
   await expect(page.getByRole("dialog")).toHaveCount(0);
@@ -49,9 +65,7 @@ test("échap ferme la modale et rend le focus au bouton", async ({ page }) => {
 // bas mene au premier reglage.
 test("les quatre flèches naviguent dans la grille des thèmes", async ({ page }) => {
   await boot(page);
-  await opts(page).click();
-
-  const dialog = page.getByRole("dialog");
+  const dialog = await openOpts(page);
 
   await dialog.press("ArrowRight");
   await expect(page.locator(".tm")).toHaveAttribute("data-theme", "light");
@@ -73,7 +87,7 @@ test("les quatre flèches naviguent dans la grille des thèmes", async ({ page }
 // arriver : un compteur separe se desynchronisait de la tabulation.
 test("la flèche droite modifie le réglage qui a le focus", async ({ page }) => {
   await boot(page);
-  await opts(page).click();
+  await openOpts(page);
 
   const animations = page.getByRole("button", { name: /animations/ });
 
@@ -87,27 +101,51 @@ test("la flèche droite modifie le réglage qui a le focus", async ({ page }) =>
   ).toHaveAttribute("aria-pressed", "true");
 });
 
+// Le depart est le dernier theme, pas le theme actif : compter les pressions depuis le
+// theme actif depend du nombre de colonnes, donc de la largeur de la fenetre. Les
+// pressions en trop tombent alors dans le vide et le test ne peut plus echouer.
 test("depuis la dernière ligne de thèmes, la flèche bas atteint les réglages", async ({ page }) => {
   await boot(page);
-  await opts(page).click();
 
-  const dialog = page.getByRole("dialog");
+  const dialog = await openOpts(page);
 
-  // Le focus entre dans la modale au tick suivant. Sans cette attente, la premiere fleche
-  // part avant, et le parcours commence d'ailleurs que du theme actif.
-  await expect(dialog.locator(":focus")).toHaveCount(1);
-
-  await Array.from({ length: 6 }).reduce(
-    (chain) => chain.then(() => dialog.press("ArrowDown")),
-    Promise.resolve(),
-  );
+  await page.getByRole("button", { name: "hibernus" }).focus();
+  await dialog.press("ArrowDown");
 
   await expect(page.locator("[data-toggle]:focus")).toHaveCount(1);
 });
 
+test("la première visite suit la préférence claire du système", async ({ page }) => {
+  await page.emulateMedia({ colorScheme: "light" });
+  await page.goto("/");
+  await expect(page.locator("[data-boot]")).toHaveCount(0, { timeout: 10_000 });
+
+  await expect(page.locator(".tm")).toHaveAttribute("data-theme", "light");
+});
+
+test("la première visite suit la préférence sombre du système", async ({ page }) => {
+  await page.emulateMedia({ colorScheme: "dark" });
+  await page.goto("/");
+  await expect(page.locator("[data-boot]")).toHaveCount(0, { timeout: 10_000 });
+
+  await expect(page.locator(".tm")).toHaveAttribute("data-theme", "dark");
+});
+
+// Le choix conserve prime sur la preference du systeme.
+test("un thème déjà choisi ignore la préférence du système", async ({ page }) => {
+  await page.emulateMedia({ colorScheme: "light" });
+  await page.addInitScript(() =>
+    localStorage.setItem("bd-term-opts", JSON.stringify({ theme: "bordo" })),
+  );
+  await page.goto("/");
+  await expect(page.locator("[data-boot]")).toHaveCount(0, { timeout: 10_000 });
+
+  await expect(page.locator(".tm")).toHaveAttribute("data-theme", "bordo");
+});
+
 test("aucun réglage de taille du texte n'est proposé", async ({ page }) => {
   await boot(page);
-  await opts(page).click();
+  await openOpts(page);
 
   await expect(page.getByRole("dialog")).not.toContainText("taille");
 });
@@ -115,7 +153,7 @@ test("aucun réglage de taille du texte n'est proposé", async ({ page }) => {
 // Les réglages sont conservés sur l'appareil, et la lecture filtre sur six clés.
 test("le thème choisi survit à un rechargement", async ({ page }) => {
   await boot(page);
-  await opts(page).click();
+  await openOpts(page);
   await page.getByRole("button", { name: "bordo" }).click();
   await page.getByRole("dialog").press("Escape");
 
@@ -152,7 +190,7 @@ test("masquer le volet de sortie le retire de la page", async ({ page }) => {
   await boot(page);
   await expect(page.locator('[data-pane="out"]')).toBeVisible();
 
-  await opts(page).click();
+  await openOpts(page);
   await page.getByRole("button", { name: /output pane/ }).click();
   await page.getByRole("dialog").press("Escape");
 
@@ -161,9 +199,7 @@ test("masquer le volet de sortie le retire de la page", async ({ page }) => {
 
 test("la tabulation boucle dans la modale", async ({ page }) => {
   await boot(page);
-  await opts(page).click();
-
-  const dialog = page.getByRole("dialog");
+  const dialog = await openOpts(page);
 
   // Les tabulations doivent s'enchaîner : les paralléliser ne testerait plus la boucle.
   await Array.from({ length: 14 }).reduce(

@@ -12,6 +12,25 @@
 - Site : https://portfolio.brezinben.dpdns.org/
 - Langue du site : français
 
+## Quand ce site répond à votre question
+
+Ce site est le portfolio d'une seule personne. Il n'expose ni produit, ni API, ni
+service. Il ne publie que des faits sur Benjamin David.
+
+Consultez-le pour :
+
+- Le parcours professionnel de Benjamin David : employeurs, dates, rôles, missions.
+- Les technologies qu'il pratique, et à quel poste il les a pratiquées.
+- Sa position sur le numérique responsable, l'accessibilité et l'éco-conception.
+- Sa disponibilité et son contact : benjamin.david1@hotmail.fr.
+
+Ne le consultez pas pour :
+
+- Une documentation d'API, un schéma OpenAPI ou une clé d'accès. Il n'y en a aucun.
+- Un serveur MCP hébergé. Benjamin conçoit des serveurs MCP pour ses clients. Ce
+  domaine n'en héberge aucun et n'expose aucun point d'entrée MCP.
+- Un service à appeler. Les trois artefacts publiés sont des documents à lire.
+
 ## Parcours professionnel
 
 ### Mai 2026 → aujourd'hui — Kereis
@@ -89,10 +108,14 @@ fonctionnalité et empreinte.
 
 ## Ressources
 
-- Site principal, interface terminal : https://portfolio.brezinben.dpdns.org/ (Portfolio Benjamin David - Terminal.dc.html)
-- Version illustrée et animée : Portfolio Benjamin David.dc.html
-- Version texte simple (basse consommation) : Portfolio Benjamin David - Texte.dc.html
+Le domaine publie exactement ces adresses. Les deux pages disent les mêmes faits.
 
-Chaque section du site terminal a sa propre adresse : #whoami, #parcours, #stack,
+- https://portfolio.brezinben.dpdns.org/ — version terminal, interface à trois volets.
+- https://portfolio.brezinben.dpdns.org/texte.html — version texte, une colonne, sans
+  script ni image. Préférez-la pour lire le contenu.
+- https://portfolio.brezinben.dpdns.org/llms.txt — ce fichier.
+- https://portfolio.brezinben.dpdns.org/sitemap.xml — les deux pages.
+
+Chaque section de la version terminal a son ancre : #whoami, #parcours, #stack,
 #impact, #formation, #contact, et une par mission : #m-kereis, #m-assist, #m-run,
 #m-transway.

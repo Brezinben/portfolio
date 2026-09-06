@@ -1,0 +1,26 @@
+# Fragment a coller dans le bloc portfolio.brezinben.dpdns.org du Caddyfile.
+# A appliquer a la main : le Caddyfile est monte par inode, une ecriture desynchronise
+# l'hote et le conteneur.
+
+# 1. Ajouter *.xml au filtre de revalidation. Sans cela, sitemap.xml est le seul fichier
+#    versionne sans Cache-Control : le filtre liste les extensions une par une.
+#
+#    Remplacer :
+#        path / *.html *.js *.json *.txt
+#    Par :
+#        path / *.html *.js *.json *.txt *.xml
+
+# 2. Rendre un corps aux erreurs. Caddy rend aujourd'hui un 404 vide, sans content-type.
+#    Le statut est deja correct : l'audit se trompe en annoncant un 403. Seul le corps
+#    manque. Un corps en texte brut suffit et ne cree aucun fichier a maintenir.
+#    A inserer dans le bloc, apres file_server.
+
+handle_errors {
+	header Content-Type "text/plain; charset=utf-8"
+	respond "{err.status_code} {err.status_text}
+
+Cette adresse n'existe pas sur ce site.
+Le site publie deux pages : / et /texte.html
+Voir https://portfolio.brezinben.dpdns.org/llms.txt
+" {err.status_code}
+}

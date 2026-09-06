@@ -38,7 +38,7 @@ test("valider une entrée de la frise ouvre la fiche de mission", async ({ page 
 });
 
 // Le canvas dispose la stack comme la sortie d'un ls : un rail par domaine, et les
-// technologies qui coulent en colonnes. La hierarchie vient du rail, pas de glyphes.
+// technologies qui coulent en colonnes, chacune precedee de son trait d'arborescence.
 test("l'arbre de la stack s'affiche au centre, en colonnes", async ({ page }) => {
   await open(page, "#stack");
 
@@ -93,6 +93,45 @@ test("les quatre flèches naviguent dans la grille de la stack", async ({ page }
 
   await page.keyboard.press("ArrowUp");
   expect(await focused()).toBe(first);
+});
+
+// Chaque bloc de la stack est une grille independante. Un pas fixe, calcule sur la
+// premiere ligne du premier bloc, faisait changer de colonne des qu'une ligne etait
+// incomplete ou qu'on passait d'une categorie a la suivante.
+test("la flèche bas garde la colonne d'une ligne de la stack à la suivante", async ({ page }) => {
+  await open(page, "#stack");
+
+  const strayed = await page.evaluate(() => {
+    const cells = [...document.querySelectorAll("[data-tech]")];
+    const boxes = new Map(cells.map((cell) => [cell, cell.getBoundingClientRect()]));
+    const wrong = [];
+    // La derniere ligne n'a rien en dessous : la fleche bas n'y promet rien.
+    const departures = cells.filter((cell) =>
+      cells.some((other) => boxes.get(other).top > boxes.get(cell).top + 1),
+    );
+
+    for (const cell of departures) {
+      cell.focus();
+      cell.dispatchEvent(new KeyboardEvent("keydown", { bubbles: true, key: "ArrowDown" }));
+
+      const from = boxes.get(cell);
+      const below = cells.filter((other) => boxes.get(other).top > from.top + 1);
+      const next = Math.min(...below.map((other) => boxes.get(other).top));
+      const row = below.filter((other) => boxes.get(other).top < next + 1);
+      const closest = Math.min(...row.map((other) => Math.abs(boxes.get(other).left - from.left)));
+      const landed = document.activeElement;
+
+      if (!cells.includes(landed)) {
+        wrong.push(`${cell.textContent.trim()} → hors de la grille`);
+      } else if (Math.abs(boxes.get(landed).left - from.left) > closest + 1) {
+        wrong.push(`${cell.textContent.trim()} → ${landed.textContent.trim()}`);
+      }
+    }
+
+    return wrong;
+  });
+
+  expect(strayed, "la flèche bas prend la cellule la plus proche de la colonne").toEqual([]);
 });
 
 test("la sortie contact est colorée par type", async ({ page }) => {

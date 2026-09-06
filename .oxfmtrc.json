@@ -4,9 +4,11 @@
   "ignorePatterns": [
     "**/*.md",
     "design/**",
-    "dist/**",
-    "production/**/*.html",
-    "production/content.json",
-    "production/vendor/**"
+    "dist*/**",
+    ".versions/**",
+    "src/**/*.html",
+    "src/content.json",
+    "src/vendor/**",
+    "docs/mascotte/**"
   ]
 }

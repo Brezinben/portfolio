@@ -5,6 +5,7 @@ import { candidates, commonPrefix, contentLine, interpret, safeTone } from "./in
 const BOOT_MS = 2000;
 const FADE_MS = 620;
 const PANES = ["nav", "main", "out"];
+const VERTICAL = new Set(["ArrowDown", "ArrowUp"]);
 const OPTS_KEY = "bd-term-opts";
 // Six clés, et six seulement. La lecture filtre dessus : le canvas injectait dans
 // l'état tout ce que le stockage contenait.
@@ -29,18 +30,28 @@ const TOGGLES = [
 
 const TYPE_CPS = 52;
 const EXEC_MS = 20;
-const CTX_MAX = 20;
+// La fenetre de contexte se compte en caracteres imprimes, pas en commandes : une
+// section longue coute plus qu'un « ok ». Budget et plancher figes apres essai.
+const CTX_BUDGET = 2600;
+const CTX_FLOOR = 60;
 const CTX_CELLS = 10;
+// Compacter prend du temps, et ca doit se voir. La barre se remplit d'une case toutes
+// les 520 ms pendant que sa tete tourne a chaque battement : dix cases, cinq secondes.
+const COMPACT_MS = 5200;
+const COMPACT_TICK_MS = 130;
+// Les huit frames braille du rotateur. Une fois la tete passee, la case se pose pleine :
+// une case a qui il manque un point donne une barre trouee, pas une barre remplie.
+const SPINNER = ["⣾", "⣽", "⣻", "⢿", "⡿", "⣟", "⣯", "⣷"];
+const SETTLED = "⣿";
+// Le journal ne prend jamais la place du resultat : celui-ci garde ce plancher.
+const RESULT_MIN_PX = 120;
+const PANE_GAP_PX = 10;
 // Largeur approximative d'un caractere de JetBrains Mono a 14 px.
 const CHAR_PX = 8.4;
 
-// Le contenu vit sur GitHub : le modifier ne demande plus d'acces au serveur. Si
-// GitHub est injoignable ou bloque, la copie servie a cote de la page prend le
-// relais, et l'ecran de panique ne s'affiche que si les deux echouent.
-const REMOTE_CONTENT =
-  "https://raw.githubusercontent.com/Brezinben/portfolio/main/production/content.json";
-const LOCAL_CONTENT = "content.json";
-const REMOTE_TIMEOUT_MS = 2500;
+// Le contenu est servi a cote de la page. Le depot est prive : la copie distante
+// rendait 404 et ne servait plus qu'a retarder le demarrage.
+const CONTENT_URL = "content.json";
 
 const TONE = {
   acc: "var(--acc)",
@@ -107,6 +118,18 @@ const banner = (shaped) => {
   };
 };
 
+const rect = (node) => node.getBoundingClientRect();
+
+// Ce qu'une sortie a réellement imprimé, jetons compris.
+const printed = (lines) =>
+  lines.reduce((total, entry) => {
+    const text = entry.tokens
+      ? entry.tokens.map((token) => token.t).join("")
+      : (entry.t ?? entry.text ?? "");
+
+    return total + text.length;
+  }, 0);
+
 const line = (raw) => {
   const shaped = contentLine(raw);
 
@@ -135,145 +158,45 @@ const section = (raw) => ({
   view: raw.view ?? "pairs",
 });
 
-// Sprite valide apres iteration : ne pas le redessiner. Deux tentatives de refonte
-// ont ete annulees (DECISIONS.md, section 10).
-const MASCOT = [
-  "........bbbbbbbb........",
-  "......bbbbbbbbbbbb......",
-  ".....bbbbbbbbbbbbbb.....",
-  "....bbhbbbbbbbbbbbbb....",
-  "...bbhbbbbbbbbbbbbbbb...",
-  "...bhbbbbbbbbbbbbbbbb...",
-  "..bbbbbbbbbbbbbbbbbbbb..",
-  "..bbbbbeebbbbbbeebbbbb..",
-  "..bbbbbeebbbbbbeebbbbb..",
-  ".bbbbbbbbbbbbbbbbbbbbbb.",
-  ".bbbbbbbbbmbbmbbbbbbbbb.",
-  ".bbbbbbbbbbmmbbbbbbbbbb.",
-  "bbbbbbbbbbbbbbbbbbbbbbbb",
-  "bbbbbbbbbbbbbbbbbbbbbbbb",
-  "bbbbbbbbbbbbbbbbbbbbbbbb",
-  "bbbbbbbbbbbbbbbbbbbbbbbb",
-  ".ssssssssssssssssssssss.",
-  "..ssssssssssssssssssss..",
-];
+// Neuf feuilles de sprites remplacent le dessin en ombres portees. Les durees et les
+// images vivent dans la feuille de style : le script ne choisit que l'etat.
+const MASCOT_STATES = new Set([
+  "idle",
+  "wink",
+  "jump",
+  "type",
+  "load",
+  "sleep",
+  "morph",
+  "crown",
+  "king",
+]);
 
-// Couleurs fixes dans les huit themes : demande explicite.
-const MASCOT_COLORS = { b: "#F5B83B", e: "#242538", h: "#FFD98A", m: "#242538", s: "#C98F1E" };
+// Le vocabulaire d'humeurs de l'interpreteur se traduit en etats de feuille.
+// « idle » n'y figure pas : le repos depend de la couronne, il se lit sur mascotRest.
+// Aucune feuille ne dit la tristesse ; la veille, paupieres closes, en approche le plus.
+const MOOD_STATE = {
+  alert: "wink",
+  happy: "jump",
+  laugh: "jump",
+  sad: "sleep",
+  scared: "jump",
+  sleep: "sleep",
+};
 
-const CROWN = [
-  "..........jjjj..........",
-  "....r.....jjjj.....r....",
-  "...rrr...gjjjjg...rrr...",
-  "....r..ggggggggg..r.....",
-  "....gggggggggggggggg....",
-  "....gggggggggggggggg....",
-  "....GGGGGGGGGGGGGGGG....",
-];
+// Seules « crown » et « king » portent la couronne. Ces deux reactions n'en ont pas de
+// variante et n'apprennent rien : une fois la couronne acquise, elles la feraient
+// disparaitre pour rien. Les etats qui informent — frappe, reflexion, mue, veille —
+// passent quand meme.
+const CROWNLESS_REACTIONS = new Set(["wink", "jump"]);
 
-const CROWN_COLORS = { G: "#C8921A", g: "#F2C230", j: "#2F7FE0", r: "#D8322B" };
 const CROWN_AT = new Date().getFullYear() - 2000;
-const MASCOT_PX = 2.6;
-
-const FACES = {
-  alert: [
-    "..bbbbbbbbbbbbbbbbbbbb..",
-    "..bbbbeeeebbbbeeeebbbb..",
-    "..bbbbeeeebbbbeeeebbbb..",
-    ".bbbbbbbbbbbbbbbbbbbbbb.",
-    ".bbbbbbbbbmmmmbbbbbbbbb.",
-    ".bbbbbbbbbmmmmbbbbbbbbb.",
-  ],
-  happy: [
-    "..bbbbbbbbbbbbbbbbbbbb..",
-    "..bbbbbmbbbbbbmbbbbbbb..",
-    "..bbbbmbmbbbbmbmbbbbbb..",
-    ".bbbbbbbbbbbbbbbbbbbbbb.",
-    ".bbbbbbbbmbbbbmbbbbbbbb.",
-    ".bbbbbbbbbmmmmbbbbbbbbb.",
-  ],
-  idle: [
-    "..bbbbbbbbbbbbbbbbbbbb..",
-    "..bbbbbeebbbbbbeebbbbb..",
-    "..bbbbbeebbbbbbeebbbbb..",
-    ".bbbbbbbbbbbbbbbbbbbbbb.",
-    ".bbbbbbbbbmbbmbbbbbbbbb.",
-    ".bbbbbbbbbbmmbbbbbbbbbb.",
-  ],
-  laugh: [
-    "..bbbbbbbbbbbbbbbbbbbb..",
-    "..bbbbmmmbbbbmmmbbbbbb..",
-    "..bbbbbbbbbbbbbbbbbbbb..",
-    ".bbbbbbbmmmmmmmmbbbbbbb.",
-    ".bbbbbbmmmmmmmmmmbbbbbb.",
-    ".bbbbbbbmmmmmmmmbbbbbbb.",
-  ],
-  sad: [
-    "..bbmmbbbbbbbbbbbbmmbb..",
-    "..bbbmmbbbbbbbbmmbbbbb..",
-    "..bbbbbeebbbbbbeebbbbb..",
-    ".bbbbbbbbbbbbbbbbbbbbbb.",
-    ".bbbbbbbbbbmmbbbbbbbbbb.",
-    ".bbbbbbbbbmbbmbbbbbbbbb.",
-  ],
-  scared: [
-    "..bbbbbbbbbbbbbbbbbbbb..",
-    "..bbbbeeeebbbbeeeebbbb..",
-    "..bbbbeeeebbbbeeeebbbb..",
-    ".bbbbbbbbbbbbbbbbbbbbbb.",
-    ".bbbbbbbbbbmmbbbbbbbbbb.",
-    ".bbbbbbbbbbmmbbbbbbbbbb.",
-  ],
-  sleep: [
-    "..bbbbbbbbbbbbbbbbbbbb..",
-    "..bbbbbbbbbbbbbbbbbbbb..",
-    "..bbbbmmmmbbbbmmmmbbbb..",
-    ".bbbbbbbbbbbbbbbbbbbbbb.",
-    ".bbbbbbbbbbmmbbbbbbbbbb.",
-    ".bbbbbbbbbbbbbbbbbbbbbb.",
-  ],
-};
-
-const MOOD_LABELS = {
-  alert: "surpris",
-  happy: "content",
-  idle: "au repos",
-  laugh: "hilare",
-  sad: "triste",
-  scared: "apeuré",
-  sleep: "endormi",
-};
-
-const sprite = (rows, colors, px) => {
-  const shadows = [];
-
-  rows.forEach((row, y) => {
-    [...row].forEach((character, x) => {
-      const colour = colors[character];
-
-      if (colour) {
-        shadows.push(`${(x * px).toFixed(2)}px ${(y * px).toFixed(2)}px 0 ${colour}`);
-      }
-    });
-  });
-
-  return shadows.join(",");
-};
-
-const faceKey = (mood, blink) => {
-  // Les yeux fermes empruntent le visage endormi, sauf quand la mascotte dort deja.
-  if (blink && mood !== "sleep") {
-    return "sleep";
-  }
-
-  return FACES[mood] ? mood : "idle";
-};
-
-const face = (mood, blink) => {
-  const rows = FACES[faceKey(mood, blink)];
-
-  return MASCOT.map((row, y) => (y >= 6 && y <= 11 ? rows[y - 6] : row));
-};
+// La frappe rend la main au repos peu apres la derniere touche. La veille attend dix
+// secondes sans geste. Au repos, une chance sur vingt-cinq toutes les cinq secondes.
+const TYPE_REST_MS = 400;
+const SLEEP_MS = 10_000;
+const TWITCH_MS = 5000;
+const TWITCH_ODDS = 0.04;
 
 const EMPTY = { cmd: "", lines: [], out: { lines: [], title: "" }, suggest: "", view: "pairs" };
 
@@ -283,17 +206,15 @@ document.addEventListener("alpine:init", () => {
   // disperserait chaque sujet aux quatre coins du fichier pour un gain nul.
   // eslint-disable-next-line sort-keys
   Alpine.data("terminal", () => ({
-    MASCOT_PX,
     THEMES,
     TOGGLES,
     anim: true,
     at: 0,
-    blink: false,
     bubble: "",
     clicks: 0,
     commands: [],
     compacting: false,
-    contentSource: "remote",
+    compactTick: 0,
     crowned: false,
     dataErr: false,
     details: [],
@@ -310,10 +231,10 @@ document.addEventListener("alpine:init", () => {
     journalOverflows: false,
     logH: 0,
     missions: [],
-    mood: "idle",
+    mascotState: "idle",
     more: { journal: false },
     motion: "",
-    ops: 0,
+    used: 0,
     optsOpen: false,
     out: true,
     pane: "nav",
@@ -410,25 +331,49 @@ document.addEventListener("alpine:init", () => {
       }
     },
 
-    // Une grille se parcourt aux quatre fleches. Les boutons d'une meme ligne
-    // partagent leur position verticale : c'est ce qui donne le nombre de colonnes.
+    // Une grille se parcourt aux quatre fleches. La stack en compte une par domaine :
+    // un pas fixe, deduit de la premiere ligne, changeait de colonne des qu'une ligne
+    // etait incomplete ou qu'on passait au domaine suivant. Les lignes se lisent donc
+    // sur la position reelle des cellules.
     gridMove(selector, key) {
       const cells = [...document.querySelectorAll(selector)];
       const at = cells.indexOf(document.activeElement);
 
-      if (at === -1) {
+      if (at === -1 || !VERTICAL.has(key)) {
+        return this.rowMove(cells, at, key);
+      }
+
+      const from = rect(cells[at]);
+      const beyond = cells.filter((cell) =>
+        key === "ArrowDown" ? rect(cell).top > from.top + 1 : rect(cell).top < from.top - 1,
+      );
+
+      if (beyond.length === 0) {
+        return true;
+      }
+
+      const tops = beyond.map((cell) => rect(cell).top);
+      const edge = key === "ArrowDown" ? Math.min(...tops) : Math.max(...tops);
+      const row = beyond.filter((cell) => Math.abs(rect(cell).top - edge) < 1);
+
+      row
+        .reduce((best, cell) =>
+          Math.abs(rect(cell).left - from.left) < Math.abs(rect(best).left - from.left)
+            ? cell
+            : best,
+        )
+        .focus();
+
+      return true;
+    },
+
+    // Gauche et droite suivent l'ordre du document : c'est l'ordre de lecture.
+    rowMove(cells, at, key) {
+      if (at === -1 || (key !== "ArrowLeft" && key !== "ArrowRight")) {
         return false;
       }
 
-      const top = cells[0].offsetTop;
-      const columns = Math.max(1, cells.filter((cell) => cell.offsetTop === top).length);
-      const step = { ArrowDown: columns, ArrowLeft: -1, ArrowRight: 1, ArrowUp: -columns }[key];
-
-      if (step === undefined) {
-        return false;
-      }
-
-      cells[Math.max(0, Math.min(cells.length - 1, at + step))]?.focus();
+      cells[Math.max(0, Math.min(cells.length - 1, at + (key === "ArrowRight" ? 1 : -1)))]?.focus();
 
       return true;
     },
@@ -548,6 +493,14 @@ document.addEventListener("alpine:init", () => {
       this.tech = name;
     },
 
+    // Chaque entree de la frise annonce la commande qui ouvre sa fiche. La commande vient
+    // du contenu : la reconstruire ici la ferait mentir au premier renommage.
+    missionCue(entry) {
+      const detail = this.details.find((item) => item.id === entry.detail);
+
+      return detail ? `↵ ${detail.cmd}` : "— pas de fiche";
+    },
+
     openTimeline(index) {
       this.timelineAt = index;
 
@@ -558,10 +511,57 @@ document.addEventListener("alpine:init", () => {
       }
     },
 
-    // La jauge monte a chaque commande et a chaque changement de section. Pleine,
-    // elle "compacte" avec un resume ironique, puis repart a zero.
+    // La jauge monte de ce que la sortie a imprime. Pleine, elle "compacte" avec un
+    // resume ironique, puis repart a zero.
     get ctxCells() {
-      return Math.min(CTX_CELLS, Math.round((this.ops / CTX_MAX) * CTX_CELLS));
+      return Math.min(CTX_CELLS, Math.round((this.used / CTX_BUDGET) * CTX_CELLS));
+    },
+
+    get ctxPct() {
+      return `${Math.min(100, Math.round((this.used / CTX_BUDGET) * 100))}%`;
+    },
+
+    // Sans animation, la barre s'affiche pleine : le temps d'attente reste le meme, il
+    // ne se raconte simplement plus.
+    get compactBar() {
+      if (!this.anim || this.reduced) {
+        return SETTLED.repeat(CTX_CELLS);
+      }
+
+      const cells = Math.min(
+        CTX_CELLS,
+        Math.floor((this.compactTick * COMPACT_TICK_MS * CTX_CELLS) / COMPACT_MS),
+      );
+
+      return cells === CTX_CELLS
+        ? SETTLED.repeat(cells)
+        : SETTLED.repeat(cells) + SPINNER[this.compactTick % SPINNER.length];
+    },
+
+    get compactRest() {
+      return "░".repeat(CTX_CELLS - this.compactBar.length);
+    },
+
+    // La frise et l'arbre n'impriment aucune ligne : leur poids vient de ce qu'ils
+    // affichent, sans quoi les deux sections les plus denses coûteraient le minimum.
+    weigh(entry) {
+      if (entry.view === "timeline") {
+        return printed(
+          this.timeline.map((item) => ({
+            text: `${item.years}${item.org}${item.role}${item.note}`,
+          })),
+        );
+      }
+
+      if (entry.view === "tree") {
+        return printed(
+          this.stack.map((root) => ({
+            text: `${root.label}${root.note ?? ""}${root.kids.join("")}`,
+          })),
+        );
+      }
+
+      return printed(entry.lines);
     },
 
     // Le journal se redimensionne au glisser, entre 44 px et la place disponible, et
@@ -573,10 +573,40 @@ document.addEventListener("alpine:init", () => {
     },
 
     setLogHeight(next) {
-      const room = this.$refs.journal?.parentElement?.clientHeight ?? 400;
-
-      this.logH = Math.max(44, Math.min(Math.round(next), Math.max(44, room - 160)));
+      this.logH = Math.max(44, Math.min(Math.round(next), this.logRoom()));
       this.persist();
+    },
+
+    // La borne haute se mesure sur les freres du journal. Un nombre magique la sous-estimait
+    // de pres de cent pixels : le resultat tombait a zero et le volet central debordait.
+    logRoom() {
+      const { journal } = this.$refs;
+      const pane = journal?.parentElement;
+
+      if (!pane) {
+        return 400;
+      }
+
+      const style = globalThis.getComputedStyle(pane);
+      const inner =
+        pane.clientHeight -
+        Number.parseFloat(style.paddingTop) -
+        Number.parseFloat(style.paddingBottom);
+      // Seules les lignes de la colonne comptent : ni les gabarits, ni les reglages
+      // masques, ni le calque de balayage qui se superpose au volet.
+      const rows = [...pane.children].filter((node) => {
+        const own = globalThis.getComputedStyle(node);
+
+        return own.display !== "none" && own.position !== "absolute" && own.position !== "fixed";
+      });
+      const taken = rows
+        .filter((node) => node !== journal && !node.hasAttribute("data-result"))
+        .reduce((total, node) => total + node.getBoundingClientRect().height, 0);
+
+      return Math.max(
+        44,
+        Math.floor(inner - taken - Math.max(0, rows.length - 1) * PANE_GAP_PX - RESULT_MIN_PX),
+      );
     },
 
     logDown(event) {
@@ -615,43 +645,69 @@ document.addEventListener("alpine:init", () => {
       }
     },
 
-    bump() {
-      this.ops += 1;
+    bump(cost) {
+      if (this.compacting) {
+        return;
+      }
 
-      if (this.ops < CTX_MAX) {
+      this.used += Math.max(CTX_FLOOR, cost ?? 0);
+
+      if (this.used < CTX_BUDGET) {
         return;
       }
 
       this.compacting = true;
+      this.compactTick = 0;
+
+      if (this.anim && !this.reduced) {
+        this.spinner = setInterval(() => {
+          this.compactTick += 1;
+        }, COMPACT_TICK_MS);
+      }
+
       this.journal = [
         ...this.journal,
         {
           c: "warn",
           m: "·",
           mc: "warn",
-          t: "fenêtre de contexte pleine — compaction automatique…",
-        },
-        {
-          c: "fg2",
-          m: "·",
-          mc: "fg2",
-          t: "retenu : Benjamin, développeur IA, Nantes, aime le vélo.",
+          t: "fenêtre de contexte pleine (100 %) — compaction automatique…",
         },
       ];
-      this.ops = 0;
-      setTimeout(() => {
+      this.compactor = setTimeout(() => {
+        clearInterval(this.spinner);
         this.compacting = false;
-      }, 1200);
+        this.used = 0;
+        this.journal = [
+          ...this.journal,
+          {
+            c: "fg2",
+            m: "·",
+            mc: "fg2",
+            t: "retenu : Benjamin, développeur IA, Nantes, aime le vélo.",
+          },
+        ];
+      }, COMPACT_MS);
+    },
+
+    // Un redemarrage annule la compaction : sinon son resume s'ecrit dans un journal
+    // qu'on vient de vider, et sa barre s'affiche par-dessus l'ecran de demarrage.
+    stopCompacting() {
+      clearInterval(this.spinner);
+      clearTimeout(this.compactor);
+      this.compacting = false;
+      this.compactTick = 0;
     },
 
     // Extinction facon CRT, puis la sequence de boot complete.
     powerDown(mode) {
+      this.stopCompacting();
       this.power = "off";
       setTimeout(
         () => {
           this.journal = [];
           this.seen = [];
-          this.ops = 0;
+          this.used = 0;
           this.power = "boot";
           this.load();
         },
@@ -659,25 +715,56 @@ document.addEventListener("alpine:init", () => {
       );
     },
 
+    get outKeyWidth() {
+      const keys = this.current.out.lines.map((row) => String(row.k).length);
+
+      return `${Math.max(3, ...keys)}ch`;
+    },
+
     get outStatus() {
       return this.running ? "waiting" : "live";
     },
 
-    get mascotShadow() {
-      return sprite(face(this.mood, this.blink), MASCOT_COLORS, MASCOT_PX);
+    // Le repos change une fois la couronne acquise, et ne revient jamais en arriere.
+    get mascotRest() {
+      return this.crowned ? "king" : "idle";
     },
 
-    get crownShadow() {
-      return sprite(CROWN, CROWN_COLORS, MASCOT_PX);
+    // Reappliquer une classe ne redemarre pas son animation : il faut la retirer, forcer
+    // une relecture de la geometrie, puis la remettre.
+    mascotPlay(state) {
+      const node = this.$refs.mascot;
+
+      if (!node || !MASCOT_STATES.has(state)) {
+        return;
+      }
+
+      if (this.crowned && CROWNLESS_REACTIONS.has(state)) {
+        return;
+      }
+
+      node.className = "slime";
+      void node.offsetWidth;
+      node.className = `slime slime--${state}`;
+      this.mascotState = state;
     },
 
-    get mascotLabel() {
-      return `Mascotte ${MOOD_LABELS[this.mood] ?? "au repos"}${this.crowned ? ", couronnée" : ""}`;
+    // Une passe unique rend la main au repos. Les boucles, elles, ne finissent jamais.
+    settle() {
+      this.mascotPlay(this.mascotRest);
     },
 
+    // La ligne porte son humeur : « mise en veille » doit endormir, pas faire cligner.
+    // Sans humeur, un clin d'oeil, et seulement si la mascotte ne fait rien d'autre.
     say(text, mood) {
       this.bubble = text;
-      this.emote(mood ?? "happy", 2600);
+
+      if (mood) {
+        this.emote(mood);
+      } else if (this.mascotState === this.mascotRest) {
+        this.mascotPlay("wink");
+      }
+
       clearTimeout(this.bubbleTimer);
       this.bubbleTimer = setTimeout(() => {
         this.bubble = "";
@@ -685,29 +772,28 @@ document.addEventListener("alpine:init", () => {
     },
 
     drop() {
-      this.emote("alert", 1300);
       this.place(Math.random() * this.trackWidth());
-      this.move("drop", 1100);
+      this.mascotPlay("jump");
     },
 
-    emote(mood, hold = 3200) {
-      this.mood = mood;
-      clearTimeout(this.moodTimer);
-      this.moodTimer = setTimeout(() => {
-        this.mood = "idle";
-      }, hold);
+    emote(mood) {
+      this.mascotPlay(MOOD_STATE[mood] ?? this.mascotRest);
     },
 
     // La couronne tombe apres l'annee courante moins 2000 clics, et reste sur
     // l'appareil.
     poke() {
       this.clicks += 1;
-      this.emote(this.clicks >= CROWN_AT ? "laugh" : "happy", 1400);
 
       if (this.clicks >= CROWN_AT && !this.crowned) {
         this.crowned = true;
         this.persist();
+        this.mascotPlay("crown");
+
+        return;
       }
+
+      this.mascotPlay("wink");
     },
 
     // La position est ecrite directement dans le style : la faire passer par l'etat
@@ -715,33 +801,9 @@ document.addEventListener("alpine:init", () => {
     place(x) {
       this.at = Math.max(0, Math.min(this.trackWidth(), x));
 
-      // La position passe par `left` et non par `transform` : les keyframes du canvas
-      // pilotent `transform` pour l'écrasement et le saut, et se battraient avec elle.
       if (this.$refs.mascot) {
         this.$refs.mascot.style.left = `${this.at}px`;
       }
-    },
-
-    // Les animations viennent des keyframes du canvas, déjà dans la feuille de style.
-    get mascotAnim() {
-      if (!this.anim || this.reduced) {
-        return "none";
-      }
-
-      // Tant qu'on la tient, elle ondule : c'est un objet visqueux. La couronne, elle,
-      // est solide et garde sa forme.
-      if (this.dragging) {
-        return "wobble .6s ease-in-out infinite";
-      }
-
-      return (
-        {
-          bump: `${this.direction > 0 ? "bumpR" : "bumpL"} .5s ease both`,
-          drop: "splat 1.1s both",
-          grab: "startle .4s ease both",
-          near: "wiggle .5s ease both",
-        }[this.motion] ?? "bob 3.4s ease-in-out infinite"
-      );
     },
 
     move(motion, hold) {
@@ -752,10 +814,10 @@ document.addEventListener("alpine:init", () => {
       }, hold);
     },
 
-    // Réaction élastique seulement à proximité : un seuil large donnait un
-    // déclenchement fantôme, curseur encore loin du slime.
+    // Reaction seulement a proximite : un seuil large donnait un declenchement fantome,
+    // curseur encore loin du slime.
     nearby(event) {
-      if (this.dragging || !this.$refs.mascot || this.motion !== "") {
+      if (this.dragging || !this.$refs.mascot || this.mascotState !== this.mascotRest) {
         return;
       }
 
@@ -766,15 +828,15 @@ document.addEventListener("alpine:init", () => {
       );
 
       if (distance < 60) {
-        this.move("near", 500);
+        this.mascotPlay("wink");
       }
     },
 
     trackWidth() {
       const { track } = this.$refs;
-      const sprite_width = 63;
+      const sheet = 64;
 
-      return track ? Math.max(0, track.clientWidth - sprite_width) : 0;
+      return track ? Math.max(0, track.clientWidth - sheet) : 0;
     },
 
     wander() {
@@ -786,20 +848,18 @@ document.addEventListener("alpine:init", () => {
 
       if (next <= 0 || next >= this.trackWidth()) {
         this.direction = -this.direction;
-        this.emote("alert", 700);
         this.move("bump", 500);
       }
 
       this.place(next);
     },
 
+    // On garde le glisser. La deformation visqueuse, elle, appartenait au dessin en
+    // ombres portees : pendant le glissement la mascotte joue son repos.
     grab(event) {
-      const box = this.$refs.mascot.getBoundingClientRect();
-
-      this.grabAt = event.clientX - box.left;
+      this.grabAt = event.clientX - this.$refs.mascot.getBoundingClientRect().left;
       this.dragging = true;
-      this.emote("scared", 900);
-      this.move("grab", 400);
+      this.settle();
       this.$refs.mascot.setPointerCapture(event.pointerId);
     },
 
@@ -817,7 +877,7 @@ document.addEventListener("alpine:init", () => {
       }
 
       this.dragging = false;
-      this.emote("happy", 900);
+      this.mascotPlay("jump");
     },
 
     get reduced() {
@@ -825,16 +885,44 @@ document.addEventListener("alpine:init", () => {
     },
 
     startMascot() {
-      this.blinker = setInterval(
-        () => {
-          this.blink = true;
-          setTimeout(() => {
-            this.blink = false;
-          }, 140);
-        },
-        2600 + Math.random() * 3200,
-      );
       this.walker = setInterval(() => this.wander(), 2400);
+      this.twitcher = setInterval(() => this.twitch(), TWITCH_MS);
+
+      for (const event of ["pointermove", "keydown", "wheel"]) {
+        globalThis.addEventListener(event, () => this.rouse(), { passive: true });
+      }
+
+      this.rouse();
+    },
+
+    // La veille a la priorite la plus basse : le moindre geste la repousse.
+    rouse() {
+      clearTimeout(this.sleeper);
+
+      if (this.mascotState === "sleep") {
+        this.settle();
+      }
+
+      this.sleeper = setTimeout(() => this.mascotPlay("sleep"), SLEEP_MS);
+    },
+
+    // La frappe se voit tant qu'on tape, puis la mascotte revient au repos.
+    typing() {
+      if (this.mascotState !== "type") {
+        this.mascotPlay("type");
+      }
+
+      clearTimeout(this.typer_rest);
+      this.typer_rest = setTimeout(() => this.settle(), TYPE_REST_MS);
+    },
+
+    // Un clin d'oeil ou un saut de temps en temps, jamais pendant autre chose.
+    twitch() {
+      if (this.mascotState !== this.mascotRest || Math.random() >= TWITCH_ODDS) {
+        return;
+      }
+
+      this.mascotPlay(Math.random() < 0.5 ? "wink" : "jump");
     },
 
     value(key) {
@@ -850,6 +938,7 @@ document.addEventListener("alpine:init", () => {
       const apply = () => {
         this.theme = id;
         this.persist();
+        this.mascotPlay("morph");
       };
 
       // Le réglage « animations off » coupe aussi la transition de thème.
@@ -990,8 +1079,10 @@ document.addEventListener("alpine:init", () => {
     },
 
     restore() {
+      let saved = {};
+
       try {
-        const saved = JSON.parse(globalThis.localStorage.getItem(OPTS_KEY) ?? "{}");
+        saved = JSON.parse(globalThis.localStorage.getItem(OPTS_KEY) ?? "{}");
 
         for (const key of KEPT) {
           if (saved[key] !== undefined) {
@@ -1001,6 +1092,16 @@ document.addEventListener("alpine:init", () => {
       } catch {
         // Un stockage illisible ou refusé ne doit pas empêcher la page de démarrer.
       }
+
+      if (saved?.theme === undefined) {
+        this.theme = this.preferredTheme();
+      }
+    },
+
+    // Première visite : la page suit la préférence du système. Sans préférence, elle
+    // reste sombre, comme un terminal.
+    preferredTheme() {
+      return globalThis.matchMedia?.("(prefers-color-scheme: light)").matches ? "light" : "dark";
     },
 
     persist() {
@@ -1040,6 +1141,9 @@ document.addEventListener("alpine:init", () => {
       }
 
       this.play(id);
+      // Une section plus longue que la precedente ne doit pas heriter d'un journal trop
+      // haut : le resultat serait coupe des l'ouverture.
+      this.$nextTick(() => this.setLogHeight(this.logHeight));
     },
 
     get all() {
@@ -1057,11 +1161,20 @@ document.addEventListener("alpine:init", () => {
       if (this.seen.includes(id)) {
         this.typed = target;
         this.running = false;
+        // « load » boucle sans fin : couper le minuteur de la commande sans rendre la
+        // main y laisserait la mascotte pour toujours.
+        this.settle();
 
         return;
       }
 
-      this.bump();
+      // L'ecran de demarrage couvre la mascotte : tirer sa feuille d'attente a ce
+      // moment-la chargerait deux feuilles au premier rendu au lieu d'une.
+      if (!this.booting) {
+        this.mascotPlay("load");
+      }
+
+      this.bump(this.weigh(this.current));
       this.seen = [...this.seen, id];
 
       if (this.current.suggest) {
@@ -1084,6 +1197,7 @@ document.addEventListener("alpine:init", () => {
         clearInterval(this.typer);
         this.latency = setTimeout(() => {
           this.running = false;
+          this.settle();
         }, EXEC_MS);
       }, 1000 / TYPE_CPS);
     },
@@ -1118,7 +1232,7 @@ document.addEventListener("alpine:init", () => {
         }
         this.checkMore("journal");
       });
-      this.bump();
+      this.bump(printed(lines));
       this.apply(effects);
     },
 
@@ -1173,7 +1287,7 @@ document.addEventListener("alpine:init", () => {
         return;
       }
 
-      this.say("copié", "happy");
+      this.say("copié");
     },
 
     // Trois chemins dans l'ordre : marquage Umami, puis POST, puis mailto.
@@ -1234,6 +1348,7 @@ document.addEventListener("alpine:init", () => {
           this.track(effect.event, effect.props);
         } else if (effect.type === "pending") {
           this.pending = effect.payload;
+          this.input = effect.answer ?? "";
         } else if (effect.type === "send") {
           this.send(effect.payload);
         } else if (effect.type === "share") {
@@ -1374,29 +1489,14 @@ document.addEventListener("alpine:init", () => {
 
     // Distant d'abord, local ensuite. Le repli n'est pas un luxe : la page dependrait
     // sinon de la disponibilite de GitHub pour afficher quoi que ce soit.
-    async fetchOne(url, signal) {
-      const response = await fetch(url, { signal });
+    async fetchContent() {
+      const response = await fetch(CONTENT_URL);
 
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`);
       }
 
       return response.json();
-    },
-
-    async fetchContent() {
-      const abort = new AbortController();
-      const timer = setTimeout(() => abort.abort(), REMOTE_TIMEOUT_MS);
-
-      try {
-        return await this.fetchOne(REMOTE_CONTENT, abort.signal);
-      } catch {
-        this.contentSource = "local";
-
-        return this.fetchOne(LOCAL_CONTENT);
-      } finally {
-        clearTimeout(timer);
-      }
     },
 
     async load() {

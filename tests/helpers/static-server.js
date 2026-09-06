@@ -5,7 +5,9 @@ import { createServer } from "node:http";
 import { fileURLToPath } from "node:url";
 import { stat } from "node:fs/promises";
 
-const ROOT = resolve(fileURLToPath(new URL("../../dist/", import.meta.url)));
+const ROOT = resolve(
+  fileURLToPath(new URL(`../../${process.env.PORTFOLIO_DIST ?? "dist"}/`, import.meta.url)),
+);
 
 const OK = 200;
 const NOT_FOUND = 404;

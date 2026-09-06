@@ -93,3 +93,61 @@ test("le thème clair distingue l'ambre décoratif de l'ambre textuel", async ({
   expect(decorative, "la teinte décorative ne change pas").toBe("#e6a000");
   expect(text).not.toBe(decorative);
 });
+
+// Noctis n'a qu'un vert : l'accent et le succes portaient la meme teinte, et la cle
+// d'une paire JSON ne se distinguait plus de sa valeur.
+test("le thème noctis distingue la clé de la valeur", async ({ page }) => {
+  await withTheme(page, "noctis");
+
+  const { key, value } = await page.evaluate(() => {
+    const styles = getComputedStyle(document.querySelector(".tm"));
+
+    return {
+      key: styles.getPropertyValue("--acc-text").trim(),
+      value: styles.getPropertyValue("--ok").trim(),
+    };
+  });
+
+  expect(value).not.toBe(key);
+});
+
+// Aucune API ne signale un lecteur d'écran, et le détecter reviendrait à détecter un
+// handicap. La page propose donc, elle ne devine pas : le premier élément focalisable
+// annonce la version texte, et la personne choisit.
+test("le premier élément focalisable mène à la version texte", async ({ page }) => {
+  await boot(page);
+  await page.keyboard.press("Tab");
+
+  const skip = page.locator("a.skip");
+
+  await expect(skip).toBeFocused();
+  await expect(skip).toHaveAttribute("href", "texte.html");
+
+  // Hors écran au repos, dans la fenêtre une fois focalisé. Un « toBeVisible » ne le dirait
+  // pas : un élément posé à left:-9999px reste visible au sens de Playwright.
+  const dedans = await skip.evaluate((node) => node.getBoundingClientRect().left >= 0);
+
+  expect(dedans, "le lien doit entrer dans la fenêtre quand il reçoit le focus").toBe(true);
+
+  const dehors = await skip.evaluate((node) => {
+    node.blur();
+
+    return node.getBoundingClientRect().right < 0;
+  });
+
+  expect(dehors, "le lien doit rester hors écran sans focus").toBe(true);
+});
+
+// Le lien doit survivre à un échec du script : c'est le repli de la page, pas une de ses
+// fonctions. Il vit donc hors du composant Alpine et ne porte aucune variable de thème.
+test("la version texte reste atteignable sans script", async ({ browser }) => {
+  const context = await browser.newContext({ javaScriptEnabled: false });
+  const page = await context.newPage();
+
+  await page.goto("/");
+  await page.keyboard.press("Tab");
+
+  await expect(page.locator("a.skip")).toBeFocused();
+
+  await context.close();
+});

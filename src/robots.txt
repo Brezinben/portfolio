@@ -1,0 +1,11 @@
+# Portfolio personnel. Aucune zone privée, aucun formulaire, aucune API.
+# Tout ce que le site publie est destiné à être lu, par une personne comme par un agent.
+
+# Cloudflare fusionne son propre bloc « Cloudflare Managed content » dans ce fichier.
+# Ce bloc porte un Disallow par robot d'IA et il gagne, car il est plus spécifique.
+# Ce fichier déclare l'intention ; la levée du blocage se fait dans Cloudflare.
+
+User-agent: *
+Allow: /
+
+Sitemap: https://portfolio.brezinben.dpdns.org/sitemap.xml

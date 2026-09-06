@@ -46,7 +46,7 @@ const HELP = [
   "ai                                — état du modèle local",
   "cv · email · send-mail            — CV et contact",
   "share <cible>                     — LinkedIn, GitHub, lien",
-  "propose <idée>                    — suggérer un ajout",
+  "propose [-y] <idée>               — suggérer un ajout",
   "joke · cowsay [-bdgpstwy] · wtf   — le reste",
   "pet · slime <x> · matrix · shutdown — à vos risques",
 ];
@@ -157,7 +157,11 @@ const answerPending = (input, pending) => {
 
   if (NO.test(input)) {
     return {
-      effects: [track("proposition_refusee", {}), say("comme vous voulez", "idle")],
+      effects: [
+        track("proposition_refusee", {}),
+        say("comme vous voulez", "idle"),
+        { patch: { pending: undefined }, type: "state" },
+      ],
       lines: [echoed(input), muted("annulé, rien n'a été envoyé.")],
     };
   }
@@ -610,11 +614,25 @@ export const interpret = (raw, context) => {
   }
 
   if (command === "propose") {
-    if (rest.trim() === "") {
-      return out([info("propose <idée> — suggérer un ajout à ce portfolio.")]);
+    const forced = /^-y(?:\s|$)/u.test(rest);
+    const idea = (forced ? rest.slice(2) : rest).trim();
+
+    if (idea === "") {
+      return out([info("propose [-y] <idée> — suggérer un ajout à ce portfolio.")]);
     }
 
-    return out(proposalPrompt(rest, context.feedback ?? {}), [{ payload: rest, type: "pending" }]);
+    // `-y` vaut consentement : le visiteur a écrit le drapeau en même temps que l'idée.
+    if (forced) {
+      return out(
+        [line({ marker: "›", markerTone: "acc", text: `« ${idea} »`, tone: "fg" })],
+        [{ payload: idea, type: "send" }],
+      );
+    }
+
+    // La réponse attendue est déjà dans la saisie : la validation tient en une touche.
+    return out(proposalPrompt(idea, context.feedback ?? {}), [
+      { answer: "oui", payload: idea, type: "pending" },
+    ]);
   }
 
   if (command === "share") {

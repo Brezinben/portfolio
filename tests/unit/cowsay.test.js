@@ -1,4 +1,4 @@
-import { COW_HEAD_MODES, cowsay } from "../../production/interpret.js";
+import { COW_HEAD_MODES, cowsay } from "../../src/interpret.js";
 import assert from "node:assert/strict";
 import { test } from "node:test";
 

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Le site publie deux pages. llms.txt n'est pas listé ici : un sitemap déclare des pages,
+     et robots.txt le désigne déjà par sa ligne Sitemap et son lien alternate. -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://portfolio.brezinben.dpdns.org/</loc>
+  </url>
+  <url>
+    <loc>https://portfolio.brezinben.dpdns.org/texte.html</loc>
+  </url>
+</urlset>

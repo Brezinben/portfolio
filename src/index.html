@@ -9,6 +9,9 @@
     content="Benjamin David, développeur IA et Full Stack à Nantes. Serveurs MCP, Specification-Driven Development, accessibilité et numérique responsable.">
   <meta name="author" content="Benjamin David">
   <link rel="canonical" href="https://portfolio.brezinben.dpdns.org/">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="favicon-32.png" sizes="32x32">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <meta property="og:type" content="profile">
   <meta property="og:title" content="Benjamin David — Développeur IA &amp; Full Stack">
   <meta property="og:description"
@@ -42,6 +45,29 @@
 
     [x-cloak] {
       display: none !important
+    }
+
+    /* Premier element focalisable de la page. Un lecteur d'écran l'annonce avant tout le
+       reste, et une tabulation le fait apparaître. Hors de .tm, donc sans variable de
+       thème : il doit tenir même si le script ne se charge jamais. */
+    .skip {
+      position: absolute;
+      left: -9999px;
+      top: 0
+    }
+
+    .skip:focus {
+      left: 10px;
+      top: 10px;
+      z-index: 50;
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+      padding: 0 18px;
+      background: #1c1d2b;
+      color: #fff6f6;
+      border: 1px solid #F5B83B;
+      font-size: 14px
     }
 
     body {
@@ -97,6 +123,9 @@
       --warn: #a05a12
     }
 
+    /* L'accent et le succes portaient le meme #49e9a6 : la cle d'une paire JSON ne se
+       distinguait plus de sa valeur. Le succes prend le cyan « support » de la palette
+       Noctis d'origine, #49d6e9, mesure a 8,5:1 sur le fond. */
     .tm[data-theme="noctis"] {
       --bg: #04252a;
       --panel: #052c33;
@@ -105,7 +134,7 @@
       --fg2: #7ea0a6;
       --acc: #49e9a6;
       --acc-soft: rgba(73, 233, 166, .14);
-      --ok: #49e9a6;
+      --ok: #49d6e9;
       --warn: #e4b781
     }
 
@@ -227,24 +256,6 @@
       }
     }
 
-    @keyframes compact {
-      0% {
-        opacity: 0;
-        transform: scaleX(0)
-      }
-
-      30%,
-      70% {
-        opacity: 1;
-        transform: scaleX(1)
-      }
-
-      100% {
-        opacity: 0;
-        transform: scaleX(1)
-      }
-    }
-
     @keyframes fadeIn {
       from {
         opacity: 0
@@ -267,251 +278,17 @@
       }
     }
 
-    @keyframes bob {
 
-      0%,
-      100% {
-        transform: scale(1, 1)
-      }
 
-      50% {
-        transform: scale(.965, 1.035)
-      }
-    }
 
-    @keyframes laugh {
 
-      0%,
-      100% {
-        transform: scale(1, 1)
-      }
 
-      40% {
-        transform: scale(1.1, .9)
-      }
 
-      70% {
-        transform: scale(.95, 1.06)
-      }
-    }
 
-    @keyframes shiver {
 
-      0%,
-      100% {
-        transform: translateX(0) scale(1, 1)
-      }
 
-      25% {
-        transform: translateX(-1.5px) scale(.98, 1.02)
-      }
 
-      75% {
-        transform: translateX(1.5px) scale(.98, 1.02)
-      }
-    }
 
-    @keyframes droop {
-
-      0%,
-      100% {
-        transform: scale(1.06, .94)
-      }
-
-      50% {
-        transform: scale(1.09, .91)
-      }
-    }
-
-    @keyframes hop {
-      0% {
-        transform: translateY(0) scale(1, 1)
-      }
-
-      14% {
-        transform: translateY(2px) scale(1.22, .76)
-      }
-
-      30% {
-        transform: translateY(-13px) scale(.84, 1.2)
-      }
-
-      48% {
-        transform: translateY(-18px) scale(.94, 1.06)
-      }
-
-      66% {
-        transform: translateY(-6px) scale(.86, 1.18)
-      }
-
-      80% {
-        transform: translateY(0) scale(1.24, .74)
-      }
-
-      91% {
-        transform: translateY(-3px) scale(.96, 1.06)
-      }
-
-      100% {
-        transform: translateY(0) scale(1, 1)
-      }
-    }
-
-    @keyframes bumpR {
-      0% {
-        transform: translateX(0) scale(1, 1)
-      }
-
-      22% {
-        transform: translateX(7px) scale(.66, 1.3)
-      }
-
-      46% {
-        transform: translateX(-12px) scale(1.22, .8)
-      }
-
-      70% {
-        transform: translateX(3px) scale(.92, 1.08)
-      }
-
-      88% {
-        transform: translateX(-2px) scale(1.04, .96)
-      }
-
-      100% {
-        transform: none
-      }
-    }
-
-    @keyframes bumpL {
-      0% {
-        transform: translateX(0) scale(1, 1)
-      }
-
-      22% {
-        transform: translateX(-7px) scale(.66, 1.3)
-      }
-
-      46% {
-        transform: translateX(12px) scale(1.22, .8)
-      }
-
-      70% {
-        transform: translateX(-3px) scale(.92, 1.08)
-      }
-
-      88% {
-        transform: translateX(2px) scale(1.04, .96)
-      }
-
-      100% {
-        transform: none
-      }
-    }
-
-    @keyframes splat {
-      0% {
-        transform: translateY(-420px) scale(.82, 1.3);
-        animation-timing-function: cubic-bezier(.55, 0, .9, .35)
-      }
-
-      34% {
-        transform: translateY(-14px) scale(.78, 1.36);
-        animation-timing-function: cubic-bezier(.2, 0, .1, 1)
-      }
-
-      42% {
-        transform: translateY(6px) scale(1.62, .42);
-        animation-timing-function: cubic-bezier(.3, 0, .3, 1)
-      }
-
-      62% {
-        transform: translateY(3px) scale(1.46, .56);
-        animation-timing-function: cubic-bezier(.2, .6, .3, 1)
-      }
-
-      78% {
-        transform: translateY(0) scale(1.14, .9);
-        animation-timing-function: cubic-bezier(.25, 1.2, .4, 1)
-      }
-
-      90% {
-        transform: translateY(0) scale(.96, 1.05)
-      }
-
-      100% {
-        transform: translateY(0) scale(1, 1)
-      }
-    }
-
-    @keyframes dangle {
-
-      0%,
-      100% {
-        transform: translateY(-5px) scale(.9, 1.16)
-      }
-
-      25% {
-        transform: translateY(-6px) scale(.87, 1.2) rotate(-3deg)
-      }
-
-      50% {
-        transform: translateY(-4px) scale(.94, 1.1)
-      }
-
-      75% {
-        transform: translateY(-6px) scale(.87, 1.2) rotate(3deg)
-      }
-    }
-
-    @keyframes startle {
-      0% {
-        transform: translateY(0) scale(1, 1)
-      }
-
-      45% {
-        transform: translateY(-9px) scale(.86, 1.2)
-      }
-
-      100% {
-        transform: translateY(-4px) scale(.94, 1.08)
-      }
-    }
-
-    @keyframes land {
-      0% {
-        transform: translateY(-6px) scale(.9, 1.12)
-      }
-
-      35% {
-        transform: translateY(0) scale(1.24, .76)
-      }
-
-      62% {
-        transform: translateY(-5px) scale(.94, 1.08)
-      }
-
-      100% {
-        transform: translateY(0) scale(1, 1)
-      }
-    }
-
-    @keyframes crownDrop {
-      0% {
-        opacity: 0;
-        transform: scale(.4) rotate(-14deg)
-      }
-
-      55% {
-        opacity: 1;
-        transform: scale(1.06) rotate(3deg)
-      }
-
-      100% {
-        opacity: 1;
-        transform: none
-      }
-    }
 
     @keyframes bang {
       0% {
@@ -547,25 +324,6 @@
       }
     }
 
-    @keyframes wiggle {
-
-      0%,
-      100% {
-        transform: skewX(0) scale(1, 1)
-      }
-
-      22% {
-        transform: skewX(-6deg) scale(1.05, .96)
-      }
-
-      52% {
-        transform: skewX(5deg) scale(.97, 1.03)
-      }
-
-      78% {
-        transform: skewX(-2deg) scale(1.02, .99)
-      }
-    }
 
     @keyframes rain {
       from {
@@ -792,6 +550,111 @@
       --acc-text: var(--acc)
     }
 
+    /* Mascotte : neuf feuilles de 32 px par frame, affichées à ×2, soit 64 px. Le pas
+       d'un keyframe est lié à la taille d'affichage : à ×2 ce sont -768px et -1024px, et
+       non les -1536px / -2048px de la spécification, calés sur ×4. */
+    .slime {
+      width: 64px;
+      height: 64px;
+      background-repeat: no-repeat;
+      background-position: 0 0;
+      image-rendering: pixelated
+    }
+
+    @keyframes slime-12 {
+      to {
+        background-position: -768px 0
+      }
+    }
+
+    @keyframes slime-16 {
+      to {
+        background-position: -1024px 0
+      }
+    }
+
+    /* Une feuille par état. Le navigateur ne va chercher que celles qu'une classe
+       appliquée réclame : au premier rendu, une seule part sur le réseau. */
+    .slime--idle {
+      background-image: url("sprites/slime-idle.png");
+      background-size: 768px 64px;
+      animation: slime-12 1.44s steps(12) infinite
+    }
+
+    .slime--king {
+      background-image: url("sprites/slime-idle-crown.png");
+      background-size: 768px 64px;
+      animation: slime-12 1.44s steps(12) infinite
+    }
+
+    .slime--type {
+      background-image: url("sprites/slime-type.png");
+      background-size: 768px 64px;
+      animation: slime-12 .72s steps(12) infinite
+    }
+
+    .slime--load {
+      background-image: url("sprites/slime-load.png");
+      background-size: 1024px 64px;
+      animation: slime-16 1.6s steps(16) infinite
+    }
+
+    .slime--sleep {
+      background-image: url("sprites/slime-sleep.png");
+      background-size: 1024px 64px;
+      animation: slime-16 3.2s steps(16) infinite
+    }
+
+    .slime--wink {
+      background-image: url("sprites/slime-wink.png");
+      background-size: 768px 64px;
+      animation: slime-12 1.68s steps(12) 1
+    }
+
+    .slime--jump {
+      background-image: url("sprites/slime-jump.png");
+      background-size: 1024px 64px;
+      animation: slime-16 1.28s steps(16) 1
+    }
+
+    .slime--morph {
+      background-image: url("sprites/slime-morph.png");
+      background-size: 1024px 64px;
+      animation: slime-16 2.4s steps(16) 1
+    }
+
+    .slime--crown {
+      background-image: url("sprites/slime-crown.png");
+      background-size: 1024px 64px;
+      animation: slime-16 1.44s steps(16) 1
+    }
+
+    /* Les couleurs sont cuites dans les PNG. Les thèmes sombres les font tourner ;
+       l'ambre des feuilles mesure 40°, celui du thème dark aussi, donc rien à tourner.
+       Les trois thèmes clairs gardent la palette ambre. */
+    .tm[data-theme="noctis"] .slime {
+      filter: hue-rotate(117deg)
+    }
+
+    .tm[data-theme="azureus"] .slime {
+      filter: hue-rotate(163deg)
+    }
+
+    .tm[data-theme="uva"] .slime {
+      filter: hue-rotate(205deg)
+    }
+
+    .tm[data-theme="bordo"] .slime {
+      filter: hue-rotate(306deg)
+    }
+
+    /* DECISIONS.md §4.1 arrête les coins carrés. Le bouton des options est la seule
+       divergence en cours, et elle attend un arbitrage : 0 rend la règle, 12px garde
+       l'état actuel. Une ligne à changer, pas une chasse dans le balisage. */
+    .tm {
+      --opts-radius: 12px
+    }
+
     .tm[data-theme="light"] {
       --acc-text: #8f5f00
     }
@@ -813,21 +676,6 @@
     /* La mascotte est visqueuse : sa partie haute se deforme quand on la deplace. La
        couronne est un objet solide et garde sa forme, d'ou l'animation portee par le
        bloc et non par la couronne. */
-    @keyframes wobble {
-
-      0%,
-      100% {
-        transform: scale(1, 1) skewX(0deg)
-      }
-
-      30% {
-        transform: scale(1.06, .94) skewX(-4deg)
-      }
-
-      65% {
-        transform: scale(.95, 1.05) skewX(3deg)
-      }
-    }
 
     .tm [data-ctl]:focus-visible {
       outline: 2px solid var(--acc);
@@ -870,17 +718,19 @@
 </head>
 
 <body>
+  <a class="skip" href="texte.html">Aller à la version texte, plus simple avec un lecteur
+    d'écran.</a>
   <div class="tm" x-data="terminal" :data-theme="theme" x-cloak @keydown.window="onKey($event)"
     style="background:var(--bg);color:var(--fg);height:100dvh;max-height:100dvh;overflow:hidden;box-sizing:border-box;padding:14px clamp(12px,2.5vw,26px) 14px;font-size:14px;line-height:1.6;position:relative;display:flex;flex-direction:column;gap:10px">
 
     <div data-panes
-      style="flex:1;min-height:0;display:flex;flex-wrap:nowrap;gap:10px;align-items:stretch;overflow:hidden;max-width:2400px;width:100%;margin:0">
+      :style="`flex:1;min-height:0;display:flex;flex-wrap:nowrap;gap:10px;align-items:stretch;overflow:hidden;max-width:2400px;width:100%;margin:0;animation:${power === 'fade' && anim ? 'revealUp .62s cubic-bezier(.2,.7,.3,1) both' : 'none'}`">
 
       <nav data-pane="nav" aria-label="Sections"
         style="flex:0 1 clamp(196px,17vw,280px);min-width:176px;min-height:0;display:flex;flex-direction:column;gap:10px;overflow:hidden">
         <button type="button" data-ctl="opts" aria-haspopup="dialog"
           :aria-expanded="optsOpen ? 'true' : 'false'" @click="openOpts()"
-          style="flex:none;min-height:44px;display:flex;justify-content:space-between;align-items:center;gap:10px;padding:0 12px;border:1px solid var(--edge);border-radius:0;background:var(--panel);color:var(--fg2);font-family:inherit;font-size:11px;letter-spacing:.12em;cursor:pointer"><span>options</span><span
+          style="flex:none;min-height:44px;display:flex;justify-content:space-between;align-items:center;gap:10px;padding:0 12px;border:1px solid var(--edge);border-radius:var(--opts-radius);background:var(--panel);color:var(--fg2);font-family:inherit;font-size:11px;letter-spacing:.12em;cursor:pointer"><span>options</span><span
             aria-hidden="true" style="font-size:17px;line-height:1">⚙</span></button>
         <div
           style="flex:1 1 auto;min-height:0;display:flex;flex-direction:column;gap:10px;overflow-y:auto;overflow-x:hidden">
@@ -916,12 +766,16 @@
                 <li>
                   <button type="button" data-ctl="nav" :aria-current="item.id === section ? 'true' : 'false'"
                     @click="goSection(item.id)"
-                    :style="`width:100%;min-height:44px;display:grid;grid-template-columns:12px 1fr auto;gap:8px;align-items:center;text-align:left;padding:5px 8px;border:0;border-left:2px solid ${item.id === section ? 'var(--acc)' : 'transparent'};border-radius:0;background:${item.id === section ? 'var(--acc-soft)' : 'transparent'};color:var(--fg);font-family:inherit;font-size:13px;cursor:pointer;transition:background .18s,border-color .18s`">
+                    :style="`width:100%;min-height:44px;display:grid;grid-template-columns:12px 1fr;gap:8px;align-items:center;text-align:left;padding:5px 8px;border:0;border-left:2px solid ${item.id === section ? 'var(--acc)' : 'transparent'};border-radius:0;background:${item.id === section ? 'var(--acc-soft)' : 'transparent'};color:var(--fg);font-family:inherit;font-size:14px;cursor:pointer;transition:background .18s,border-color .18s`">
                     <span aria-hidden="true"
                       :style="`width:8px;height:8px;background:var(--${item.dot});animation:${item.dot === 'acc' && anim ? 'dotPulse 1.2s ease-in-out infinite' : 'none'}`"></span>
-                    <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap"
-                      x-text="item.label"></span>
-                    <span style="font-size:11px;color:var(--fg2)" x-text="item.state"></span>
+                    <span style="display:grid;gap:1px;min-width:0">
+                      <span :style="`font-weight:${item.id === section ? '700' : '400'}`"
+                        x-text="item.label"></span>
+                      <span
+                        style="font-size:12px;color:var(--fg2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap"
+                        x-text="item.state"></span>
+                    </span>
                   </button>
                 </li>
               </template>
@@ -931,12 +785,24 @@
       </nav>
 
       <section data-pane="main" aria-label="Session"
-        style="flex:1 1 auto;min-width:0;min-height:0;display:flex;flex-direction:column;gap:10px;border:1px solid var(--edge);border-radius:12px;background:var(--panel);padding:14px;overflow:hidden">
+        style="position:relative;flex:3 1 360px;min-width:0;min-height:0;display:flex;flex-direction:column;gap:10px;border:1px solid var(--edge);border-radius:12px;background:var(--panel);padding:14px;overflow:hidden">
+        <div aria-hidden="true" style="position:absolute;inset:0;pointer-events:none;overflow:hidden;opacity:.5">
+          <div
+            :style="`height:2px;background:linear-gradient(90deg,transparent,var(--acc),transparent);opacity:.16;animation:${anim ? 'scan 9s linear infinite' : 'none'}`">
+          </div>
+        </div>
         <p style="margin:0;font-size:13px;color:var(--fg2);flex:none"><span
-            style="color:var(--ok)">benjamin@portfolio</span><span style="color:var(--fg2)">:~$ </span><span
+            aria-hidden="true" style="color:var(--acc-text)">›&nbsp;</span><span
             style="color:var(--fg)" x-text="typed"></span><span
             x-show="!running && anim" aria-hidden="true"
             :style="`color:var(--acc-text);animation:${anim ? 'caret 1s steps(1) infinite' : 'none'}`">_</span></p>
+        <template x-if="running">
+          <p data-running
+            style="flex:none;margin:0;color:var(--fg2);display:flex;align-items:center;gap:10px;font-size:13px"><span
+              aria-hidden="true"
+              :style="`color:var(--acc);animation:${anim ? 'dotPulse 1s ease-in-out infinite' : 'none'}`">▚</span><span
+              :style="`animation:${anim ? 'dotPulse 1.2s ease-in-out infinite' : 'none'}`">exécution…</span></p>
+        </template>
         <div data-result
           :style="`flex:1 1 auto;min-height:0;overflow-y:auto;align-content:start;display:grid;gap:2px;line-height:1.6;visibility:${running ? 'hidden' : 'visible'}`">
 
@@ -946,14 +812,19 @@
               <template x-for="(entry, index) in timeline" :key="entry.id">
                 <button type="button" role="option" data-ctl="tl" :aria-selected="index === timelineAt"
                   @click="openTimeline(index)" @focus="timelineAt = index"
-                  :style="`display:grid;grid-template-columns:14px 1fr;gap:8px;text-align:left;padding:6px 8px;border:0;border-left:2px solid ${index === timelineAt ? 'var(--acc)' : 'transparent'};background:${index === timelineAt ? 'var(--acc-soft)' : 'transparent'};color:var(--fg);font-family:inherit;font-size:13px;cursor:pointer`">
+                  :style="`display:grid;grid-template-columns:14px 14px 1fr;gap:8px;text-align:left;padding:6px 8px;border:0;border-left:2px solid ${index === timelineAt ? 'var(--acc)' : 'transparent'};background:${index === timelineAt ? 'var(--acc-soft)' : 'transparent'};color:var(--fg);font-family:inherit;font-size:13px;cursor:pointer`">
                   <span aria-hidden="true" style="color:var(--acc-text)"
                     x-text="index === timelineAt ? '›' : ' '"></span>
+                  <span data-guide aria-hidden="true"
+                    :style="`color:var(--${index === timelineAt ? 'acc-text' : 'fg2'})`"
+                    x-text="index === timeline.length - 1 ? '└' : '├'"></span>
                   <span style="display:grid;gap:2px;min-width:0">
                     <span data-years style="font-variant-numeric:tabular-nums;color:var(--fg2);font-size:12px"
                       x-text="entry.years"></span>
                     <span :style="`font-weight:${index === timelineAt ? '700' : '400'}`" x-text="entry.org"></span>
                     <span style="font-size:12px;color:var(--fg2);text-wrap:pretty" x-text="entry.role"></span>
+                    <span data-cue :style="`font-size:12px;color:var(--${entry.detail ? 'acc-text' : 'fg2'})`"
+                      x-text="missionCue(entry)"></span>
                   </span>
                 </button>
               </template>
@@ -967,10 +838,10 @@
                 <span style="color:var(--fg2);font-size:12px" x-text="stackSummary"></span>
               </p>
 
-              <template x-for="root in stack" :key="root.id">
+              <template x-for="(root, branch) in stack" :key="root.id">
                 <div style="display:grid;grid-template-columns:26px 1fr">
                   <div aria-hidden="true"
-                    style="position:relative;display:flex;justify-content:center;border-left:1px solid var(--edge);margin-left:4px">
+                    :style="`position:relative;display:flex;justify-content:center;border-left:1px solid ${branch === stack.length - 1 ? 'transparent' : 'var(--edge)'};margin-left:4px`">
                     <span style="position:absolute;top:9px;left:-1px;width:14px;border-top:1px solid var(--edge)"></span>
                   </div>
                   <div style="padding:0 0 18px 6px;display:grid;gap:9px">
@@ -983,13 +854,12 @@
 
                     <!-- Les technologies coulent en colonnes, comme la sortie d'un ls. -->
                     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:1px 18px">
-                      <template x-for="kid in root.kids" :key="kid">
+                      <template x-for="(kid, at) in root.kids" :key="kid">
                         <button type="button" data-ctl="tech" data-tech :aria-pressed="tech === kid"
                           @click="followTech(kid)" @focus="followTech(kid)"
-                          :style="`display:grid;grid-template-columns:12px 1fr;gap:7px;align-items:baseline;text-align:left;padding:1px 4px 1px 0;border:0;background:transparent;color:var(--${techNotes[kid] ? 'fg' : 'fg2'});font-family:inherit;font-size:13px;font-weight:${tech === kid ? '700' : '400'};cursor:pointer`"><span
-                            aria-hidden="true"
-                            :style="`color:var(--${tech === kid ? 'acc-text' : 'fg2'})`"
-                            x-text="tech === kid ? '›' : '·'"></span><span x-text="kid"></span></button>
+                          :style="`display:grid;grid-template-columns:12px 1fr;gap:7px;align-items:baseline;text-align:left;padding:1px 4px 1px 0;border:0;background:transparent;color:var(--${tech === kid ? 'acc-text' : 'fg'});font-family:inherit;font-size:13px;font-weight:${tech === kid ? '700' : '400'};cursor:pointer`"><span
+                            data-guide aria-hidden="true" style="color:var(--fg2)"
+                            x-text="at === root.kids.length - 1 ? '└' : '├'"></span><span x-text="kid"></span></button>
                       </template>
                     </div>
                   </div>
@@ -1054,28 +924,33 @@
         <div data-track x-ref="track" @pointermove="nearby($event)"
           @pointermove.window="drag($event); logMove($event)" @pointerup.window="release(); logUp()"
           @pointercancel.window="release(); logUp()"
-          style="flex:none;position:relative;height:47px;overflow:visible;border-bottom:1px solid var(--edge)">
+          style="flex:none;position:relative;height:64px;overflow:visible;border-bottom:1px solid var(--edge)">
           <template x-if="bubble">
             <span data-bubble aria-live="polite"
-              :style="`position:absolute;bottom:52px;left:${at}px;border:1px solid var(--edge);background:var(--panel);color:var(--fg);padding:2px 8px;font-size:12px;white-space:nowrap;pointer-events:none`"
+              :style="`position:absolute;bottom:52px;left:${at}px;border:1px solid var(--edge);background:var(--panel);color:var(--fg);padding:2px 8px;font-size:12px;white-space:nowrap;pointer-events:none;animation:${anim ? 'lineIn .24s ease both' : 'none'}`"
               x-text="bubble"></span>
           </template>
 
-          <!-- La mascotte est un bloc de 63 x 47, comme dans le canvas : c'est lui qui
-               porte le curseur et les evenements. Faire de la pastille de 4 px la cible
-               rendait le clic presque impossible, et la couronne inatteignable. -->
-          <div data-mascot x-ref="mascot" role="img" :aria-label="mascotLabel" tabindex="0"
-            @pointerdown.prevent="grab($event)" @click="poke()" @keydown.enter.prevent="poke()"
-            :style="`position:absolute;bottom:0;left:${at}px;width:63px;height:47px;transform-origin:50% 100%;touch-action:none;cursor:${dragging ? 'grabbing' : 'grab'};animation:${mascotAnim}`">
-            <span style="position:absolute;inset:0">
-              <span aria-hidden="true"
-                :style="`position:absolute;top:0;left:0;width:4px;height:4px;box-shadow:${mascotShadow}`"></span>
-              <template x-if="crowned">
-                <span data-crown aria-hidden="true"
-                  :style="`position:absolute;top:-14px;left:0;width:${MASCOT_PX}px;height:${MASCOT_PX}px;box-shadow:${crownShadow};animation:crownDrop .7s cubic-bezier(.3,1.5,.5,1) both`"></span>
+          <!-- Animations coupées ou mouvement réduit : la mascotte ne s'affiche pas du
+               tout, et aucune feuille ne part sur le réseau. La piste garde sa place,
+               vide. La mascotte est décorative : elle sort du parcours clavier et du nom
+               accessible. « .self » écarte les animations de décor, qui remontent
+               jusqu'ici et rendraient la main au repos au milieu d'une boucle. -->
+          <template x-if="anim && !reduced">
+            <div data-mascot x-ref="mascot" aria-hidden="true" class="slime"
+              x-init="$nextTick(() => mascotPlay(mascotRest))" @pointerdown.prevent="grab($event)"
+              @click="poke()" @animationend.self="settle()"
+              :style="`position:absolute;bottom:0;left:${at}px;touch-action:none;cursor:${dragging ? 'grabbing' : 'grab'}`">
+              <template x-if="motion === 'bump' && anim">
+                <span data-bang aria-hidden="true"
+                  style="position:absolute;left:50%;top:-20px;transform:translateX(-50%);color:var(--warn);font-size:19px;font-weight:700;animation:bang .4s cubic-bezier(.34,1.6,.64,1) both">!</span>
               </template>
-            </span>
-          </div>
+            </div>
+          </template>
+          <template x-if="motion === 'bump' && anim">
+            <span data-spark aria-hidden="true"
+              :style="`position:absolute;bottom:14px;${direction > 0 ? 'right:2px' : 'left:2px'};color:var(--warn);font-size:15px;animation:spark .6s ease-out both`">✳</span>
+          </template>
         </div>
 
 
@@ -1085,7 +960,7 @@
           <template x-for="(hit, index) in sugg" :key="hit">
             <button type="button" data-suggestion role="option" :aria-selected="index === suggAt"
               @mousedown.prevent="applySugg(index)"
-              :style="`min-height:32px;display:flex;align-items:center;gap:8px;padding:0 8px;border:0;border-left:2px solid ${index === suggAt ? 'var(--acc)' : 'transparent'};background:${index === suggAt ? 'var(--acc-soft)' : 'transparent'};color:var(--fg);font-family:inherit;font-size:13px;text-align:left;cursor:pointer`"><span
+              :style="`min-height:32px;display:flex;align-items:center;gap:8px;padding:0 8px;border:0;border-left:2px solid ${index === suggAt ? 'var(--acc)' : 'transparent'};background:${index === suggAt ? 'var(--acc-soft)' : 'transparent'};color:var(--fg);font-family:inherit;font-size:13px;text-align:left;cursor:pointer;animation:${anim ? `suggRow .2s ease ${(index * 0.024).toFixed(3)}s both` : 'none'}`"><span
                 style="color:var(--acc-text)" x-text="suggFrag"></span><span style="margin-left:-8px"
                 x-text="hit.slice(suggFrag.length)"></span></button>
           </template>
@@ -1094,8 +969,9 @@
         <form data-cli @submit.prevent="submit()"
           style="flex:none;display:grid;grid-template-columns:auto 1fr;gap:8px;align-items:baseline;margin-top:-10px;padding-top:6px">
           <label for="cli" style="position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)">Commande</label>
-          <span aria-hidden="true" style="color:var(--ok)">$</span>
-          <input id="cli" x-ref="cli" x-model="input" @input="suggest()" @blur="closeSugg()"
+          <span aria-hidden="true" style="color:var(--acc-text)">›</span>
+          <input id="cli" x-ref="cli" x-model="input" @input="suggest(); typing()"
+            @blur="closeSugg()"
             @keydown.tab.prevent="complete()" @keydown.arrow-up.prevent="up()"
             @keydown.arrow-down.prevent="down()" @keydown.arrow-right="right($event)"
             @keydown.escape.prevent="onEscape()" type="text"
@@ -1103,36 +979,69 @@
             style="min-width:0;border:0;background:transparent;color:var(--fg);font-family:inherit;font-size:14px;outline:none">
         </form>
         <p data-status
-          style="flex:none;margin:0;display:flex;justify-content:space-between;align-items:baseline;gap:12px;font-size:11px;color:var(--fg2);padding-top:6px">
-          <span><span x-text="section"></span><span style="color:var(--fg2)"> · </span><span
-              :style="`color:var(--${compacting ? 'warn' : 'fg2'})`"
-              x-text="compacting ? 'compacting…' : 'ready'"></span></span>
-          <span data-gauge aria-hidden="true" style="white-space:pre"><span style="color:var(--fg2)">ctx [</span><span
-              style="color:var(--acc-text)" x-text="'█'.repeat(ctxCells)"></span><span style="color:var(--edge)"
-              x-text="'░'.repeat(10 - ctxCells)"></span><span style="color:var(--fg2)">]</span></span>
+          style="flex:none;margin:0;display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:11px;color:var(--fg2);padding-top:6px">
+          <span data-branch style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><span
+              x-text="`~/${section}`"></span> <span style="color:var(--acc-text)">main</span> ✳ </span>
+          <!-- Pendant la compaction, l'animation prend la place des cellules : le cadre
+               « ctx [ … ] » ne bouge pas, et une seule barre reste a l'ecran. -->
+          <span data-gauge aria-hidden="true" style="flex:none;white-space:pre"><span
+              style="color:var(--fg2)">ctx [</span><template x-if="!compacting"><span><span
+                  :style="`color:var(--${ctxCells === 10 ? 'warn' : 'acc-text'})`"
+                  x-text="'█'.repeat(ctxCells)"></span><span style="color:var(--edge)"
+                  x-text="'░'.repeat(10 - ctxCells)"></span></span></template><template
+              x-if="compacting"><span data-compacting><span style="color:var(--warn)"
+                  x-text="compactBar"></span><span style="color:var(--edge)"
+                  x-text="compactRest"></span></span></template><span
+              style="color:var(--fg2)" x-text="`] ${ctxPct}`"></span></span>
         </p>
       </section>
 
+      <!-- Les deux bases viennent de la maquette. Elles vont par paire : donner sa base
+           au volet de sortie sans rendre la sienne au volet central inverserait les deux,
+           le droit prenant 641 px contre 346 px a gauche. Fixes, elles gardent la mise en
+           page identique d'une section a l'autre. -->
       <aside data-pane="out" aria-label="Sortie" x-show="out"
-        style="flex:0 1 clamp(240px,24vw,380px);min-width:200px;min-height:0;display:flex;flex-direction:column;border:1px solid var(--edge);border-radius:12px;background:var(--panel);overflow:hidden">
+        style="flex:1.3 1 230px;min-width:0;min-height:0;display:flex;flex-direction:column;border:1px solid var(--edge);border-radius:12px;background:var(--panel);overflow:hidden">
         <p
           style="margin:0;padding:9px 12px;font-size:11px;letter-spacing:.12em;color:var(--fg2);border-bottom:1px solid var(--edge);display:flex;justify-content:space-between;gap:10px">
           <span x-text="current.out.title"></span><span
-            :style="`color:var(--${running ? 'warn' : 'ok'})`" x-text="outStatus"></span>
+            :style="`color:var(--${running ? 'warn' : 'ok'})`"><span data-outdot aria-hidden="true"
+              :style="`animation:${anim ? 'dotPulse 1.2s ease-in-out infinite' : 'none'}`">●</span> <span
+              x-text="outStatus"></span></span>
         </p>
         <div tabindex="0" role="region" aria-label="Contenu de la sortie"
           style="overflow-y:auto;align-content:start;display:grid;gap:8px;padding:10px 12px">
-          <dl style="margin:0;display:grid;gap:6px;align-content:start;font-size:13px">
+          <!-- La compaction se declenche pendant qu'on tape : elle doit se voir la ou le
+               regard est, pas seulement dans la barre d'etat. Le journal, lui, la dit en
+               toutes lettres. -->
+          <template x-if="compacting">
+            <p data-compacting-out aria-hidden="true"
+              style="margin:0;white-space:pre;font-size:13px"><span style="color:var(--warn)"
+                x-text="compactBar"></span><span style="color:var(--edge)" x-text="compactRest"></span></p>
+          </template>
+          <template x-if="running">
+            <p data-waiting
+              style="margin:0;display:grid;grid-template-columns:auto 1fr;gap:10px;font-size:13px;color:var(--fg2)"><span
+                aria-hidden="true"
+                :style="`color:var(--acc);animation:${anim ? 'dotPulse 1s ease-in-out infinite' : 'none'}`">▚</span><span
+                :style="`animation:${anim ? 'dotPulse 1.2s ease-in-out infinite' : 'none'}`">en attente de la sortie…</span>
+            </p>
+          </template>
+          <dl x-show="!running" style="margin:0;display:grid;gap:6px;align-content:start;font-size:13px">
             <template x-for="(row, index) in current.out.lines" :key="index">
-              <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr);gap:10px">
+              <!-- La colonne des cles prend la largeur de la plus longue de la section :
+                   les valeurs restent alignees sans que la moitie du volet reste vide. -->
+              <div :style="`display:grid;grid-template-columns:${outKeyWidth} minmax(0,1fr);gap:10px`">
                 <dt :style="`color:var(--${row.kc === 'acc' ? 'acc-text' : row.kc});margin:0`" x-text="row.k"></dt>
-                <dd :style="`color:var(--${row.vc === 'acc' ? 'acc-text' : row.vc});margin:0`" x-text="row.v"></dd>
+                <dd :style="`color:var(--${row.vc === 'acc' ? 'acc-text' : row.vc});margin:0;overflow-wrap:anywhere;text-wrap:pretty`"
+                  x-text="row.v"></dd>
               </div>
             </template>
           </dl>
 
           <template x-if="techNote">
-            <div data-technote style="border-top:1px solid var(--edge);padding-top:8px;display:grid;gap:4px">
+            <div data-technote
+              :style="`border-top:1px solid var(--edge);padding-top:8px;display:grid;gap:4px;animation:${anim ? 'lineIn .26s ease both' : 'none'}`">
               <p style="margin:0;color:var(--acc-text);font-weight:700" x-text="tech"></p>
               <p style="margin:0;color:var(--fg2);font-size:12px" x-text="techNote.where"></p>
               <p style="margin:0;text-wrap:pretty" x-text="techNote.note"></p>
