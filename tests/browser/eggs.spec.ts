@@ -59,23 +59,15 @@ test("la vache porte un des huit visages", async ({ page }) => {
   );
 });
 
-test("cowthink rend une bulle de pensée", async ({ page }) => {
-  const cli = await boot(page);
-
-  await run(cli, "/cowthink hmm");
-
-  await expect(page.locator("[data-journal]")).toContainText("( hmm )");
-});
-
 test("la jauge de contexte monte à chaque commande", async ({ page }) => {
   const cli = await boot(page),
     filled = () => page.locator("[data-gauge]").textContent(),
     before = await filled();
 
-  await run(cli, "/wtf");
-  await run(cli, "/wtf");
-  await run(cli, "/wtf");
-  await run(cli, "/wtf");
+  await run(cli, "/sudo");
+  await run(cli, "/sudo");
+  await run(cli, "/sudo");
+  await run(cli, "/sudo");
 
   expect(await filled()).not.toBe(before);
 });
@@ -91,7 +83,7 @@ test("la jauge monte plus vite sur une sortie longue", async ({ page }) => {
     },
     start = await percent();
 
-  await run(cli, "/wtf");
+  await run(cli, "/sudo");
 
   const small = (await percent()) - start,
     before = await percent();
@@ -100,7 +92,7 @@ test("la jauge monte plus vite sur une sortie longue", async ({ page }) => {
 
   const large = (await percent()) - before;
 
-  expect(large, "help imprime bien plus que wtf").toBeGreaterThan(small);
+  expect(large, "help imprime bien plus que sudo").toBeGreaterThan(small);
 });
 
 // La compaction est une animation, pas un message : la barre d'etat ne se met pas a

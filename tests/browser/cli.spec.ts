@@ -11,11 +11,11 @@ const boot = async (page: Page) => {
 test("taper une commande affiche son résultat dans le journal", async ({ page }) => {
   const cli = await boot(page);
 
-  await cli.fill("/wtf");
+  await cli.fill("/sudo");
   await cli.press("Enter");
 
-  await expect(page.locator("[data-journal]")).toContainText("portfolio déguisé en terminal");
-  await expect(page.locator("[data-journal]")).toContainText("wtf");
+  await expect(page.locator("[data-journal]")).toContainText("sudoers");
+  await expect(page.locator("[data-journal]")).toContainText("/sudo");
   await expect(cli, "la saisie se vide après exécution").toHaveValue("");
 });
 
@@ -42,14 +42,14 @@ test("cd change de section et le volet de sortie suit", async ({ page }) => {
 test("clear vide le journal", async ({ page }) => {
   const cli = await boot(page);
 
-  await cli.fill("/wtf");
+  await cli.fill("/sudo");
   await cli.press("Enter");
-  await expect(page.locator("[data-journal]")).toContainText("portfolio déguisé");
+  await expect(page.locator("[data-journal]")).toContainText("fichier sudoers");
 
   await cli.fill("clear");
   await cli.press("Enter");
 
-  await expect(page.locator("[data-journal]")).not.toContainText("portfolio déguisé");
+  await expect(page.locator("[data-journal]")).not.toContainText("sudoers");
 });
 
 // Tant que rien n'a été tapé, la flèche haut rappelle la commande de la section. Dès
@@ -62,17 +62,17 @@ test("la flèche haut rappelle la dernière commande tapée", async ({ page }) =
     "bd whoami --verbose",
   );
 
-  await cli.fill("/wtf");
+  await cli.fill("/sudo");
   await cli.press("Enter");
 
   await cli.press("ArrowUp");
-  await expect(cli, "la commande tapée passe devant").toHaveValue("/wtf");
+  await expect(cli, "la commande tapée passe devant").toHaveValue("/sudo");
 
   await cli.press("ArrowUp");
   await expect(cli).toHaveValue("bd whoami --verbose");
 
   await cli.press("ArrowDown");
-  await expect(cli).toHaveValue("/wtf");
+  await expect(cli).toHaveValue("/sudo");
 });
 
 test("échap vide la saisie", async ({ page }) => {
@@ -88,10 +88,23 @@ test("échap vide la saisie", async ({ page }) => {
 test("retaper la commande de la section ne l'empile pas", async ({ page }) => {
   const cli = await boot(page);
 
-  await cli.fill("/wtf");
+  await cli.fill("/sudo");
   await cli.press("Enter");
   await cli.fill("bd whoami --verbose");
   await cli.press("Enter");
 
-  await expect(page.locator("[data-journal]")).not.toContainText("portfolio déguisé");
+  await expect(page.locator("[data-journal]")).not.toContainText("sudoers");
+});
+
+// L'effet « replay » vidait seulement le journal : la commande ne se rejouait pas, alors
+// que c'est ce que son nom et son commentaire annonçaient.
+test("retaper la commande de la section la rejoue", async ({ page }) => {
+  const cli = await boot(page);
+
+  await cli.fill("bd whoami --verbose");
+  await cli.press("Enter");
+
+  // La commande se retape, donc « exécution… » revient. Sans le rejeu, le volet restait
+  // figé sur son résultat.
+  await expect(page.locator("[data-running]")).toBeVisible();
 });

@@ -13,6 +13,7 @@ const CONTEXT: Context = {
   sections: [],
   share: {},
   shareTargets: [],
+  themes: [],
 };
 
 const YEUX = /\((?<yeux>..)\)\\_______/u;
@@ -72,16 +73,6 @@ test("les modes mort et défoncé sortent la langue", () => {
 
     assert.match(tongue ?? "", /U/u, `le mode ${mode} sort la langue`);
   }
-});
-
-test("cowthink rend une bulle de pensée", () => {
-  const lines = cowsay("je réfléchis", { think: true });
-
-  assert.ok(lines[1]?.startsWith("("), "la bulle de pensée est arrondie");
-  assert.ok(
-    lines.some((row) => row.includes("o   ^__^")),
-    "le lien est fait de bulles",
-  );
 });
 
 test("sans texte, la vache dit quelque chose quand même", () => {

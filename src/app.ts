@@ -1,5 +1,12 @@
-import type { ContentLine, Effect, Line, Mood, Tone, TrackValue } from "./interpret.ts";
-import { candidates, commonPrefix, contentLine, interpret, safeTone } from "./interpret.ts";
+import type { ContentLine, Effect, Expression, Line, Tone, TrackValue } from "./interpret.ts";
+import {
+  candidates,
+  commonPrefix,
+  contentLine,
+  hintFor,
+  interpret,
+  safeTone,
+} from "./interpret.ts";
 
 // Le bandeau que la coquille calcule : l'interpreteur ne rend qu'un mot a dessiner, le
 // balisage a besoin d'une geometrie et d'une ombre.
@@ -450,6 +457,8 @@ interface State {
   motion: string;
   used: number;
   optsOpen: boolean;
+  // Qui a ouvert la modale : le bouton de l'en-tete, ou la saisie via la commande.
+  optsReturn: HTMLElement | undefined;
   out: boolean;
   pane: string;
   pending: string | undefined;
@@ -542,6 +551,7 @@ document.addEventListener("alpine:init", () => {
       motion: "",
       used: 0,
       optsOpen: false,
+      optsReturn: undefined,
       out: true,
       pane: "nav",
       pending: undefined,
@@ -1128,13 +1138,13 @@ document.addEventListener("alpine:init", () => {
         }, AWAY_MS);
       },
 
-      // La ligne porte son humeur : « mise en veille » doit endormir, pas faire cligner.
-      // Sans humeur, un clin d'oeil, et seulement si la mascotte ne fait rien d'autre.
-      say(text: string, mood?: Mood) {
+      // La ligne porte son expression : « mise en veille » doit endormir, pas faire cligner.
+      // Sans expression, un clin d'oeil, et seulement si la mascotte ne fait rien d'autre.
+      say(text: string, expression?: Expression) {
         this.bubble = text;
 
-        if (mood) {
-          this.emote(mood);
+        if (expression) {
+          this.emote(expression);
         } else if (this.mascotState === MASCOT_REST) {
           this.mascotPlay("wink");
         }
@@ -1151,11 +1161,11 @@ document.addEventListener("alpine:init", () => {
         this.mascotPlay("drop");
       },
 
-      // Chaque humeur porte le nom de sa feuille, et l'ADR 0004 exige qu'une humeur sans
+      // Chaque expression porte le nom de sa feuille, et l'ADR 0004 exige qu'une expression sans
       // feuille ramene au repos en coupant ce qui etait en cours. « idle » suit ce chemin :
       // le repos est deja son etat.
-      emote(mood?: Mood) {
-        this.mascotPlay(mood && MASCOT_STATES.has(mood) ? mood : MASCOT_REST);
+      emote(expression?: Expression) {
+        this.mascotPlay(expression && MASCOT_STATES.has(expression) ? expression : MASCOT_REST);
       },
 
       poke() {
@@ -1470,12 +1480,16 @@ document.addEventListener("alpine:init", () => {
         document.startViewTransition(() => apply());
       },
 
-      // Au clavier, la propagation part du centre du bouton et non d'un point à zéro.
+      // La propagation part de ce que le visiteur a touche : le bouton clique, sinon
+      // l'element qui a le focus — la saisie, quand le theme vient de la commande. Un
+      // point a zero ferait balayer le cercle depuis le coin haut-gauche.
       buttonCentre(event?: Event) {
-        const box =
-          event?.target instanceof Element ? event.target.getBoundingClientRect() : undefined;
+        const target = event?.target instanceof Element ? event.target : document.activeElement,
+          box = target instanceof Element ? target.getBoundingClientRect() : undefined;
 
-        return box ? { x: box.left + box.width / 2, y: box.top + box.height / 2 } : { x: 0, y: 0 };
+        return box
+          ? { x: box.left + box.width / 2, y: box.top + box.height / 2 }
+          : { x: window.innerWidth / 2, y: window.innerHeight / 2 };
       },
 
       themeButtons() {
@@ -1638,13 +1652,17 @@ document.addEventListener("alpine:init", () => {
       },
 
       openOpts() {
+        this.optsReturn =
+          document.activeElement instanceof HTMLElement ? document.activeElement : undefined;
         this.optsOpen = true;
         this.$nextTick(() => this.focusSetting());
       },
 
       closeOpts() {
         this.optsOpen = false;
-        this.$nextTick(() => document.querySelector<HTMLElement>("[data-ctl='opts']")?.focus());
+        this.$nextTick(() =>
+          (this.optsReturn ?? document.querySelector<HTMLElement>("[data-ctl='opts']"))?.focus(),
+        );
 
         if (!this.morphHeld) {
           return;
@@ -1754,6 +1772,7 @@ document.addEventListener("alpine:init", () => {
           sections: this.sections,
           share: this.share,
           shareTargets: this.shareTargets,
+          themes: THEMES.map((entry) => entry.id),
         });
 
         this.input = "";
@@ -1885,7 +1904,7 @@ document.addEventListener("alpine:init", () => {
       // venir sont ignorés ici plutôt que simulés.
       apply(effects: Effect[]) {
         // Trouver un easter egg vaut une celebration. Mais plusieurs d'entre eux disent
-        // deja une humeur, et le but jouerait une fraction de seconde avant de se faire
+        // deja une expression, et le but jouerait une fraction de seconde avant de se faire
         // ecraser : il ne se joue que si rien d'autre ne bouge la mascotte, et apres la
         // boucle, pour ne pas dependre de l'ordre des effets.
         const found = effects.some(
@@ -1907,16 +1926,16 @@ document.addEventListener("alpine:init", () => {
             this.shareTo(effect);
           } else if (effect.type === "shareMenu") {
             this.nativeShare();
-          } else if (effect.type === "email" || effect.type === "copy") {
+          } else if (effect.type === "email") {
             this.copy(this.profileEmail);
           } else if (effect.type === "sendMail") {
             globalThis.open(`mailto:${encodeURIComponent(this.profileEmail)}`);
           } else if (effect.type === "cv") {
             this.goSection("whoami");
           } else if (effect.type === "say") {
-            this.say(effect.text, effect.mood);
+            this.say(effect.text, effect.expression);
           } else if (effect.type === "emote") {
-            this.emote(effect.mood);
+            this.emote(effect.expression);
           } else if (effect.type === "drop") {
             this.drop();
           } else if (effect.type === "blowUp") {
@@ -1929,12 +1948,16 @@ document.addEventListener("alpine:init", () => {
             this.journal = [];
           } else if (effect.type === "replay") {
             this.journal = [];
+            this.seen = this.seen.filter((entry) => entry !== this.section);
+            this.play(this.section);
           } else if (effect.type === "state") {
             Object.assign(this, effect.patch);
           } else if (effect.type === "power") {
             this.powerDown(effect.mode);
-          } else if (effect.type === "matrix") {
-            this.emote("scared");
+          } else if (effect.type === "theme") {
+            this.setTheme(effect.name);
+          } else if (effect.type === "options") {
+            this.openOpts();
           }
         }
 
@@ -1948,6 +1971,7 @@ document.addEventListener("alpine:init", () => {
           details: this.details,
           sections: this.sections,
           shareTargets: this.shareTargets,
+          themes: THEMES.map((entry) => entry.id),
         });
 
         this.sugg = result.hits;
@@ -1956,6 +1980,12 @@ document.addEventListener("alpine:init", () => {
         this.suggSlash = result.slash;
         this.suggAt = 0;
         this.suggOpen = result.hits.length > 0 && this.input !== "";
+      },
+
+      // Le nom d'une proposition n'apprend rien a lui seul. La ligne suit la selection,
+      // et se tait quand la proposition vient du contenu : son identifiant se lit deja.
+      get suggHint() {
+        return hintFor(this.suggHead, this.sugg[this.suggAt] ?? "");
       },
 
       // La fermeture reste déterministe : la liste se vide, sans compteur de génération
@@ -1972,9 +2002,12 @@ document.addEventListener("alpine:init", () => {
         return this.suggHead ? `${prefix}${this.suggHead} ${word}` : `${prefix}${word}`;
       },
 
+      // La liste se rouvre sur le mot suivant : une commande completee qui attend un
+      // argument montre ce qu'elle attend, sans qu'on ait a taper une lettre pour le voir.
       applySugg(index: number) {
         this.input = `${this.rebuild(this.sugg[index] ?? "")} `;
         this.closeSugg();
+        this.suggest();
         this.$refs["cli"]?.focus();
       },
 
@@ -1982,20 +2015,16 @@ document.addEventListener("alpine:init", () => {
       // entree. Un premier mot qui attend un argument ouvre sa liste, sinon la commande
       // partirait incomplete.
       pickSugg(index: number, pointer: PointerEvent) {
-        const head = this.suggHead;
-
         this.applySugg(index);
 
         if (pointer.pointerType !== "touch") {
           return;
         }
 
-        if (head === "") {
-          this.suggest();
-
-          if (this.suggOpen) {
-            return;
-          }
+        // Une liste rouverte veut dire que la commande attend encore un mot, a n'importe
+        // quel niveau. Ne regarder que le premier mot laissait partir « slime expression ».
+        if (this.suggOpen) {
+          return;
         }
 
         this.submit();
@@ -2018,6 +2047,19 @@ document.addEventListener("alpine:init", () => {
 
         if (shared.length > this.suggFrag.length) {
           this.input = this.rebuild(shared);
+          this.suggOpen = true;
+
+          return;
+        }
+
+        // Rien de tape pour cet argument : aucun prefixe commun ne peut battre le vide, et
+        // Tab restait sans effet des que la liste rouvrait sur un niveau neuf. La ligne mise
+        // en avant est alors ce que Tab peut faire de mieux. Un fragment deja tape garde
+        // l'ancienne regle : la liste montre, elle ne choisit pas a la place du visiteur.
+        if (this.suggFrag === "") {
+          this.applySugg(this.suggAt);
+
+          return;
         }
 
         this.suggOpen = true;

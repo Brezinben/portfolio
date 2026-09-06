@@ -93,3 +93,18 @@ et aucune feuille ne la couvre.
 La teinte par filtre approxime. Le README des feuilles le signale : `hue-rotate` fait aussi
 tourner l'encre des yeux. Sur les cinq thèmes sombres, la mascotte n'aura pas exactement les
 couleurs d'une feuille peinte à la main.
+
+---
+
+## Amendement — seize feuilles, et plus de table de redirection
+
+Cet ADR arrêtait neuf états et une table qui redirigeait sept expressions vers eux :
+`happy` et `scared` vers `jump`, `alert` vers `wink`, `laugh` vers `jump`, `sad` vers
+`sleep`.
+
+Cette table n'existe plus. Chaque expression a désormais sa propre feuille, et le compte
+passe de neuf à trente-deux états. `CONTEXT.md` les nomme groupe par groupe.
+
+La décision de fond ne change pas : une feuille par état, et un état sans feuille ramène au
+repos. C'est ce contrat que `app.ts` cite encore. Seul le nombre d'états a changé, parce que
+les feuilles manquantes ont été dessinées.
