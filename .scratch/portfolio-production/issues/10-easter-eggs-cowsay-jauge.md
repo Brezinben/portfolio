@@ -8,12 +8,10 @@ et se vide avec une compaction ironique quand elle est pleine.
 
 **Status:** ready-for-agent
 
-- [x] Les commandes `joke` `wtf` `sudo` `coffee` `vim` `pet` `matrix` `benjamin` et son alias `brezinben` répondent
-- [x] `slime <humeur>` pilote la mascotte, `shutdown` et `reboot` éteignent puis rejouent le boot
+- [x] Les commandes `joke` `sudo` `coffee` `vim` `pet` `matrix` `benjamin` et son alias `brezinben` répondent
+- [x] `slime expression <nom>` pilote la mascotte, `shutdown` et `reboot` éteignent puis rejouent le boot
 - [x] `cowsay` fait un retour à la ligne adaptatif à la largeur du volet
 - [x] La bulle change de forme selon le nombre de lignes
-- [x] Les huit modes de tête fonctionnent : `-b` `-d` `-g` `-p` `-s` `-t` `-w` `-y`
-- [x] `cowthink` rend la bulle de pensée
 - [x] Le drapeau préformaté par ligne conserve les espaces multiples, et l'art ASCII reste intact
 - [x] Les ligatures restent désactivées, sans quoi les traits se recomposent
 - [x] La jauge monte à chaque commande et à chaque changement de section

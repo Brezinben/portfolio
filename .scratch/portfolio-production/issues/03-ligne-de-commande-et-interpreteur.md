@@ -1,6 +1,6 @@
 # 03: La ligne de commande et l'interpréteur
 
-**What to build:** Un visiteur tape `ls`, `help` ou `wtf` et voit le résultat apparaître dans le volet central.
+**What to build:** Un visiteur tape `ls`, `help` ou `sudo` et voit le résultat apparaître dans le volet central.
 La commande rejoint le journal, et la flèche haut la rappelle.
 
 Ce ticket installe le seam deux : `interpret(entrée, contexte)` rend `{ lignes, effets }`. Les
@@ -16,7 +16,7 @@ qui n'ont aucun effet pur, pour que le dispatch ne vive jamais à deux endroits.
 - [x] Les 29 branches passent par le point de dispatch unique
 - [x] `cowsay` reçoit la largeur du volet par le contexte, jamais en la mesurant
 - [ ] `ask` et `ai` rendent leur partie pure en lignes, et l'appel asynchrone en effet
-- [x] node:test couvre `ls`, `help`, `wtf`, `vim`, `sudo`, `coffee`, `pet`, `sleep`, `benjamin` et la commande inconnue
+- [x] node:test couvre `ls`, `help`, `vim`, `sudo`, `coffee`, `pet`, `sleep`, `benjamin` et la commande inconnue
 - [x] La flèche haut rappelle d'abord la commande de la section courante, puis l'historique
 - [x] Les commandes ne s'empilent pas
 - [ ] Le résultat apparaît par bloc, jamais ligne à ligne, jamais lettre à lettre

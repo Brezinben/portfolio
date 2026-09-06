@@ -77,7 +77,7 @@ Chaque section et chaque mission a son ancre (`#parcours`, `#m-kereis`) : lien d
 
 **Interface** — `theme` · `options` · `clear` · `reboot` · `shutdown`
 
-**Easter eggs** — `joke` · `cowsay [-bdgpstwy] <texte>` · `cowthink` · `wtf` · `sudo` · `coffee` · `vim` · `pet` · `slime <humeur>` · `matrix` · `benjamin`
+**Easter eggs** — `joke` · `cowsay <texte>` · `sudo` · `coffee` · `vim` · `pet` · `slime expression <nom>` · `slime activity <nom>` · `slime drop` · `slime kill` · `matrix` · `benjamin`
 
 `help` liste tout. Tab complète (préfixe commun, puis candidats), ↑ ↓ rappellent l'historique.
 
@@ -180,7 +180,7 @@ Umami auto-hébergé, sans cookie ni identifiant.
 | `commande` | `cmd` | commande tapée |
 | `commande_inconnue` | `cmd` | ce que les visiteurs cherchent sans trouver |
 | `ask` | `requete`, `resultats` | recherches et taux de réponse |
-| `easter_egg` | `nom` | joke, cowsay, wtf, sudo, coffee, vim, pet, matrix, slime, nom |
+| `easter_egg` | `nom` | joke, cowsay, sudo, coffee, vim, pet, matrix, slime, nom |
 | `couronne` | `clics` | visiteurs allés jusqu'aux 26 clics |
 | `slime_glisse` | — | mascotte attrapée (une fois par session) |
 | `slime_choc` | — | mascotte cognée contre une paroi |

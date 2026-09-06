@@ -207,7 +207,7 @@ remonte l'historique. Les commandes ne s'empilent pas.
 - Filtrage progressif sur le préfixe, dix propositions maximum, sans défilement.
 - Le préfixe `/` est reconnu et complété.
 - **Suggestions contextuelles, niveau par niveau** : `/slime ` ne propose que ses
-  quatre sous-commandes, `/slime mood ` que les humeurs, `/slime activity ` que
+  quatre sous-commandes, `/slime expression ` que les expressions, `/slime activity ` que
   les activités, `cd ` que les sections et missions, `share ` que les cibles,
   `theme ` que les thèmes. `cowsay ` ne propose rien : c'est du texte libre.
 - **Une ligne sous la liste décrit la proposition choisie.** Un nom n'apprend
@@ -334,7 +334,7 @@ C'est l'élément le plus itéré du projet. Historique des demandes :
 **État arrêté :**
 - Sprite pixel dessiné en `box-shadow`, 24 × 18 pixels de 2,6 px. **Aucune image.**
 - Couleurs fixes, identiques dans tous les thèmes (demande explicite).
-- Sept humeurs : `idle` `happy` `laugh` `sad` `scared` `sleep` `alert`.
+- Sept expressions : `idle` `happy` `laugh` `sad` `scared` `sleep` `alert`.
 - Respire, cligne à intervalles irréguliers, arpente sa piste, se cogne aux
   parois avec écrasement et étincelle.
 - Réaction élastique à la vitesse du curseur, **seulement à proximité** (le seuil
@@ -366,8 +366,8 @@ les deux fois. Le sprite actuel est validé, ne pas le redessiner.
   largeur du volet, forme qui change selon le nombre de lignes. Les huit visages
   restent, mais **sans drapeau à retenir** : la commande en tire un à chaque
   appel. Un portfolio n'est pas une page de manuel.
-- `slime` porte quatre sous-commandes : `mood <humeur>`, `activity <nom>`,
-  `drop`, `kill`. L'alias `/mood` est retiré.
+- `slime` porte quatre sous-commandes : `expression <expression>`, `activity <nom>`,
+  `drop`, `kill`. L'alias `/expression` est retiré.
 - `shutdown` : extinction CRT puis séquence de boot complète.
 
 **Deux pièges techniques résolus :**

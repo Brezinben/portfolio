@@ -208,3 +208,46 @@ test("la tabulation boucle dans la modale", async ({ page }) => {
 
   await expect(dialog.locator(":focus"), "le focus ne doit pas sortir de la modale").toHaveCount(1);
 });
+
+// Les deux commandes ne rendaient qu'un écho : leur descripteur n'était appliqué nulle
+// part. Rien ne le signalait, puisque rien ne les testait.
+test("la commande theme applique le thème nommé", async ({ page }) => {
+  await boot(page);
+
+  const cli = page.getByLabel("Commande");
+
+  await cli.fill("theme noctis");
+  await cli.press("Enter");
+
+  await expect(page.locator("[data-theme]")).toHaveAttribute("data-theme", "noctis");
+  await expect(page.locator("[data-journal]")).toContainText("noctis");
+});
+
+test("la commande options ouvre la modale", async ({ page }) => {
+  await boot(page);
+
+  const cli = page.getByLabel("Commande");
+
+  await cli.fill("options");
+  await cli.press("Enter");
+
+  await expect(page.getByRole("dialog", { name: "Options d'affichage" })).toBeVisible();
+});
+
+// La modale a deux ouvrants depuis que la commande existe. Echap doit rendre le focus a
+// celui qui a ouvert, et non au bouton de l'en-tete que le visiteur n'a jamais touche.
+test("échap rend le focus à la saisie quand la commande a ouvert la modale", async ({ page }) => {
+  await boot(page);
+
+  const cli = page.getByLabel("Commande");
+
+  await cli.fill("options");
+  await cli.press("Enter");
+
+  await expect(page.getByRole("dialog")).toBeVisible();
+
+  await page.keyboard.press("Escape");
+
+  await expect(page.getByRole("dialog")).toBeHidden();
+  await expect(cli).toBeFocused();
+});

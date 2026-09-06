@@ -1,4 +1,4 @@
-import { MAX_SUGGESTIONS, candidates, commonPrefix } from "../../src/interpret.ts";
+import { MAX_SUGGESTIONS, candidates, commonPrefix, hintFor } from "../../src/interpret.ts";
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
@@ -6,6 +6,7 @@ const CONTEXT = {
     details: [{ id: "m-kereis" }, { id: "m-run" }],
     sections: [{ id: "whoami" }, { id: "stack" }],
     shareTargets: ["linkedin", "github", "link"],
+    themes: ["dark", "light", "noctis"],
   },
   hits = (value: string) => candidates(value, CONTEXT).hits;
 
@@ -13,8 +14,8 @@ const CONTEXT = {
 // leur slash, les vraies commandes n'en ont pas.
 test("le préfixe filtre le vocabulaire", () => {
   assert.deepEqual(hits("he"), ["help"]);
-  assert.deepEqual(hits("wt"), [], "un easter egg sans slash n'est pas propose");
-  assert.ok(hits("/wt").includes("/wtf"));
+  assert.deepEqual(hits("su"), [], "un easter egg sans slash n'est pas propose");
+  assert.ok(hits("/su").includes("/sudo"));
   assert.ok(hits("/co").includes("/coffee"));
   assert.ok(hits("/co").includes("/cowsay"));
 });
@@ -29,24 +30,29 @@ test("jamais plus de dix propositions", () => {
 });
 
 test("le préfixe slash fait partie de la proposition", () => {
-  assert.deepEqual(candidates("/wt", CONTEXT).hits, ["/wtf"]);
-  assert.deepEqual(candidates("/wt", CONTEXT).frag, "/wt");
+  assert.deepEqual(candidates("/su", CONTEXT).hits, ["/sudo"]);
+  assert.deepEqual(candidates("/su", CONTEXT).frag, "/su");
 });
 
 test("les deux-points sont acceptés comme le slash", () => {
-  assert.deepEqual(candidates(":wt", CONTEXT).hits, ["/wtf"]);
+  assert.deepEqual(candidates(":su", CONTEXT).hits, ["/sudo"]);
 });
 
-// Au second mot, seul le vocabulaire de la commande a du sens.
-test("slime ne propose que des humeurs", () => {
+// Au second mot, seul le vocabulaire de la commande a du sens. Quatre sous-commandes
+// claires valent mieux que dix mots mélangés : les expressions vivent un niveau plus bas.
+test("slime ne propose que ses quatre sous-commandes", () => {
   const result = candidates("slime ", CONTEXT);
 
-  assert.ok(result.hits.includes("happy"));
-  assert.ok(result.hits.includes("drop"));
-  assert.ok(result.hits.includes("kill"));
-  assert.ok(!result.hits.includes("wtf"));
-  assert.ok(!result.hits.includes("idle"), "idle n'est plus proposé : il ne montrait rien");
+  assert.deepEqual(result.hits, ["expression", "activity", "drop", "kill"]);
   assert.equal(result.head, "slime");
+});
+
+test("slime expression ne propose que des expressions", () => {
+  const result = candidates("slime expression ", CONTEXT);
+
+  assert.ok(result.hits.includes("happy"));
+  assert.ok(!result.hits.includes("idle"), "idle n'est plus proposé : il ne montrait rien");
+  assert.equal(result.head, "slime expression");
 });
 
 test("cd ne propose que des sections et des fiches", () => {
@@ -64,17 +70,17 @@ test("ask ne propose rien : c'est du texte libre", () => {
 });
 
 test("les alias héritent du vocabulaire de leur commande", () => {
-  assert.deepEqual(candidates("mood ha", CONTEXT).hits, candidates("slime ha", CONTEXT).hits);
+  assert.deepEqual(candidates("partager li", CONTEXT).hits, candidates("share li", CONTEXT).hits);
 });
 
 test("le plus long préfixe commun sert à compléter", () => {
-  assert.equal(commonPrefix(["cowsay", "cowthink"]), "cow");
-  assert.equal(commonPrefix(["wtf"]), "wtf");
+  assert.equal(commonPrefix(["coffee", "cowsay"]), "co");
+  assert.equal(commonPrefix(["sudo"]), "sudo");
   assert.equal(commonPrefix([]), "");
   assert.equal(commonPrefix(["ls", "cd"]), "");
 });
 
-// Le second niveau : « slime » propose des humeurs, « slime activity » des activités.
+// Le second niveau : « slime » propose des expressions, « slime activity » des activités.
 test("slime activity ne propose que des activités", () => {
   const result = candidates("slime activity ", CONTEXT);
 
@@ -82,18 +88,87 @@ test("slime activity ne propose que des activités", () => {
   assert.equal(result.head, "slime activity");
 });
 
-test("slime propose activity comme second mot", () => {
-  assert.ok(candidates("slime ", CONTEXT).hits.includes("activity"));
-});
+test("slime propose activity et expression comme second mot", () => {
+  const shown = candidates("slime ", CONTEXT).hits;
 
-test("l'alias mood hérite aussi du second niveau", () => {
-  assert.deepEqual(
-    candidates("mood activity b", CONTEXT).hits,
-    candidates("slime activity b", CONTEXT).hits,
-  );
+  assert.ok(shown.includes("activity"));
+  assert.ok(shown.includes("expression"));
 });
 
 // Un troisième mot ne propose rien : le chemin « slime happy » n'a pas de vocabulaire.
 test("un mot de trop ne propose rien", () => {
   assert.deepEqual(candidates("slime happy x", CONTEXT).hits, []);
+});
+
+// L'interpréteur normalise les espaces avant de lire la commande. Sans la même
+// normalisation ici, un espace de trop rend la liste muette au lieu de la filtrer.
+test("les espaces multiples ne cassent pas la complétion", () => {
+  assert.deepEqual(hits("slime  "), hits("slime "));
+  assert.deepEqual(hits("cd   who"), hits("cd who"));
+  assert.deepEqual(hits("slime  activity  "), hits("slime activity "));
+  assert.deepEqual(hits(" /wt"), hits("/wt"));
+});
+
+// L'espace final annonce l'argument suivant : la normalisation ne doit pas l'avaler.
+test("l'espace final survit à la normalisation", () => {
+  assert.equal(candidates("slime  ", CONTEXT).head, "slime");
+  assert.equal(candidates("slime  ", CONTEXT).frag, "");
+});
+
+// « bd » est annoncé par l'aide, « sleep » et « ? » marchent : les trois manquaient au
+// vocabulaire, donc la liste ne les proposait jamais.
+test("bd, sleep et ? font partie du vocabulaire", () => {
+  assert.ok(hits("b").includes("bd"));
+  assert.ok(hits("sl").includes("sleep"));
+  assert.ok(hits("?").includes("?"));
+});
+
+// Dix propositions au maximum, et quatorze easter eggs : l'ordre décide de ce qui se
+// découvre. « /slime » porte le plus de branches, et vient donc en premier.
+test("les easter eggs les plus riches entrent dans les dix propositions du slash", () => {
+  const shown = hits("/");
+
+  assert.ok(shown.includes("/slime"));
+  assert.ok(shown.includes("/joke"));
+  assert.ok(!shown.includes("/brezinben"), "un alias cède sa place à une commande");
+});
+
+// Le dispatcher réserve la navigation à ces trois verbes. La liste doit proposer des
+// sections derrière les trois, et le test tombe si les deux listes divergent.
+test("les trois verbes qui naviguent proposent tous les sections et les fiches", () => {
+  for (const verb of ["bd", "cd", "open"]) {
+    assert.deepEqual(hits(`${verb} `), ["whoami", "stack", "m-kereis", "m-run"], verb);
+  }
+});
+
+test("theme propose ses thèmes au second mot", () => {
+  assert.deepEqual(candidates("theme ", CONTEXT).hits, ["dark", "light", "noctis"]);
+});
+
+// Les proposer ferait taper une commande qui ne rend rien.
+test("ai et ask sortent du vocabulaire tant qu'ils ne rendent rien", () => {
+  assert.ok(!hits("a").includes("ai"));
+  assert.ok(!hits("a").includes("ask"));
+});
+
+// La liste ne montre que des noms. « goal » ou « bd » ne s'apprennent pas d'un nom :
+// une ligne sous la liste dit ce que fait la proposition choisie.
+test("chaque proposition du premier mot porte une description", () => {
+  assert.equal(hintFor("", "bd"), "ouvre une section");
+  assert.equal(hintFor("", "/slime"), "commande la mascotte");
+  assert.equal(hintFor("", "cls"), "vide le journal");
+});
+
+test("les sous-commandes de slime portent la leur, à chaque niveau", () => {
+  assert.equal(hintFor("slime", "activity"), "lui donne une occupation");
+  assert.equal(hintFor("slime activity", "goal"), "il marque un but");
+  assert.equal(hintFor("slime expression", "scared"), "il prend peur");
+});
+
+// Un nom venu du contenu n'a pas de description écrite : la ligne se cache plutôt que
+// d'afficher un vide.
+test("une proposition sans description rend une chaîne vide", () => {
+  assert.equal(hintFor("", "whoami"), "");
+  assert.equal(hintFor("share", "linkedin"), "");
+  assert.equal(hintFor("xyzzy", "xyzzy"), "");
 });

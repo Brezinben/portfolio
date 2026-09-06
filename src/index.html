@@ -1148,14 +1148,23 @@
 
 
         <div x-show="suggOpen" x-transition:enter.duration.220ms x-transition:leave.duration.170ms
-          data-suggestions role="listbox" aria-label="Suggestions"
-          style="flex:none;display:grid;gap:1px;border:1px solid var(--edge);background:var(--panel);padding:4px;margin-bottom:-4px">
-          <template x-for="(hit, index) in sugg" :key="hit">
-            <button type="button" data-suggestion role="option" :aria-selected="index === suggAt"
-              @pointerdown.prevent="pickSugg(index, $event)"
-              :style="`min-height:32px;display:flex;align-items:center;gap:8px;padding:0 8px;border:0;border-left:2px solid ${index === suggAt ? 'var(--acc)' : 'transparent'};background:${index === suggAt ? 'var(--acc-soft)' : 'transparent'};color:var(--fg);font-family:inherit;font-size:13px;text-align:left;cursor:pointer;animation:${anim ? `suggRow .2s ease ${(index * 0.024).toFixed(3)}s both` : 'none'}`"><span
-                style="color:var(--acc-text)" x-text="suggFrag"></span><span style="margin-left:-8px"
-                x-text="hit.slice(suggFrag.length)"></span></button>
+          style="flex:none;border:1px solid var(--edge);background:var(--panel);padding:4px;margin-bottom:-4px">
+          <div data-suggestions role="listbox" aria-label="Suggestions"
+            style="display:grid;gap:1px">
+            <template x-for="(hit, index) in sugg" :key="hit">
+              <button type="button" data-suggestion role="option" :aria-selected="index === suggAt"
+                @pointerdown.prevent="pickSugg(index, $event)"
+                :style="`min-height:32px;display:flex;align-items:center;gap:8px;padding:0 8px;border:0;border-left:2px solid ${index === suggAt ? 'var(--acc)' : 'transparent'};background:${index === suggAt ? 'var(--acc-soft)' : 'transparent'};color:var(--fg);font-family:inherit;font-size:13px;text-align:left;cursor:pointer;animation:${anim ? `suggRow .2s ease ${(index * 0.024).toFixed(3)}s both` : 'none'}`"><span
+                  style="color:var(--acc-text)" x-text="suggFrag"></span><span style="margin-left:-8px"
+                  x-text="hit.slice(suggFrag.length)"></span></button>
+            </template>
+          </div>
+          <!-- Un nom ne dit pas ce qu'il fait. La ligne decrit la proposition choisie, et
+               reste hors du listbox, qui n'accepte que des options. -->
+          <template x-if="suggHint">
+            <p data-sugg-hint aria-hidden="true"
+              style="margin:0;padding:5px 10px 2px;border-top:1px solid var(--edge);font-size:11px;color:var(--fg2)"
+              x-text="suggHint"></p>
           </template>
         </div>
 

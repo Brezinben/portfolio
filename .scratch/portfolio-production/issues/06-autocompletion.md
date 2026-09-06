@@ -11,7 +11,9 @@ propose que ce qui a du sens pour la commande en cours.
 - [x] Une fonction pure calcule les candidats, partagée par `Tab` et par la liste dépliante
 - [x] Dix propositions au maximum, sans défilement
 - [x] Les préfixes `/` et `:` sont reconnus et complétés
-- [x] Second mot contextuel : humeurs après `slime`, sections et missions après `cd`, cibles après `share`, modes de tête après `cowsay`, rien après `ask`
+- [x] Second mot contextuel : sous-commandes après `slime`, sections et missions après `cd` `bd` `open`, cibles après `share`, thèmes après `theme`, rien après `cowsay` qui prend du texte libre
+- [x] Troisième mot contextuel : humeurs après `slime mood`, activités après `slime activity`
+- [x] Une ligne sous la liste décrit la proposition choisie, à chaque niveau
 - [x] `Tab` complète jusqu'au plus long préfixe commun, puis liste les candidats restants
 - [x] Le dépliement dure 220 ms, le repliement 170 ms depuis la base
 - [x] La fermeture est déterministe, et la liste se vide dès que la saisie perd le focus

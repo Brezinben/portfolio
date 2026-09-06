@@ -101,8 +101,8 @@ test("une mesure d'audience bloquée ne casse pas la page", async ({ page }) => 
 
   const cli = await boot(page);
 
-  await run(cli, "/wtf");
+  await run(cli, "/sudo");
 
-  await expect(page.locator("[data-journal]")).toContainText("portfolio déguisé");
+  await expect(page.locator("[data-journal]")).toContainText("sudoers");
   await expect(page.locator('[data-pane="main"]')).toBeVisible();
 });

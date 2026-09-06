@@ -16,6 +16,7 @@ const CONTEXT: Context = {
     ],
     share: {},
     shareTargets: [],
+    themes: ["dark", "light", "noctis"],
   },
   texts = (result: Outcome) => result.lines.map((line) => line.t),
   kinds = (result: Outcome) => result.effects.map((effect) => effect.type),
@@ -48,18 +49,18 @@ test("les espaces multiples sont normalisés", () => {
 // doit être identique.
 test("les préfixes slash et deux-points sont acceptés", () => {
   for (const prefix of ["/", ":", "//"]) {
-    const prefixed = interpret(`${prefix}wtf`, CONTEXT);
+    const prefixed = interpret(`${prefix}sudo`, CONTEXT);
 
-    assert.equal(prefixed.lines[0]?.t, `${prefix}wtf`);
-    assert.deepEqual(texts(prefixed).slice(1), texts(interpret("/wtf", CONTEXT)).slice(1));
+    assert.equal(prefixed.lines[0]?.t, `${prefix}sudo`);
+    assert.deepEqual(texts(prefixed).slice(1), texts(interpret("/sudo", CONTEXT)).slice(1));
   }
 });
 
 test("chaque commande est marquée", () => {
-  const effect = effectOf(interpret("/wtf", CONTEXT), "track");
+  const effect = effectOf(interpret("/sudo", CONTEXT), "track");
 
   assert.equal(effect?.event, "commande");
-  assert.deepEqual(effect?.props, { cmd: "wtf" });
+  assert.deepEqual(effect?.props, { cmd: "sudo" });
 });
 
 test("ls liste les sections puis les fiches", () => {
@@ -120,12 +121,6 @@ test("clear vide le journal sans rien afficher", () => {
   assert.deepEqual(result.lines, []);
 });
 
-test("wtf explique où l'on se trouve", () => {
-  const result = interpret("/wtf", CONTEXT);
-
-  assert.match(texts(result).join("\n"), /portfolio déguisé en terminal/);
-});
-
 test("sudo refuse, et le signale", () => {
   const result = interpret("/sudo", CONTEXT);
 
@@ -153,7 +148,9 @@ test("pet caresse la mascotte", () => {
 test("sleep endort la mascotte", () => {
   const result = interpret("sleep", CONTEXT);
 
-  assert.ok(result.effects.some((effect) => effect.type === "say" && effect.mood === "sleep"));
+  assert.ok(
+    result.effects.some((effect) => effect.type === "say" && effect.expression === "sleep"),
+  );
 });
 
 test("benjamin se présente et donne son adresse", () => {
@@ -214,8 +211,8 @@ test("une commande inconnue le dit et se marque comme telle", () => {
 
 test("la casse de la commande est ignorée", () => {
   assert.deepEqual(
-    texts(interpret("/WTF", CONTEXT)).slice(1),
-    texts(interpret("/wtf", CONTEXT)).slice(1),
+    texts(interpret("/SUDO", CONTEXT)).slice(1),
+    texts(interpret("/sudo", CONTEXT)).slice(1),
   );
 });
 
@@ -233,20 +230,20 @@ test("l'interprétation reste synchrone et sans effet de bord", () => {
   assert.equal(JSON.stringify(CONTEXT), before, "le contexte ne doit pas être muté");
 });
 
-// Chaque humeur proposée doit jouer sa propre feuille. Une commande qui annonce quelque
+// Chaque expression proposée doit jouer sa propre feuille. Une commande qui annonce quelque
 // chose et ne le fait pas est pire que son absence.
-test("chaque humeur proposée rend son propre état", () => {
-  for (const mood of ["alert", "happy", "laugh", "sad", "scared", "sleep"]) {
-    const result = interpret(`/slime ${mood}`, CONTEXT),
+test("chaque expression proposée rend son propre état", () => {
+  for (const expression of ["alert", "happy", "laugh", "sad", "scared", "sleep"]) {
+    const result = interpret(`/slime ${expression}`, CONTEXT),
       emote = effectOf(result, "emote");
 
-    assert.equal(emote?.mood, mood, `« ${mood} » doit émettre son humeur`);
+    assert.equal(emote?.expression, expression, `« ${expression} » doit émettre son expression`);
   }
 });
 
 // « idle » reste dans le type, « say » s'en sert. La commande, elle, ne le propose plus :
 // il ne montrait rien.
-test("slime idle n'est plus une humeur proposée", () => {
+test("slime idle n'est plus une expression proposée", () => {
   const result = interpret("/slime idle", CONTEXT);
 
   assert.equal(effectOf(result, "emote"), undefined);
@@ -254,7 +251,7 @@ test("slime idle n'est plus une humeur proposée", () => {
   assert.ok(
     texts(result)
       .slice(1)
-      .some((text) => text.includes("slime <humeur>")),
+      .some((text) => text.includes("/slime expression <nom>")),
   );
   assert.ok(
     !texts(result)
@@ -284,4 +281,258 @@ test("slime activity sans nom connu liste les activités", () => {
 
   assert.equal(effectOf(result, "activity"), undefined);
   assert.ok(texts(result).some((text) => text.includes("slime activity <nom>")));
+});
+
+// Quatre alias sur dix-huit seulement sont proposés par l'autocomplétion. Les autres ne
+// tomberaient sous aucun test : cette table est leur seule protection.
+test("chaque alias se comporte comme sa commande", () => {
+  const pairs: [string, string][] = [
+    ["?", "help"],
+    ["aide", "help"],
+    ["/brezinben", "/benjamin"],
+    ["/cat", "/pet"],
+    ["cls", "clear"],
+    ["copy", "email"],
+    ["dir", "ls"],
+    ["/emacs", "/vim"],
+    ["exit", "shutdown"],
+    ["/feedback", "/propose"],
+    ["ia", "ai"],
+    ["/idee", "/propose"],
+    ["/mascotte", "/pet"],
+    ["/nano", "/vim"],
+    ["partager", "share"],
+    ["poweroff", "shutdown"],
+    ["restart", "reboot"],
+    ["resume", "cv"],
+    ["sendmail", "send-mail"],
+    ["set", "options"],
+    ["write", "send-mail"],
+  ];
+
+  for (const [alias, command] of pairs) {
+    assert.deepEqual(
+      texts(interpret(alias, CONTEXT)).slice(1),
+      texts(interpret(command, CONTEXT)).slice(1),
+      `${alias} doit dire ce que dit ${command}`,
+    );
+    assert.deepEqual(
+      kinds(interpret(alias, CONTEXT)),
+      kinds(interpret(command, CONTEXT)),
+      `${alias} doit faire ce que fait ${command}`,
+    );
+  }
+});
+
+// Ces commandes n'ont pas encore de partie pure. Le descripteur est tout ce qu'elles
+// rendent, et le ticket qui les finira doit savoir lequel il reprend.
+test("les commandes déléguées rendent chacune son descripteur", () => {
+  const expected: [string, Effect["type"]][] = [
+    ["ai", "probeAI"],
+    ["ask", "ask"],
+    ["email", "email"],
+    ["options", "options"],
+    ["send-mail", "sendMail"],
+  ];
+
+  for (const [command, kind] of expected) {
+    assert.ok(kinds(interpret(command, CONTEXT)).includes(kind), `${command} doit rendre ${kind}`);
+  }
+});
+
+test("ask transporte la question dans son descripteur", () => {
+  assert.equal(effectOf(interpret("ask qui es-tu", CONTEXT), "ask")?.query, "qui es-tu");
+});
+
+// Les deux modes partagent une branche. Sans ce test, corriger le texte de l'un
+// emporterait le mode de l'autre en silence.
+test("shutdown et reboot rendent chacun son mode", () => {
+  assert.equal(effectOf(interpret("shutdown", CONTEXT), "power")?.mode, "shutdown");
+  assert.equal(effectOf(interpret("reboot", CONTEXT), "power")?.mode, "reboot");
+});
+
+test("matrix réveille Néo et effraie la mascotte", () => {
+  const result = interpret("/matrix", CONTEXT);
+
+  assert.match(result.lines[1]?.t ?? "", /Néo/u);
+  assert.equal(effectOf(result, "emote")?.expression, "scared");
+});
+
+// Un easter egg annoncé sans son slash est refusé quand on le recopie. L'aide est le
+// premier endroit où l'on cherche : elle ne doit pas envoyer dans le mur.
+test("l'aide n'annonce jamais un easter egg sans son slash", () => {
+  const result = interpret("help", CONTEXT),
+    // La bulle de la mascotte est un texte d'aide de plus : elle nomme une commande.
+    shown = [...texts(result).slice(1), effectOf(result, "say")?.text ?? ""].join(" ");
+
+  for (const egg of ["cowsay", "joke", "matrix", "pet", "propose", "slime"]) {
+    assert.ok(shown.includes(`/${egg}`), `help doit écrire /${egg}`);
+    assert.doesNotMatch(shown, new RegExp(`(?<!/)\\b${egg}\\b`, "u"), `${egg} sans slash`);
+  }
+});
+
+test("l'aide de slime porte le slash qu'elle exige", () => {
+  for (const command of ["/slime", "/slime nawak", "/slime activity"]) {
+    for (const text of texts(interpret(command, CONTEXT)).slice(1)) {
+      assert.match(text, /^\/slime /u, `« ${text} » doit commencer par /slime`);
+    }
+  }
+});
+
+test("l'aide de propose porte le slash qu'elle exige", () => {
+  assert.match(texts(interpret("/propose", CONTEXT))[1] ?? "", /^\/propose \[-y\] <idée>/u);
+});
+
+// Le test de section passait avant presque toutes les branches, sans regarder le verbe :
+// n'importe quel mot suivi d'un identifiant y menait.
+test("seuls cd, bd et open naviguent vers leur argument", () => {
+  for (const verb of ["bd", "cd", "open"]) {
+    assert.equal(effectOf(interpret(`${verb} stack`, CONTEXT), "navigate")?.id, "stack", verb);
+  }
+
+  for (const other of ["xyzzy stack", "/sudo stack", "share stack", "clear stack"]) {
+    assert.equal(effectOf(interpret(other, CONTEXT), "navigate"), undefined, other);
+  }
+});
+
+test("un nom de section ou de fiche seul navigue toujours", () => {
+  assert.equal(effectOf(interpret("stack", CONTEXT), "navigate")?.id, "stack");
+  assert.equal(effectOf(interpret("m-kereis", CONTEXT), "navigate")?.id, "m-kereis");
+});
+
+test("un easter egg suivi d'un nom de section garde son texte", () => {
+  assert.match(texts(interpret("/sudo stack", CONTEXT))[1] ?? "", /sudoers/u);
+});
+
+test("clear suivi d'un nom de section vide quand même le journal", () => {
+  assert.ok(kinds(interpret("clear stack", CONTEXT)).includes("clear"));
+});
+
+// Huit thèmes, donc moins de dix : la commande les liste plutôt que de renvoyer à Tab.
+test("theme sans nom liste les thèmes", () => {
+  const result = interpret("theme", CONTEXT);
+
+  assert.match(texts(result)[1] ?? "", /^theme <nom> — dark · light · noctis$/u);
+  assert.equal(effectOf(result, "theme"), undefined);
+});
+
+test("theme applique le thème nommé", () => {
+  assert.equal(effectOf(interpret("theme noctis", CONTEXT), "theme")?.name, "noctis");
+});
+
+test("un thème inconnu le dit et rappelle la liste", () => {
+  const result = interpret("theme xyzzy", CONTEXT);
+
+  assert.equal(effectOf(result, "theme"), undefined);
+  assert.match(texts(result)[1] ?? "", /thème inconnu : xyzzy/u);
+  assert.ok(texts(result).some((text) => text.includes("theme <nom>")));
+});
+
+// « ai » et « ask » n'ont pas encore de partie pure. Les annoncer promet un résultat
+// qui ne vient pas : leur code reste, leur annonce part.
+test("l'aide n'annonce plus les commandes sans résultat", () => {
+  const shown = texts(interpret("help", CONTEXT)).slice(1).join(" ");
+
+  assert.doesNotMatch(shown, /\bask\b/u);
+  assert.doesNotMatch(shown, /\bai\b/u);
+});
+
+// Le CV n'est pas encore servi. La commande navigue vers whoami en attendant, et le dit :
+// une navigation muette se lit comme une commande cassée.
+test("cv annonce ce qu'il fait au lieu de se taire", () => {
+  const result = interpret("cv", CONTEXT);
+
+  assert.ok(kinds(result).includes("cv"));
+  assert.match(texts(result)[1] ?? "", /whoami/u);
+});
+
+// « cd » est une commande, et l'aide l'annonce. Répondre « commande introuvable » à
+// « cd » nu envoie chercher une faute là où il manque seulement un argument.
+test("les verbes qui naviguent expliquent ce qu'ils attendent", () => {
+  for (const verb of ["bd", "cd", "open"]) {
+    const result = interpret(verb, CONTEXT);
+
+    assert.doesNotMatch(texts(result).join(" "), /introuvable/u, verb);
+    assert.ok(
+      texts(result).some((text) => text.includes(`${verb} <section>`)),
+      verb,
+    );
+    assert.ok(
+      texts(result).some((text) => text.includes("whoami")),
+      verb,
+    );
+  }
+});
+
+test("une section inconnue le dit, et rappelle les sections", () => {
+  const result = interpret("cd xyzzy", CONTEXT);
+
+  assert.match(texts(result)[1] ?? "", /section inconnue : xyzzy/u);
+  assert.ok(texts(result).some((text) => text.includes("whoami")));
+});
+
+test("une cible de partage inconnue rappelle les cibles", () => {
+  const result = interpret("share xyzzy", { ...CONTEXT, shareTargets: ["linkedin"] });
+
+  assert.match(texts(result)[1] ?? "", /cible inconnue : xyzzy/u);
+  assert.ok(texts(result).some((text) => text.includes("share <cible>")));
+});
+
+// À dix valeurs, la ligne déborde du volet : la complétion les montre mieux, et l'aide
+// apprend la touche plutôt que de recopier une liste illisible.
+const many = (count: number) =>
+  Array.from({ length: count }, (_, index) => ({ id: `s-${index}`, label: `s-${index}` }));
+
+test("à partir de dix valeurs, l'aide renvoie à la tabulation", () => {
+  const listed = interpret("cd", { ...CONTEXT, details: [], sections: many(9) }),
+    deferred = interpret("cd", { ...CONTEXT, details: [], sections: many(10) });
+
+  assert.match(texts(listed)[1] ?? "", /s-0 · s-1/u);
+  assert.match(texts(deferred)[1] ?? "", /Tab propose les 10 valeurs/u);
+});
+
+// « expression » descend d'un niveau : il devient une sous-commande de slime, symétrique de
+// « activity ». L'ancien alias « /expression » ne répond plus.
+test("slime expression joue l'expression nommée", () => {
+  assert.equal(
+    effectOf(interpret("/slime expression happy", CONTEXT), "emote")?.expression,
+    "happy",
+  );
+});
+
+test("slime expression sans expression connue liste les expressions", () => {
+  for (const command of ["/slime expression", "/slime expression xyzzy"]) {
+    const result = interpret(command, CONTEXT);
+
+    assert.equal(effectOf(result, "emote"), undefined, command);
+    assert.ok(
+      texts(result).some((text) => text.includes("/slime expression <nom>")),
+      command,
+    );
+  }
+});
+
+test("expression n'est plus une commande à lui seul", () => {
+  assert.match(
+    texts(interpret("/expression happy", CONTEXT))[1] ?? "",
+    /commande introuvable : expression/u,
+  );
+});
+
+test("reboot ne dit plus qu'il éteint", () => {
+  assert.match(texts(interpret("reboot", CONTEXT))[1] ?? "", /Redémarrage/u);
+  assert.match(texts(interpret("shutdown", CONTEXT))[1] ?? "", /Extinction/u);
+});
+
+// « jump » était un second nom pour « drop » : la feuille de saut n'a jamais été jouée
+// par une commande.
+test("slime jump n'est plus un second nom pour drop", () => {
+  const result = interpret("/slime jump", CONTEXT);
+
+  assert.equal(effectOf(result, "drop"), undefined);
+  assert.ok(texts(result).some((text) => text.includes("/slime drop")));
+});
+
+test("matrix n'émet plus que son expression", () => {
+  assert.deepEqual(kinds(interpret("/matrix", CONTEXT)), ["track", "track", "emote"]);
 });

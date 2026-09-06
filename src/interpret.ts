@@ -14,9 +14,13 @@ export const TONES = ["acc", "fg", "fg2", "ok", "warn"] as const;
 
 export type Tone = (typeof TONES)[number];
 
+// Dix propositions au maximum, sans défilement. Le même seuil décide si une aide en
+// ligne peut lister ses valeurs ou doit renvoyer à la tabulation.
+export const MAX_SUGGESTIONS = 10;
+
 export type TrackValue = boolean | number | string;
 
-export type Mood = "alert" | "happy" | "idle" | "laugh" | "sad" | "scared" | "sleep";
+export type Expression = "alert" | "happy" | "idle" | "laugh" | "sad" | "scared" | "sleep";
 
 // Une ligne du journal : puce, couleur de puce, texte, ton. Les noms courts viennent du
 // canvas et voyagent jusqu'au balisage.
@@ -41,24 +45,22 @@ export type Effect =
   | { type: "ask"; query: string }
   | { type: "blowUp" }
   | { type: "clear" }
-  | { type: "copy" }
   | { type: "cv" }
   | { type: "drop" }
   | { type: "email" }
-  | { type: "emote"; mood: Mood }
-  | { type: "matrix" }
+  | { type: "emote"; expression: Expression }
   | { type: "options" }
   | { type: "pending"; answer?: string; payload: string }
   | { type: "power"; mode: string }
   | { type: "probeAI" }
   | { type: "replay" }
-  | { type: "say"; mood: Mood; text: string }
+  | { type: "say"; expression: Expression; text: string }
   | { type: "send"; payload: string }
   | { type: "sendMail" }
   | { type: "share"; kind: string; url: string }
   | { type: "shareMenu" }
   | { type: "state"; patch: { jokeIndex?: number; pending?: undefined } }
-  | { type: "theme" }
+  | { type: "theme"; name: string }
   | { type: "track"; event: string; props: Record<string, TrackValue> }
   | { type: "navigate"; id: string };
 
@@ -126,6 +128,7 @@ export interface CompletionContext {
   details: { id: string }[];
   sections: { id: string }[];
   shareTargets: string[];
+  themes: string[];
 }
 
 // Ce que la coquille passe a l'interpreteur. Tout est requis : la coquille ne l'appelle
@@ -145,7 +148,8 @@ export interface Context extends CompletionContext {
 
 // Une cle libre dans une table fermee. La table garde le type que l'inference lui donne,
 // et l'appelant recoit undefined quand la cle n'y est pas.
-const lookup = <V>(table: Readonly<Record<string, V>>, key: string): V | undefined => table[key];
+const lookup = <V>(table: Readonly<Record<string, V>>, key: string): V | undefined =>
+  Object.hasOwn(table, key) ? table[key] : undefined;
 
 const isTone = (value: string): value is Tone => TONES.some((tone) => tone === value);
 
@@ -173,13 +177,21 @@ const line = ({
   done = (t: string) => line({ marker: "✓", markerTone: "ok", text: t }),
   failed = (t: string) => line({ marker: "✗", markerTone: "warn", text: t }),
   echoed = (t: string) => line({ marker: "›", markerTone: "acc", text: t, tone: "fg2" }),
+  // Sous dix valeurs, la liste tient sur une ligne et se lit d'un coup. Au-dela, elle
+  // deborde du volet : la completion la montre mieux, et la ligne apprend la touche.
+  offer = (usage: string, values: string[]) =>
+    info(
+      values.length < MAX_SUGGESTIONS
+        ? `${usage} — ${values.join(" · ")}`
+        : `${usage} — Tab propose les ${Math.min(values.length, MAX_SUGGESTIONS)} valeurs`,
+    ),
   track = (event: string, props: Record<string, TrackValue>): Effect => ({
     event,
     props,
     type: "track",
   }),
-  say = (text: string, mood: Mood): Effect => ({ mood, text, type: "say" }),
-  MOODS: Record<Mood, string> = {
+  say = (text: string, expression: Expression): Effect => ({ expression, text, type: "say" }),
+  EXPRESSIONS: Record<Expression, string> = {
     alert: "surpris",
     happy: "content",
     idle: "neutre",
@@ -188,24 +200,22 @@ const line = ({
     scared: "apeuré",
     sleep: "endormi",
   },
-  // Deux listes, et elles disent deux choses différentes. « MOODS » nomme toutes les
-  // humeurs, « idle » compris, parce que « say » s'en sert pour ramener la mascotte au
+  // Deux listes, et elles disent deux choses différentes. « EXPRESSIONS » nomme toutes les
+  // expressions, « idle » compris, parce que « say » s'en sert pour ramener la mascotte au
   // repos. « OFFERED » est ce que la commande propose, et « idle » n'y est pas : il
   // n'aurait rien montré, la mascotte y est déjà. Ne les refusionnez pas.
-  OFFERED: Mood[] = ["alert", "happy", "laugh", "sad", "scared", "sleep"],
-  // Une activité demande un accessoire, là où une humeur se lit sur le visage. Le glossaire
+  OFFERED: Expression[] = ["alert", "happy", "laugh", "sad", "scared", "sleep"],
+  // Une activité demande un accessoire, là où une expression se lit sur le visage. Le glossaire
   // les sépare, et la commande aussi : « slime activity <nom> ».
   ACTIVITIES = ["bike", "coffee", "goal", "juggle", "lift", "train"],
   HELP = [
     "ls · cd <section> · bd <section>  — naviguer",
-    "theme · clear · options          — affichage",
-    "ask <question>                    — interroger ce portfolio",
-    "ai                                — état du modèle local",
+    "theme <nom> · clear · options     — affichage",
     "cv · email · send-mail            — CV et contact",
     "share <cible>                     — LinkedIn, GitHub, lien",
-    "propose [-y] <idée>               — suggérer un ajout",
-    "joke · cowsay · cowthink · wtf   — le reste",
-    "pet · slime <x> · matrix · shutdown — à vos risques",
+    "/propose [-y] <idée>              — suggérer un ajout",
+    "/joke · /cowsay                   — le reste",
+    "/pet · /slime · /matrix · shutdown — à vos risques",
   ],
   EGGS = {
     benjamin: {
@@ -246,38 +256,25 @@ const line = ({
       say: say("non.", "scared"),
     },
     vim: { egg: "vim", lines: [info("Piège classique. :q! ne fonctionne pas ici non plus.")] },
-    wtf: {
-      egg: "wtf",
-      lines: [
-        info("Vous êtes dans un portfolio déguisé en terminal. Rien ne s'exécute vraiment."),
-        muted("La colonne de gauche navigue, l'onglet « texte » donne la version lisible."),
-        line({
-          marker: "›",
-          markerTone: "acc",
-          text: "tapez help pour la liste complète.",
-          tone: "fg2",
-        }),
-      ],
-    },
   },
   // Les easter eggs ne repondent qu'au prefixe slash. Une vraie commande de terminal et un
   // raccourci du portfolio sont deux choses differentes, et taper « joke » sans slash ne
   // doit pas les melanger.
+  //
+  // L'ordre decide de ce qui se decouvre : taper « / » n'ouvre que dix propositions, et
+  // cette liste en porte onze. Les plus riches d'abord, l'alias en dernier.
   SLASH_ONLY = new Set([
-    "benjamin",
-    "brezinben",
-    "coffee",
-    "cowsay",
-    "cowthink",
+    "slime",
     "joke",
-    "matrix",
-    "mood",
+    "cowsay",
     "pet",
     "propose",
-    "slime",
+    "benjamin",
+    "matrix",
     "sudo",
     "vim",
-    "wtf",
+    "coffee",
+    "brezinben",
   ]),
   ALIASES = {
     "?": "help",
@@ -293,7 +290,6 @@ const line = ({
     ia: "ai",
     idee: "propose",
     mascotte: "pet",
-    mood: "slime",
     nano: "vim",
     partager: "share",
     poweroff: "shutdown",
@@ -321,9 +317,14 @@ const line = ({
 
     return { effects: [], lines: [muted("répondez « oui » ou « non » — Échap annule.")] };
   },
-  isMood = (value: string): value is Mood => OFFERED.some((mood) => mood === value),
+  isExpression = (value: string): value is Expression =>
+    OFFERED.some((expression) => expression === value),
+  emoted = (expression: Expression): Told => ({
+    effects: [{ expression, type: "emote" }, say(EXPRESSIONS[expression], expression)],
+    lines: [done(`le slime est ${EXPRESSIONS[expression]}.`)],
+  }),
   slime = (argument: string, name: string): Told => {
-    if (argument === "drop" || argument === "jump") {
+    if (argument === "drop") {
       return { effects: [{ type: "drop" }], lines: [done("le slime tombe et s'écrase.")] };
     }
 
@@ -335,7 +336,7 @@ const line = ({
       if (!ACTIVITIES.includes(name)) {
         return {
           effects: [],
-          lines: [info(`slime activity <nom> — ${ACTIVITIES.join(" · ")}`)],
+          lines: [offer("/slime activity <nom>", ACTIVITIES)],
         };
       }
 
@@ -345,29 +346,38 @@ const line = ({
       };
     }
 
-    if (!isMood(argument)) {
+    if (argument === "expression") {
+      return isExpression(name)
+        ? emoted(name)
+        : { effects: [], lines: [offer("/slime expression <nom>", OFFERED)] };
+    }
+
+    // « /slime happy » reste un raccourci : il marche, mais l'aide annonce le chemin long,
+    // symetrique de « /slime activity <nom> ».
+    if (!isExpression(argument)) {
       return {
         effects: [],
         lines: [
-          info(`slime <humeur> — ${OFFERED.join(" · ")}`),
-          info(`slime activity <nom> — ${ACTIVITIES.join(" · ")}`),
-          info("slime drop — le fait tomber du plafond"),
-          info("slime kill — le fait exploser, il revient de lui-même"),
+          offer("/slime expression <nom>", OFFERED),
+          offer("/slime activity <nom>", ACTIVITIES),
+          info("/slime drop — le fait tomber du plafond"),
+          info("/slime kill — le fait exploser, il revient de lui-même"),
         ],
       };
     }
 
-    return {
-      effects: [{ mood: argument, type: "emote" }, say(MOODS[argument], argument)],
-      lines: [done(`le slime est ${MOODS[argument]}.`)],
-    };
+    return emoted(argument);
   },
+  // Trois verbes naviguent vers leur argument, et eux seuls. Sans ce filtre, n'importe quel
+  // mot suivi d'un identifiant de section y menait : « share contact » partait naviguer au
+  // lieu de partager, et « /sudo stack » n'affichait jamais son texte.
+  NAVIGATORS = new Set(["bd", "cd", "open"]),
   // Le vocabulaire ne propose que des commandes vivantes, et les easter eggs avec leur
   // slash : sinon l'autocompletion propose ce que le dispatcher refuse.
   PLAIN = [
-    "ai",
+    "?",
     "aide",
-    "ask",
+    "bd",
     "cd",
     "clear",
     "cls",
@@ -383,37 +393,111 @@ const line = ({
     "send-mail",
     "share",
     "shutdown",
+    "sleep",
     "theme",
   ],
   VERBS = [...PLAIN, ...[...SLASH_ONLY].map((egg) => `/${egg}`)];
 
-export const MAX_SUGGESTIONS = 10;
-
 // Le vocabulaire dépend du chemin déjà tapé, et pas seulement du premier mot : « slime »
-// propose des humeurs, « slime activity » propose des activités. Proposer le vocabulaire
-// entier après l'un ou l'autre ferait du bruit, pas de l'aide.
+// propose ses sous-commandes, « slime expression » les expressions, « slime activity » les
+// activités. Proposer le vocabulaire entier après l'un ou l'autre ferait du bruit.
 const argumentsFor = (path: string, context: CompletionContext): string[] | undefined => {
   const ids = [...context.sections, ...context.details].map((entry) => entry.id),
-    slimeArguments = [...OFFERED, "activity", "drop", "kill"];
+    // Quatre sous-commandes claires valent mieux que dix mots melanges : les expressions
+    // vivent un niveau plus bas, derriere « expression ».
+    slimeArguments = ["expression", "activity", "drop", "kill"];
 
   return {
     bd: ids,
     cd: ids,
-    mood: slimeArguments,
-    "mood activity": ACTIVITIES,
     open: ids,
-    partager: context.shareTargets ?? [],
     share: context.shareTargets ?? [],
     slime: slimeArguments,
     "slime activity": ACTIVITIES,
+    "slime expression": OFFERED,
+    theme: context.themes,
   }[path];
 };
 
+// La liste ne montre que des noms, et un nom n'apprend rien : ni « bd », ni « goal ». Une
+// ligne sous la liste dit ce que fait la proposition choisie. Les noms venus du contenu
+// n'y sont pas : leur identifiant est deja leur libelle.
+const HINTS = {
+  "": {
+    "/benjamin": "qui je suis, en trois lignes",
+    "/brezinben": "qui je suis, en trois lignes",
+    "/coffee": "un café ? pas ici",
+    "/cowsay": "une vache dit ce que vous tapez",
+    "/joke": "une blague de développeur",
+    "/matrix": "réveille-toi, Néo",
+    "/pet": "caresse la mascotte",
+    "/propose": "suggérez un ajout à ce portfolio",
+    "/slime": "commande la mascotte",
+    "/sudo": "non.",
+    "/vim": "le piège classique",
+    "?": "la liste des commandes",
+    aide: "la liste des commandes",
+    bd: "ouvre une section",
+    cd: "ouvre une section",
+    clear: "vide le journal",
+    cls: "vide le journal",
+    cv: "mon CV",
+    dir: "liste les sections et les fiches",
+    email: "copie mon adresse",
+    help: "la liste des commandes",
+    ls: "liste les sections et les fiches",
+    open: "ouvre une section",
+    options: "ouvre les réglages",
+    reboot: "redémarre le terminal",
+    resume: "mon CV",
+    "send-mail": "ouvre votre logiciel de courrier",
+    share: "partage ce portfolio",
+    shutdown: "éteint le terminal",
+    sleep: "endort la mascotte",
+    theme: "change de thème",
+  },
+  slime: {
+    activity: "lui donne une occupation",
+    drop: "le fait tomber du plafond",
+    expression: "change son visage",
+    kill: "le fait exploser, il revient",
+  },
+  "slime activity": {
+    bike: "il pédale",
+    coffee: "il prend un café",
+    goal: "il marque un but",
+    juggle: "il jongle",
+    lift: "il soulève de la fonte",
+    train: "il prend le train",
+  },
+  "slime expression": {
+    alert: "il sursaute",
+    happy: "il est content",
+    laugh: "il rit",
+    sad: "il est triste",
+    scared: "il prend peur",
+    sleep: "il s'endort",
+  },
+};
+
+export const hintFor = (head: string, value: string): string =>
+  lookup(lookup<Record<string, string>>(HINTS, head) ?? {}, value) ?? "";
+
 export const candidates = (value: string, context: CompletionContext) => {
-  const slash = /^[/:]/.test(value),
-    bare = value.replace(/^[/:]+/, ""),
+  // L'interpréteur normalise les espaces avant de lire la commande. La complétion suit le
+  // même chemin, sinon un espace de trop la rend muette. L'espace final, lui, reste : c'est
+  // lui qui annonce l'argument suivant.
+  const input = value.replace(/^\s+/u, "").replace(/\s+/gu, " "),
+    slash = /^[/:]/.test(input),
+    bare = input.replace(/^[/:]+/, ""),
     parts = bare.split(" "),
     first = (parts[0] ?? "").toLowerCase();
+
+  // Une saisie faite d'espaces se normalise en chaine vide. Sans ce garde, appuyer sur la
+  // barre d'espace dans une ligne vide ouvrirait le vocabulaire entier.
+  if (input === "" && value !== "") {
+    return { frag: "", head: "", hits: [], slash: false };
+  }
 
   if (parts.length === 1) {
     const pool = [
@@ -432,11 +516,11 @@ export const candidates = (value: string, context: CompletionContext) => {
   }
 
   const command = lookup(ALIASES, first) ?? first,
-    typed = parts.slice(0, -1),
-    // L'alias ne porte que sur le premier mot : « mood activity » suit le meme chemin que
-    // « slime activity ».
+    typed = parts.slice(0, -1).map((word) => word.toLowerCase()),
+    // L'alias ne porte que sur le premier mot : « mascotte activity » suivrait le meme
+    // chemin que « slime activity ».
     path = [command, ...typed.slice(1)].join(" "),
-    pool = argumentsFor(path, context) ?? argumentsFor(typed.join(" "), context),
+    pool = argumentsFor(path, context),
     frag = (parts.at(-1) ?? "").toLowerCase();
 
   return {
@@ -557,14 +641,10 @@ const FACES_COW = {
 
     return EDGES.middle;
   },
-  bubble = (lines: string[], think: boolean): string[] => {
+  bubble = (lines: string[]): string[] => {
     const width = Math.max(...lines.map((entry) => entry.length)),
       top = ` ${"_".repeat(width + 2)}`,
       bottom = ` ${"-".repeat(width + 2)}`;
-
-    if (think) {
-      return [top, ...lines.map((entry) => `( ${entry.padEnd(width)} )`), bottom];
-    }
 
     if (lines.length === 1) {
       return [top, `< ${lines[0]} >`, bottom];
@@ -583,20 +663,15 @@ const FACES_COW = {
 
 export const cowsay = (
   text: string,
-  {
-    columns = 40,
-    mode = "",
-    think = false,
-  }: { columns?: number; mode?: string; think?: boolean } = {},
+  { columns = 40, mode = "" }: { columns?: number; mode?: string } = {},
 ): string[] => {
   const face = lookup(FACES_COW, mode) ?? { eyes: "oo", tongue: "  " },
-    link = think ? "o" : "\\",
     body = wrap(text.trim() === "" ? "Moo." : text.trim(), Math.max(8, columns - 6));
 
   return [
-    ...bubble(body, think),
-    `        ${link}   ^__^`,
-    `         ${link}  (${face.eyes})\\_______`,
+    ...bubble(body),
+    String.raw`        \   ^__^`,
+    `         \\  (${face.eyes})\\_______`,
     "            (__)\\       )\\/\\",
     `             ${face.tongue} ||----w |`,
     "                ||     ||",
@@ -697,7 +772,9 @@ export const interpret = (raw: string, context: Context): Outcome => {
   }
 
   const sections = [...context.sections, ...context.details],
-    target = sections.find((entry) => entry.id === command || entry.id === argument);
+    target = sections.find(
+      (entry) => entry.id === command || (NAVIGATORS.has(command) && entry.id === argument),
+    );
 
   if (command === "help") {
     return out(
@@ -710,7 +787,7 @@ export const interpret = (raw: string, context: Context): Outcome => {
           tone: "fg2",
         }),
       ],
-      [say("essaie « joke »", "happy")],
+      [say("essaie « /joke »", "happy")],
     );
   }
 
@@ -730,6 +807,13 @@ export const interpret = (raw: string, context: Context): Outcome => {
       [done(`section « ${target.label} » chargée.`)],
       [{ id: target.id, type: "navigate" }, say(`→ ${target.label}`, "happy")],
     );
+  }
+
+  if (NAVIGATORS.has(command)) {
+    const ids = sections.map((entry) => entry.id),
+      usage = offer(`${command} <section>`, ids);
+
+    return out(argument === "" ? [usage] : [failed(`section inconnue : ${argument}`), usage]);
   }
 
   if (command === "clear") {
@@ -753,7 +837,7 @@ export const interpret = (raw: string, context: Context): Outcome => {
       [line({ marker: "☺", markerTone: "acc", text: context.jokes[next] ?? "" })],
       [
         track("easter_egg", { nom: "joke" }),
-        { mood: "laugh", type: "emote" },
+        { expression: "laugh", type: "emote" },
         say("héhé", "laugh"),
         { patch: { jokeIndex: next }, type: "state" },
       ],
@@ -767,29 +851,27 @@ export const interpret = (raw: string, context: Context): Outcome => {
   if (command === "matrix") {
     return out(
       [line({ marker: "·", text: "Réveille-toi, Néo.", tone: "ok" })],
-      [
-        track("easter_egg", { nom: "matrix" }),
-        { mood: "scared", type: "emote" },
-        { type: "matrix" },
-      ],
+      [track("easter_egg", { nom: "matrix" }), { expression: "scared", type: "emote" }],
     );
   }
 
   if (command === "shutdown" || command === "reboot") {
+    const said = command === "reboot" ? "Redémarrage du système…" : "Extinction du système…";
+
     return out(
-      [line({ marker: "·", text: "Extinction du système…", tone: "warn" })],
+      [line({ marker: "·", text: said, tone: "warn" })],
       [{ mode: command, type: "power" }],
     );
   }
 
-  if (command === "cowsay" || command === "cowthink") {
+  if (command === "cowsay") {
     // Les huit visages de l'original restent, mais sans drapeau a retenir : un portfolio
     // n'est pas une page de manuel. Le tirage rend la commande vivante a chaque appel.
     const mode = COW_MODES[Math.floor(Math.random() * COW_MODES.length)] ?? "",
       said = rest.trim();
 
     return out(
-      cowsay(said, { columns: context.columns, mode, think: command === "cowthink" }).map((row) =>
+      cowsay(said, { columns: context.columns, mode }).map((row) =>
         line({ text: row, tone: "fg" }),
       ),
       [track("easter_egg", { nom: command })],
@@ -801,7 +883,7 @@ export const interpret = (raw: string, context: Context): Outcome => {
       idea = (forced ? rest.slice(2) : rest).trim();
 
     if (idea === "") {
-      return out([info("propose [-y] <idée> — suggérer un ajout à ce portfolio.")]);
+      return out([info("/propose [-y] <idée> — suggérer un ajout à ce portfolio.")]);
     }
 
     // `-y` vaut consentement : le visiteur a écrit le drapeau en même temps que l'idée.
@@ -818,17 +900,38 @@ export const interpret = (raw: string, context: Context): Outcome => {
     ]);
   }
 
-  if (command === "share") {
-    if (argument === "") {
-      const ids = (context.share?.targets ?? []).map((entry) => entry.id).join(" · ");
+  // Le CV n'est pas encore servi. La commande ouvre whoami en attendant, et l'annonce :
+  // une navigation muette se lit comme une commande cassée.
+  if (command === "cv") {
+    return out(
+      [info("le CV arrive. En attendant, « whoami » en donne l'essentiel.")],
+      [{ type: "cv" }],
+    );
+  }
 
-      return out([info(`share <cible> — ${ids}`)], [{ type: "shareMenu" }]);
+  if (command === "theme") {
+    if (argument === "") {
+      return out([offer("theme <nom>", context.themes)]);
+    }
+
+    if (!context.themes.includes(argument)) {
+      return out([failed(`thème inconnu : ${argument}`), offer("theme <nom>", context.themes)]);
+    }
+
+    return out([done(`thème « ${argument} ».`)], [{ name: argument, type: "theme" }]);
+  }
+
+  if (command === "share") {
+    const targets = (context.share?.targets ?? []).map((entry) => entry.id);
+
+    if (argument === "") {
+      return out([offer("share <cible>", targets)], [{ type: "shareMenu" }]);
     }
 
     const chosen = shareTarget(argument, context.share ?? {});
 
     if (!chosen) {
-      return out([failed(`cible inconnue : ${argument}`)]);
+      return out([failed(`cible inconnue : ${argument}`), offer("share <cible>", targets)]);
     }
 
     return out(
@@ -851,12 +954,10 @@ export const interpret = (raw: string, context: Context): Outcome => {
   const deferred = {
       ai: { type: "probeAI" },
       ask: { query: rest, type: "ask" },
-      cv: { type: "cv" },
       email: { type: "email" },
       options: { type: "options" },
 
       "send-mail": { type: "sendMail" },
-      theme: { type: "theme" },
     } satisfies Record<string, Effect>,
     waiting = lookup<Effect>(deferred, command);
 

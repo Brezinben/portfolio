@@ -338,22 +338,22 @@ test("la commande sleep endort vraiment la mascotte", async ({ page }) => {
   await expect(mascot(page)).toHaveClass(/slime--sleep/u);
 });
 
-// Trois humeurs jouaient « jump » et une quatrieme « wink » : la commande annoncait une
+// Trois expressions jouaient « jump » et une quatrieme « wink » : la commande annoncait une
 // emotion et rendait le geste d'a cote. Chacune porte maintenant sa feuille.
-for (const humeur of ["alert", "happy", "laugh", "sad", "scared", "sleep"]) {
-  test(`l'humeur ${humeur} joue sa propre feuille`, async ({ page }) => {
+for (const expression of ["alert", "happy", "laugh", "sad", "scared", "sleep"]) {
+  test(`l'expression ${expression} joue sa propre feuille`, async ({ page }) => {
     const cli = await boot(page);
 
-    await cli.fill(`/slime ${humeur}`);
+    await cli.fill(`/slime ${expression}`);
     await cli.press("Enter");
 
-    await expect(mascot(page)).toHaveClass(new RegExp(`slime--${humeur}\\b`, "u"));
+    await expect(mascot(page)).toHaveClass(new RegExp(`slime--${expression}\\b`, "u"));
   });
 }
 
 // Une animation infinie n'emet jamais animationend. Sans le minuteur, ces trois-la
 // tourneraient jusqu'a la fin de la visite.
-test("les humeurs qui bouclent rendent la main au repos", async ({ page }) => {
+test("les expressions qui bouclent rendent la main au repos", async ({ page }) => {
   const cli = await boot(page);
 
   await cli.fill("/slime scared");
@@ -724,17 +724,17 @@ test("le train emmène la mascotte, puis la chute la ramène", async ({ page }) 
   await expect(mascot(page)).toHaveClass(/slime--idle/u, { timeout: 4000 });
 });
 
-// Une trouvaille vaut une celebration, sauf quand la commande dit deja une humeur.
-test("un easter egg sans humeur déclenche le but", async ({ page }) => {
+// Une trouvaille vaut une celebration, sauf quand la commande dit deja une expression.
+test("un easter egg sans expression déclenche le but", async ({ page }) => {
   const cli = await boot(page);
 
-  await cli.fill("/wtf");
+  await cli.fill("/coffee");
   await cli.press("Enter");
 
   await expect(mascot(page)).toHaveClass(/slime--goal/u);
 });
 
-test("un easter egg qui dit son humeur garde son humeur", async ({ page }) => {
+test("un easter egg qui dit son expression garde son expression", async ({ page }) => {
   const cli = await boot(page);
 
   await cli.fill("/joke");

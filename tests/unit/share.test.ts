@@ -32,6 +32,7 @@ const SHARE = {
     sections: [{ id: "whoami", label: "whoami" }],
     share: SHARE,
     shareTargets: [],
+    themes: [],
   };
 
 test("les jetons sont substitués et encodés", () => {
