@@ -1050,7 +1050,7 @@
               :style="`animation:${anim ? 'dotPulse 1.2s ease-in-out infinite' : 'none'}`">exécution…</span></p>
         </template>
         <div data-result
-          :style="`flex:1 1 auto;min-height:0;overflow-y:auto;align-content:start;display:grid;gap:2px;line-height:1.6;visibility:${running ? 'hidden' : 'visible'}`">
+          :style="`flex:1 1 auto;min-height:0;overflow-y:auto;padding-right:4px;align-content:start;display:grid;gap:2px;line-height:1.6;visibility:${running ? 'hidden' : 'visible'}`">
 
           <template x-if="current.view === 'timeline'">
             <div data-timeline role="listbox" aria-label="Parcours professionnel" aria-orientation="vertical"
@@ -1341,11 +1341,11 @@
           <div role="group" aria-label="Affichage" style="display:grid;gap:6px">
             <template x-for="toggle in TOGGLES" :key="toggle.key">
               <button type="button" data-ctl="opt" data-toggle :aria-pressed="value(toggle.key)"
-                @click="flip(toggle.key)"
-                :style="`width:100%;min-height:44px;display:flex;justify-content:space-between;align-items:center;gap:12px;padding:0 12px;border:1px solid var(--edge);border-left:2px solid ${value(toggle.key) ? 'var(--ok)' : 'var(--fg2)'};background:transparent;color:var(--fg);font-family:inherit;font-size:13px;cursor:pointer`"><span
+                :disabled="lockedToggle(toggle.key)" @click="flip(toggle.key)"
+                :style="`width:100%;min-height:44px;display:flex;justify-content:space-between;align-items:center;gap:12px;padding:0 12px;border:1px solid var(--edge);border-left:2px solid ${value(toggle.key) ? 'var(--ok)' : 'var(--fg2)'};background:transparent;color:var(--${lockedToggle(toggle.key) ? 'fg2' : 'fg'});font-family:inherit;font-size:13px;cursor:${lockedToggle(toggle.key) ? 'not-allowed' : 'pointer'}`"><span
                   x-text="toggle.label"></span><span
                   :style="`color:${value(toggle.key) ? 'var(--ok)' : 'var(--fg2)'}`"
-                  x-text="value(toggle.key) ? toggle.on : toggle.off"></span></button>
+                  x-text="lockedToggle(toggle.key) ? 'système' : (value(toggle.key) ? toggle.on : toggle.off)"></span></button>
             </template>
           </div>
 
