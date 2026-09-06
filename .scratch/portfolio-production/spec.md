@@ -330,6 +330,19 @@ that `padding-line-between-statements` exists to separate. `id-length` would ren
 command dispatcher, which is deliberately one point. `no-magic-numbers` and `no-ternary` are
 off at Benjamin's request.
 
+`one-var` has no inverse rule to turn on instead. `one-var-declaration-per-line` looks like
+one and is not: it governs the line breaks between declarations that are already grouped, not
+whether they are grouped at all. It is also deprecated in ESLint since v8.53, in favour of
+`@stylistic/eslint-plugin-js`.
+
+Two `style` rules cannot both hold on a module that exports types and values. `import`'s
+`consistent-type-specifier-style` demands a top-level `import type` statement.
+`no-duplicate-imports` then reads that statement as a second import of the same module and
+rejects it. `src/app.ts` imports both from `src/interpret.ts`, so one rule had to go.
+`consistent-type-specifier-style` is off, and the type specifiers stay inline. Tests keep
+`no-duplicate-imports` off instead: a test that imports the type and the value separately
+names what it checks.
+
 One operational note that cost an hour to find: the `@stylistic` rules are a JavaScript
 plugin, and the standalone oxlint binary loads no JavaScript plugin. Run through `npx oxlint`
 and they fire; run the bare binary and **they are silently inert** — no error, no warning, no
