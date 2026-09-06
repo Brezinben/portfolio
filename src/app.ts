@@ -1530,6 +1530,12 @@ document.addEventListener("alpine:init", () => {
         return globalThis.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
       },
 
+      // Le meme seuil que la requete de media qui empile les volets. Les deux doivent
+      // changer ensemble : la coquille ne peut pas lire la valeur de la feuille de style.
+      get stacked() {
+        return globalThis.matchMedia?.("(max-width: 900px)").matches ?? false;
+      },
+
       startMascot() {
         this.walker = setInterval(() => this.wander(), 2400);
         this.twitcher = setInterval(() => this.twitch(), TWITCH_MS);
@@ -1844,7 +1850,23 @@ document.addEventListener("alpine:init", () => {
         this.play(id);
         // Une section plus longue que la precedente ne doit pas heriter d'un journal trop
         // haut : le resultat serait coupe des l'ouverture.
-        this.$nextTick(() => this.setLogHeight(this.logHeight));
+        this.$nextTick(() => {
+          this.setLogHeight(this.logHeight);
+          this.revealResult();
+        });
+      },
+
+      // Sur la colonne empilee, les listes sont sous le volet central. Choisir une section
+      // rendait donc le resultat au-dessus de l'ecran, et le visiteur restait sur la liste.
+      revealResult() {
+        if (!this.stacked) {
+          return;
+        }
+
+        document.querySelector<HTMLElement>('[data-pane="main"]')?.scrollIntoView({
+          behavior: this.anim && !this.reduced ? "smooth" : "auto",
+          block: "start",
+        });
       },
 
       get all() {
