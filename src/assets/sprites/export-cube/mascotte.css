@@ -1,0 +1,193 @@
+/* Mascotte cube — vingt états + transitions.
+   Frames de 32×32. Ici à ×4 (128 px) ; sur le site la mascotte est à ×2 (64 px) :
+   voir la note d'échelle en bas de fichier. */
+
+.mascotte {
+  width: 128px;
+  height: 128px;
+  background-repeat: no-repeat;
+  background-position: 0 0;
+  image-rendering: pixelated;
+  touch-action: none;
+}
+
+@keyframes ms-8 {
+  to {
+    background-position: -1024px 0;
+  }
+}
+@keyframes ms-12 {
+  to {
+    background-position: -1536px 0;
+  }
+}
+@keyframes ms-16 {
+  to {
+    background-position: -2048px 0;
+  }
+}
+@keyframes ms-24 {
+  to {
+    background-position: -3072px 0;
+  }
+}
+@keyframes ms-40 {
+  to {
+    background-position: -5120px 0;
+  }
+}
+
+/* états bouclés */
+.ms--idle {
+  background-image: url("cube-idle.png");
+  background-size: 1536px 128px;
+  animation: ms-12 1.2s steps(12) infinite;
+}
+.ms--type {
+  background-image: url("cube-type.png");
+  background-size: 1536px 128px;
+  animation: ms-12 0.72s steps(12) infinite;
+}
+.ms--load {
+  background-image: url("cube-load.png");
+  background-size: 2048px 128px;
+  animation: ms-16 0.96s steps(16) infinite;
+}
+.ms--sleep {
+  background-image: url("cube-sleep.png");
+  background-size: 2048px 128px;
+  animation: ms-16 2.4s steps(16) infinite;
+}
+.ms--grab {
+  background-image: url("cube-grab.png");
+  background-size: 1536px 128px;
+  animation: ms-12 1.2s steps(12) infinite;
+}
+.ms--drag-right {
+  background-image: url("cube-drag-right.png");
+  background-size: 1024px 128px;
+  animation: ms-8 0.4s steps(8) infinite;
+}
+.ms--drag-left {
+  background-image: url("cube-drag-left.png");
+  background-size: 1024px 128px;
+  animation: ms-8 0.4s steps(8) infinite;
+}
+.ms--bike {
+  background-image: url("cube-bike.png");
+  background-size: 2048px 128px;
+  animation: ms-16 0.96s steps(16) infinite;
+}
+
+/* états en une passe : la dernière frame reste affichée */
+.ms--wink {
+  background-image: url("cube-wink.png");
+  background-size: 1536px 128px;
+  animation: ms-12 0.96s steps(12) 1;
+  animation-fill-mode: forwards;
+}
+.ms--jump {
+  background-image: url("cube-jump.png");
+  background-size: 2048px 128px;
+  animation: ms-16 0.96s steps(16) 1;
+  animation-fill-mode: forwards;
+}
+.ms--train {
+  background-image: url("cube-train.png");
+  background-size: 3072px 128px;
+  animation: ms-24 1.44s steps(24) 1;
+  animation-fill-mode: forwards;
+}
+.ms--morph {
+  background-image: url("cube-morph.png");
+  background-size: 2048px 128px;
+  animation: ms-16 1.6s steps(16) 1;
+  animation-fill-mode: forwards;
+}
+.ms--splat-right {
+  background-image: url("cube-splat-right.png");
+  background-size: 1536px 128px;
+  animation: ms-12 0.96s steps(12) 1;
+  animation-fill-mode: forwards;
+}
+.ms--splat-left {
+  background-image: url("cube-splat-left.png");
+  background-size: 1536px 128px;
+  animation: ms-12 0.96s steps(12) 1;
+  animation-fill-mode: forwards;
+}
+.ms--splat-floor {
+  background-image: url("cube-splat-floor.png");
+  background-size: 1536px 128px;
+  animation: ms-12 0.96s steps(12) 1;
+  animation-fill-mode: forwards;
+}
+.ms--splat-ceiling {
+  background-image: url("cube-splat-ceiling.png");
+  background-size: 1536px 128px;
+  animation: ms-12 0.96s steps(12) 1;
+  animation-fill-mode: forwards;
+}
+.ms--splat-tl {
+  background-image: url("cube-splat-tl.png");
+  background-size: 1536px 128px;
+  animation: ms-12 0.96s steps(12) 1;
+  animation-fill-mode: forwards;
+}
+.ms--splat-tr {
+  background-image: url("cube-splat-tr.png");
+  background-size: 1536px 128px;
+  animation: ms-12 0.96s steps(12) 1;
+  animation-fill-mode: forwards;
+}
+.ms--splat-bl {
+  background-image: url("cube-splat-bl.png");
+  background-size: 1536px 128px;
+  animation: ms-12 0.96s steps(12) 1;
+  animation-fill-mode: forwards;
+}
+.ms--splat-br {
+  background-image: url("cube-splat-br.png");
+  background-size: 1536px 128px;
+  animation: ms-12 0.96s steps(12) 1;
+  animation-fill-mode: forwards;
+}
+
+/* transitions de la chaîne */
+.ms--entree {
+  background-image: url("slime-evolve-cube.png");
+  background-size: 5120px 128px;
+  animation: ms-40 2.4s steps(40) 1;
+  animation-fill-mode: forwards;
+}
+.ms--sortie {
+  background-image: url("cube-evolve-pingouin.png");
+  background-size: 5120px 128px;
+  animation: ms-40 2.4s steps(40) 1;
+  animation-fill-mode: forwards;
+}
+
+/* variantes de thème : même géométrie, palette remappée */
+.ms--idle.theme-noctis {
+  background-image: url("cube-idle-noctis.png");
+}
+.ms--idle.theme-azureus {
+  background-image: url("cube-idle-azureus.png");
+}
+.ms--idle.theme-uva {
+  background-image: url("cube-idle-uva.png");
+}
+
+/* décollement : la feuille de plaquage jouée à l'envers */
+.ms--unstick {
+  animation-direction: reverse;
+}
+
+/* À ×2 (64 px), diviser par deux la taille, le background-size et les keyframes :
+   cube-idle → background-size: 768px 64px, keyframe à -768px. */
+
+@media (prefers-reduced-motion: reduce) {
+  .mascotte {
+    animation: none;
+  }
+}

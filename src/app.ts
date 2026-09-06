@@ -121,9 +121,6 @@ const BOOT_MS = 2000,
   PANES = ["nav", "main", "out"],
   VERTICAL = new Set(["ArrowDown", "ArrowUp"]),
   OPTS_KEY = "bd-term-opts",
-  // Quatre clés, et quatre seulement. La lecture filtre dessus : le canvas injectait dans
-  // l'état tout ce que le stockage contenait.
-  KEPT = ["anim", "logH", "out", "theme"],
   THEMES = [
     { acc: "#F5B83B", bg: "#242538", edge: "#33344a", id: "dark", label: "ambra" },
     { acc: "#e6a000", bg: "#fff6f6", edge: "#ded2d2", id: "light", label: "solis" },
@@ -135,7 +132,7 @@ const BOOT_MS = 2000,
     { acc: "#00707f", bg: "#f7fbfc", edge: "#cfdde1", id: "hibernus", label: "hibernus" },
   ],
   // Les valeurs d'etat restent en anglais : c'est la langue d'un terminal.
-  TOGGLES = [
+  TOGGLES: { key: ToggleKey; label: string; off: string; on: string }[] = [
     { key: "anim", label: "animations", off: "off", on: "on" },
     { key: "out", label: "output pane", off: "off", on: "on" },
   ],
@@ -383,8 +380,19 @@ const BOOT_MS = 2000,
 
 // Alpine vient du script vendu a cote de la page : il n'apporte pas ses types.
 declare const Alpine: {
-  data: (name: string, factory: () => unknown) => void;
+  data: (name: string, factory: () => State) => void;
 };
+
+// Umami est charge par une balise script tierce. Son contrat se declare ici, une fois :
+// « absent » est un cas normal, un bloqueur suffit a le produire.
+interface Umami {
+  track?: (name: string, data?: Record<string, TrackValue>) => void;
+}
+
+declare global {
+  // eslint-disable-next-line no-var, vars-on-top
+  var umami: Umami | undefined;
+}
 
 // Une cle libre dans une table fermee : la table garde son type, l'appelant recoit
 // undefined quand la cle n'y est pas.
@@ -395,6 +403,19 @@ const lookup = <V>(table: Readonly<Record<string, V>>, key: string): V | undefin
 interface Magics {
   $nextTick: (callback: () => void) => void;
   $refs: Record<string, HTMLElement | undefined>;
+}
+
+// Les deux seuls reglages qui se basculent. Nommer l'union permet d'indexer l'etat par la
+// cle sans effacer son type.
+type ToggleKey = "anim" | "out";
+
+// Ce que le stockage rend. Rien n'y est garanti : c'est une entree exterieure, et le canvas
+// injectait dans l'etat tout ce qu'il y trouvait.
+interface SavedOpts {
+  anim?: unknown;
+  logH?: unknown;
+  out?: unknown;
+  theme?: unknown;
 }
 
 // Une position, ou un pas : deux nombres qui vont toujours ensemble.
@@ -665,6 +686,8 @@ document.addEventListener("alpine:init", () => {
           return this.rowMove(cells, at, key);
         }
 
+        // SAFETY: « at » vient de cells.indexOf et le cas -1 est sorti juste au-dessus,
+        // donc l'index designe une cellule de la liste.
         const from = rect(cells[at] as HTMLElement),
           beyond = cells.filter((cell) =>
             key === "ArrowDown" ? rect(cell).top > from.top + 1 : rect(cell).top < from.top - 1,
@@ -1459,14 +1482,12 @@ document.addEventListener("alpine:init", () => {
         this.mascotPlay(Math.random() < 0.5 ? "wink" : "jump");
       },
 
-      value(key: string) {
-        return Boolean(lookup(this as unknown as Record<string, boolean>, key));
+      value(key: ToggleKey) {
+        return this[key];
       },
 
-      flip(key: string) {
-        const flags = this as unknown as Record<string, boolean>;
-
-        flags[key] = !flags[key];
+      flip(key: ToggleKey) {
+        this[key] = !this[key];
         this.persist();
       },
 
@@ -1484,7 +1505,7 @@ document.addEventListener("alpine:init", () => {
         };
 
         // Le réglage « animations off » coupe aussi la transition de thème.
-        if (!this.anim || typeof document.startViewTransition !== "function") {
+        if (!this.anim || !document.startViewTransition) {
           apply();
 
           return;
@@ -1633,23 +1654,33 @@ document.addEventListener("alpine:init", () => {
       },
 
       restore() {
-        let saved = {};
+        let saved: SavedOpts = {};
 
         try {
-          saved = JSON.parse(globalThis.localStorage.getItem(OPTS_KEY) ?? "{}");
-
-          for (const key of KEPT) {
-            if (lookup(saved, key) !== undefined) {
-              (this as unknown as Record<string, unknown>)[key] = lookup(saved, key);
-            }
-          }
+          // SAFETY: la forme du stockage n'est pas garantie. L'affirmation ne promet rien :
+          // SavedOpts ne declare que des « unknown », et chaque cle est verifiee plus bas.
+          saved = JSON.parse(globalThis.localStorage.getItem(OPTS_KEY) ?? "{}") as SavedOpts;
         } catch {
           // Un stockage illisible ou refusé ne doit pas empêcher la page de démarrer.
         }
 
-        if (lookup(saved, "theme") === undefined) {
-          this.theme = this.preferredTheme();
+        // Quatre clés, et quatre seulement, chacune verifiee avant d'entrer dans l'etat.
+        if (saved.anim === true || saved.anim === false) {
+          this.anim = saved.anim;
         }
+
+        if (saved.out === true || saved.out === false) {
+          this.out = saved.out;
+        }
+
+        if (Number.isFinite(saved.logH)) {
+          this.logH = Number(saved.logH);
+        }
+
+        // Un thème inconnu vaut un thème absent : la préférence du système tranche.
+        this.theme = THEMES.some((entry) => entry.id === saved.theme)
+          ? String(saved.theme)
+          : this.preferredTheme();
       },
 
       // Première visite : la page suit la préférence du système. Sans préférence, elle
@@ -1660,11 +1691,10 @@ document.addEventListener("alpine:init", () => {
 
       persist() {
         try {
-          const saved = Object.fromEntries(
-            KEPT.map((key) => [key, lookup(this as unknown as Record<string, unknown>, key)]),
+          globalThis.localStorage.setItem(
+            OPTS_KEY,
+            JSON.stringify({ anim: this.anim, logH: this.logH, out: this.out, theme: this.theme }),
           );
-
-          globalThis.localStorage.setItem(OPTS_KEY, JSON.stringify(saved));
         } catch {
           // Navigation privée ou stockage plein : le réglage vaut pour cette visite.
         }
@@ -1812,9 +1842,7 @@ document.addEventListener("alpine:init", () => {
       // n'écrit rien en console.
       track(event: string, props?: Record<string, TrackValue>) {
         try {
-          (
-            globalThis as { umami?: { track?: (name: string, data?: unknown) => void } }
-          ).umami?.track?.(event, props);
+          globalThis.umami?.track?.(event, props);
         } catch {
           // Un bloqueur a mange le script : ce n'est pas une panne du portfolio.
         }
@@ -1870,7 +1898,7 @@ document.addEventListener("alpine:init", () => {
 
         const feedback = this.feedback ?? {};
 
-        if ((globalThis as { umami?: { track?: unknown } }).umami?.track) {
+        if (globalThis.umami?.track) {
           this.track(feedback.event ?? "proposition", { message: text });
           this.journal = [
             ...this.journal,
