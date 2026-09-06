@@ -1,6 +1,6 @@
 # Le visiteur n'atteint pas la réponse, et ne peut rien vérifier
 
-Status: ready-for-agent
+Status: done
 
 ## Problem Statement
 
@@ -288,3 +288,33 @@ pas sur le rendu.
 `BOOT_MS` est une valeur figée au sens du glossaire. Cette spec ne la transforme pas en
 réglage : elle lui ajoute deux sorties, l'une demandée par le visiteur, l'autre demandée par
 son système.
+
+
+## Comments
+
+Livré sur `main`, commits `13de655` à `e77bbe2`. 268 tests navigateur et 137 tests unitaires
+au vert, lint et typecheck propres, `bun run build` passé.
+
+Cinq des six corrections sont faites. Les liens de preuve ne le sont pas : ils demandent des
+URL exactes, et aucune n'était disponible. Le mécanisme `ContentLine.href` n'a pas été écrit
+non plus, faute d'un seul lien à porter — du code sans usage. À reprendre quand la
+déclaration RGAA de Gares & Connexions, `fruggr` et `herdr` auront leur adresse.
+
+Le CV ne sera pas un PDF : la commande `cv` ouvre la version texte, qui porte déjà le
+parcours complet.
+
+Six corrections sont sorties du périmètre initial, trouvées en chemin :
+
+- La jauge de contexte ne comptait que le journal. Déplacer la réponse de `help` la rendait
+  presque gratuite et la compaction ne partait plus.
+- La sortie lisait la dernière commande au lieu de la section ouverte, et se vidait.
+- La largeur de la colonne des clés se mesurait sur le résultat, donc sur une réponse sans
+  sortie : chaque clé passait sous sa valeur.
+- La flèche droite menait toujours à la ligne de commande, en passant devant la grille des
+  technos et la frise.
+- Le contour du focus était rogné à droite : le résultat défile, il n'avait pas la place.
+- La bascule des animations restait active sous mouvement réduit, où elle ne peut rien.
+
+Deux décisions de lint ont été prises au passage : `no-duplicate-imports` s'applique
+désormais à la source et pas aux tests, et le jeu recommandé de `@stylistic` est appliqué,
+moins les huit règles qui contredisent oxfmt. Voir `.scratch/portfolio-production/spec.md`.
