@@ -2,6 +2,7 @@ import { expect, test } from "@playwright/test";
 import { readFile, readdir } from "node:fs/promises";
 
 const BUDGET_KO = 150,
+  TEXTE_KO = 60,
   SPRITES_KO = 80,
   FUSION_KO = 24,
   // Un hôte tiers qui n'envoie pas timing-allow-origin fait rapporter un transferSize nul au
@@ -116,4 +117,38 @@ test("le mouvement réduit ne charge aucune feuille", async ({ page }) => {
   );
 
   expect(feuilles).toEqual([]);
+});
+
+// La version texte a son propre budget. Elle échappait à celui de la version terminal, qui
+// ne mesure que « / », et elle tire depuis peu une police de 34 Ko : sans ce plafond, une
+// seconde police ou une image entrerait dans la page de repli sans que personne ne le voie.
+test("la version texte tient dans son budget de poids", async ({ page }) => {
+  await page.goto("/texte.html");
+  await page.evaluate(() => document.fonts.ready);
+
+  const measured = await page.evaluate(() => {
+      // SAFETY: la specification garantit PerformanceNavigationTiming pour l'entree
+      // « navigation » et PerformanceResourceTiming pour « resource ».
+      const [navigation] = performance.getEntriesByType(
+          "navigation",
+        ) as PerformanceNavigationTiming[],
+        resources = performance.getEntriesByType("resource") as PerformanceResourceTiming[];
+
+      return {
+        détail: resources.map((entry) => ({
+          ko: Math.round(entry.transferSize / 102.4) / 10,
+          url: entry.name.replace(location.origin, ""),
+        })),
+        tiers: resources.filter((entry) => new URL(entry.name).origin !== location.origin).length,
+        total:
+          (navigation?.transferSize ?? 0) +
+          resources.reduce((sum, entry) => sum + entry.transferSize, 0),
+      };
+    }),
+    totalKo = Math.round(measured.total / 102.4) / 10;
+
+  expect(totalKo, `détail : ${JSON.stringify(measured.détail)}`).toBeLessThanOrEqual(TEXTE_KO);
+
+  // La page de repli ne sort vers aucun hôte tiers, mesure d'audience comprise.
+  expect(measured.tiers).toBe(0);
 });
