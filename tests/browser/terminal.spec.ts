@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import type { Page } from "@playwright/test";
 
 const BOOT_MS = 2000;
 
@@ -35,6 +36,47 @@ test("le boot dure au moins deux secondes", async ({ page }) => {
   await expect(page.locator("[data-boot]")).toHaveCount(0, { timeout: 10_000 });
 
   expect(Date.now() - started).toBeGreaterThanOrEqual(BOOT_MS);
+});
+
+// Le plancher est un effet, et la section impact annonce des animations désactivables.
+// Un visiteur qui a réglé son système ne doit pas attendre devant un log qu'il n'a pas
+// demandé : il ne reste que le temps de charger le contenu.
+test("le mouvement réduit supprime le plancher du boot", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+
+  const started = Date.now();
+
+  await page.goto("/");
+  await expect(page.locator("[data-boot]")).toHaveCount(0, { timeout: 10_000 });
+
+  expect(Date.now() - started).toBeLessThan(BOOT_MS);
+});
+
+for (const [geste, jouer] of [
+  ["une touche", async (page: Page) => page.keyboard.press("Enter")],
+  ["un clic", async (page: Page) => page.locator("[data-boot]").click()],
+] as const) {
+  test(`${geste} abrège le boot`, async ({ page }) => {
+    await page.goto("/");
+    await expect(page.locator("[data-boot]")).toBeVisible();
+
+    const started = Date.now();
+
+    await jouer(page);
+    await expect(page.locator("[data-boot]")).toHaveCount(0, { timeout: 10_000 });
+
+    expect(Date.now() - started).toBeLessThan(BOOT_MS);
+  });
+}
+
+// La touche qui abrège s'arrête là. Sinon le visiteur tape une commande sans le vouloir.
+test("la touche qui abrège le boot ne part pas dans la saisie", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.locator("[data-boot]")).toBeVisible();
+  await page.keyboard.press("a");
+  await expect(page.locator("[data-boot]")).toHaveCount(0, { timeout: 10_000 });
+
+  await expect(page.getByLabel("Commande")).toHaveValue("");
 });
 
 // Le seul tiers admis est la mesure d'audience auto-hébergée, différée et facultative.
