@@ -68,6 +68,18 @@ test("une commande qui prend le résultat ne vide pas la sortie", async ({ page 
 
   await expect(page.locator('[data-pane="out"]')).toContainText("système");
   await expect(page.locator('[data-pane="out"]')).toContainText("Développeur IA / Full Stack");
+
+  // La colonne des clés se mesure sur la section, elle aussi : mesurée sur la réponse,
+  // elle retombait à son plancher et la clé passait sous sa valeur.
+  const chevauche = await page.evaluate(() =>
+    [...document.querySelectorAll('[data-pane="out"] dt')].some((key) => {
+      const value = key.nextElementSibling;
+
+      return value ? key.getBoundingClientRect().right > value.getBoundingClientRect().left : false;
+    }),
+  );
+
+  expect(chevauche, "aucune clé ne passe sous sa valeur").toBe(false);
 });
 
 test("la barre d'état nomme la commande qui occupe le résultat", async ({ page }) => {

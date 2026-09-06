@@ -1137,7 +1137,7 @@ document.addEventListener("alpine:init", () => {
       },
 
       get outKeyWidth() {
-        const keys = this.current.out.lines.map((row: { k: unknown }) => String(row.k).length);
+        const keys = this.open.out.lines.map((row: { k: unknown }) => String(row.k).length);
 
         return `${Math.max(3, ...keys)}ch`;
       },
