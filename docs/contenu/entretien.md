@@ -233,9 +233,28 @@ Ce que le rôle de lead a changé, d'après Benjamin : **l'encadrement des déve
 Pas la migration Vue 2 vers Vue 3 ni les renforcements de sécurité, qui restent du
 travail de développement.
 
-## RUN fruggr · 2023 → 2024
+## digital4better · équipe RUN · 2023 → 2024
 
-À recueillir.
+> Du coup pour fruggr, je suis arrivé là-bas et j'ai d'abord intégré l'équipe. Alors déjà,
+> c'est pas l'entreprise : c'est digital4better, avec un 4 pour le « for ».
+>
+> Ensuite du coup j'ai rejoint l'équipe RUN, où je me suis occupé de plusieurs projets.
+> Des projets qui s'appelaient Body Nature, Dorval, PiLeJe, Servier. Et du coup je
+> m'occupais de la maintenance, des montées de version. Pour Body Nature, ça pouvait être
+> des évolutions. J'étais en échange avec l'équipe produit, c'est avec eux que je
+> travaillais le plus.
+>
+> Et ensuite du coup j'étais envoyé à la SNCF. Mais je dirais pas que j'étais chez fruggr,
+> je dirais plus que j'étais chez digital4better, donc tu peux modifier le contenu.
+> Hésite pas à me poser des questions sur ce que j'ai pu faire côté service.
+
+Sources publiques données par Benjamin : <https://digital4better.com/>,
+<https://www.pileje-factory.com/fr>, <https://body-nature.com/>,
+<https://www.dorval-am.com/>.
+
+**Correction structurante :** l'employeur est digital4better. `fruggr` est leur produit
+de mesure d'impact, pas la société. Toutes les mentions « via fruggr » du portfolio
+sont à revoir, y compris sur Kereis et la SNCF.
 
 ## LDC Services · 2020 → 2021
 
@@ -250,4 +269,7 @@ travail de développement.
 - Les sections `parcours` et `stack` n'ont aucune ligne dans le volet central.
 - Fiches techno absentes : HTML, CSS, Sass, Vite, PHP, OpenAPI, JWT, MySQL, Évaluation,
   Prompting, Compose, GitHub Actions, Bash, Tests unitaires, E2E, Prettier.
+- Reporter tout le contenu révisé dans `src/texte.html` et `src/llms.txt`. Ces deux
+  artefacts écrivent les mêmes faits en dur et portent encore « via fruggr »,
+  « équipe Urbanisme » et les anciennes fiches mission.
 - Passer le `humanizer` sur tout le texte écrit, en dernier.

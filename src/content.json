@@ -52,7 +52,7 @@
         "title": "système",
         "lines": [
           ["poste", "Développeur IA / Full Stack"],
-          ["entreprise", "Kereis · via fruggr"],
+          ["entreprise", "Kereis · via digital4better"],
           ["depuis", "mai 2026"],
           ["base", "Nantes, France"],
           ["langues", "français, anglais technique"],
@@ -77,7 +77,7 @@
           ["2018", "réseau & support"]
         ]
       },
-      "ask": "Six expériences depuis 2018 : Kereis (2026, IA et full stack), SNCF Gares & Connexions (2024-2026, Assist'enGare), fruggr (2023-2024, gestion du RUN), Transway (2021-2023, full stack puis tech lead), LDC Services (2020-2021, alternance), FPEE Industries (2018-2020, technicien réseau en alternance)."
+      "ask": "Six expériences depuis 2018 : Kereis (2026, IA et full stack), SNCF Gares & Connexions (2024-2026, Assist'enGare), digital4better (2023-2024, équipe RUN), Transway (2021-2023, full stack puis tech lead), LDC Services (2020-2021, alternance), FPEE Industries (2018-2020, technicien réseau en alternance)."
     },
     {
       "id": "stack", "label": "stack", "sub": "5 domaines", "dot": "ok", "state": "56 briques",
@@ -88,9 +88,9 @@
         "title": "resolve",
         "lines": [
           ["frontend", "depuis 2020 · Transway, SNCF, Kereis"],
-          ["backend", "depuis 2020 · LDC, Transway, fruggr"],
-          ["ia", "depuis 2024 · fruggr, Kereis", "fg2", "acc"],
-          ["devops", "depuis 2018 · FPEE, RUN fruggr"],
+          ["backend", "depuis 2020 · LDC, Transway, digital4better"],
+          ["ia", "depuis 2024 · digital4better, Kereis", "fg2", "acc"],
+          ["devops", "depuis 2018 · FPEE, équipe RUN"],
           ["qualité", "depuis 2021 · toutes les missions"],
           ["—", "56 briques résolues · 0 dépendance décorative", "fg2", "ok"]
         ]
@@ -180,7 +180,7 @@
   "missions": [
     { "id": "m-kereis", "label": "kereis", "state": "en cours · MCP", "dot": "acc", "pulse": true },
     { "id": "m-assist", "label": "assist'engare", "state": "livré · SNCF", "dot": "ok", "pulse": false },
-    { "id": "m-run", "label": "run fruggr", "state": "livré · supervision", "dot": "ok", "pulse": false },
+    { "id": "m-run", "label": "run d4b", "state": "livré · 4 clients", "dot": "ok", "pulse": false },
     { "id": "m-transway", "label": "transway", "state": "livré · mobilité", "dot": "fg2", "pulse": false }
   ],
 
@@ -189,7 +189,7 @@
       "id": "m-kereis", "label": "kereis", "parent": "parcours", "cmd": "bd show mission/kereis",
       "lines": [
         { "t": "Kereis — pôle DSI", "size": "clamp(22px,2.6vw,30px)", "w": "700", "ls": "-.02em" },
-        { "t": "mai 2026 → aujourd'hui · Développeur IA / Full Stack · via fruggr", "tone": "acc" },
+        { "t": "mai 2026 → aujourd'hui · Développeur IA / Full Stack · via digital4better", "tone": "acc" },
         { "m": "·", "t": "Kereis construit plutôt qu'il n'achète. On me demande de prouver par le code ce qu'une licence coûteuse ferait à moitié." },
         { "m": "·", "t": "Le cadrage du code passe en premier. Linter et règles avant la première fonctionnalité : l'IA produit sous contrainte, un humain relit." },
         { "m": "·", "t": "Serveurs MCP : les outils internes s'ouvrent aux agents. Le point dur est l'autorisation, pas l'exposition." },
@@ -204,18 +204,18 @@
           ["statut", "en cours", "fg2", "acc"],
           ["rôle", "développeur IA / full stack"],
           ["client", "Kereis · pôle DSI"],
-          ["via", "fruggr"],
+          ["via", "digital4better"],
           ["pile", "MCP, SpecKit, LiteLLM, Langfuse"],
           ["apport", "cadrer l'IA par la spec"]
         ]
       },
-      "ask": "Chez Kereis depuis mai 2026, via fruggr : des preuves de concept IA pour une DSI qui construit plutôt qu'elle n'achète. Serveurs MCP, Specification-Driven Development, et le cadrage du code écrit avant la première fonctionnalité. Trois sujets livrés : un simulateur de tarif d'assurance de prêt, une cartographie du SI sous Backstage, une application de compte rendu."
+      "ask": "Chez Kereis depuis mai 2026, via digital4better : des preuves de concept IA pour une DSI qui construit plutôt qu'elle n'achète. Serveurs MCP, Specification-Driven Development, et le cadrage du code écrit avant la première fonctionnalité. Trois sujets livrés : un simulateur de tarif d'assurance de prêt, une cartographie du SI sous Backstage, une application de compte rendu."
     },
     {
       "id": "m-assist", "label": "assist'enGare", "parent": "parcours", "cmd": "bd show mission/assist-engare",
       "lines": [
         { "t": "SNCF Gares & Connexions — Assist'enGare", "size": "clamp(22px,2.6vw,30px)", "w": "700", "ls": "-.02em" },
-        { "t": "sept. 2024 → mai 2026 · Développeur Full Stack · via fruggr", "tone": "acc" },
+        { "t": "sept. 2024 → mai 2026 · Développeur Full Stack · via digital4better", "tone": "acc" },
         { "m": "·", "t": "Réservation de prestations d'assistance pour les personnes en situation de handicap (PSH/PMR) souhaitant accéder à leur train." },
         { "m": "·", "t": "Front grand public de Gares & Connexions. La déclaration d'accessibilité affiche 96 % de conformité moyenne au RGAA 4.1, sous audits successifs." },
         { "m": "·", "t": "Règles axe au linter, essais au lecteur d'écran sous NVDA et TalkBack. Le critère d'accessibilité entre dans la spécification, pas dans le correctif." },
@@ -243,13 +243,17 @@
       "ask": "Assist'enGare, pour SNCF Gares & Connexions de septembre 2024 à mai 2026 : réservation de prestations d'assistance pour les personnes en situation de handicap souhaitant accéder à leur train. Front grand public à 96 % de conformité RGAA, tenu sous audits successifs. Environ 3 000 dossiers par jour, une dizaine de notifications chacun. Côté échanges, la brique parle à tout le SI SNCF et aux transporteurs étrangers : ActiveMQ réécrit d'AMQP vers STOMP, routage dynamique par entité métier."
     },
     {
-      "id": "m-run", "label": "run fruggr", "parent": "parcours", "cmd": "bd show mission/run-fruggr",
+      "id": "m-run", "label": "run d4b", "parent": "parcours", "cmd": "bd show mission/run-d4b",
       "lines": [
-        { "t": "fruggr by digital4better — gestion du RUN", "size": "clamp(22px,2.6vw,30px)", "w": "700", "ls": "-.02em" },
+        { "t": "digital4better — équipe RUN", "size": "clamp(22px,2.6vw,30px)", "w": "700", "ls": "-.02em" },
         { "t": "oct. 2023 → sept. 2024 · Développeur Full Stack / IA", "tone": "acc" },
-        { "m": "·", "t": "Supervision : monitoring des performances, détection et analyse des anomalies." },
-        { "m": "·", "t": "Support & maintenance : correction des bugs, mises à jour de sécurité, nouvelles fonctionnalités." },
-        { "m": "·", "t": "Optimisation : pipelines CI/CD et bonnes pratiques de développement." },
+        { "m": "·", "t": "Quatre projets clients en parallèle : Body Nature, Dorval AM, PiLeJe et Servier." },
+        { "m": "·", "t": "Quatre piles, quatre historiques. Le RUN oblige à entrer vite dans du code qu'on n'a pas écrit." },
+        { "m": "·", "t": "Supervision : monitoring des performances, détection et analyse des anomalies avant la remontée utilisateur." },
+        { "m": "·", "t": "Maintenance et montées de version. Correctifs de sécurité tenus à jour sur le parc, provisionnés par Ansible." },
+        { "m": "·", "t": "Évolutions produit sur Body Nature, en échange direct avec l'équipe produit." },
+        { "m": "·", "t": "Éco-conception mesurée avec fruggr, l'outil maison. L'impact d'une application se constate, il ne se déclare pas." },
+        { "m": "·", "t": "Optimisation des pipelines CI/CD : moins de temps de calcul, donc moins de gaspillage." },
         { "m": "›", "mc": "acc", "t": "Assurer la disponibilité des services en appliquant les principes du numérique responsable.", "tone": "fg2" }
       ],
       "out": {
@@ -257,12 +261,13 @@
         "lines": [
           ["statut", "livré", "fg2", "ok"],
           ["rôle", "full stack / IA"],
+          ["employeur", "digital4better"],
+          ["clients", "Body Nature, Dorval AM, PiLeJe, Servier"],
           ["périmètre", "RUN, support, sécurité"],
-          ["outils", "monitoring, CI/CD"],
-          ["cadre", "numérique responsable"]
+          ["mesure", "fruggr · éco-conception", "fg2", "ok"]
         ]
       },
-      "ask": "Gestion du RUN chez fruggr by digital4better, d'octobre 2023 à septembre 2024 : supervision et monitoring, support et maintenance, correctifs de sécurité, optimisation des pipelines CI/CD, dans le cadre du numérique responsable."
+      "ask": "Équipe RUN chez digital4better, d'octobre 2023 à septembre 2024 : quatre projets clients en parallèle, Body Nature, Dorval AM, PiLeJe et Servier. Supervision, maintenance, correctifs de sécurité et montées de version. Éco-conception mesurée avec fruggr, l'outil maison de la société."
     },
     {
       "id": "m-transway", "label": "transway", "parent": "parcours", "cmd": "bd show mission/transway",
@@ -296,7 +301,7 @@
   "timeline": [
     { "id": "t0", "years": "2026 → …", "org": "Kereis", "role": "Développeur IA / Full Stack · pôle DSI", "note": "Preuves de concept IA pour une DSI qui construit plutôt qu'elle n'achète. Serveurs MCP, Specification-Driven Development, et le cadrage du code écrit avant la première fonctionnalité.", "detail": "m-kereis" },
     { "id": "t1", "years": "2024 → 2026", "org": "SNCF Gares & Connexions", "role": "Développeur Full Stack · Assist'enGare", "note": "Réservation d'assistance pour les personnes en situation de handicap (PSH/PMR). Front grand public à 96 % de conformité RGAA, tenu sous audits successifs, et une brique d'échange qui parle à tout le SI SNCF.", "detail": "m-assist" },
-    { "id": "t2", "years": "2023 → 2024", "org": "fruggr by digital4better", "role": "Gestion du RUN", "note": "Supervision, support, correctifs de sécurité, optimisation des pipelines CI/CD.", "detail": "m-run" },
+    { "id": "t2", "years": "2023 → 2024", "org": "digital4better", "role": "Équipe RUN · Développeur Full Stack / IA", "note": "Quatre projets clients en parallèle : Body Nature, Dorval AM, PiLeJe et Servier. Supervision, correctifs de sécurité, et éco-conception mesurée avec fruggr, l'outil maison.", "detail": "m-run" },
     { "id": "t3", "years": "2021 → 2023", "org": "Transway", "role": "Full Stack, puis Technical Lead", "note": "Incitation à la mobilité durable : forfait mobilité durable pour les entreprises, programme de fidélité pour les collectivités. Plus de 300 000 utilisateurs migrés vers la nouvelle plateforme.", "detail": "m-transway" },
     { "id": "t4", "years": "2020 → 2021", "org": "LDC Services", "role": "Concepteur Développeur d'Application · alternance", "note": "Développement logiciel classique et qualité du code.", "detail": null },
     { "id": "t5", "years": "2018 → 2020", "org": "FPEE Industries", "role": "Technicien réseau · alternance", "note": "Comprendre le problème de l'utilisateur avant de le réparer. Tout part de là.", "detail": null }
@@ -320,16 +325,16 @@
     "React": { "where": "Assist'enGare", "note": "Front grand public de Gares & Connexions, tenu sous audits d'accessibilité pendant vingt-et-un mois." },
     "Svelte": { "where": "veille et prototypes", "note": "Choisi quand le poids du bundle compte plus que l'écosystème." },
     "TypeScript": { "where": "toutes les missions depuis 2021", "note": "Typage strict côté front comme côté NestJS. Non négociable sur un projet à plusieurs mains." },
-    "Tailwind": { "where": "Transway, fruggr", "note": "Rapidité de mise en page sans feuille de style à maintenir. Attention portée à la taille finale du CSS." },
+    "Tailwind": { "where": "Transway, digital4better", "note": "Rapidité de mise en page sans feuille de style à maintenir. Attention portée à la taille finale du CSS." },
     "Vuetify": { "where": "Transway", "note": "Base de composants accessibles, complétée à la main sur les points que le RGAA impose." },
     "MUI": { "where": "Assist'enGare", "note": "Base de composants React. Elle ne couvre pas tout le RGAA : le reste s'écrit à la main." },
     "Pinia": { "where": "Transway, Kereis", "note": "Gestion d'état des applications Vue : sessions, réservations, cache local." },
     "RxJS": { "where": "NestJS, formulaires réactifs", "note": "Flux asynchrones et annulation de requêtes concurrentes." },
-    "Laravel": { "where": "LDC Services, fruggr", "note": "API et back-offices : Eloquent, files de traitement, authentification." },
+    "Laravel": { "where": "LDC Services, digital4better", "note": "API et back-offices : Eloquent, files de traitement, authentification." },
     "NestJS": { "where": "Transway, SNCF, Kereis", "note": "Architecture modulaire, injection de dépendances, TypeORM." },
     "API REST": { "where": "toutes les missions", "note": "Contrats documentés en OpenAPI avant l'implémentation — la spec précède le code." },
     "PostgreSQL": { "where": "Transway, SNCF", "note": "Base de référence : requêtes analytiques, index, migrations versionnées." },
-    "Redis": { "where": "fruggr, Transway", "note": "Cache et files de messages. Réduit la charge serveur, donc l'empreinte." },
+    "Redis": { "where": "digital4better, Transway", "note": "Cache et files de messages. Réduit la charge serveur, donc l'empreinte." },
     "ActiveMQ": { "where": "Assist'enGare", "note": "Bus de messages entre la brique et le reste du SI SNCF. Réécriture d'AMQP vers STOMP, puis routage dynamique par entité métier." },
     "Serveurs MCP": { "where": "Kereis, 2026", "note": "Exposition des outils internes aux agents : tools, resources, prompts, avec les garde-fous d'accès." },
     "SpecKit": { "where": "Kereis, 2026", "note": "spec-it, plan, tasks. La spécification devient l'artefact de référence, le code en découle." },
@@ -342,19 +347,19 @@
     "Agents": { "where": "Kereis", "note": "Revue automatisée de spécification : ~20 min contre une journée humaine, à chaque fonctionnalité." },
     "Harness engineering": { "where": "Kereis, 2026", "note": "Construire la machinerie autour du modèle : nettoyage de l'entrée, enchaînement des étapes, contrôle de la sortie. Le modèle seul ne produit rien de livrable." },
     "Docker": { "where": "depuis 2020", "note": "Environnements reproductibles en local comme en CI. Compose pour les dépendances." },
-    "GitLab CI": { "where": "fruggr, SNCF", "note": "Pipelines de test, build et déploiement. Optimisation des durées pour limiter le gaspillage." },
+    "GitLab CI": { "where": "digital4better, SNCF", "note": "Pipelines de test, build et déploiement. Optimisation des durées pour limiter le gaspillage." },
     "Jenkins": { "where": "Assist'enGare", "note": "Déploiements du service, en tandem avec les intégrations GitLab." },
     "AWS": { "where": "Assist'enGare, Kereis", "note": "Hébergement du service et source de la cartographie du SI." },
     "Datadog": { "where": "Assist'enGare", "note": "Observabilité d'un service à fort volume : traces, alertes, dimensionnement des instances." },
     "Linux": { "where": "depuis FPEE, 2018", "note": "Administration, scripts Bash, accès SSH. Le socle du reste." },
-    "Ansible": { "where": "RUN fruggr", "note": "Provisionnement et mises à jour de sécurité automatisées sur le parc." },
+    "Ansible": { "where": "équipe RUN, digital4better", "note": "Provisionnement et mises à jour de sécurité automatisées sur le parc." },
     "Cypress": { "where": "Transway", "note": "Tests de bout en bout sur les parcours critiques — réservation, authentification." },
     "ESLint": { "where": "toutes les missions", "note": "Règles partagées : la revue humaine se concentre sur le fond, pas sur la forme." },
     "Oxlint": { "where": "Assist'enGare, ce portfolio", "note": "Remplace ESLint. Le gain de vitesse rend le linter utilisable à chaque sauvegarde, donc réellement utilisé." },
     "axe": { "where": "Assist'enGare", "note": "Règles d'accessibilité branchées sur le linter. Une régression RGAA se voit avant la revue, pas à l'audit." },
-    "Éco-conception": { "where": "fruggr, digital4better", "note": "Mesure de l'impact des applications et arbitrages assumés entre fonctionnalité et empreinte." },
+    "Éco-conception": { "where": "digital4better", "note": "Mesure de l'impact des applications avec fruggr, l'outil maison, et arbitrages assumés entre fonctionnalité et empreinte." },
     "RGAA": { "where": "Assist'enGare", "note": "96 % de conformité moyenne à la déclaration publique. Essais au lecteur d'écran sous NVDA et TalkBack." },
-    "Monitoring": { "where": "RUN fruggr", "note": "Supervision des performances, détection et analyse des anomalies avant remontée utilisateur." },
+    "Monitoring": { "where": "équipe RUN, digital4better", "note": "Supervision des performances, détection et analyse des anomalies avant remontée utilisateur." },
     "Pair-programming": { "where": "Transway, Kereis", "note": "Transmission plus rapide qu'une documentation, surtout sur les parties sensibles." }
   },
 
