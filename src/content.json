@@ -267,23 +267,29 @@
     {
       "id": "m-transway", "label": "transway", "parent": "parcours", "cmd": "bd show mission/transway",
       "lines": [
-        { "t": "Transway — mobilité douce", "size": "clamp(22px,2.6vw,30px)", "w": "700", "ls": "-.02em" },
+        { "t": "Transway — mobilité durable", "size": "clamp(22px,2.6vw,30px)", "w": "700", "ls": "-.02em" },
         { "t": "sept. 2021 → sept. 2023 · Full Stack, puis Technical Lead Developer", "tone": "acc" },
-        { "m": "·", "t": "Applications d'incitation au vélo, à la marche et aux transports en commun." },
-        { "m": "·", "t": "Suivi des points gagnés et des émissions de CO2 évitées par les utilisateurs." },
-        { "m": "·", "t": "Passage au rôle de lead technique : arbitrages d'architecture et accompagnement de l'équipe." }
+        { "m": "·", "t": "Première mission hors alternance. Deux produits d'incitation à la mobilité durable : WeFlo Pro pour les entreprises, IREBY pour les collectivités." },
+        { "m": "·", "t": "WeFlo Pro : déclaration des trajets au titre du forfait mobilité durable. Laravel, PHP et Vue.js." },
+        { "m": "·", "t": "IREBY : l'usager gagne des points en tram, en bus, à pied ou à vélo, puis les dépense en boutique. NestJS et Vue 3." },
+        { "m": "·", "t": "Migration de la V1 vers la V3 : plus de 300 000 utilisateurs transférés, avec leurs offres et leurs images. Script de transformation écrit et mené seul." },
+        { "m": "·", "t": "Branchements aux systèmes des réseaux partenaires : TCL à Lyon, STAR à Rennes." },
+        { "m": "·", "t": "L'interface se configure depuis l'administration. La page reste générique, la vue du client se paramètre." },
+        { "m": "·", "t": "Passage au rôle de lead technique : encadrement de quatre à six développeurs, et la main sur les choix techniques." },
+        { "m": "·", "t": "Migration Vue 2 vers Vue 3, montées de version Node, renforcements de sécurité après audit." }
       ],
       "out": {
         "title": "mission",
         "lines": [
           ["statut", "livré", "fg2", "ok"],
           ["rôle", "full stack → tech lead"],
-          ["domaine", "mobilité douce"],
-          ["mesure", "points & CO2 évité"],
-          ["durée", "2 ans"]
+          ["produits", "WeFlo Pro, IREBY"],
+          ["encadrement", "4 à 6 développeurs"],
+          ["migration", "+300 000 utilisateurs", "fg2", "ok"],
+          ["pile", "Laravel, NestJS, Vue 3"]
         ]
       },
-      "ask": "Transway, de septembre 2021 à septembre 2023 : applications de mobilité douce incitant au vélo, à la marche et aux transports en commun, avec suivi des points gagnés et du CO2 évité. Passage au rôle de Technical Lead Developer."
+      "ask": "Transway, de septembre 2021 à septembre 2023 : deux produits d'incitation à la mobilité durable, WeFlo Pro pour les entreprises et IREBY pour les collectivités. J'ai mené la migration de la V1 vers la V3, soit plus de 300 000 utilisateurs transférés. Passage au rôle de Technical Lead Developer, avec l'encadrement de quatre à six développeurs."
     }
   ],
 
@@ -291,7 +297,7 @@
     { "id": "t0", "years": "2026 → …", "org": "Kereis", "role": "Développeur IA / Full Stack · pôle DSI", "note": "Preuves de concept IA pour une DSI qui construit plutôt qu'elle n'achète. Serveurs MCP, Specification-Driven Development, et le cadrage du code écrit avant la première fonctionnalité.", "detail": "m-kereis" },
     { "id": "t1", "years": "2024 → 2026", "org": "SNCF Gares & Connexions", "role": "Développeur Full Stack · Assist'enGare", "note": "Réservation d'assistance pour les personnes en situation de handicap (PSH/PMR). Front grand public à 96 % de conformité RGAA, tenu sous audits successifs, et une brique d'échange qui parle à tout le SI SNCF.", "detail": "m-assist" },
     { "id": "t2", "years": "2023 → 2024", "org": "fruggr by digital4better", "role": "Gestion du RUN", "note": "Supervision, support, correctifs de sécurité, optimisation des pipelines CI/CD.", "detail": "m-run" },
-    { "id": "t3", "years": "2021 → 2023", "org": "Transway", "role": "Full Stack, puis Technical Lead", "note": "Mobilité douce : vélo, marche et transports en commun, points gagnés et CO2 évité.", "detail": "m-transway" },
+    { "id": "t3", "years": "2021 → 2023", "org": "Transway", "role": "Full Stack, puis Technical Lead", "note": "Incitation à la mobilité durable : forfait mobilité durable pour les entreprises, programme de fidélité pour les collectivités. Plus de 300 000 utilisateurs migrés vers la nouvelle plateforme.", "detail": "m-transway" },
     { "id": "t4", "years": "2020 → 2021", "org": "LDC Services", "role": "Concepteur Développeur d'Application · alternance", "note": "Développement logiciel classique et qualité du code.", "detail": null },
     { "id": "t5", "years": "2018 → 2020", "org": "FPEE Industries", "role": "Technicien réseau · alternance", "note": "Comprendre le problème de l'utilisateur avant de le réparer. Tout part de là.", "detail": null }
   ],
