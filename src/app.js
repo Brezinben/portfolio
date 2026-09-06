@@ -1456,6 +1456,29 @@ document.addEventListener("alpine:init", () => {
       this.$refs.cli.focus();
     },
 
+    // Le doigt valide en un geste : la proposition part sans passer par la touche
+    // entree. Un premier mot qui attend un argument ouvre sa liste, sinon la commande
+    // partirait incomplete.
+    pickSugg(index, pointer) {
+      const head = this.suggHead;
+
+      this.applySugg(index);
+
+      if (pointer.pointerType !== "touch") {
+        return;
+      }
+
+      if (head === "") {
+        this.suggest();
+
+        if (this.suggOpen) {
+          return;
+        }
+      }
+
+      this.submit();
+    },
+
     complete() {
       if (this.sugg.length === 0) {
         return;

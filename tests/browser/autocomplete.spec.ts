@@ -117,3 +117,43 @@ test("cliquer une proposition la saisit", async ({ page }) => {
 
   await expect(cli).toHaveValue("/coffee ");
 });
+
+// Au doigt, la proposition vaut la commande : la valider la lance, sans passer par une
+// touche entrée que le clavier tactile place ailleurs.
+test.describe("au doigt", () => {
+  test.use({ hasTouch: true });
+
+  test("toucher une proposition lance la commande", async ({ page }) => {
+    const cli = await boot(page);
+
+    await cli.fill("/wt");
+    await cli.dispatchEvent("input");
+    await page.locator("[data-suggestion]", { hasText: "wtf" }).tap();
+
+    await expect(page.locator("[data-journal]")).toContainText("portfolio déguisé en terminal");
+    await expect(cli).toHaveValue("");
+  });
+
+  test("toucher un premier mot qui attend un argument ouvre sa liste", async ({ page }) => {
+    const cli = await boot(page);
+
+    await cli.fill("/sli");
+    await cli.dispatchEvent("input");
+    await page.locator("[data-suggestion]", { hasText: "slime" }).tap();
+
+    await expect(cli).toHaveValue("/slime ");
+    await expect(list(page)).toContainText("happy");
+    await expect(page.locator("[data-journal]")).not.toContainText("le slime est");
+  });
+
+  test("toucher un argument lance la commande complète", async ({ page }) => {
+    const cli = await boot(page);
+
+    await cli.fill("/slime hap");
+    await cli.dispatchEvent("input");
+    await page.locator("[data-suggestion]", { hasText: "happy" }).tap();
+
+    await expect(page.locator("[data-journal]")).toContainText("le slime est");
+    await expect(cli).toHaveValue("");
+  });
+});
