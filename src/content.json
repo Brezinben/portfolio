@@ -222,7 +222,8 @@
         { "m": "·", "t": "MUI ne couvre pas tout le référentiel. Le reste s'écrit à la main : copie des références, vocalisation correcte des marques." },
         { "m": "·", "t": "La brique parle à tout le SI SNCF. Le spécifique devient générique : ActiveMQ réécrit d'AMQP vers STOMP, routage dynamique par entité métier." },
         { "m": "·", "t": "Voyage en deux segments SNCF et Trenitalia : chaque transporteur ne reçoit que le segment qui le concerne." },
-        { "m": "·", "t": "Validation automatique des dossiers d'assistance. Le volume impose des instances multiples et une observabilité Datadog." },
+        { "m": "·", "t": "Validation automatique des dossiers d'assistance. Environ 3 000 dossiers par jour, une dizaine de notifications chacun, et davantage en vacances." },
+        { "m": "·", "t": "Ce volume impose des instances multiples et une observabilité Datadog." },
         { "m": "·", "t": "Le code était bon, mais rien n'empêchait le mauvais code. J'ai posé les règles : Oxlint et oxfmt à la place d'ESLint et Prettier." },
         { "m": "·", "t": "Appui aux autres équipes du pôle : migrations JavaScript vers TypeScript, et Vue 2 vers Vue 3." }
       ],
@@ -234,11 +235,12 @@
           ["client", "SNCF Gares & Connexions"],
           ["produit", "Assist'enGare"],
           ["public", "voyageurs PSH / PMR"],
+          ["volume", "~3 000 dossiers / jour"],
           ["RGAA 4.1", "96 % · déclaration publique", "fg2", "ok"],
           ["pile", "React, MUI, NestJS, PostgreSQL"]
         ]
       },
-      "ask": "Assist'enGare, pour SNCF Gares & Connexions de septembre 2024 à mai 2026 : réservation de prestations d'assistance pour les personnes en situation de handicap souhaitant accéder à leur train. Front grand public à 96 % de conformité RGAA, tenu sous audits successifs. Côté échanges, la brique parle à tout le SI SNCF et aux transporteurs étrangers : ActiveMQ réécrit d'AMQP vers STOMP, routage dynamique par entité métier."
+      "ask": "Assist'enGare, pour SNCF Gares & Connexions de septembre 2024 à mai 2026 : réservation de prestations d'assistance pour les personnes en situation de handicap souhaitant accéder à leur train. Front grand public à 96 % de conformité RGAA, tenu sous audits successifs. Environ 3 000 dossiers par jour, une dizaine de notifications chacun. Côté échanges, la brique parle à tout le SI SNCF et aux transporteurs étrangers : ActiveMQ réécrit d'AMQP vers STOMP, routage dynamique par entité métier."
     },
     {
       "id": "m-run", "label": "run fruggr", "parent": "parcours", "cmd": "bd show mission/run-fruggr",
@@ -287,7 +289,7 @@
 
   "timeline": [
     { "id": "t0", "years": "2026 → …", "org": "Kereis", "role": "Développeur IA / Full Stack · pôle DSI", "note": "Preuves de concept IA pour une DSI qui construit plutôt qu'elle n'achète. Serveurs MCP, Specification-Driven Development, et le cadrage du code écrit avant la première fonctionnalité.", "detail": "m-kereis" },
-    { "id": "t1", "years": "2024 → 2026", "org": "SNCF Gares & Connexions", "role": "Développeur Full Stack · Assist'enGare", "note": "Réservation d'assistance pour les personnes en situation de handicap (PSH/PMR). Un service qui doit fonctionner pour tout le monde, sur tous les écrans, à toute heure.", "detail": "m-assist" },
+    { "id": "t1", "years": "2024 → 2026", "org": "SNCF Gares & Connexions", "role": "Développeur Full Stack · Assist'enGare", "note": "Réservation d'assistance pour les personnes en situation de handicap (PSH/PMR). Front grand public à 96 % de conformité RGAA, tenu sous audits successifs, et une brique d'échange qui parle à tout le SI SNCF.", "detail": "m-assist" },
     { "id": "t2", "years": "2023 → 2024", "org": "fruggr by digital4better", "role": "Gestion du RUN", "note": "Supervision, support, correctifs de sécurité, optimisation des pipelines CI/CD.", "detail": "m-run" },
     { "id": "t3", "years": "2021 → 2023", "org": "Transway", "role": "Full Stack, puis Technical Lead", "note": "Mobilité douce : vélo, marche et transports en commun, points gagnés et CO2 évité.", "detail": "m-transway" },
     { "id": "t4", "years": "2020 → 2021", "org": "LDC Services", "role": "Concepteur Développeur d'Application · alternance", "note": "Développement logiciel classique et qualité du code.", "detail": null },
