@@ -11,20 +11,43 @@
       "website": "portfolio.brezinben.dpdns.org"
     }
   },
-
   "share": {
     "url": "https://portfolio.brezinben.dpdns.org/",
     "title": "Benjamin David — Développeur IA & Full Stack",
     "text": "Serveurs MCP, Specification-Driven Development, accessibilité et numérique responsable.",
     "targets": [
-      { "id": "linkedin", "label": "LinkedIn", "kind": "intent", "url": "https://www.linkedin.com/sharing/share-offsite/?url={url}" },
-      { "id": "profil", "label": "mon profil LinkedIn", "kind": "open", "url": "https://www.linkedin.com/in/benjamin--david" },
-      { "id": "github", "label": "mon GitHub", "kind": "open", "url": "https://github.com/brezinben" },
-      { "id": "mail", "label": "par e-mail", "kind": "open", "url": "mailto:?subject={title}&body={text}%0A%0A{url}" },
-      { "id": "link", "label": "copier le lien", "kind": "copy", "url": "{url}" }
+      {
+        "id": "linkedin",
+        "label": "LinkedIn",
+        "kind": "intent",
+        "url": "https://www.linkedin.com/sharing/share-offsite/?url={url}"
+      },
+      {
+        "id": "profil",
+        "label": "mon profil LinkedIn",
+        "kind": "open",
+        "url": "https://www.linkedin.com/in/benjamin--david"
+      },
+      {
+        "id": "github",
+        "label": "mon GitHub",
+        "kind": "open",
+        "url": "https://github.com/brezinben"
+      },
+      {
+        "id": "mail",
+        "label": "par e-mail",
+        "kind": "open",
+        "url": "mailto:?subject={title}&body={text}%0A%0A{url}"
+      },
+      {
+        "id": "link",
+        "label": "copier le lien",
+        "kind": "copy",
+        "url": "{url}"
+      }
     ]
   },
-
   "feedback": {
     "tool": "Umami",
     "event": "proposition",
@@ -34,352 +57,1207 @@
     "sent": "Votre texte, et rien d'autre.",
     "notSent": "Aucune adresse IP, aucun cookie, aucun identifiant, aucune page visitée. Umami ne pose pas de cookie et n'identifie personne."
   },
-
   "sections": [
     {
-      "id": "whoami", "label": "whoami", "sub": "identité", "dot": "acc", "state": "actif",
+      "id": "whoami",
+      "label": "whoami",
+      "sub": "identité",
+      "dot": "acc",
+      "state": "actif",
       "cmd": "bd whoami --verbose",
       "lines": [
-        { "banner": "benjamin", "t": "Benjamin" },
-        { "banner": "david", "t": "David" },
-        { "t": "Concepteur orchestrateur IA · Développeur Full Stack · Nantes", "tone": "acc", "w": "700" },
-        { "m": "·", "t": "Serveurs MCP, Specification-Driven Development, applications accessibles et éco-conçues." },
-        { "m": "·", "t": "Huit ans à faire tourner des choses en production, de la baie réseau au serveur d'agents." },
-        { "m": "·", "t": "Quelqu'un qui adore apprendre et approfondir tout un tas de trucs." },
-        { "m": "›", "mc": "acc", "t": "Disponible pour des missions en numérique responsable.", "tone": "fg2" }
+        {
+          "banner": "benjamin",
+          "t": "Benjamin"
+        },
+        {
+          "banner": "david",
+          "t": "David"
+        },
+        {
+          "t": "Concepteur orchestrateur IA · Développeur Full Stack · Nantes",
+          "tone": "acc",
+          "w": "700"
+        },
+        {
+          "m": "·",
+          "t": "Serveurs MCP, Specification-Driven Development, applications accessibles et éco-conçues."
+        },
+        {
+          "m": "·",
+          "t": "Huit ans à faire tourner des choses en production, de la baie réseau au serveur d'agents."
+        },
+        {
+          "m": "·",
+          "t": "Quelqu'un qui adore apprendre et approfondir tout un tas de trucs."
+        },
+        {
+          "m": "›",
+          "mc": "acc",
+          "t": "En poste chez Kereis depuis mai 2026. Ouvert aux opportunités en numérique responsable.",
+          "tone": "fg2"
+        }
       ],
       "out": {
         "title": "système",
         "lines": [
-          ["poste", "Développeur IA / Full Stack"],
-          ["entreprise", "Kereis · via digital4better"],
-          ["depuis", "mai 2026"],
-          ["base", "Nantes, France"],
-          ["langues", "français, anglais technique"],
-          ["contact", "benjamin.david1@hotmail.fr", "fg2", "acc"]
+          [
+            "poste",
+            "Développeur IA / Full Stack"
+          ],
+          [
+            "entreprise",
+            "Kereis · via digital4better"
+          ],
+          [
+            "depuis",
+            "mai 2026"
+          ],
+          [
+            "statut",
+            "en poste · ouvert aux opportunités"
+          ],
+          [
+            "base",
+            "Nantes, France"
+          ],
+          [
+            "langues",
+            "français, anglais technique"
+          ],
+          [
+            "contact",
+            "benjamin.david1@hotmail.fr",
+            "fg2",
+            "acc"
+          ]
         ]
       },
-      "ask": "Benjamin David, concepteur orchestrateur IA et développeur Full Stack à Nantes. Serveurs MCP, Specification-Driven Development, accessibilité et éco-conception. Huit ans en production, du réseau au serveur d'agents."
+      "ask": "Benjamin David, concepteur orchestrateur IA et développeur Full Stack à Nantes. Serveurs MCP, Specification-Driven Development, accessibilité et éco-conception. Huit ans en production, du réseau au serveur d'agents. En poste chez Kereis depuis mai 2026, ouvert aux opportunités en numérique responsable."
     },
     {
-      "id": "parcours", "label": "parcours", "sub": "6 expériences", "dot": "ok", "state": "6 entrées",
+      "id": "parcours",
+      "label": "parcours",
+      "sub": "6 expériences",
+      "dot": "ok",
+      "state": "6 entrées",
       "view": "timeline",
       "cmd": "bd log --graph --since=2018",
       "lines": [],
       "out": {
         "title": "git log",
         "lines": [
-          ["HEAD", "kereis/dsi", "fg2", "acc"],
-          ["2026", "MCP + SDD en production"],
-          ["2024", "accessibilité PSH/PMR"],
-          ["2023", "RUN & observabilité"],
-          ["2021", "lead technique"],
-          ["2018", "réseau & support"]
+          [
+            "HEAD",
+            "kereis/dsi",
+            "fg2",
+            "acc"
+          ],
+          [
+            "2026",
+            "MCP + SDD en production"
+          ],
+          [
+            "2024",
+            "accessibilité PSH/PMR"
+          ],
+          [
+            "2023",
+            "RUN & observabilité"
+          ],
+          [
+            "2021",
+            "lead technique"
+          ],
+          [
+            "2018",
+            "réseau & support"
+          ]
         ]
       },
       "ask": "Six expériences depuis 2018 : Kereis (2026, IA et full stack), SNCF Gares & Connexions (2024-2026, Assist'enGare), digital4better (2023-2024, équipe RUN), Transway (2021-2023, full stack puis tech lead), LDC Services (2020-2021, alternance), FPEE Industries (2018-2020, technicien réseau en alternance)."
     },
     {
-      "id": "stack", "label": "stack", "sub": "5 domaines", "dot": "ok", "state": "57 briques",
+      "id": "stack",
+      "label": "stack",
+      "sub": "5 domaines",
+      "dot": "ok",
+      "state": "57 briques",
       "view": "tree",
       "cmd": "bd stack --tree --depth=2",
       "lines": [],
       "out": {
         "title": "resolve",
         "lines": [
-          ["frontend", "depuis 2020 · Transway, SNCF, Kereis"],
-          ["backend", "depuis 2020 · LDC, Transway, digital4better"],
-          ["ia", "depuis 2024 · digital4better, Kereis", "fg2", "acc"],
-          ["devops", "depuis 2018 · FPEE, équipe RUN"],
-          ["qualité", "depuis 2021 · toutes les missions"],
-          ["—", "57 briques résolues · 0 dépendance décorative", "fg2", "ok"]
+          [
+            "frontend",
+            "depuis 2020 · Transway, SNCF, Kereis"
+          ],
+          [
+            "backend",
+            "depuis 2020 · LDC, Transway, digital4better"
+          ],
+          [
+            "ia",
+            "depuis 2024 · digital4better, Kereis",
+            "fg2",
+            "acc"
+          ],
+          [
+            "devops",
+            "depuis 2018 · FPEE, équipe RUN"
+          ],
+          [
+            "qualité",
+            "depuis 2021 · toutes les missions"
+          ],
+          [
+            "—",
+            "57 briques résolues · 0 dépendance décorative",
+            "fg2",
+            "ok"
+          ]
         ]
       },
       "ask": "Frontend : HTML, CSS, Tailwind, Sass, Vuetify, MUI, TypeScript, Vue.js, React, Svelte, Pinia, RxJS, Vite. Backend : Laravel, NestJS, PHP, API REST, OpenAPI, JWT, PostgreSQL, MySQL, Redis, ActiveMQ. IA : serveurs MCP, SpecKit, SDD, Claude, herdr, LiteLLM, Langfuse, LangGraph, agents, harness engineering, évaluation. DevOps : Docker, GitLab CI, Jenkins, GitHub Actions, AWS, Linux, Bash, Ansible, Datadog, monitoring. Qualité : tests unitaires et E2E, Cypress, ESLint, Oxlint, Prettier, oxfmt, axe, éco-conception, RGAA, pair-programming."
     },
     {
-      "id": "impact", "label": "impact", "sub": "numérique responsable", "dot": "ok", "state": "audit",
+      "id": "impact",
+      "label": "impact",
+      "sub": "numérique responsable",
+      "dot": "ok",
+      "state": "audit",
       "cmd": "bd audit --a11y --eco",
       "lines": [
-        { "m": "✓", "mc": "ok", "t": "Accessibilité — contrastes vérifiés, navigation clavier complète, focus visibles, structure sémantique." },
-        { "m": "✓", "mc": "ok", "t": "Sobriété — aucune vidéo, aucune image, une seule police, animations désactivables." },
-        { "m": "✓", "mc": "ok", "t": "Mesure — l'impact environnemental d'une application se constate, il ne se déclare pas." },
-        { "m": "✓", "mc": "ok", "t": "Arbitrage — chaque fonctionnalité a un coût ; certaines ne valent pas leur empreinte." },
-        { "m": "›", "mc": "acc", "t": "Le numérique responsable n'est pas un supplément : c'est une contrainte de conception, au même titre que la sécurité.", "w": "500" },
-        { "m": "·", "t": "Fréquentation mesurée par Umami auto-hébergé : aucun cookie, aucun identifiant, aucune donnée revendue.", "tone": "fg2" },
-        { "m": "·", "t": "Cette page respecte prefers-reduced-motion et prefers-color-scheme.", "tone": "fg2" }
+        {
+          "m": "✓",
+          "mc": "ok",
+          "t": "Accessibilité — contrastes vérifiés, navigation clavier complète, focus visibles, structure sémantique."
+        },
+        {
+          "m": "✓",
+          "mc": "ok",
+          "t": "Sobriété — aucune vidéo, aucune image, une seule police, animations désactivables."
+        },
+        {
+          "m": "✓",
+          "mc": "ok",
+          "t": "Mesure — l'impact environnemental d'une application se constate, il ne se déclare pas."
+        },
+        {
+          "m": "✓",
+          "mc": "ok",
+          "t": "Arbitrage — chaque fonctionnalité a un coût ; certaines ne valent pas leur empreinte."
+        },
+        {
+          "m": "›",
+          "mc": "acc",
+          "t": "Le numérique responsable n'est pas un supplément : c'est une contrainte de conception, au même titre que la sécurité.",
+          "w": "500"
+        },
+        {
+          "m": "·",
+          "t": "Fréquentation mesurée par Umami auto-hébergé : aucun cookie, aucun identifiant, aucune donnée revendue.",
+          "tone": "fg2"
+        },
+        {
+          "m": "·",
+          "t": "Cette page respecte prefers-reduced-motion et prefers-color-scheme.",
+          "tone": "fg2"
+        }
       ],
       "out": {
         "title": "budget de cette page",
         "lines": [
-          ["vidéos", "0", "fg2", "ok"],
-          ["images", "0", "fg2", "ok"],
-          ["cookies", "0", "fg2", "ok"],
-          ["polices", "1 famille"],
-          ["mesure", "Umami auto-hébergé, sans cookie"],
-          ["mouvement", "réduit si demandé"]
+          [
+            "vidéos",
+            "0",
+            "fg2",
+            "ok"
+          ],
+          [
+            "images",
+            "0",
+            "fg2",
+            "ok"
+          ],
+          [
+            "cookies",
+            "0",
+            "fg2",
+            "ok"
+          ],
+          [
+            "polices",
+            "1 famille"
+          ],
+          [
+            "mesure",
+            "Umami auto-hébergé, sans cookie"
+          ],
+          [
+            "mouvement",
+            "réduit si demandé"
+          ]
         ]
       },
       "ask": "Le numérique responsable est une contrainte de conception, pas un supplément : sobriété des interfaces, accessibilité réelle (RGAA), mesure de l'impact environnemental, arbitrages assumés entre fonctionnalité et empreinte. Cette page n'a aucun tracker, aucune vidéo, aucune image, une seule police."
     },
     {
-      "id": "formation", "label": "formation", "sub": "2016 → …", "dot": "ok", "state": "en cours",
+      "id": "formation",
+      "label": "formation",
+      "sub": "2016 → …",
+      "dot": "ok",
+      "state": "en cours",
       "cmd": "bd learn --history --tail",
       "lines": [
-        { "m": "◆", "mc": "acc", "t": "2021 → …  On n'arrête jamais d'apprendre", "w": "700" },
-        { "m": "│", "t": "Veille continue, certifications, expérimentations — d'autant plus à l'ère de l'IA.", "tone": "fg2" },
-        { "m": "◆", "mc": "acc", "t": "2020 – 2021  Titre Professionnel Concepteur Développeur d'Applications" },
-        { "m": "◆", "mc": "acc", "t": "2018 – 2020  BTS SIO option SISR · alternance" },
-        { "m": "╰", "mc": "acc", "t": "2016 – 2018  Baccalauréat STI2D" }
+        {
+          "m": "◆",
+          "mc": "acc",
+          "t": "2021 → …  On n'arrête jamais d'apprendre",
+          "w": "700"
+        },
+        {
+          "m": "│",
+          "t": "Veille continue, certifications, expérimentations — d'autant plus à l'ère de l'IA.",
+          "tone": "fg2"
+        },
+        {
+          "m": "◆",
+          "mc": "acc",
+          "t": "2020 – 2021  Titre Professionnel Concepteur Développeur d'Applications"
+        },
+        {
+          "m": "◆",
+          "mc": "acc",
+          "t": "2018 – 2020  BTS SIO option SISR · alternance"
+        },
+        {
+          "m": "╰",
+          "mc": "acc",
+          "t": "2016 – 2018  Baccalauréat STI2D"
+        }
       ],
       "out": {
         "title": "changelog",
         "lines": [
-          ["en cours", "MCP, agents, évaluation", "fg2", "acc"],
-          ["2021", "TP CDA"],
-          ["2020", "BTS SIO SISR"],
-          ["2018", "Bac STI2D"],
-          ["méthode", "lire, tester, casser, recommencer"]
+          [
+            "en cours",
+            "MCP, agents, évaluation",
+            "fg2",
+            "acc"
+          ],
+          [
+            "2021",
+            "TP CDA"
+          ],
+          [
+            "2020",
+            "BTS SIO SISR"
+          ],
+          [
+            "2018",
+            "Bac STI2D"
+          ],
+          [
+            "méthode",
+            "lire, tester, casser, recommencer"
+          ]
         ]
       },
       "ask": "Depuis 2021 : veille continue, certifications, expérimentations, d'autant plus à l'ère de l'IA. Titre Professionnel Concepteur Développeur d'Applications en 2021, BTS SIO option SISR en alternance en 2020, Baccalauréat STI2D en 2018."
     },
     {
-      "id": "contact", "label": "contact", "sub": "ouvert aux missions", "dot": "acc", "state": "ouvert",
+      "id": "contact",
+      "label": "contact",
+      "sub": "ouvert aux missions",
+      "dot": "acc",
+      "state": "ouvert",
       "cmd": "curl -s portfolio.brezinben.dpdns.org/contact | jq",
       "suggest": "/send-mail benjamin.david1@hotmail.fr",
       "lines": [
-        { "jqLine": ["0", "{"] },
-        { "jq": ["14px", "email", "benjamin.david1@hotmail.fr", "str", true] },
-        { "jqOpen": ["14px", "social"] },
-        { "jq": ["30px", "linkedin", "in/benjamin--david", "str", true] },
-        { "jq": ["30px", "github", "brezinben", "str", true] },
-        { "jq": ["30px", "website", "portfolio.brezinben.dpdns.org", "str", false] },
-        { "jqLine": ["14px", "},"] },
-        { "jq": ["14px", "city", "Nantes, France", "str", true] },
-        { "jq": ["14px", "looking_for", "missions IA, full stack, numérique responsable", "str", true] },
-        { "jq": ["14px", "response_time_in_hours", 48, "num", false] },
-        { "jqLine": ["0", "}"] }
+        {
+          "jqLine": [
+            "0",
+            "{"
+          ]
+        },
+        {
+          "jq": [
+            "14px",
+            "email",
+            "benjamin.david1@hotmail.fr",
+            "str",
+            true
+          ]
+        },
+        {
+          "jqOpen": [
+            "14px",
+            "social"
+          ]
+        },
+        {
+          "jq": [
+            "30px",
+            "linkedin",
+            "in/benjamin--david",
+            "str",
+            true
+          ]
+        },
+        {
+          "jq": [
+            "30px",
+            "github",
+            "brezinben",
+            "str",
+            true
+          ]
+        },
+        {
+          "jq": [
+            "30px",
+            "website",
+            "portfolio.brezinben.dpdns.org",
+            "str",
+            false
+          ]
+        },
+        {
+          "jqLine": [
+            "14px",
+            "},"
+          ]
+        },
+        {
+          "jq": [
+            "14px",
+            "city",
+            "Nantes, France",
+            "str",
+            true
+          ]
+        },
+        {
+          "jq": [
+            "14px",
+            "looking_for",
+            "missions IA, full stack, numérique responsable",
+            "str",
+            true
+          ]
+        },
+        {
+          "jq": [
+            "14px",
+            "response_time_in_hours",
+            48,
+            "num",
+            false
+          ]
+        },
+        {
+          "jqLine": [
+            "0",
+            "}"
+          ]
+        }
       ],
       "out": {
         "title": "http",
         "lines": [
-          ["200", "OK", "ok", "ok"],
-          ["email", "benjamin.david1@hotmail.fr", "fg2", "acc"],
-          ["linkedin", "in/benjamin--david"],
-          ["github", "brezinben"],
-          ["site", "portfolio.brezinben.dpdns.org"],
-          ["ville", "Nantes"],
-          ["délai", "réponse sous 48 h"]
+          [
+            "200",
+            "OK",
+            "ok",
+            "ok"
+          ],
+          [
+            "email",
+            "benjamin.david1@hotmail.fr",
+            "fg2",
+            "acc"
+          ],
+          [
+            "linkedin",
+            "in/benjamin--david"
+          ],
+          [
+            "github",
+            "brezinben"
+          ],
+          [
+            "site",
+            "portfolio.brezinben.dpdns.org"
+          ],
+          [
+            "ville",
+            "Nantes"
+          ],
+          [
+            "délai",
+            "réponse sous 48 h"
+          ]
         ]
       },
       "ask": "Contact : benjamin.david1@hotmail.fr, réponse sous 48 heures. LinkedIn in/benjamin--david, GitHub brezinben. Basé à Nantes, ouvert aux missions IA, full stack et numérique responsable."
     }
   ],
-
   "missions": [
-    { "id": "m-kereis", "label": "kereis", "state": "en cours · MCP", "dot": "acc", "pulse": true },
-    { "id": "m-assist", "label": "assist'engare", "state": "livré · SNCF", "dot": "ok", "pulse": false },
-    { "id": "m-run", "label": "run d4b", "state": "livré · 4 clients", "dot": "ok", "pulse": false },
-    { "id": "m-transway", "label": "transway", "state": "livré · mobilité", "dot": "fg2", "pulse": false }
+    {
+      "id": "m-kereis",
+      "label": "kereis",
+      "state": "en cours · MCP",
+      "dot": "acc",
+      "pulse": true
+    },
+    {
+      "id": "m-assist",
+      "label": "assist'engare",
+      "state": "livré · SNCF",
+      "dot": "ok",
+      "pulse": false
+    },
+    {
+      "id": "m-run",
+      "label": "run d4b",
+      "state": "livré · 4 clients",
+      "dot": "ok",
+      "pulse": false
+    },
+    {
+      "id": "m-transway",
+      "label": "transway",
+      "state": "livré · mobilité",
+      "dot": "fg2",
+      "pulse": false
+    }
   ],
-
   "details": [
     {
-      "id": "m-kereis", "label": "kereis", "parent": "parcours", "cmd": "bd show mission/kereis",
+      "id": "m-kereis",
+      "label": "kereis",
+      "parent": "parcours",
+      "cmd": "bd show mission/kereis",
       "lines": [
-        { "t": "Kereis — pôle DSI", "size": "clamp(22px,2.6vw,30px)", "w": "700", "ls": "-.02em" },
-        { "t": "mai 2026 → aujourd'hui · Développeur IA / Full Stack · via digital4better", "tone": "acc" },
-        { "m": "·", "t": "Kereis construit plutôt qu'il n'achète. On me demande de prouver par le code ce qu'une licence coûteuse ne ferait qu'à moitié." },
-        { "m": "·", "t": "Le cadrage du code passe en premier. Linter et règles avant la première fonctionnalité : l'IA produit sous contrainte, un humain relit." },
-        { "m": "·", "t": "Serveurs MCP : les outils internes s'ouvrent aux agents. Le point dur est l'autorisation, pas l'exposition." },
-        { "m": "·", "t": "Simulateur de tarif d'assurance de prêt. L'utilisateur décrit son projet en langage naturel, le MCP répond un tarif." },
-        { "m": "·", "t": "Cartographie du SI sous Backstage. Sources AWS, GitLab et Zeenea branchées, puis un MCP pour que les agents lisent la carte." },
-        { "m": "·", "t": "Application de compte rendu. Le texte dicté est nettoyé, l'e-mail rédigé, la réunion suivante préparée." },
-        { "m": "·", "t": "Revue de spécification par l'IA : ~20 min là où un humain passerait une journée. Étape obligatoire à chaque fonctionnalité." }
+        {
+          "t": "Kereis — pôle DSI",
+          "size": "clamp(22px,2.6vw,30px)",
+          "w": "700",
+          "ls": "-.02em"
+        },
+        {
+          "t": "mai 2026 → aujourd'hui · Développeur IA / Full Stack · via digital4better",
+          "tone": "acc"
+        },
+        {
+          "m": "·",
+          "t": "Kereis construit plutôt qu'il n'achète. On me demande de prouver par le code ce qu'une licence coûteuse ne ferait qu'à moitié."
+        },
+        {
+          "m": "·",
+          "t": "Le cadrage du code passe en premier. Linter et règles avant la première fonctionnalité : l'IA produit sous contrainte, un humain relit."
+        },
+        {
+          "m": "·",
+          "t": "Serveurs MCP : les outils internes s'ouvrent aux agents. Le point dur est l'autorisation, pas l'exposition."
+        },
+        {
+          "m": "·",
+          "t": "Simulateur de tarif d'assurance de prêt. L'utilisateur décrit son projet en langage naturel, le MCP répond un tarif."
+        },
+        {
+          "m": "·",
+          "t": "Cartographie du SI sous Backstage. Sources AWS, GitLab et Zeenea branchées, puis un MCP pour que les agents lisent la carte."
+        },
+        {
+          "m": "·",
+          "t": "Application de compte rendu. Le texte dicté est nettoyé, l'e-mail rédigé, la réunion suivante préparée."
+        },
+        {
+          "m": "·",
+          "t": "Revue de spécification par l'IA : ~20 min là où un humain passerait une journée. Étape obligatoire à chaque fonctionnalité."
+        }
       ],
       "out": {
         "title": "mission",
         "lines": [
-          ["statut", "en cours", "fg2", "acc"],
-          ["rôle", "développeur IA / full stack"],
-          ["client", "Kereis · pôle DSI"],
-          ["via", "digital4better"],
-          ["pile", "MCP, SpecKit, LiteLLM, Langfuse"],
-          ["apport", "cadrer l'IA par la spec"]
+          [
+            "statut",
+            "en cours",
+            "fg2",
+            "acc"
+          ],
+          [
+            "rôle",
+            "développeur IA / full stack"
+          ],
+          [
+            "client",
+            "Kereis · pôle DSI"
+          ],
+          [
+            "via",
+            "digital4better"
+          ],
+          [
+            "pile",
+            "MCP, SpecKit, LiteLLM, Langfuse"
+          ],
+          [
+            "apport",
+            "cadrer l'IA par la spec"
+          ]
         ]
       },
       "ask": "Chez Kereis depuis mai 2026, via digital4better : des preuves de concept IA pour une DSI qui construit plutôt qu'elle n'achète. Serveurs MCP, Specification-Driven Development, et le cadrage du code écrit avant la première fonctionnalité. Trois sujets livrés : un simulateur de tarif d'assurance de prêt, une cartographie du SI sous Backstage, une application de compte rendu."
     },
     {
-      "id": "m-assist", "label": "assist'enGare", "parent": "parcours", "cmd": "bd show mission/assist-engare",
+      "id": "m-assist",
+      "label": "assist'enGare",
+      "parent": "parcours",
+      "cmd": "bd show mission/assist-engare",
       "lines": [
-        { "t": "SNCF Gares & Connexions — Assist'enGare", "size": "clamp(22px,2.6vw,30px)", "w": "700", "ls": "-.02em" },
-        { "t": "sept. 2024 → mai 2026 · Développeur Full Stack · via digital4better", "tone": "acc" },
-        { "m": "·", "t": "Réservation de prestations d'assistance pour les personnes en situation de handicap (PSH/PMR) souhaitant accéder à leur train." },
-        { "m": "·", "t": "Front grand public de Gares & Connexions. La déclaration d'accessibilité affiche 96 % de conformité moyenne au RGAA 4.1, sous audits successifs." },
-        { "m": "·", "t": "Règles axe au linter, essais au lecteur d'écran sous NVDA et TalkBack. Le critère d'accessibilité entre dans la spécification, pas dans le correctif." },
-        { "m": "·", "t": "MUI ne couvre pas tout le référentiel. Le reste s'écrit à la main : copie des références, vocalisation correcte des marques." },
-        { "m": "·", "t": "La brique parle à tout le SI SNCF. Le spécifique devient générique : ActiveMQ réécrit d'AMQP vers STOMP, routage dynamique par entité métier." },
-        { "m": "·", "t": "Voyage en deux segments SNCF et Trenitalia : chaque transporteur ne reçoit que le segment qui le concerne." },
-        { "m": "·", "t": "Validation automatique des dossiers d'assistance. Environ 3 000 dossiers par jour, une dizaine de notifications chacun, et davantage en vacances." },
-        { "m": "·", "t": "Ce volume impose des instances multiples et une observabilité Datadog." },
-        { "m": "·", "t": "Le code était bon, mais rien n'empêchait le mauvais code. J'ai posé les règles : Oxlint et oxfmt à la place d'ESLint et Prettier." },
-        { "m": "·", "t": "Appui aux autres équipes du pôle : migrations JavaScript vers TypeScript, et Vue 2 vers Vue 3." }
+        {
+          "t": "SNCF Gares & Connexions — Assist'enGare",
+          "size": "clamp(22px,2.6vw,30px)",
+          "w": "700",
+          "ls": "-.02em"
+        },
+        {
+          "t": "sept. 2024 → mai 2026 · Développeur Full Stack · via digital4better",
+          "tone": "acc"
+        },
+        {
+          "m": "·",
+          "t": "Réservation de prestations d'assistance pour les personnes en situation de handicap (PSH/PMR) souhaitant accéder à leur train."
+        },
+        {
+          "m": "·",
+          "t": "Front grand public de Gares & Connexions. La déclaration d'accessibilité affiche 96 % de conformité moyenne au RGAA 4.1, sous audits successifs."
+        },
+        {
+          "m": "·",
+          "t": "Règles axe au linter, essais au lecteur d'écran sous NVDA et TalkBack. Le critère d'accessibilité entre dans la spécification, pas dans le correctif."
+        },
+        {
+          "m": "·",
+          "t": "MUI ne couvre pas tout le référentiel. Le reste s'écrit à la main : copie des références, vocalisation correcte des marques."
+        },
+        {
+          "m": "·",
+          "t": "La brique parle à tout le SI SNCF. Le spécifique devient générique : ActiveMQ réécrit d'AMQP vers STOMP, routage dynamique par entité métier."
+        },
+        {
+          "m": "·",
+          "t": "Voyage en deux segments SNCF et Trenitalia : chaque transporteur ne reçoit que le segment qui le concerne."
+        },
+        {
+          "m": "·",
+          "t": "Validation automatique des dossiers d'assistance. Environ 3 000 dossiers par jour, une dizaine de notifications chacun, et davantage en vacances."
+        },
+        {
+          "m": "·",
+          "t": "Ce volume impose des instances multiples et une observabilité Datadog."
+        },
+        {
+          "m": "·",
+          "t": "Le code était bon, mais rien n'empêchait le mauvais code. J'ai posé les règles : Oxlint et oxfmt à la place d'ESLint et Prettier."
+        },
+        {
+          "m": "·",
+          "t": "Appui aux autres équipes du pôle : migrations JavaScript vers TypeScript, et Vue 2 vers Vue 3."
+        }
       ],
       "out": {
         "title": "mission",
         "lines": [
-          ["statut", "livré", "fg2", "ok"],
-          ["rôle", "développeur full stack"],
-          ["client", "SNCF Gares & Connexions"],
-          ["produit", "Assist'enGare"],
-          ["public", "voyageurs PSH / PMR"],
-          ["volume", "~3 000 dossiers / jour"],
-          ["RGAA 4.1", "96 % · déclaration publique", "fg2", "ok"],
-          ["pile", "React, MUI, NestJS, PostgreSQL"]
+          [
+            "statut",
+            "livré",
+            "fg2",
+            "ok"
+          ],
+          [
+            "rôle",
+            "développeur full stack"
+          ],
+          [
+            "client",
+            "SNCF Gares & Connexions"
+          ],
+          [
+            "produit",
+            "Assist'enGare"
+          ],
+          [
+            "public",
+            "voyageurs PSH / PMR"
+          ],
+          [
+            "volume",
+            "~3 000 dossiers / jour"
+          ],
+          [
+            "RGAA 4.1",
+            "96 % · déclaration publique",
+            "fg2",
+            "ok"
+          ],
+          [
+            "pile",
+            "React, MUI, NestJS, PostgreSQL"
+          ]
         ]
       },
       "ask": "Assist'enGare, pour SNCF Gares & Connexions de septembre 2024 à mai 2026 : réservation de prestations d'assistance pour les personnes en situation de handicap souhaitant accéder à leur train. Front grand public à 96 % de conformité RGAA, tenu sous audits successifs. Environ 3 000 dossiers par jour, une dizaine de notifications chacun. Côté échanges, la brique parle à tout le SI SNCF et aux transporteurs étrangers : ActiveMQ réécrit d'AMQP vers STOMP, routage dynamique par entité métier."
     },
     {
-      "id": "m-run", "label": "run d4b", "parent": "parcours", "cmd": "bd show mission/run-d4b",
+      "id": "m-run",
+      "label": "run d4b",
+      "parent": "parcours",
+      "cmd": "bd show mission/run-d4b",
       "lines": [
-        { "t": "digital4better — équipe RUN", "size": "clamp(22px,2.6vw,30px)", "w": "700", "ls": "-.02em" },
-        { "t": "oct. 2023 → sept. 2024 · Développeur Full Stack / IA", "tone": "acc" },
-        { "m": "·", "t": "Quatre projets clients en parallèle : Body Nature, Dorval AM, PiLeJe et Servier." },
-        { "m": "·", "t": "Quatre piles, quatre historiques. Le RUN oblige à entrer vite dans du code qu'on n'a pas écrit." },
-        { "m": "·", "t": "Supervision : monitoring des performances, détection et analyse des anomalies avant la remontée utilisateur." },
-        { "m": "·", "t": "Maintenance et montées de version. Correctifs de sécurité tenus à jour sur le parc, provisionnés par Ansible." },
-        { "m": "·", "t": "Évolutions produit sur Body Nature, en échange direct avec l'équipe produit." },
-        { "m": "·", "t": "Éco-conception mesurée avec fruggr, l'outil maison. L'impact d'une application se constate, il ne se déclare pas." },
-        { "m": "·", "t": "Optimisation des pipelines CI/CD : moins de temps de calcul, donc moins de gaspillage." },
-        { "m": "›", "mc": "acc", "t": "Assurer la disponibilité des services en appliquant les principes du numérique responsable.", "tone": "fg2" }
+        {
+          "t": "digital4better — équipe RUN",
+          "size": "clamp(22px,2.6vw,30px)",
+          "w": "700",
+          "ls": "-.02em"
+        },
+        {
+          "t": "oct. 2023 → sept. 2024 · Développeur Full Stack / IA",
+          "tone": "acc"
+        },
+        {
+          "m": "·",
+          "t": "Quatre projets clients en parallèle : Body Nature, Dorval AM, PiLeJe et Servier."
+        },
+        {
+          "m": "·",
+          "t": "Quatre piles, quatre historiques. Le RUN oblige à entrer vite dans du code qu'on n'a pas écrit."
+        },
+        {
+          "m": "·",
+          "t": "Supervision : monitoring des performances, détection et analyse des anomalies avant la remontée utilisateur."
+        },
+        {
+          "m": "·",
+          "t": "Maintenance et montées de version. Correctifs de sécurité tenus à jour sur le parc, provisionnés par Ansible."
+        },
+        {
+          "m": "·",
+          "t": "Évolutions produit sur Body Nature, en échange direct avec l'équipe produit."
+        },
+        {
+          "m": "·",
+          "t": "Éco-conception mesurée avec fruggr, l'outil maison. L'impact d'une application se constate, il ne se déclare pas."
+        },
+        {
+          "m": "·",
+          "t": "Optimisation des pipelines CI/CD : moins de temps de calcul, donc moins de gaspillage."
+        },
+        {
+          "m": "›",
+          "mc": "acc",
+          "t": "Assurer la disponibilité des services en appliquant les principes du numérique responsable.",
+          "tone": "fg2"
+        }
       ],
       "out": {
         "title": "mission",
         "lines": [
-          ["statut", "livré", "fg2", "ok"],
-          ["rôle", "full stack / IA"],
-          ["employeur", "digital4better"],
-          ["clients", "Body Nature, Dorval AM, PiLeJe, Servier"],
-          ["périmètre", "RUN, support, sécurité"],
-          ["mesure", "fruggr · éco-conception", "fg2", "ok"]
+          [
+            "statut",
+            "livré",
+            "fg2",
+            "ok"
+          ],
+          [
+            "rôle",
+            "full stack / IA"
+          ],
+          [
+            "employeur",
+            "digital4better"
+          ],
+          [
+            "clients",
+            "Body Nature, Dorval AM, PiLeJe, Servier"
+          ],
+          [
+            "périmètre",
+            "RUN, support, sécurité"
+          ],
+          [
+            "mesure",
+            "fruggr · éco-conception",
+            "fg2",
+            "ok"
+          ]
         ]
       },
       "ask": "Équipe RUN chez digital4better, d'octobre 2023 à septembre 2024 : quatre projets clients en parallèle, Body Nature, Dorval AM, PiLeJe et Servier. Supervision, maintenance, correctifs de sécurité et montées de version. Éco-conception mesurée avec fruggr, l'outil maison de la société."
     },
     {
-      "id": "m-transway", "label": "transway", "parent": "parcours", "cmd": "bd show mission/transway",
+      "id": "m-transway",
+      "label": "transway",
+      "parent": "parcours",
+      "cmd": "bd show mission/transway",
       "lines": [
-        { "t": "Transway — mobilité durable", "size": "clamp(22px,2.6vw,30px)", "w": "700", "ls": "-.02em" },
-        { "t": "sept. 2021 → sept. 2023 · Full Stack, puis Technical Lead Developer", "tone": "acc" },
-        { "m": "·", "t": "Première mission hors alternance. Deux produits d'incitation à la mobilité durable : WeFlo Pro pour les entreprises, IREBY pour les collectivités." },
-        { "m": "·", "t": "WeFlo Pro : déclaration des trajets au titre du forfait mobilité durable. Laravel, PHP et Vue.js." },
-        { "m": "·", "t": "IREBY : l'usager gagne des points en tram, en bus, à pied ou à vélo, puis les dépense en boutique. NestJS et Vue 3." },
-        { "m": "·", "t": "Migration de la V1 vers la V3 : plus de 300 000 utilisateurs transférés, avec leurs offres et leurs images. Script de transformation écrit et mené seul." },
-        { "m": "·", "t": "Branchements aux systèmes des réseaux partenaires : TCL à Lyon, STAR à Rennes." },
-        { "m": "·", "t": "L'interface se configure depuis l'administration. La page reste générique, la vue du client se paramètre." },
-        { "m": "·", "t": "Passage au rôle de lead technique : encadrement de quatre à six développeurs, et la main sur les choix techniques." },
-        { "m": "·", "t": "Migration Vue 2 vers Vue 3, montées de version Node, renforcements de sécurité après audit." }
+        {
+          "t": "Transway — mobilité durable",
+          "size": "clamp(22px,2.6vw,30px)",
+          "w": "700",
+          "ls": "-.02em"
+        },
+        {
+          "t": "sept. 2021 → sept. 2023 · Full Stack, puis Technical Lead Developer",
+          "tone": "acc"
+        },
+        {
+          "m": "·",
+          "t": "Première mission hors alternance. Deux produits d'incitation à la mobilité durable : WeFlo Pro pour les entreprises, IREBY pour les collectivités."
+        },
+        {
+          "m": "·",
+          "t": "WeFlo Pro : déclaration des trajets au titre du forfait mobilité durable. Laravel, PHP et Vue.js."
+        },
+        {
+          "m": "·",
+          "t": "IREBY : l'usager gagne des points en tram, en bus, à pied ou à vélo, puis les dépense en boutique. NestJS et Vue 3."
+        },
+        {
+          "m": "·",
+          "t": "Migration de la V1 vers la V3 : plus de 300 000 utilisateurs transférés, avec leurs offres et leurs images. Script de transformation écrit et mené seul."
+        },
+        {
+          "m": "·",
+          "t": "Branchements aux systèmes des réseaux partenaires : TCL à Lyon, STAR à Rennes."
+        },
+        {
+          "m": "·",
+          "t": "L'interface se configure depuis l'administration. La page reste générique, la vue du client se paramètre."
+        },
+        {
+          "m": "·",
+          "t": "Passage au rôle de lead technique : encadrement de quatre à six développeurs, et la main sur les choix techniques."
+        },
+        {
+          "m": "·",
+          "t": "Migration Vue 2 vers Vue 3, montées de version Node, renforcements de sécurité après audit."
+        }
       ],
       "out": {
         "title": "mission",
         "lines": [
-          ["statut", "livré", "fg2", "ok"],
-          ["rôle", "full stack → tech lead"],
-          ["produits", "WeFlo Pro, IREBY"],
-          ["encadrement", "4 à 6 développeurs"],
-          ["migration", "+300 000 utilisateurs", "fg2", "ok"],
-          ["pile", "Laravel, NestJS, Vue 3"]
+          [
+            "statut",
+            "livré",
+            "fg2",
+            "ok"
+          ],
+          [
+            "rôle",
+            "full stack → tech lead"
+          ],
+          [
+            "produits",
+            "WeFlo Pro, IREBY"
+          ],
+          [
+            "encadrement",
+            "4 à 6 développeurs"
+          ],
+          [
+            "migration",
+            "+300 000 utilisateurs",
+            "fg2",
+            "ok"
+          ],
+          [
+            "pile",
+            "Laravel, NestJS, Vue 3"
+          ]
         ]
       },
       "ask": "Transway, de septembre 2021 à septembre 2023 : deux produits d'incitation à la mobilité durable, WeFlo Pro pour les entreprises et IREBY pour les collectivités. J'ai mené la migration de la V1 vers la V3, soit plus de 300 000 utilisateurs transférés. Passage au rôle de Technical Lead Developer, avec l'encadrement de quatre à six développeurs."
     }
   ],
-
   "timeline": [
-    { "id": "t0", "years": "2026 → …", "org": "Kereis", "role": "Développeur IA / Full Stack · pôle DSI", "note": "Preuves de concept IA pour une DSI qui construit plutôt qu'elle n'achète. Serveurs MCP, Specification-Driven Development, et le cadrage du code écrit avant la première fonctionnalité.", "detail": "m-kereis" },
-    { "id": "t1", "years": "2024 → 2026", "org": "SNCF Gares & Connexions", "role": "Développeur Full Stack · Assist'enGare", "note": "Réservation d'assistance pour les personnes en situation de handicap (PSH/PMR). Front grand public à 96 % de conformité RGAA, tenu sous audits successifs, et une brique d'échange qui parle à tout le SI SNCF.", "detail": "m-assist" },
-    { "id": "t2", "years": "2023 → 2024", "org": "digital4better", "role": "Équipe RUN · Développeur Full Stack / IA", "note": "Quatre projets clients en parallèle : Body Nature, Dorval AM, PiLeJe et Servier. Supervision, correctifs de sécurité, et éco-conception mesurée avec fruggr, l'outil maison.", "detail": "m-run" },
-    { "id": "t3", "years": "2021 → 2023", "org": "Transway", "role": "Full Stack, puis Technical Lead", "note": "Incitation à la mobilité durable : forfait mobilité durable pour les entreprises, programme de fidélité pour les collectivités. Plus de 300 000 utilisateurs migrés vers la nouvelle plateforme.", "detail": "m-transway" },
-    { "id": "t4", "years": "2020 → 2021", "org": "LDC Services", "role": "Concepteur Développeur d'Application · alternance", "note": "Développement logiciel classique et qualité du code.", "detail": null },
-    { "id": "t5", "years": "2018 → 2020", "org": "FPEE Industries", "role": "Technicien réseau · alternance", "note": "Comprendre le problème de l'utilisateur avant de le réparer. Tout part de là.", "detail": null }
+    {
+      "id": "t0",
+      "years": "2026 → …",
+      "org": "Kereis",
+      "role": "Développeur IA / Full Stack · pôle DSI",
+      "note": "Preuves de concept IA pour une DSI qui construit plutôt qu'elle n'achète. Serveurs MCP, Specification-Driven Development, et le cadrage du code écrit avant la première fonctionnalité.",
+      "detail": "m-kereis"
+    },
+    {
+      "id": "t1",
+      "years": "2024 → 2026",
+      "org": "SNCF Gares & Connexions",
+      "role": "Développeur Full Stack · Assist'enGare",
+      "note": "Réservation d'assistance pour les personnes en situation de handicap (PSH/PMR). Front grand public à 96 % de conformité RGAA, tenu sous audits successifs, et une brique d'échange qui parle à tout le SI SNCF.",
+      "detail": "m-assist"
+    },
+    {
+      "id": "t2",
+      "years": "2023 → 2024",
+      "org": "digital4better",
+      "role": "Équipe RUN · Développeur Full Stack / IA",
+      "note": "Quatre projets clients en parallèle : Body Nature, Dorval AM, PiLeJe et Servier. Supervision, correctifs de sécurité, et éco-conception mesurée avec fruggr, l'outil maison.",
+      "detail": "m-run"
+    },
+    {
+      "id": "t3",
+      "years": "2021 → 2023",
+      "org": "Transway",
+      "role": "Full Stack, puis Technical Lead",
+      "note": "Incitation à la mobilité durable : forfait mobilité durable pour les entreprises, programme de fidélité pour les collectivités. Plus de 300 000 utilisateurs migrés vers la nouvelle plateforme.",
+      "detail": "m-transway"
+    },
+    {
+      "id": "t4",
+      "years": "2020 → 2021",
+      "org": "LDC Services",
+      "role": "Concepteur Développeur d'Application · alternance",
+      "note": "Développement logiciel classique et qualité du code.",
+      "detail": null
+    },
+    {
+      "id": "t5",
+      "years": "2018 → 2020",
+      "org": "FPEE Industries",
+      "role": "Technicien réseau · alternance",
+      "note": "Comprendre le problème de l'utilisateur avant de le réparer. Tout part de là.",
+      "detail": null
+    }
   ],
-
   "stack": [
-    { "id": "front", "label": "frontend", "note": "interfaces accessibles",
-      "kids": ["HTML", "CSS", "Tailwind", "Sass", "Vuetify", "MUI", "TypeScript", "Vue.js", "React", "Svelte", "Pinia", "RxJS", "Vite"] },
-    { "id": "back", "label": "backend", "note": "services et données",
-      "kids": ["Laravel", "NestJS", "PHP", "API REST", "OpenAPI", "JWT", "PostgreSQL", "MySQL", "Redis", "ActiveMQ"] },
-    { "id": "ia", "label": "ia", "note": "orchestration d'agents",
-      "kids": ["Serveurs MCP", "SpecKit", "SDD", "Claude", "herdr", "LiteLLM", "Langfuse", "LangGraph", "Agents", "Harness engineering", "Évaluation", "Prompting"] },
-    { "id": "ops", "label": "devops", "note": "livrer sans casser",
-      "kids": ["Docker", "Compose", "GitLab CI", "Jenkins", "GitHub Actions", "AWS", "Linux", "Bash", "Ansible", "Datadog", "Monitoring"] },
-    { "id": "qa", "label": "qualité & sobriété", "note": "ce qui tient dans le temps",
-      "kids": ["Tests unitaires", "E2E", "Cypress", "ESLint", "Oxlint", "Prettier", "oxfmt", "axe", "Éco-conception", "RGAA", "Pair-programming"] }
+    {
+      "id": "front",
+      "label": "frontend",
+      "note": "interfaces accessibles",
+      "kids": [
+        "HTML",
+        "CSS",
+        "Tailwind",
+        "Sass",
+        "Vuetify",
+        "MUI",
+        "TypeScript",
+        "Vue.js",
+        "React",
+        "Svelte",
+        "Pinia",
+        "RxJS",
+        "Vite"
+      ]
+    },
+    {
+      "id": "back",
+      "label": "backend",
+      "note": "services et données",
+      "kids": [
+        "Laravel",
+        "NestJS",
+        "PHP",
+        "API REST",
+        "OpenAPI",
+        "JWT",
+        "PostgreSQL",
+        "MySQL",
+        "Redis",
+        "ActiveMQ"
+      ]
+    },
+    {
+      "id": "ia",
+      "label": "ia",
+      "note": "orchestration d'agents",
+      "kids": [
+        "Serveurs MCP",
+        "SpecKit",
+        "SDD",
+        "Claude",
+        "herdr",
+        "LiteLLM",
+        "Langfuse",
+        "LangGraph",
+        "Agents",
+        "Harness engineering",
+        "Évaluation",
+        "Prompting"
+      ]
+    },
+    {
+      "id": "ops",
+      "label": "devops",
+      "note": "livrer sans casser",
+      "kids": [
+        "Docker",
+        "Compose",
+        "GitLab CI",
+        "Jenkins",
+        "GitHub Actions",
+        "AWS",
+        "Linux",
+        "Bash",
+        "Ansible",
+        "Datadog",
+        "Monitoring"
+      ]
+    },
+    {
+      "id": "qa",
+      "label": "qualité & sobriété",
+      "note": "ce qui tient dans le temps",
+      "kids": [
+        "Tests unitaires",
+        "E2E",
+        "Cypress",
+        "ESLint",
+        "Oxlint",
+        "Prettier",
+        "oxfmt",
+        "axe",
+        "Éco-conception",
+        "RGAA",
+        "Pair-programming"
+      ]
+    }
   ],
-
   "techNotes": {
-    "Vue.js": { "where": "Transway, Kereis, appui SNCF", "note": "Framework principal sur la majorité des interfaces livrées. Composition API, stores, routage. Migration Vue 2 vers Vue 3 faite deux fois." },
-    "React": { "where": "Assist'enGare", "note": "Front grand public de Gares & Connexions, tenu sous audits d'accessibilité pendant vingt-et-un mois." },
-    "Svelte": { "where": "veille et prototypes", "note": "Choisi quand le poids du bundle compte plus que l'écosystème." },
-    "TypeScript": { "where": "toutes les missions depuis 2021", "note": "Typage strict côté front comme côté NestJS. Non négociable sur un projet à plusieurs mains." },
-    "HTML": { "where": "toutes les missions", "note": "Le bon élément porte le sens. Un lecteur d'écran suit la structure du document." },
-    "CSS": { "where": "toutes les missions", "note": "Grille, variables, et requêtes de préférence pour le mouvement réduit et le thème sombre." },
-    "Tailwind": { "where": "Transway, digital4better", "note": "Rapidité de mise en page sans feuille de style à maintenir. Attention portée à la taille finale du CSS." },
-    "Sass": { "where": "Transway, LDC Services", "note": "Variables et imbrication sur les feuilles de style héritées, avant que les variables CSS suffisent." },
-    "Vuetify": { "where": "Transway", "note": "Base de composants accessibles, complétée à la main sur les points que le RGAA impose." },
-    "MUI": { "where": "Assist'enGare", "note": "Base de composants React. Elle ne couvre pas tout le RGAA : le reste s'écrit à la main." },
-    "Pinia": { "where": "Transway, Kereis", "note": "Gestion d'état des applications Vue : sessions, réservations, cache local." },
-    "RxJS": { "where": "NestJS, formulaires réactifs", "note": "Flux asynchrones et annulation de requêtes concurrentes." },
-    "Vite": { "where": "depuis 2021", "note": "Serveur de développement et construction. Le rechargement instantané raccourcit la boucle d'essai." },
-    "Laravel": { "where": "LDC Services, digital4better", "note": "API et back-offices : Eloquent, files de traitement, authentification." },
-    "NestJS": { "where": "Transway, SNCF, Kereis", "note": "Architecture modulaire, injection de dépendances, TypeORM." },
-    "PHP": { "where": "LDC Services, Transway, digital4better", "note": "Langage des back-offices Laravel. Typage strict et outillage moderne depuis la 8." },
-    "API REST": { "where": "toutes les missions", "note": "Contrats documentés en OpenAPI avant l'implémentation — la spec précède le code." },
-    "OpenAPI": { "where": "toutes les missions", "note": "Le contrat s'écrit avant l'implémentation. Le front et le back avancent en parallèle sans se bloquer." },
-    "JWT": { "where": "Transway, SNCF, Kereis", "note": "Jetons d'authentification entre services. Sur un serveur MCP, la difficulté porte sur les droits accordés à l'agent." },
-    "PostgreSQL": { "where": "Transway, SNCF", "note": "Base de référence : requêtes analytiques, index, migrations versionnées." },
-    "MySQL": { "where": "LDC Services, digital4better", "note": "Base des projets hérités. Migrations versionnées et index relus avant chaque mise en production." },
-    "Redis": { "where": "digital4better, Transway", "note": "Cache et files de messages. Réduit la charge serveur, donc l'empreinte." },
-    "ActiveMQ": { "where": "Assist'enGare", "note": "Bus de messages entre la brique et le reste du SI SNCF. Réécriture d'AMQP vers STOMP, puis routage dynamique par entité métier." },
-    "Serveurs MCP": { "where": "Kereis, 2026", "note": "Exposition des outils internes aux agents : tools, resources, prompts, avec les garde-fous d'accès." },
-    "SpecKit": { "where": "Kereis, 2026", "note": "spec-it, plan, tasks. La spécification devient l'artefact de référence, le code en découle." },
-    "SDD": { "where": "Kereis", "note": "Specification-Driven Development : décrire l'intention, faire valider, puis générer et vérifier." },
-    "Claude": { "where": "Kereis, 2026", "note": "Toute la gamme Anthropic : l'agent en terminal pour le code, l'application pour la spec. Le cadrage vient des règles du dépôt, qui survivent à la session." },
-    "herdr": { "where": "Kereis, 2026", "note": "Multiplexeur de terminal en Rust. Plusieurs agents travaillent en parallèle et leur état reste lisible." },
-    "LiteLLM": { "where": "Kereis, 2026", "note": "Passerelle unique devant plusieurs fournisseurs de modèles. Le code ne dépend d'aucun d'eux." },
-    "Langfuse": { "where": "Kereis, 2026", "note": "Traces et évaluation des appels de modèle, pour comparer deux versions d'un agent sur les mêmes cas." },
-    "LangGraph": { "where": "Kereis, 2026", "note": "Enchaînements conditionnels entre prompts. L'agent devient un graphe que l'on peut relire." },
-    "Agents": { "where": "Kereis", "note": "Revue automatisée de spécification : ~20 min contre une journée humaine, à chaque fonctionnalité." },
-    "Harness engineering": { "where": "Kereis, 2026", "note": "Construire la machinerie autour du modèle : nettoyage de l'entrée, enchaînement des étapes, contrôle de la sortie. C'est cette machinerie qui rend le résultat livrable." },
-    "Évaluation": { "where": "Kereis", "note": "Mesurer ce que produit un agent, jeu de cas après jeu de cas, avant et après chaque changement." },
-    "Prompting": { "where": "Kereis", "note": "Le prompt porte l'intention de la demande. Les contraintes durables restent dans le dépôt." },
-    "Docker": { "where": "depuis 2020", "note": "Environnements reproductibles en local comme en CI. Compose pour les dépendances." },
-    "Compose": { "where": "depuis 2020", "note": "Les dépendances d'un projet démarrent en une commande. Un nouvel arrivant travaille le premier jour." },
-    "GitLab CI": { "where": "digital4better, SNCF", "note": "Pipelines de test, build et déploiement. Optimisation des durées pour limiter le gaspillage." },
-    "Jenkins": { "where": "Assist'enGare", "note": "Déploiements du service, en tandem avec les intégrations GitLab." },
-    "AWS": { "where": "Assist'enGare, Kereis", "note": "Hébergement du service et source de la cartographie du SI." },
-    "Datadog": { "where": "Assist'enGare", "note": "Observabilité d'un service à fort volume : traces, alertes, dimensionnement des instances." },
-    "GitHub Actions": { "where": "projets personnels", "note": "Mêmes étapes que GitLab CI : tests, construction, publication." },
-    "Linux": { "where": "depuis FPEE, 2018", "note": "Administration, scripts Bash, accès SSH. Le socle du reste." },
-    "Bash": { "where": "depuis FPEE, 2018", "note": "Scripts de migration, de sauvegarde et de déploiement, sur les serveurs comme en intégration continue." },
-    "Ansible": { "where": "équipe RUN, digital4better", "note": "Provisionnement et mises à jour de sécurité automatisées sur le parc." },
-    "Tests unitaires": { "where": "toutes les missions", "note": "Ils tiennent la logique métier. Un test qui échoue localise le défaut à la ligne près." },
-    "E2E": { "where": "Transway, ce portfolio", "note": "Le parcours complet dans un vrai navigateur. Ce niveau attrape les défauts d'assemblage que les tests unitaires laissent passer." },
-    "Cypress": { "where": "Transway", "note": "Tests de bout en bout sur les parcours critiques — réservation, authentification." },
-    "ESLint": { "where": "toutes les missions", "note": "Règles partagées : la revue humaine se concentre sur le fond, pas sur la forme." },
-    "Oxlint": { "where": "Assist'enGare, ce portfolio", "note": "Remplace ESLint. Assez rapide pour tourner à chaque sauvegarde, et non plus seulement en intégration continue." },
-    "axe": { "where": "Assist'enGare", "note": "Règles d'accessibilité branchées sur le linter. Une régression d'accessibilité apparaît dès la sauvegarde, des mois avant l'audit." },
-    "Prettier": { "where": "missions jusqu'en 2025", "note": "Mise en forme automatique. La revue humaine porte sur le fond." },
-    "oxfmt": { "where": "Assist'enGare", "note": "Remplace Prettier. Même mise en forme, exécution plus rapide." },
-    "Éco-conception": { "where": "digital4better", "note": "Mesure de l'impact des applications avec fruggr, l'outil maison, et arbitrages assumés entre fonctionnalité et empreinte." },
-    "RGAA": { "where": "Assist'enGare", "note": "96 % de conformité moyenne à la déclaration publique. Essais au lecteur d'écran sous NVDA et TalkBack." },
-    "Monitoring": { "where": "équipe RUN, digital4better", "note": "Supervision des performances, détection et analyse des anomalies avant remontée utilisateur." },
-    "Pair-programming": { "where": "Transway, Kereis", "note": "Transmission plus rapide qu'une documentation, surtout sur les parties sensibles." }
+    "Vue.js": {
+      "where": "Transway, Kereis, appui SNCF",
+      "note": "Framework principal sur la majorité des interfaces livrées. Composition API, stores, routage. Migration Vue 2 vers Vue 3 faite deux fois."
+    },
+    "React": {
+      "where": "Assist'enGare",
+      "note": "Front grand public de Gares & Connexions, tenu sous audits d'accessibilité pendant vingt-et-un mois."
+    },
+    "Svelte": {
+      "where": "veille et prototypes",
+      "note": "Choisi quand le poids du bundle compte plus que l'écosystème."
+    },
+    "TypeScript": {
+      "where": "toutes les missions depuis 2021",
+      "note": "Typage strict côté front comme côté NestJS. Non négociable sur un projet à plusieurs mains."
+    },
+    "HTML": {
+      "where": "toutes les missions",
+      "note": "Le bon élément porte le sens. Un lecteur d'écran suit la structure du document."
+    },
+    "CSS": {
+      "where": "toutes les missions",
+      "note": "Grille, variables, et requêtes de préférence pour le mouvement réduit et le thème sombre."
+    },
+    "Tailwind": {
+      "where": "Transway, digital4better",
+      "note": "Rapidité de mise en page sans feuille de style à maintenir. Attention portée à la taille finale du CSS."
+    },
+    "Sass": {
+      "where": "Transway, LDC Services",
+      "note": "Variables et imbrication sur les feuilles de style héritées, avant que les variables CSS suffisent."
+    },
+    "Vuetify": {
+      "where": "Transway",
+      "note": "Base de composants accessibles, complétée à la main sur les points que le RGAA impose."
+    },
+    "MUI": {
+      "where": "Assist'enGare",
+      "note": "Base de composants React. Elle ne couvre pas tout le RGAA : le reste s'écrit à la main."
+    },
+    "Pinia": {
+      "where": "Transway, Kereis",
+      "note": "Gestion d'état des applications Vue : sessions, réservations, cache local."
+    },
+    "RxJS": {
+      "where": "NestJS, formulaires réactifs",
+      "note": "Flux asynchrones et annulation de requêtes concurrentes."
+    },
+    "Vite": {
+      "where": "depuis 2021",
+      "note": "Serveur de développement et construction. Le rechargement instantané raccourcit la boucle d'essai."
+    },
+    "Laravel": {
+      "where": "LDC Services, digital4better",
+      "note": "API et back-offices : Eloquent, files de traitement, authentification."
+    },
+    "NestJS": {
+      "where": "Transway, SNCF, Kereis",
+      "note": "Architecture modulaire, injection de dépendances, TypeORM."
+    },
+    "PHP": {
+      "where": "LDC Services, Transway, digital4better",
+      "note": "Langage des back-offices Laravel. Typage strict et outillage moderne depuis la 8."
+    },
+    "API REST": {
+      "where": "toutes les missions",
+      "note": "Contrats documentés en OpenAPI avant l'implémentation — la spec précède le code."
+    },
+    "OpenAPI": {
+      "where": "toutes les missions",
+      "note": "Le contrat s'écrit avant l'implémentation. Le front et le back avancent en parallèle sans se bloquer."
+    },
+    "JWT": {
+      "where": "Transway, SNCF, Kereis",
+      "note": "Jetons d'authentification entre services. Sur un serveur MCP, la difficulté porte sur les droits accordés à l'agent."
+    },
+    "PostgreSQL": {
+      "where": "Transway, SNCF",
+      "note": "Base de référence : requêtes analytiques, index, migrations versionnées."
+    },
+    "MySQL": {
+      "where": "LDC Services, digital4better",
+      "note": "Base des projets hérités. Migrations versionnées et index relus avant chaque mise en production."
+    },
+    "Redis": {
+      "where": "digital4better, Transway",
+      "note": "Cache et files de messages. Réduit la charge serveur, donc l'empreinte."
+    },
+    "ActiveMQ": {
+      "where": "Assist'enGare",
+      "note": "Bus de messages entre la brique et le reste du SI SNCF. Réécriture d'AMQP vers STOMP, puis routage dynamique par entité métier."
+    },
+    "Serveurs MCP": {
+      "where": "Kereis, 2026",
+      "note": "Exposition des outils internes aux agents : tools, resources, prompts, avec les garde-fous d'accès."
+    },
+    "SpecKit": {
+      "where": "Kereis, 2026",
+      "note": "spec-it, plan, tasks. La spécification devient l'artefact de référence, le code en découle."
+    },
+    "SDD": {
+      "where": "Kereis",
+      "note": "Specification-Driven Development : décrire l'intention, faire valider, puis générer et vérifier."
+    },
+    "Claude": {
+      "where": "Kereis, 2026",
+      "note": "Toute la gamme Anthropic : l'agent en terminal pour le code, l'application pour la spec. Le cadrage vient des règles du dépôt, qui survivent à la session."
+    },
+    "herdr": {
+      "where": "Kereis, 2026",
+      "note": "Multiplexeur de terminal en Rust. Plusieurs agents travaillent en parallèle et leur état reste lisible."
+    },
+    "LiteLLM": {
+      "where": "Kereis, 2026",
+      "note": "Passerelle unique devant plusieurs fournisseurs de modèles. Le code ne dépend d'aucun d'eux."
+    },
+    "Langfuse": {
+      "where": "Kereis, 2026",
+      "note": "Traces et évaluation des appels de modèle, pour comparer deux versions d'un agent sur les mêmes cas."
+    },
+    "LangGraph": {
+      "where": "Kereis, 2026",
+      "note": "Enchaînements conditionnels entre prompts. L'agent devient un graphe que l'on peut relire."
+    },
+    "Agents": {
+      "where": "Kereis",
+      "note": "Revue automatisée de spécification : ~20 min contre une journée humaine, à chaque fonctionnalité."
+    },
+    "Harness engineering": {
+      "where": "Kereis, 2026",
+      "note": "Construire la machinerie autour du modèle : nettoyage de l'entrée, enchaînement des étapes, contrôle de la sortie. C'est cette machinerie qui rend le résultat livrable."
+    },
+    "Évaluation": {
+      "where": "Kereis",
+      "note": "Mesurer ce que produit un agent, jeu de cas après jeu de cas, avant et après chaque changement."
+    },
+    "Prompting": {
+      "where": "Kereis",
+      "note": "Le prompt porte l'intention de la demande. Les contraintes durables restent dans le dépôt."
+    },
+    "Docker": {
+      "where": "depuis 2020",
+      "note": "Environnements reproductibles en local comme en CI. Compose pour les dépendances."
+    },
+    "Compose": {
+      "where": "depuis 2020",
+      "note": "Les dépendances d'un projet démarrent en une commande. Un nouvel arrivant travaille le premier jour."
+    },
+    "GitLab CI": {
+      "where": "digital4better, SNCF",
+      "note": "Pipelines de test, build et déploiement. Optimisation des durées pour limiter le gaspillage."
+    },
+    "Jenkins": {
+      "where": "Assist'enGare",
+      "note": "Déploiements du service, en tandem avec les intégrations GitLab."
+    },
+    "AWS": {
+      "where": "Assist'enGare, Kereis",
+      "note": "Hébergement du service et source de la cartographie du SI."
+    },
+    "Datadog": {
+      "where": "Assist'enGare",
+      "note": "Observabilité d'un service à fort volume : traces, alertes, dimensionnement des instances."
+    },
+    "GitHub Actions": {
+      "where": "projets personnels",
+      "note": "Mêmes étapes que GitLab CI : tests, construction, publication."
+    },
+    "Linux": {
+      "where": "depuis FPEE, 2018",
+      "note": "Administration, scripts Bash, accès SSH. Le socle du reste."
+    },
+    "Bash": {
+      "where": "depuis FPEE, 2018",
+      "note": "Scripts de migration, de sauvegarde et de déploiement, sur les serveurs comme en intégration continue."
+    },
+    "Ansible": {
+      "where": "équipe RUN, digital4better",
+      "note": "Provisionnement et mises à jour de sécurité automatisées sur le parc."
+    },
+    "Tests unitaires": {
+      "where": "toutes les missions",
+      "note": "Ils tiennent la logique métier. Un test qui échoue localise le défaut à la ligne près."
+    },
+    "E2E": {
+      "where": "Transway, ce portfolio",
+      "note": "Le parcours complet dans un vrai navigateur. Ce niveau attrape les défauts d'assemblage que les tests unitaires laissent passer."
+    },
+    "Cypress": {
+      "where": "Transway",
+      "note": "Tests de bout en bout sur les parcours critiques — réservation, authentification."
+    },
+    "ESLint": {
+      "where": "toutes les missions",
+      "note": "Règles partagées : la revue humaine se concentre sur le fond, pas sur la forme."
+    },
+    "Oxlint": {
+      "where": "Assist'enGare, ce portfolio",
+      "note": "Remplace ESLint. Assez rapide pour tourner à chaque sauvegarde, et non plus seulement en intégration continue."
+    },
+    "axe": {
+      "where": "Assist'enGare",
+      "note": "Règles d'accessibilité branchées sur le linter. Une régression d'accessibilité apparaît dès la sauvegarde, des mois avant l'audit."
+    },
+    "Prettier": {
+      "where": "missions jusqu'en 2025",
+      "note": "Mise en forme automatique. La revue humaine porte sur le fond."
+    },
+    "oxfmt": {
+      "where": "Assist'enGare",
+      "note": "Remplace Prettier. Même mise en forme, exécution plus rapide."
+    },
+    "Éco-conception": {
+      "where": "digital4better",
+      "note": "Mesure de l'impact des applications avec fruggr, l'outil maison, et arbitrages assumés entre fonctionnalité et empreinte."
+    },
+    "RGAA": {
+      "where": "Assist'enGare",
+      "note": "96 % de conformité moyenne à la déclaration publique. Essais au lecteur d'écran sous NVDA et TalkBack."
+    },
+    "Monitoring": {
+      "where": "équipe RUN, digital4better",
+      "note": "Supervision des performances, détection et analyse des anomalies avant remontée utilisateur."
+    },
+    "Pair-programming": {
+      "where": "Transway, Kereis",
+      "note": "Transmission plus rapide qu'une documentation, surtout sur les parties sensibles."
+    }
   },
-
   "jokes": [
     "Un développeur part avec 12 tickets. Il en ferme 3. Il en ouvre 7.",
     "« Ça marche chez moi. » — épitaphe la plus fréquente en production.",

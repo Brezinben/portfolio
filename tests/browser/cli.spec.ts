@@ -8,6 +8,21 @@ const boot = async (page: Page) => {
   return page.getByLabel("Commande");
 };
 
+// Il n'y a pas de PDF à servir. La version texte porte le parcours complet, et elle
+// s'ouvre à côté : le terminal reste derrière, avec son journal.
+test("cv ouvre la version texte dans un nouvel onglet", async ({ page, context }) => {
+  const cli = await boot(page),
+    ouvert = context.waitForEvent("page");
+
+  await cli.fill("cv");
+  await cli.press("Enter");
+
+  const onglet = await ouvert;
+
+  expect(new URL(onglet.url()).pathname).toBe("/texte.html");
+  await expect(page.locator("[data-journal]")).toContainText("version texte");
+});
+
 test("taper une commande affiche son résultat dans le journal", async ({ page }) => {
   const cli = await boot(page);
 

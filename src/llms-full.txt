@@ -3,8 +3,8 @@
 > Portfolio de Benjamin David, concepteur orchestrateur IA et développeur Full
 > Stack, à Nantes. Serveurs MCP, Specification-Driven Development, applications
 > accessibles et éco-conçues. Huit ans à faire tourner des choses en production,
-> de la baie réseau au serveur d'agents. Disponible pour des missions en
-> numérique responsable.
+> de la baie réseau au serveur d'agents. En poste chez Kereis depuis mai 2026,
+> ouvert aux opportunités en numérique responsable.
 
 Contenu complet du portfolio, en un seul document. L'index des documents publiés
 est https://portfolio.brezinben.dpdns.org/llms.txt
@@ -20,6 +20,7 @@ ce domaine n'en héberge aucun.
 - Poste : Développeur IA / Full Stack
 - Entreprise : Kereis · via digital4better
 - Depuis : mai 2026
+- Statut : en poste, ouvert aux opportunités
 - Base : Nantes, France
 - Langues : français, anglais technique
 - E-mail : benjamin.david1@hotmail.fr
@@ -35,7 +36,7 @@ d'agents.
 
 Quelqu'un qui adore apprendre et approfondir tout un tas de trucs.
 
-Disponible pour des missions en numérique responsable.
+En poste chez Kereis depuis mai 2026. Ouvert aux opportunités en numérique responsable.
 
 ## Parcours
 
