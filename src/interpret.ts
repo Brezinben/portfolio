@@ -194,7 +194,7 @@ const line = ({
     "cv · email · send-mail            — CV et contact",
     "share <cible>                     — LinkedIn, GitHub, lien",
     "propose [-y] <idée>               — suggérer un ajout",
-    "joke · cowsay [-bdgpstwy] · wtf   — le reste",
+    "joke · cowsay · cowthink · wtf   — le reste",
     "pet · slime <x> · matrix · shutdown — à vos risques",
   ],
   EGGS = {
@@ -367,8 +367,6 @@ const argumentsFor = (command: string, context: CompletionContext): string[] | u
   return {
     bd: ids,
     cd: ids,
-    cowsay: COW_MODES,
-    cowthink: COW_MODES,
     mood: [...Object.keys(MOODS), "drop"],
     open: ids,
     partager: context.shareTargets ?? [],
@@ -747,8 +745,10 @@ export const interpret = (raw: string, context: Context): Outcome => {
   }
 
   if (command === "cowsay" || command === "cowthink") {
-    const mode = COW_MODES.includes(argument) ? argument : "",
-      said = rest.replace(mode, "").trim();
+    // Les huit visages de l'original restent, mais sans drapeau a retenir : un portfolio
+    // n'est pas une page de manuel. Le tirage rend la commande vivante a chaque appel.
+    const mode = COW_MODES[Math.floor(Math.random() * COW_MODES.length)] ?? "",
+      said = rest.trim();
 
     return out(
       cowsay(said, { columns: context.columns, mode, think: command === "cowthink" }).map((row) =>

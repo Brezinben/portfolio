@@ -26,8 +26,8 @@ Colonne qui porte le bouton des options, la liste des sections et la liste des m
 _Avoid_: menu, navigation, sidebar.
 
 **Volet central** (`mainPane`) :
-Colonne qui porte la commande en cours, le résultat, le journal, la mascotte, la ligne de
-saisie et la barre d'état.
+Colonne qui porte la commande en cours, le résultat, le journal, la ligne de saisie et la
+barre d'état.
 _Avoid_: session, terminal, corps.
 
 **Volet de sortie** (`outputPane`) :
@@ -97,24 +97,37 @@ _Avoid_: chargement, splash, loader.
 _Avoid_: page d'erreur, écran 404.
 
 **Mascotte** (`mascot`) :
-Le slime du volet central. Décorative : un lecteur d'écran ne l'annonce jamais. Elle
-disparaît quand le visiteur demande moins de mouvement.
+Le slime. Il se déplace librement sur toute la fenêtre, et se plaque contre ses bords.
+Décorative : un lecteur d'écran ne l'annonce jamais. Elle disparaît quand le visiteur demande
+moins de mouvement.
 _Avoid_: slime, avatar, personnage.
 
 **État de la mascotte** (`mascotState`) :
-Ce que la mascotte fait à un instant donné. Neuf états : `idle`, `wink`, `jump`, `type`,
-`load`, `sleep`, `morph`, `boom`, `reform`. Un seul à la fois. Remplace les humeurs.
+Ce que la mascotte fait à un instant donné. Seize états, un seul à la fois. Neuf états de
+vie : `idle`, `wink`, `jump`, `type`, `load`, `sleep`, `morph`, `boom`, `reform`. Sept états
+de manipulation : `grab`, `dragLeft`, `dragRight`, et les quatre plaquages `splatLeft`,
+`splatRight`, `splatFloor`, `splatCeiling`.
 _Avoid_: humeur, mood, émotion, pose.
+
+**Plaquage** (`splat`) :
+L'écrasement de la mascotte contre un bord de la fenêtre. Le sprite ne dessine aucun mur :
+le côté plat est le bord de l'image, qui doit toucher le bord exact.
+_Avoid_: collision, impact, choc.
 
 **Feuille** (`sheet`) :
 Image qui porte toutes les cases d'un état de la mascotte, sur une seule ligne. Une feuille
-par état. Le dossier qui les réunit garde le nom technique `src/sprites/`.
+par état. Le dossier qui les réunit garde le nom technique `src/assets/sprites/`.
 _Avoid_: spritesheet, planche, atlas.
 
 **Jauge de contexte** (`contextGauge`) :
 Jauge de la barre d'état qui monte à chaque commande, et se vide avec une compaction
 ironique quand elle est pleine.
 _Avoid_: barre de progression, compteur.
+
+**État du terminal** (`State`) :
+Tout ce que la page tient en mémoire : la section ouverte, le journal, les réglages, les
+minuteurs en vol, la position de la mascotte. Une interface le nomme champ par champ.
+_Avoid_: store, modèle, contexte.
 
 **Valeur figée** (`frozenValue`) :
 Durée ou seuil arrêté après itération, qui ne doit pas redevenir un réglage.

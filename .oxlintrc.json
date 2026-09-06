@@ -98,6 +98,7 @@
     ],
     "eqeqeq": "error",
     "import/no-nodejs-modules": "error",
+    "no-duplicate-imports": "off",
     "no-magic-numbers": "off",
     "no-ternary": "off",
     "import/no-named-export": "off",

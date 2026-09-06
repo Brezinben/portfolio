@@ -32,14 +32,15 @@ test("aucun lien ne pointe vers le canvas", async ({ page }) => {
   expect(hrefs.filter((href) => href?.includes(".dc.html"))).toEqual([]);
 });
 
-// L'image de partage porte une empreinte du contenu dans son nom, donc le test la lit dans
-// la balise qui la déclare. llms.txt garde un nom fixe : les robots le demandent par ce nom.
-const PARTAGE = /property="og:image" content="[^"]*?(?<nom>[^"/]+\.png)"/u;
+// L'image de partage porte une empreinte du contenu dans son nom et vit dans un dossier,
+// donc le test relève le chemin entier. llms.txt garde un nom fixe à la racine : les robots
+// le demandent par ce nom.
+const PARTAGE = /property="og:image" content="https:\/\/[^"/]+\/(?<chemin>[^"]+\.png)"/u;
 
 test("les fichiers annexes sont servis", async ({ request }) => {
   const page = await request.get("/texte.html"),
     html = await page.text(),
-    partage = html.match(PARTAGE)?.groups?.nom;
+    partage = html.match(PARTAGE)?.groups?.chemin;
 
   expect(partage, "texte.html doit déclarer une image de partage").toBeDefined();
 

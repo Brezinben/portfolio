@@ -57,19 +57,6 @@ test("share ne propose que ses cibles", () => {
   assert.deepEqual(candidates("share ", CONTEXT).hits, ["linkedin", "github", "link"]);
 });
 
-test("cowsay ne propose que ses modes de tête", () => {
-  assert.deepEqual(candidates("cowsay -", CONTEXT).hits, [
-    "-b",
-    "-d",
-    "-g",
-    "-p",
-    "-s",
-    "-t",
-    "-w",
-    "-y",
-  ]);
-});
-
 test("ask ne propose rien : c'est du texte libre", () => {
   assert.deepEqual(candidates("ask que", CONTEXT).hits, []);
 });
