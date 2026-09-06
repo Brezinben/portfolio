@@ -1,0 +1,194 @@
+# Entretien de contenu
+
+Réponses brutes de Benjamin David, recueillies pour alimenter `src/content.json`.
+Le texte vient de la dictée. Il garde les mots d'origine, y compris les hésitations
+et les noms mal transcrits, corrigés en note.
+
+Rien ne s'écrit dans `content.json` sans se trouver ici d'abord.
+
+## Cadrage
+
+- **Lecteur** : un recruteur technique. Il décide d'un entretien.
+- **Message, dans l'ordre** : il fait de l'IA en prod → il livre du full stack solide →
+  il code pour des gens réels.
+- **Périmètre public** : tout sauf les noms de produits internes des clients.
+- **Règle** : aucun fait inventé. Ce qui n'est pas dit ne s'écrit pas.
+
+## Kereis · 2026 → …
+
+> En fait, on m'a demandé de venir là-bas pour réaliser des PoC, des preuves de concept
+> liées à l'IA, car ils ont un besoin de tester des choses, c'est-à-dire qu'ils ont comme
+> philosophie de construire plutôt que d'acheter. Du coup ils veulent tester des choses,
+> au lieu de payer une licence très chère où ils utiliseraient très peu la feature. Et
+> ça peut être intéressant de le faire soi-même quoi. Et vu que l'IA avec du
+> Specification-Driven Development, ça permet de donner un cadre à l'IA pour qu'elle
+> développe, et bah ça, ça aide pas mal.
+>
+> Et du coup moi j'étais pris parce que j'ai été bêta-testeur sur GitHub Copilot à
+> l'époque, et je fais beaucoup de veille sur l'IA, les nouvelles technologies, et du coup
+> je peux leur apporter pas mal de choses. Du coup je leur ai partagé les différents
+> outils que j'utilise, que je veux d'ailleurs mettre à jour là dans la partie stack.
+>
+> En termes d'IA, du coup j'utilise forcément Claude pour le SpecKit, c'est GitHub
+> SpecKit. Après je vais utiliser herdr. Je vais après utiliser des outils plutôt pour
+> faire de l'agentique, comme LiteLLM, Langfuse ou LangGraph. Ça c'est des outils qui
+> permettent de rendre conditionnels certains prompts, d'améliorer la qualité de l'agent,
+> de faire des agents personnalisés.
+>
+> Et en même temps, du coup, mon avantage c'est que je garde ma philosophie, c'est que je
+> garde cette qualité du code. C'est-à-dire que les premières specs que je fais, moi,
+> c'est le linter, le cadrage très fort du code, car je me dis qu'un humain peut toujours
+> aller voir et doit comprendre ce qui est fait.
+>
+> Et donc ce que j'ai fait au départ, le premier projet, c'est que j'ai dû faire un plugin
+> sur ChatGPT pour faire un simulateur de tarif d'assurance de prêt. Du coup l'utilisateur,
+> ce qu'il fait, c'est qu'il vient parler de manière naturelle — on lui envoie une première
+> question — et avec ces informations on lui propose un premier tarif, il peut en proposer
+> d'autres. Et du coup pour ça on utilise derrière du MCP. J'ai mis en place un MCP pour
+> ChatGPT, et ce qui est assez intéressant c'est la partie autorisation, qui est en fait
+> un peu la partie la plus spécifique.
+>
+> Ensuite j'ai fait des améliorations, du coup, attaché à l'équipe Urbanisme. C'est juste
+> que c'était le plus simple en fait : je suis dans le pôle de la DSI et il n'y a pas
+> d'équipe dédiée à ce que je fais, donc on m'a mis dans l'Urbanisme. Mais rien à voir,
+> c'est pas eux à qui je rends compte. Mais du coup je les ai quand même aidés sur leur
+> produit. Leur produit c'est une instance de Backstage qui permet de cartographier tout
+> le SI : les briques logicielles, les déploiements, les bases de données, qui est le PO,
+> qui est le responsable technique, qui est le responsable métier, sur quel environnement
+> cette brique est déployée. Donc vraiment une cartographie.
+>
+> Du coup moi ce que j'ai fait c'est que j'ai branché des sources de données : j'ai branché
+> de l'AWS, du Zeenea, j'ai amélioré les infos de GitLab, justement la remontée
+> d'environnement. J'ai implémenté le MCP pour que des agents puissent s'y connecter et
+> accéder à toute la donnée qu'on propose. Ensuite, classiquement, j'ai fait de la montée
+> de version.
+>
+> Et le troisième sujet, c'est une application de compte rendu. Là ce qui est intéressant,
+> c'est que quelqu'un vient expliquer sa réunion, et du coup je fais du nettoyage de texte,
+> c'est-à-dire que j'enlevais tous les filler words. Et ensuite je vais commencer à générer
+> des comptes rendus, donc c'est là où je vais utiliser LiteLLM, où je vais utiliser
+> Langfuse. Générer un e-mail de compte rendu, après faire le suivi, lui proposer de
+> préparer sa prochaine réunion. Donc tout ça c'est du contenu généré par des agents, donc
+> ça s'appelle du harness engineering.
+>
+> Ce qui est prévu là pour la suite, au moment où je te parle, c'est de brancher sur des
+> CRM pour remonter l'information. On génère les dernières actualités des clients : là,
+> typiquement, je vais juste faire une requête sur Google News et après j'en fais un digest
+> pour que ce soit plus synthétique pour la personne qui utilise.
+
+Précisions demandées ensuite :
+
+- Le nom du produit interne de cartographie ne se publie pas. On écrit
+  « une cartographie du SI sous Backstage ».
+- Outil transcrit « HERD » = **herdr**. Multiplexeur de terminal en Rust, qui suit
+  l'état de plusieurs agents de code en parallèle.
+- Source transcrite « Sinéa » = **Zeenea**. Catalogue de données.
+- Sur le nom dans la stack : « Maintenant j'utilise Claude Code, Claude Design, donc je
+  pense que tu peux mettre les outils Anthropic. Je veux dire que j'utilise tous les
+  outils que je peux utiliser. » → une seule entrée `Claude`.
+- « Harness engineering » entre dans la stack IA.
+- Ce qu'un recruteur doit retenir : **il cadre l'IA au lieu de la subir.**
+
+## SNCF Gares & Connexions · Assist'enGare · 2024 → 2026
+
+> Pour Assist'enGare, je suis arrivé là-bas car j'aime bien la SNCF, et c'était une mission
+> qui avait du sens : aider les personnes en situation de handicap, c'est important, ça
+> nous reliait au réel.
+>
+> Qu'est-ce que j'ai fait là-bas ? J'ai développé des briques pour valider automatiquement
+> des dossiers d'assistance. Qu'est-ce que j'ai fait d'autre ? De la montée de version, de
+> la conception technique, j'ai aidé les autres à monter en compétence. J'ai remis en ordre
+> le projet en termes de qualité de code, parce qu'il n'y avait pas trop de… le code était
+> plutôt bon, mais il manquait de règles : rien n'empêchait de faire du mauvais code.
+>
+> Et ensuite c'était refaire, du coup côté front, la partie RGAA — comme tu le disais, on a
+> subi plusieurs audits.
+>
+> Ensuite, toute la complexité c'est que notre brique doit échanger des informations avec
+> tous les autres systèmes de la SNCF. Donc c'est immense, c'est une très grosse entité de
+> la SNCF, du coup il y avait beaucoup de choses. En gros on devait prendre tout le
+> spécifique et le rendre générique, notamment avec les notifications ActiveMQ. On a dû
+> réécrire : nous on passait par de l'AMQP, on a dû passer sur le STOMP, qui est le
+> sous-protocole. Et du coup j'ai chopé une bonne expertise sur le MQ.
+>
+> En gros la brique principale reçoit une notification, transforme l'entité métier en
+> fonction, et la renvoie dynamiquement à la bonne brique. Et si une nouvelle notification…
+> imaginons si c'était Trenitalia qui nous contactait, il faut communiquer qu'à Trenitalia.
+> Mais si l'utilisateur a pris ce qu'on appelle un bi-segment, avec une demande d'assistance
+> pour SNCF et une demande d'assistance pour Trenitalia, il faut tronquer en fait. Donc
+> c'était assez complexe, donc ça c'était plutôt bien à faire.
+>
+> Et on a eu beaucoup de bande passante, c'est-à-dire que c'est très gros, donc on a
+> beaucoup de demandes, donc il fallait que le code soit robuste, scalable, parce qu'on
+> pouvait modifier le nombre d'instances, avoir de l'observabilité avec Datadog, faire du
+> monitoring, du suivi d'informations.
+>
+> Et ensuite c'est un projet qu'on a fait évoluer pour qu'on l'intègre dans l'ère de l'IA,
+> c'est-à-dire qu'on l'a fait évoluer en listant les bonnes pratiques, pour qu'il soit
+> maintenable plus facilement.
+>
+> Et j'ai également aidé les autres équipes de mon pôle pour faire des migrations
+> JavaScript vers TypeScript, pour rendre leur code plus maintenable, les conseiller aux
+> besoins.
+
+Sur l'accessibilité :
+
+> Vu que c'était la partie exposée de notre service au grand public, sur un très grand
+> site, c'était là où les gens pouvaient voir vraiment notre travail. Donc on pouvait faire
+> des choses utiles sur une très grosse échelle.
+>
+> Typiquement, côté front, on a rajouté les règles axe, et pareil les règles de lintage,
+> les bonnes pratiques. Mais en plus on avait toute la partie lecteur d'écran, donc on avait
+> NVDA, TalkBack. La partie accessibilité sur les navigateurs. On pouvait rajouter des
+> choses qui aidaient tous les utilisateurs, qui n'étaient pas RGAA on va dire : copier-coller
+> automatiquement des éléments, bien vocaliser des marques, tout ce genre de choses.
+
+Sur la pile :
+
+> Côté front, c'était du React, avec les différents outils qui vont avec : pour le routing,
+> on avait MUI. Ensuite côté back, effectivement, c'était du NestJS avec du PostgreSQL. Moi
+> je suis beaucoup sur l'outillage : on avait fait de la migration d'ESLint vers Oxlint, et
+> oxfmt à la place de Prettier. Ensuite ça tournait sur du Node.js, hébergé sur de l'AWS.
+> J'étais amené à gérer les déploiements, on faisait ça sur Jenkins, et c'était hébergé sur
+> GitLab. On avait une instance Atlassian pour la partie doc et ticketing, donc Jira et
+> Confluence. Et du coup notre brique communiquait aussi avec Salesforce pour les échanges,
+> mais ça, c'est pas important.
+
+Corrections d'attribution qui en découlent :
+
+- **Cypress** ne servait pas sur Assist'enGare, mais sur l'autre projet du pôle.
+- **GitLab CI** reste : les intégrations existaient, en tandem avec Jenkins.
+- **Vue.js** à la SNCF : c'était l'autre projet, côté agent et non grand public. Benjamin
+  est intervenu pour les aider sur la migration Vue 2 vers Vue 3, qu'il avait déjà faite.
+
+Chiffres publiables :
+
+- **96 %** de conformité moyenne au RGAA 4.1, d'après la déclaration d'accessibilité
+  publique d'Assist'enGare.
+- **~3 000 dossiers par jour**, environ dix notifications par dossier, davantage pendant
+  les vacances.
+
+Ce qu'un recruteur doit retenir : **l'accessibilité tenue sous audit.**
+
+## Transway · 2021 → 2023
+
+À recueillir.
+
+## RUN fruggr · 2023 → 2024
+
+À recueillir.
+
+## LDC Services · 2020 → 2021
+
+À recueillir. Aucune fiche mission aujourd'hui.
+
+## FPEE Industries · 2018 → 2020
+
+À recueillir. Aucune fiche mission aujourd'hui.
+
+## Reste à faire
+
+- Les sections `parcours` et `stack` n'ont aucune ligne dans le volet central.
+- Fiches techno absentes : HTML, CSS, Sass, Vite, PHP, OpenAPI, JWT, MySQL, Évaluation,
+  Prompting, Compose, GitHub Actions, Bash, Tests unitaires, E2E, Prettier.
+- Passer le `humanizer` sur tout le texte écrit, en dernier.
