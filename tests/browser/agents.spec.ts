@@ -6,7 +6,7 @@ test("le sitemap est servi depuis l'artefact compact", async ({ request }) => {
   const response = await request.get("/sitemap.xml");
 
   expect(response.status()).toBe(200);
-  expect(await response.text()).toContain("<loc>https://portfolio.brezinben.dpdns.org/</loc>");
+  expect(await response.text()).toContain("<loc>https://me.brezinben.dpdns.org/</loc>");
 });
 
 test("robots.txt est servi et désigne le sitemap", async ({ request }) => {
@@ -14,7 +14,7 @@ test("robots.txt est servi et désigne le sitemap", async ({ request }) => {
 
   expect(response.status()).toBe(200);
   expect(await response.text()).toContain(
-    "Sitemap: https://portfolio.brezinben.dpdns.org/sitemap.xml",
+    "Sitemap: https://me.brezinben.dpdns.org/sitemap.xml",
   );
 });
 

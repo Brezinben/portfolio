@@ -8,7 +8,7 @@
     "social": {
       "linkedin": "in/benjamin--david",
       "github": "brezinben",
-      "website": "portfolio.brezinben.dpdns.org"
+      "website": "me.brezinben.dpdns.org"
     }
   },
   "share": {
@@ -372,7 +372,7 @@
       "sub": "ouvert aux missions",
       "dot": "acc",
       "state": "ouvert",
-      "cmd": "curl -s portfolio.brezinben.dpdns.org/contact | jq",
+      "cmd": "curl -s me.brezinben.dpdns.org/contact | jq",
       "suggest": "/send-mail benjamin.david1@hotmail.fr",
       "lines": [
         {
@@ -418,7 +418,7 @@
           "jq": [
             "30px",
             "website",
-            "portfolio.brezinben.dpdns.org",
+            "me.brezinben.dpdns.org",
             "str",
             false
           ]
@@ -488,7 +488,7 @@
           ],
           [
             "site",
-            "portfolio.brezinben.dpdns.org"
+            "me.brezinben.dpdns.org"
           ],
           [
             "ville",

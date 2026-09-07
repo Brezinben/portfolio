@@ -4,11 +4,11 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Benjamin David — Développeur IA &amp; Full Stack</title>
+  <title>Benjamin David · Développeur IA &amp; Full Stack</title>
   <meta name="description"
     content="Benjamin David, développeur IA et Full Stack à Nantes. Serveurs MCP, Specification-Driven Development, accessibilité et numérique responsable.">
   <meta name="author" content="Benjamin David">
-  <link rel="canonical" href="https://portfolio.brezinben.dpdns.org/">
+  <link rel="canonical" href="https://me.brezinben.dpdns.org/">
   <link rel="icon" href="assets/icons/favicon.svg" type="image/svg+xml">
   <link rel="icon" href="assets/icons/favicon-32.png" sizes="32x32">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -16,9 +16,9 @@
   <meta property="og:title" content="Benjamin David — Développeur IA &amp; Full Stack">
   <meta property="og:description"
     content="Serveurs MCP, Specification-Driven Development, accessibilité et numérique responsable. Portfolio en interface terminal.">
-  <meta property="og:url" content="https://portfolio.brezinben.dpdns.org/">
+  <meta property="og:url" content="https://me.brezinben.dpdns.org/">
   <meta property="og:locale" content="fr_FR">
-  <meta property="og:image" content="https://portfolio.brezinben.dpdns.org/assets/share.png">
+  <meta property="og:image" content="https://me.brezinben.dpdns.org/assets/share.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta property="og:image:alt"
@@ -26,7 +26,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Benjamin David — Développeur IA &amp; Full Stack">
   <meta name="twitter:description" content="Serveurs MCP, SDD, accessibilité, numérique responsable.">
-  <meta name="twitter:image" content="https://portfolio.brezinben.dpdns.org/assets/share.png">
+  <meta name="twitter:image" content="https://me.brezinben.dpdns.org/assets/share.png">
   <!-- Mesure d'audience auto-hébergée, sans cookie ni identifiant. Différée, et hors du
        budget de poids : si elle est bloquée, la page ne change pas d'un octet. -->
   <script defer src="https://umami.brezinben.dpdns.org/script.js"
@@ -991,13 +991,14 @@
 
       <nav data-pane="nav" aria-label="Sections"
         style="flex:var(--pane-flex,0 1 clamp(196px,17vw,280px));min-width:176px;min-height:var(--pane-min,0px);display:flex;flex-direction:column;gap:10px;overflow:hidden">
-        <button type="button" data-ctl="opts" aria-haspopup="dialog"
-          :aria-expanded="optsOpen ? 'true' : 'false'" @click="openOpts()"
+        <button type="button" data-ctl="opts" aria-haspopup="dialog" :aria-expanded="optsOpen ? 'true' : 'false'"
+          @click="openOpts()"
           style="flex:none;min-height:44px;display:flex;justify-content:space-between;align-items:center;gap:10px;padding:0 12px;border:1px solid var(--edge);background:var(--panel);color:var(--fg2);font-family:inherit;font-size:11px;letter-spacing:.12em;cursor:pointer"><span>options</span><span
             aria-hidden="true" style="font-size:17px;line-height:1">⚙</span></button>
         <div
           style="flex:1 1 auto;min-height:0;display:flex;flex-direction:column;gap:10px;overflow-y:auto;overflow-x:hidden">
-          <div style="flex:none;border:1px solid var(--edge);border-radius:var(--radius);background:var(--panel);overflow:hidden">
+          <div
+            style="flex:none;border:1px solid var(--edge);border-radius:var(--radius);background:var(--panel);overflow:hidden">
             <p
               style="margin:0;padding:9px 12px;font-size:11px;letter-spacing:.12em;color:var(--fg2);border-bottom:1px solid var(--edge)">
               sections</p>
@@ -1020,7 +1021,8 @@
               </template>
             </ul>
           </div>
-          <div style="flex:none;border:1px solid var(--edge);border-radius:var(--radius);background:var(--panel);overflow:hidden">
+          <div
+            style="flex:none;border:1px solid var(--edge);border-radius:var(--radius);background:var(--panel);overflow:hidden">
             <p
               style="margin:0;padding:9px 12px;font-size:11px;letter-spacing:.12em;color:var(--fg2);border-bottom:1px solid var(--edge)">
               missions</p>
@@ -1033,8 +1035,7 @@
                     <span aria-hidden="true"
                       :style="`width:8px;height:8px;background:var(--${item.dot});animation:${item.dot === 'acc' && anim ? 'dotPulse 1.2s ease-in-out infinite' : 'none'}`"></span>
                     <span style="display:grid;gap:1px;min-width:0">
-                      <span :style="`font-weight:${item.id === section ? '700' : '400'}`"
-                        x-text="item.label"></span>
+                      <span :style="`font-weight:${item.id === section ? '700' : '400'}`" x-text="item.label"></span>
                       <span
                         style="font-size:12px;color:var(--fg2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap"
                         x-text="item.state"></span>
@@ -1054,9 +1055,8 @@
             :style="`height:2px;background:linear-gradient(90deg,transparent,var(--acc),transparent);opacity:.16;animation:${anim ? 'scan 9s linear infinite' : 'none'}`">
           </div>
         </div>
-        <p style="margin:0;font-size:13px;color:var(--fg2);flex:none"><span
-            aria-hidden="true" style="color:var(--acc-text)">›&nbsp;</span><span
-            style="color:var(--fg)" x-text="typed"></span><span
+        <p style="margin:0;font-size:13px;color:var(--fg2);flex:none"><span aria-hidden="true"
+            style="color:var(--acc-text)">›&nbsp;</span><span style="color:var(--fg)" x-text="typed"></span><span
             x-show="!running && anim" aria-hidden="true"
             :style="`color:var(--acc-text);animation:${anim ? 'caret 1s steps(1) infinite' : 'none'}`">_</span></p>
         <template x-if="running">
@@ -1105,7 +1105,8 @@
                 <div style="display:grid;grid-template-columns:26px 1fr">
                   <div aria-hidden="true"
                     :style="`position:relative;display:flex;justify-content:center;border-left:1px solid ${branch === stack.length - 1 ? 'transparent' : 'var(--edge)'};margin-left:4px`">
-                    <span style="position:absolute;top:9px;left:-1px;width:14px;border-top:1px solid var(--edge)"></span>
+                    <span
+                      style="position:absolute;top:9px;left:-1px;width:14px;border-top:1px solid var(--edge)"></span>
                   </div>
                   <div style="padding:0 0 18px 6px;display:grid;gap:9px">
                     <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap">
@@ -1140,15 +1141,15 @@
               <span
                 :style="`color:var(--${(line.tone ?? 'fg') === 'acc' ? 'acc-text' : (line.tone ?? 'fg')});font-size:${line.size ?? '14px'};font-weight:${line.weight ?? '400'};letter-spacing:${line.letterSpacing ?? '0'};text-wrap:pretty`">
                 <template x-if="line.banner">
-                  <span role="img" :aria-label="line.banner.label"
-                    style="margin-bottom:12px"
+                  <span role="img" :aria-label="line.banner.label" style="margin-bottom:12px"
                     :style="`display:block;position:relative;width:${line.banner.width};height:${line.banner.height};max-width:100%`"><span
                       aria-hidden="true"
                       :style="`position:absolute;top:0;left:0;width:${line.banner.size};height:${line.banner.size};border-radius:50%;box-shadow:${line.banner.shadow}`"></span></span>
                 </template>
                 <template x-if="!line.banner && line.tokens">
                   <span><template x-for="(tk, at) in line.tokens" :key="at"><span
-                        :style="`color:var(--${tk.c === 'acc' ? 'acc-text' : tk.c});font-weight:${tk.w}`" x-text="tk.t"></span></template></span>
+                        :style="`color:var(--${tk.c === 'acc' ? 'acc-text' : tk.c});font-weight:${tk.w}`"
+                        x-text="tk.t"></span></template></span>
                 </template>
                 <template x-if="!line.banner && !line.tokens">
                   <span x-text="line.text"></span>
@@ -1159,20 +1160,23 @@
         </div>
 
         <div data-handle x-show="journalOverflows" role="separator" aria-orientation="horizontal"
-          aria-label="Redimensionner le journal" tabindex="0" :aria-valuenow="logHeight"
-          aria-valuemin="44" :aria-valuemax="600" @pointerdown.prevent="logDown($event)"
+          aria-label="Redimensionner le journal" tabindex="0" :aria-valuenow="logHeight" aria-valuemin="44"
+          :aria-valuemax="600" @pointerdown.prevent="logDown($event)"
           @keydown.arrow-up.prevent="setLogHeight(logHeight + 24)"
           @keydown.arrow-down.prevent="setLogHeight(logHeight - 24)"
-          style="flex:none;display:flex;justify-content:center;align-items:center;height:14px;cursor:row-resize;color:var(--fg2);font-size:12px;letter-spacing:.3em;user-select:none">⋯</div>
+          style="flex:none;display:flex;justify-content:center;align-items:center;height:14px;cursor:row-resize;color:var(--fg2);font-size:12px;letter-spacing:.3em;user-select:none">
+          ⋯</div>
 
-        <div data-journal x-ref="journal" aria-live="polite" tabindex="0" role="log"
-          aria-label="Journal" @scroll="checkMore('journal')"
+        <div data-journal x-ref="journal" aria-live="polite" tabindex="0" role="log" aria-label="Journal"
+          @scroll="checkMore('journal')"
           :style="`flex:none;height:var(--log-height,${logHeight}px);overflow-y:var(--log-overflow,auto);align-content:start;display:grid;gap:2px;border-top:1px solid var(--edge);padding-top:8px`">
           <template x-for="(entry, index) in journal" :key="index">
             <p
               style="margin:0;display:grid;grid-template-columns:18px minmax(0,1fr);gap:8px;align-items:baseline;line-height:1.5">
-              <span aria-hidden="true" :style="`color:var(--${entry.mc === 'acc' ? 'acc-text' : entry.mc})`" x-text="entry.m"></span>
-              <span :style="`color:var(--${entry.c === 'acc' ? 'acc-text' : entry.c});white-space:pre-wrap;overflow-wrap:anywhere`"
+              <span aria-hidden="true" :style="`color:var(--${entry.mc === 'acc' ? 'acc-text' : entry.mc})`"
+                x-text="entry.m"></span>
+              <span
+                :style="`color:var(--${entry.c === 'acc' ? 'acc-text' : entry.c});white-space:pre-wrap;overflow-wrap:anywhere`"
                 x-text="entry.t"></span>
             </p>
           </template>
@@ -1185,10 +1189,8 @@
         </template>
 
 
-        <div data-track x-ref="track"
-          @pointermove="nearby($event)"
-          @pointermove.window="logMove($event)" @pointerup.window="logUp()"
-          @pointercancel.window="logUp()"
+        <div data-track x-ref="track" @pointermove="nearby($event)" @pointermove.window="logMove($event)"
+          @pointerup.window="logUp()" @pointercancel.window="logUp()"
           style="flex:none;position:relative;height:64px;overflow:visible;border-bottom:1px solid var(--edge)">
           <template x-if="bubble">
             <span data-bubble aria-live="polite"
@@ -1209,12 +1211,11 @@
                  construction les reecrit comme tout chemin d'actif, et « loadForm » les y
                  lit pour tirer la forme demandee sans reconstruire son empreinte. -->
             <div data-mascot x-ref="mascot" aria-hidden="true" class="slime"
-              data-sheet-cube="assets/sprites/cube-sheets.png"
-              data-sheet-pingouin="assets/sprites/pingouin-sheets.png"
+              data-sheet-cube="assets/sprites/cube-sheets.png" data-sheet-pingouin="assets/sprites/pingouin-sheets.png"
               :data-held="dragging" :data-gone="gone" :data-form="form"
               x-init="$nextTick(() => { place(at); settle() })" @pointerdown.prevent="grab($event)"
-              @pointermove="drag($event)" @pointerup="release()" @pointercancel="release()"
-              @click="poke()" @animationend.self="settle()">
+              @pointermove="drag($event)" @pointerup="release()" @pointercancel="release()" @click="poke()"
+              @animationend.self="settle()">
               <template x-if="motion === 'bump' && anim">
                 <span data-bang aria-hidden="true"
                   style="position:absolute;left:50%;top:-20px;transform:translateX(-50%);color:var(--warn);font-size:19px;font-weight:700;animation:bang .4s cubic-bezier(.34,1.6,.64,1) both">!</span>
@@ -1231,8 +1232,7 @@
 
         <div x-show="suggOpen" x-transition:enter.duration.220ms x-transition:leave.duration.170ms
           style="flex:none;border:1px solid var(--edge);background:var(--panel);padding:4px;margin-bottom:-4px">
-          <div data-suggestions role="listbox" aria-label="Suggestions"
-            style="display:grid;gap:1px">
+          <div data-suggestions role="listbox" aria-label="Suggestions" style="display:grid;gap:1px">
             <template x-for="(hit, index) in sugg" :key="hit">
               <button type="button" data-suggestion role="option" :aria-selected="index === suggAt"
                 @pointerdown.prevent="pickSugg(index, $event)"
@@ -1252,14 +1252,13 @@
 
         <form data-cli @submit.prevent="submit()"
           style="flex:none;display:grid;grid-template-columns:auto 1fr;gap:8px;align-items:baseline;margin-top:-10px;padding-top:6px">
-          <label for="cli" style="position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)">Commande</label>
+          <label for="cli"
+            style="position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)">Commande</label>
           <span aria-hidden="true" style="color:var(--acc-text)">›</span>
-          <input id="cli" x-ref="cli" x-model="input" @input="suggest(); typing()"
-            @blur="closeSugg()"
-            @keydown.tab.prevent="complete()" @keydown.arrow-up.prevent="up()"
-            @keydown.arrow-down.prevent="down()" @keydown.arrow-right="right($event)"
-            @keydown.escape.prevent="onEscape()" type="text"
-            autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="help"
+          <input id="cli" x-ref="cli" x-model="input" @input="suggest(); typing()" @blur="closeSugg()"
+            @keydown.tab.prevent="complete()" @keydown.arrow-up.prevent="up()" @keydown.arrow-down.prevent="down()"
+            @keydown.arrow-right="right($event)" @keydown.escape.prevent="onEscape()" type="text" autocomplete="off"
+            autocapitalize="off" spellcheck="false" placeholder="help"
             style="min-width:0;border:0;background:transparent;color:var(--fg);font-family:inherit;font-size:14px;outline:none">
         </form>
         <p data-status
@@ -1268,14 +1267,13 @@
               x-text="`~/${current.id || section}`"></span> <span style="color:var(--acc-text)">main</span> ✳ </span>
           <!-- Pendant la compaction, l'animation prend la place des cellules : le cadre
                « ctx [ … ] » ne bouge pas, et une seule barre reste a l'ecran. -->
-          <span data-gauge aria-hidden="true" style="flex:none;white-space:pre"><span
-              style="color:var(--fg2)">ctx [</span><template x-if="!compacting"><span><span
+          <span data-gauge aria-hidden="true" style="flex:none;white-space:pre"><span style="color:var(--fg2)">ctx
+              [</span><template x-if="!compacting"><span><span
                   :style="`color:var(--${ctxCells === 10 ? 'warn' : 'acc-text'})`"
                   x-text="'█'.repeat(ctxCells)"></span><span style="color:var(--edge)"
-                  x-text="'░'.repeat(10 - ctxCells)"></span></span></template><template
-              x-if="compacting"><span data-compacting><span style="color:var(--warn)"
-                  x-text="compactBar.filled"></span><span style="color:var(--edge)"
-                  x-text="compactBar.hollow"></span></span></template><span
+                  x-text="'░'.repeat(10 - ctxCells)"></span></span></template><template x-if="compacting"><span
+                data-compacting><span style="color:var(--warn)" x-text="compactBar.filled"></span><span
+                  style="color:var(--edge)" x-text="compactBar.hollow"></span></span></template><span
               style="color:var(--fg2)" x-text="`] ${ctxPct}`"></span></span>
         </p>
       </section>
@@ -1288,8 +1286,8 @@
         style="flex:var(--pane-flex,1.3 1 230px);min-width:0;min-height:var(--pane-min,0px);display:flex;flex-direction:column;border:1px solid var(--edge);border-radius:var(--radius);background:var(--panel);overflow:hidden">
         <p
           style="margin:0;padding:9px 12px;font-size:11px;letter-spacing:.12em;color:var(--fg2);border-bottom:1px solid var(--edge);display:flex;justify-content:space-between;gap:10px">
-          <span x-text="open.out.title"></span><span
-            :style="`color:var(--${running ? 'warn' : 'ok'})`"><span data-outdot aria-hidden="true"
+          <span x-text="open.out.title"></span><span :style="`color:var(--${running ? 'warn' : 'ok'})`"><span
+              data-outdot aria-hidden="true"
               :style="`animation:${anim ? 'dotPulse 1.2s ease-in-out infinite' : 'none'}`">●</span> <span
               x-text="outStatus"></span></span>
         </p>
@@ -1297,10 +1295,11 @@
           style="overflow-y:auto;align-content:start;display:grid;gap:8px;padding:10px 12px">
           <template x-if="running">
             <p data-waiting
-              style="margin:0;display:grid;grid-template-columns:auto 1fr;gap:10px;font-size:13px;color:var(--fg2)"><span
-                aria-hidden="true"
+              style="margin:0;display:grid;grid-template-columns:auto 1fr;gap:10px;font-size:13px;color:var(--fg2)">
+              <span aria-hidden="true"
                 :style="`color:var(--acc);animation:${anim ? 'dotPulse 1s ease-in-out infinite' : 'none'}`">▚</span><span
-                :style="`animation:${anim ? 'dotPulse 1.2s ease-in-out infinite' : 'none'}`">en attente de la sortie…</span>
+                :style="`animation:${anim ? 'dotPulse 1.2s ease-in-out infinite' : 'none'}`">en attente de la
+                sortie…</span>
             </p>
           </template>
           <dl x-show="!running" style="margin:0;display:grid;gap:6px;align-content:start;font-size:13px">
@@ -1309,7 +1308,8 @@
                    les valeurs restent alignees sans que la moitie du volet reste vide. -->
               <div :style="`display:grid;grid-template-columns:${outKeyWidth} minmax(0,1fr);gap:10px`">
                 <dt :style="`color:var(--${row.kc === 'acc' ? 'acc-text' : row.kc});margin:0`" x-text="row.k"></dt>
-                <dd :style="`color:var(--${row.vc === 'acc' ? 'acc-text' : row.vc});margin:0;overflow-wrap:anywhere;text-wrap:pretty`"
+                <dd
+                  :style="`color:var(--${row.vc === 'acc' ? 'acc-text' : row.vc});margin:0;overflow-wrap:anywhere;text-wrap:pretty`"
                   x-text="row.v"></dd>
               </div>
             </template>
@@ -1330,8 +1330,8 @@
     <template x-if="optsOpen">
       <div @click="closeOpts()"
         style="position:fixed;inset:0;z-index:40;display:grid;place-items:center;padding:20px;background:rgba(10,10,18,.62);animation:fadeIn .16s ease both">
-        <div role="dialog" aria-modal="true" aria-label="Options d'affichage" data-opts
-          @click.stop @keydown="optsKey($event)"
+        <div role="dialog" aria-modal="true" aria-label="Options d'affichage" data-opts @click.stop
+          @keydown="optsKey($event)"
           style="width:min(540px,100%);max-height:min(88dvh,620px);overflow:auto;box-sizing:border-box;border:1px solid var(--edge);border-radius:var(--radius);background:var(--panel);padding:18px;display:grid;gap:14px;animation:popIn .24s cubic-bezier(.34,1.4,.64,1) both">
           <p style="margin:0;font-size:12px;letter-spacing:.12em;color:var(--fg2)">options</p>
 
@@ -1343,8 +1343,7 @@
             <div role="group" aria-label="Thème"
               style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:6px">
               <template x-for="entry in THEMES" :key="entry.id">
-                <button type="button" data-ctl="opt" :data-theme-choice="entry.id"
-                  :aria-pressed="entry.id === theme"
+                <button type="button" data-ctl="opt" :data-theme-choice="entry.id" :aria-pressed="entry.id === theme"
                   @click="setTheme(entry.id, $event)"
                   :style="`min-height:44px;display:flex;align-items:center;gap:9px;padding:0 10px;border:1px solid ${entry.id === theme ? 'var(--acc)' : 'var(--edge)'};background:${entry.id === theme ? 'var(--acc-soft)' : 'transparent'};color:var(--fg);font-family:inherit;font-size:13px;cursor:pointer;text-align:left`">
                   <span aria-hidden="true"
@@ -1361,8 +1360,7 @@
               <button type="button" data-ctl="opt" data-toggle :aria-pressed="value(toggle.key)"
                 :disabled="lockedToggle(toggle.key)" @click="flip(toggle.key)"
                 :style="`width:100%;min-height:44px;display:flex;justify-content:space-between;align-items:center;gap:12px;padding:0 12px;border:1px solid var(--edge);border-left:2px solid ${value(toggle.key) ? 'var(--ok)' : 'var(--fg2)'};background:transparent;color:var(--${lockedToggle(toggle.key) ? 'fg2' : 'fg'});font-family:inherit;font-size:13px;cursor:${lockedToggle(toggle.key) ? 'not-allowed' : 'pointer'}`"><span
-                  x-text="toggle.label"></span><span
-                  :style="`color:${value(toggle.key) ? 'var(--ok)' : 'var(--fg2)'}`"
+                  x-text="toggle.label"></span><span :style="`color:${value(toggle.key) ? 'var(--ok)' : 'var(--fg2)'}`"
                   x-text="lockedToggle(toggle.key) ? 'système' : (value(toggle.key) ? toggle.on : toggle.off)"></span></button>
             </template>
           </div>
@@ -1422,8 +1420,8 @@
               <p
                 style="margin:8px 0 0;display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;animation:bootLine .3s 1.32s ease both">
                 <span data-boot-bar aria-hidden="true" style="white-space:pre;color:var(--fg2)">[<span
-                    style="color:var(--acc)" x-text="bootBar.filled"></span><span
-                    style="color:var(--edge)" x-text="bootBar.hollow"></span>]</span>
+                    style="color:var(--acc)" x-text="bootBar.filled"></span><span style="color:var(--edge)"
+                    x-text="bootBar.hollow"></span>]</span>
                 <span style="color:var(--acc)">montage de l'interface<span
                     style="animation:caret 1s steps(1) infinite">_</span></span>
               </p>

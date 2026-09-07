@@ -42,7 +42,7 @@ test("la police n'est pas recompressée", async ({ request }) => {
   expect(response.headers()["content-encoding"]).toBeUndefined();
 });
 
-const SITE = "https://portfolio.brezinben.dpdns.org/",
+const SITE = "https://me.brezinben.dpdns.org/",
   PAGES = ["/", "/texte.html"],
   LIEN = /(?:href|src)="(?<url>[^"]+)"/gu,
   // Les métadonnées de partage donnent une adresse absolue. Sans ce relevé, l'image de

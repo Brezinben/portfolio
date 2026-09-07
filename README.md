@@ -3,7 +3,7 @@
 Portfolio personnel servi en pages statiques. Le contenu vit dans `content.json`, chargé au
 démarrage, pour être modifié sans redéploiement.
 
-Domaine cible : `https://portfolio.brezinben.dpdns.org/`
+Domaine cible : `https://me.brezinben.dpdns.org/`
 
 ## Arborescence
 

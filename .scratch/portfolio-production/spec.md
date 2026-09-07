@@ -417,7 +417,7 @@ conventions written here become the prior art for what follows.
 ## Out of Scope
 
 - Hosting `content.json` on GitHub, or fetching it from anywhere but beside the page. Local stays local for now. The relative fetch does not prevent it later.
-- The Caddy redirect and the DNS entry for `portfolio.brezinben.dpdns.org`. Benjamin does that himself. This spec only guarantees that `production/` can be copied to a web root as it is.
+- The Caddy redirect and the DNS entry for `me.brezinben.dpdns.org`. Benjamin does that himself. This spec only guarantees that `production/` can be copied to a web root as it is.
 - Any change to the content itself: no new mission, no rewritten section, no new command. Behaviour is preserved, not extended.
 - Any new visual design. The canvas is the reference and the port matches it.
 - Synchronising the version texte and `llms.txt` with the terminal wording, and the GitHub handle check. These are content corrections listed in the design README. They deserve their own ticket.
