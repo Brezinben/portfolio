@@ -894,6 +894,11 @@
 
     /* La feuille du canvas colore les liens avec l'ambre decoratif. Un lien est du
        texte : il prend l'ambre textuel. */
+    .tm ::selection {
+      background: var(--acc-soft);
+      color: var(--fg)
+    }
+
     .tm a,
     .tm a:hover {
       color: var(--acc-text)
@@ -910,9 +915,21 @@
        couronne est un objet solide et garde sa forme, d'ou l'animation portee par le
        bloc et non par la couronne. */
 
-    .tm [data-ctl]:focus-visible {
+    .tm [data-ctl]:focus-visible,
+    .tm [data-pane="out"] [tabindex="0"]:focus-visible {
       outline: 2px solid var(--acc);
       outline-offset: 2px
+    }
+
+    .tm [data-pane="main"] p[tabindex] {
+      cursor: pointer
+    }
+
+    .tm [data-pane="main"] p[tabindex]:not([data-edge]):hover,
+    .tm [data-pane="main"] p[tabindex]:not([data-edge]):focus-visible {
+      --row-acc: var(--acc);
+      background: var(--acc-soft);
+      outline: none
     }
 
     .tm [data-ctl="opts"]:hover {
@@ -1115,8 +1132,9 @@
           </template>
 
           <template x-for="(line, index) in current.lines" :key="`${current.id}-${index}`">
-            <p
-              :style="`margin:0;display:grid;grid-template-columns:18px 1fr;gap:8px;align-items:baseline;padding-left:${line.pad ?? '0'}`">
+            <p :tabindex="current.id === 'contact' ? 0 : null"
+              :data-edge="index === 0 || index === current.lines.length - 1 ? '' : null"
+              :style="current.id === 'contact' ? `margin:0;display:grid;grid-template-columns:18px 1fr;gap:8px;align-items:baseline;padding:5px 8px 5px calc(10px + ${line.pad ?? '0px'});border-left:3px solid var(--row-acc,transparent)` : `margin:0;display:grid;grid-template-columns:18px 1fr;gap:8px;align-items:baseline;padding-left:${line.pad ?? '0'}`">
               <span aria-hidden="true" :style="`color:var(--${line.markerTone ?? 'fg2'})`"
                 x-text="line.marker ?? ''"></span>
               <span
