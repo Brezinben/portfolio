@@ -2403,6 +2403,7 @@ document.addEventListener("alpine:init", () => {
           this.details = (content.details ?? []).map(section);
           this.jokes = content.jokes ?? [];
           this.share = content.share ?? {};
+          this.share.url = globalThis.location.origin + globalThis.location.pathname;
           this.feedback = content.feedback ?? {};
           this.profileEmail = content.profile?.email ?? "";
           this.shareTargets = (content.share?.targets ?? []).map(
