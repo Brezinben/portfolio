@@ -10,4 +10,4 @@ User-agent: *
 Content-Signal: search=yes, ai-input=yes, ai-train=no, use=reference
 Allow: /
 
-Sitemap: https://portfolio.brezinben.dpdns.org/sitemap.xml
+Sitemap: https://me.brezinben.dpdns.org/sitemap.xml

@@ -8,7 +8,7 @@ import { test } from "node:test";
 
 const SOURCE = new URL("../../src/", import.meta.url),
   read = (name: string) => readFileSync(fileURLToPath(new URL(name, SOURCE)), "utf8"),
-  ORIGINE = "https://portfolio.brezinben.dpdns.org",
+  ORIGINE = "https://me.brezinben.dpdns.org",
   sitemap = read("sitemap.xml"),
   robots = read("robots.txt"),
   llms = read("llms.txt"),

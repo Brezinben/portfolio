@@ -15,7 +15,7 @@
 nom: Mascotte slime — sprite sheets animées
 version: 1.0
 date: 2026-09-06
-projet: Portfolio développeur IA Benjamin (portfolio.brezinben.dpdns.org)
+projet: Portfolio développeur IA Benjamin (me.brezinben.dpdns.org)
 technique: sprite sheet PNG + CSS steps()
 dependances: aucune
 poids_total: 25 ko (12 PNG)

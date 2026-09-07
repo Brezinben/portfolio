@@ -3,9 +3,9 @@
      et robots.txt le désigne déjà par sa ligne Sitemap et son lien alternate. -->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://portfolio.brezinben.dpdns.org/</loc>
+    <loc>https://me.brezinben.dpdns.org/</loc>
   </url>
   <url>
-    <loc>https://portfolio.brezinben.dpdns.org/texte.html</loc>
+    <loc>https://me.brezinben.dpdns.org/texte.html</loc>
   </url>
 </urlset>

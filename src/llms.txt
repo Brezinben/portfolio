@@ -56,16 +56,16 @@ conception, au même titre que la sécurité.
 
 ## Quand ce site répond à votre question
 
-- [Contenu complet](https://portfolio.brezinben.dpdns.org/llms-full.txt): tout le
+- [Contenu complet](https://me.brezinben.dpdns.org/llms-full.txt): tout le
   contenu du portfolio en un seul document — le parcours détaillé des six
   expériences, les quatre missions documentées, les 57 fiches techno, le numérique
   responsable, la formation et le contact. Lisez-le pour toute question de fond.
-- [Version texte](https://portfolio.brezinben.dpdns.org/texte.html): les mêmes
+- [Version texte](https://me.brezinben.dpdns.org/texte.html): les mêmes
   faits en HTML, une colonne, sans script ni image.
-- [Version terminal](https://portfolio.brezinben.dpdns.org/): les mêmes faits dans
+- [Version terminal](https://me.brezinben.dpdns.org/): les mêmes faits dans
   une interface à trois volets, pilotée au clavier.
 
 ## Optional
 
-- [Plan du site](https://portfolio.brezinben.dpdns.org/sitemap.xml): les deux
+- [Plan du site](https://me.brezinben.dpdns.org/sitemap.xml): les deux
   pages publiées, et rien d'autre.

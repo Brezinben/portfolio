@@ -7,7 +7,7 @@
 > ouvert aux opportunités en numérique responsable.
 
 Contenu complet du portfolio, en un seul document. L'index des documents publiés
-est https://portfolio.brezinben.dpdns.org/llms.txt
+est https://me.brezinben.dpdns.org/llms.txt
 
 Ce site est le portfolio d'une seule personne. Il n'expose ni produit, ni API, ni
 service. Benjamin conçoit des serveurs MCP pour ses clients ;
@@ -26,7 +26,7 @@ ce domaine n'en héberge aucun.
 - E-mail : benjamin.david1@hotmail.fr
 - LinkedIn : https://www.linkedin.com/in/benjamin--david
 - GitHub : https://github.com/brezinben
-- Site : https://portfolio.brezinben.dpdns.org/
+- Site : https://me.brezinben.dpdns.org/
 
 Serveurs MCP, Specification-Driven Development, applications accessibles et
 éco-conçues.
@@ -323,7 +323,7 @@ En cours : MCP, agents, évaluation. Méthode : lire, tester, casser, recommence
 - E-mail : benjamin.david1@hotmail.fr
 - LinkedIn : in/benjamin--david
 - GitHub : brezinben
-- Site : portfolio.brezinben.dpdns.org
+- Site : me.brezinben.dpdns.org
 - Ville : Nantes, France
 - Recherche : missions IA, full stack, numérique responsable
 - Délai de réponse : 48 heures

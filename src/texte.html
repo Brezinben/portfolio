@@ -1,728 +1,837 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Benjamin David — Version texte</title>
-<meta name="description" content="Benjamin David, développeur IA et Full Stack à Nantes. Version texte du portfolio : une colonne, sans image, sans animation.">
-<meta name="author" content="Benjamin David">
-<link rel="canonical" href="https://portfolio.brezinben.dpdns.org/texte.html">
-<link rel="icon" href="assets/icons/favicon.svg" type="image/svg+xml">
-<link rel="icon" href="assets/icons/favicon-32.png" sizes="32x32">
-<link rel="apple-touch-icon" href="apple-touch-icon.png">
-<link rel="preload" href="assets/fonts/atkinson-hyperlegible-next.woff2" as="font" type="font/woff2" crossorigin>
-<meta property="og:type" content="profile">
-<meta property="og:title" content="Benjamin David — Développeur IA &amp; Full Stack">
-<meta property="og:description" content="Version texte du portfolio : une colonne, sans image, sans animation.">
-<meta property="og:url" content="https://portfolio.brezinben.dpdns.org/texte.html">
-<meta property="og:locale" content="fr_FR">
-<meta property="og:image" content="https://portfolio.brezinben.dpdns.org/assets/share.png">
-<meta property="og:image:width" content="1200">
-<meta property="og:image:height" content="630">
-<!-- Seul script de la page. Il reprend le thème choisi sur la version terminal, et rien
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Benjamin David · Version texte</title>
+  <meta name="description" content="Benjamin David, développeur IA et Full Stack à Nantes. Version texte du portfolio">
+  <meta name="author" content="Benjamin David">
+  <link rel="canonical" href="https://me.brezinben.dpdns.org/texte.html">
+  <link rel="icon" href="assets/icons/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="assets/icons/favicon-32.png" sizes="32x32">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="preload" href="assets/fonts/atkinson-hyperlegible-next.woff2" as="font" type="font/woff2" crossorigin>
+  <meta property="og:type" content="profile">
+  <meta property="og:title" content="Benjamin David — Développeur IA &amp; Full Stack">
+  <meta property="og:description" content="Version texte du portfolio">
+  <meta property="og:url" content="https://me.brezinben.dpdns.org/texte.html">
+  <meta property="og:locale" content="fr_FR">
+  <meta property="og:image" content="https://me.brezinben.dpdns.org/assets/share.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <!-- Seul script de la page. Il reprend le thème choisi sur la version terminal, et rien
      d'autre. Sans lui, les valeurs light-dark() de :root s'appliquent. -->
-<script>try{document.documentElement.dataset.theme=JSON.parse(localStorage["bd-term-opts"]||"{}").theme||""}catch{}</script>
-<style>
-  /* Atkinson Hyperlegible Next, dessinée par le Braille Institute pour la basse vision.
+  <script>try { document.documentElement.dataset.theme = JSON.parse(localStorage["bd-term-opts"] || "{}").theme || "" } catch { }</script>
+  <style>
+    /* Atkinson Hyperlegible Next, dessinée par le Braille Institute pour la basse vision.
      Police variable auto-hébergée, sous-ensemble latin, un seul fichier de 200 à 800, sous
      SIL Open Font License 1.1. La flèche « → » manque au sous-ensemble et retombe sur la
      police système. */
-  @font-face {
-    font-family: "Atkinson Hyperlegible Next";
-    src: url("assets/fonts/atkinson-hyperlegible-next.woff2") format("woff2");
-    font-weight: 200 800;
-    font-style: normal;
-    font-display: swap
-  }
+    @font-face {
+      font-family: "Atkinson Hyperlegible Next";
+      src: url("assets/fonts/atkinson-hyperlegible-next.woff2") format("woff2");
+      font-weight: 200 800;
+      font-style: normal;
+      font-display: swap
+    }
 
-  /* Les huit thèmes sont recopiés de index.html. Un test unitaire compare les deux
+    /* Les huit thèmes sont recopiés de index.html. Un test unitaire compare les deux
      relevés : une couleur qui change d'un côté doit changer de l'autre. */
-  :root {
-    color-scheme: light dark;
-    --bg: light-dark(#f3ecec, #1c1d2b);
-    --panel: light-dark(#fff6f6, #242538);
-    --edge: light-dark(#ded2d2, #33344a);
-    --fg: light-dark(#242538, #fff6f6);
-    --fg2: light-dark(#5a5a70, #9b9db8);
-    --acc: light-dark(#e6a000, #F5B83B);
-    --acc-text: light-dark(#8f5f00, #F5B83B)
-  }
+    :root {
+      color-scheme: light dark;
+      --bg: light-dark(#f3ecec, #1c1d2b);
+      --panel: light-dark(#fff6f6, #242538);
+      --edge: light-dark(#ded2d2, #33344a);
+      --fg: light-dark(#242538, #fff6f6);
+      --fg2: light-dark(#5a5a70, #9b9db8);
+      --acc: light-dark(#e6a000, #F5B83B);
+      --acc-text: light-dark(#8f5f00, #F5B83B)
+    }
 
-  :root[data-theme="dark"] {
-    color-scheme: dark;
-    --bg: #1c1d2b;
-    --panel: #242538;
-    --edge: #33344a;
-    --fg: #fff6f6;
-    --fg2: #9b9db8;
-    --acc: #F5B83B;
-    --acc-text: #F5B83B
-  }
+    :root[data-theme="dark"] {
+      color-scheme: dark;
+      --bg: #1c1d2b;
+      --panel: #242538;
+      --edge: #33344a;
+      --fg: #fff6f6;
+      --fg2: #9b9db8;
+      --acc: #F5B83B;
+      --acc-text: #F5B83B
+    }
 
-  /* L'ambre décoratif du thème clair donne 2,2:1. Le texte prend un ambre plus sombre. */
-  :root[data-theme="light"] {
-    color-scheme: light;
-    --bg: #f3ecec;
-    --panel: #fff6f6;
-    --edge: #ded2d2;
-    --fg: #242538;
-    --fg2: #5a5a70;
-    --acc: #e6a000;
-    --acc-text: #8f5f00
-  }
-
-  :root[data-theme="noctis"] {
-    color-scheme: dark;
-    --bg: #04252a;
-    --panel: #052c33;
-    --edge: #0d4148;
-    --fg: #d3e5e8;
-    --fg2: #7ea0a6;
-    --acc: #49e9a6;
-    --acc-text: #49e9a6
-  }
-
-  :root[data-theme="azureus"] {
-    color-scheme: dark;
-    --bg: #061f2c;
-    --panel: #07273b;
-    --edge: #0f3b52;
-    --fg: #cfdce4;
-    --fg2: #7d9bb0;
-    --acc: #49ace9;
-    --acc-text: #49ace9
-  }
-
-  :root[data-theme="uva"] {
-    color-scheme: dark;
-    --bg: #191634;
-    --panel: #211d40;
-    --edge: #332d5c;
-    --fg: #ded9f2;
-    --fg2: #9490bd;
-    --acc: #a29bfe;
-    --acc-text: #a29bfe
-  }
-
-  :root[data-theme="bordo"] {
-    color-scheme: dark;
-    --bg: #23151d;
-    --panel: #2d1b26;
-    --edge: #452a39;
-    --fg: #ecd9e2;
-    --fg2: #a8869a;
-    --acc: #e0728c;
-    --acc-text: #e0728c
-  }
-
-  :root[data-theme="lux"] {
-    color-scheme: light;
-    --bg: #f2ecdd;
-    --panel: #fdf6e7;
-    --edge: #ddd2ba;
-    --fg: #004d57;
-    --fg2: #4a5952;
-    --acc: #0c6d7a;
-    --acc-text: #0c6d7a
-  }
-
-  :root[data-theme="hibernus"] {
-    color-scheme: light;
-    --bg: #eaf1f3;
-    --panel: #f7fbfc;
-    --edge: #cfdde1;
-    --fg: #004d57;
-    --fg2: #475e66;
-    --acc: #00707f;
-    --acc-text: #00707f
-  }
-
-  body {
-    margin: 0 auto;
-    max-width: 36em;
-    padding: 32px 20px 80px;
-    background: var(--bg);
-    color: var(--fg);
-    font: 18px/1.65 "Atkinson Hyperlegible Next", system-ui, sans-serif;
-    -webkit-font-smoothing: antialiased
-  }
-
-  a {
-    color: var(--acc-text)
-  }
-
-  a:hover {
-    color: var(--fg)
-  }
-
-  :focus-visible {
-    outline: 2px solid var(--acc);
-    outline-offset: 3px
-  }
-
-  /* Après un saut d'ancre, la personne doit voir où elle a atterri. */
-  :target {
-    outline: 2px dashed var(--acc);
-    outline-offset: 8px
-  }
-
-  .evitement {
-    position: absolute;
-    left: -9999px
-  }
-
-  .evitement:focus {
-    position: static;
-    left: auto;
-    display: inline-block;
-    margin-bottom: 16px
-  }
-
-  h1 {
-    margin: 0;
-    font-size: 34px;
-    font-weight: 600;
-    line-height: 1.15;
-    text-wrap: balance
-  }
-
-  h2 {
-    margin: 52px 0 0;
-    font-size: 15px;
-    font-weight: 400;
-    letter-spacing: .12em;
-    text-transform: uppercase;
-    color: var(--fg2)
-  }
-
-  h3 {
-    margin: 32px 0 0;
-    font-size: 22px;
-    font-weight: 600;
-    text-wrap: balance
-  }
-
-  hgroup p {
-    margin: 8px 0 0;
-    font-size: 19px;
-    color: var(--acc-text)
-  }
-
-  p {
-    margin: 16px 0 0
-  }
-
-  ul, ol {
-    margin: 12px 0 0;
-    padding-left: 22px
-  }
-
-  li {
-    margin-top: 6px
-  }
-
-  .meta {
-    margin: 4px 0 0;
-    font-size: 16px;
-    color: var(--fg2)
-  }
-
-  .dispo {
-    border-left: 3px solid var(--acc);
-    padding-left: 14px
-  }
-
-  nav ol {
-    display: grid;
-    gap: 4px
-  }
-
-  address {
-    margin: 16px 0 0;
-    font-style: normal
-  }
-
-  dl {
-    margin: 16px 0 0;
-    padding: 12px 16px;
-    border: 1px solid var(--edge);
-    border-radius: 6px;
-    background: var(--panel);
-    font-size: 16px
-  }
-
-  dt {
-    font-weight: 700
-  }
-
-  dt + dd {
-    margin: 2px 0 0
-  }
-
-  dd {
-    margin: 0 0 10px;
-    padding-left: 16px
-  }
-
-  dd:last-child {
-    margin-bottom: 0
-  }
-
-  .ou {
-    color: var(--fg2)
-  }
-
-  hr {
-    margin: 52px 0 20px;
-    border: 0;
-    border-top: 1px solid var(--edge)
-  }
-
-  footer {
-    font-size: 15px;
-    color: var(--fg2)
-  }
-
-  .bascule {
-    margin: 0 0 20px;
-    font-size: 15px
-  }
-
-  @media print {
-    /* Sur papier l'encre coûte, et le contraste doit tenir sans le thème. Le sélecteur
-       reprend `[data-theme]` : une media query n'ajoute aucune spécificité, et un `:root`
-       seul perdrait contre le bloc du thème choisi. */
-    :root, :root[data-theme] {
+    /* L'ambre décoratif du thème clair donne 2,2:1. Le texte prend un ambre plus sombre. */
+    :root[data-theme="light"] {
       color-scheme: light;
-      --bg: #fff;
-      --panel: #fff;
-      --edge: #999;
-      --fg: #000;
-      --fg2: #444;
-      --acc: #666;
-      --acc-text: #000
+      --bg: #f3ecec;
+      --panel: #fff6f6;
+      --edge: #ded2d2;
+      --fg: #242538;
+      --fg2: #5a5a70;
+      --acc: #e6a000;
+      --acc-text: #8f5f00
+    }
+
+    :root[data-theme="noctis"] {
+      color-scheme: dark;
+      --bg: #04252a;
+      --panel: #052c33;
+      --edge: #0d4148;
+      --fg: #d3e5e8;
+      --fg2: #7ea0a6;
+      --acc: #49e9a6;
+      --acc-text: #49e9a6
+    }
+
+    :root[data-theme="azureus"] {
+      color-scheme: dark;
+      --bg: #061f2c;
+      --panel: #07273b;
+      --edge: #0f3b52;
+      --fg: #cfdce4;
+      --fg2: #7d9bb0;
+      --acc: #49ace9;
+      --acc-text: #49ace9
+    }
+
+    :root[data-theme="uva"] {
+      color-scheme: dark;
+      --bg: #191634;
+      --panel: #211d40;
+      --edge: #332d5c;
+      --fg: #ded9f2;
+      --fg2: #9490bd;
+      --acc: #a29bfe;
+      --acc-text: #a29bfe
+    }
+
+    :root[data-theme="bordo"] {
+      color-scheme: dark;
+      --bg: #23151d;
+      --panel: #2d1b26;
+      --edge: #452a39;
+      --fg: #ecd9e2;
+      --fg2: #a8869a;
+      --acc: #e0728c;
+      --acc-text: #e0728c
+    }
+
+    :root[data-theme="lux"] {
+      color-scheme: light;
+      --bg: #f2ecdd;
+      --panel: #fdf6e7;
+      --edge: #ddd2ba;
+      --fg: #004d57;
+      --fg2: #4a5952;
+      --acc: #0c6d7a;
+      --acc-text: #0c6d7a
+    }
+
+    :root[data-theme="hibernus"] {
+      color-scheme: light;
+      --bg: #eaf1f3;
+      --panel: #f7fbfc;
+      --edge: #cfdde1;
+      --fg: #004d57;
+      --fg2: #475e66;
+      --acc: #00707f;
+      --acc-text: #00707f
     }
 
     body {
-      max-width: none;
-      font-size: 11pt
+      margin: 0 auto;
+      max-width: 36em;
+      padding: 32px 20px 80px;
+      background: var(--bg);
+      color: var(--fg);
+      font: 18px/1.65 "Atkinson Hyperlegible Next", system-ui, sans-serif;
+      -webkit-font-smoothing: antialiased
     }
 
-    a[href^="http"]::after, a[href^="mailto"]::after {
-      content: " (" attr(href) ")";
-      font-size: 9pt;
-      word-break: break-all
+    a {
+      color: var(--acc-text)
     }
 
-    article, dl {
-      break-inside: avoid
+    a:hover {
+      color: var(--fg)
     }
 
-    h2, h3 {
-      break-after: avoid
+    :focus-visible {
+      outline: 2px solid var(--acc);
+      outline-offset: 3px
     }
 
-    .bascule, .evitement, nav {
-      display: none
+    /* Après un saut d'ancre, la personne doit voir où elle a atterri. */
+    :target {
+      outline: 2px dashed var(--acc);
+      outline-offset: 8px
     }
-  }
-</style>
+
+    .evitement {
+      position: absolute;
+      left: -9999px
+    }
+
+    .evitement:focus {
+      position: static;
+      left: auto;
+      display: inline-block;
+      margin-bottom: 16px
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 34px;
+      font-weight: 600;
+      line-height: 1.15;
+      text-wrap: balance
+    }
+
+    h2 {
+      margin: 52px 0 0;
+      font-size: 15px;
+      font-weight: 400;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--fg2)
+    }
+
+    h3 {
+      margin: 32px 0 0;
+      font-size: 22px;
+      font-weight: 600;
+      text-wrap: balance
+    }
+
+    hgroup p {
+      margin: 8px 0 0;
+      font-size: 19px;
+      color: var(--acc-text)
+    }
+
+    p {
+      margin: 16px 0 0
+    }
+
+    ul,
+    ol {
+      margin: 12px 0 0;
+      padding-left: 22px
+    }
+
+    li {
+      margin-top: 6px
+    }
+
+    .meta {
+      margin: 4px 0 0;
+      font-size: 16px;
+      color: var(--fg2)
+    }
+
+    .dispo {
+      border-left: 3px solid var(--acc);
+      padding-left: 14px
+    }
+
+    nav ol {
+      display: grid;
+      gap: 4px
+    }
+
+    address {
+      margin: 16px 0 0;
+      font-style: normal
+    }
+
+    dl {
+      margin: 16px 0 0;
+      padding: 12px 16px;
+      border: 1px solid var(--edge);
+      border-radius: 6px;
+      background: var(--panel);
+      font-size: 16px
+    }
+
+    dt {
+      font-weight: 700
+    }
+
+    dt+dd {
+      margin: 2px 0 0
+    }
+
+    dd {
+      margin: 0 0 10px;
+      padding-left: 16px
+    }
+
+    dd:last-child {
+      margin-bottom: 0
+    }
+
+    .ou {
+      color: var(--fg2)
+    }
+
+    hr {
+      margin: 52px 0 20px;
+      border: 0;
+      border-top: 1px solid var(--edge)
+    }
+
+    footer {
+      font-size: 15px;
+      color: var(--fg2)
+    }
+
+    .bascule {
+      margin: 0 0 20px;
+      font-size: 15px
+    }
+
+    @media print {
+
+      /* Sur papier l'encre coûte, et le contraste doit tenir sans le thème. Le sélecteur
+       reprend `[data-theme]` : une media query n'ajoute aucune spécificité, et un `:root`
+       seul perdrait contre le bloc du thème choisi. */
+      :root,
+      :root[data-theme] {
+        color-scheme: light;
+        --bg: #fff;
+        --panel: #fff;
+        --edge: #999;
+        --fg: #000;
+        --fg2: #444;
+        --acc: #666;
+        --acc-text: #000
+      }
+
+      body {
+        max-width: none;
+        font-size: 11pt
+      }
+
+      a[href^="http"]::after,
+      a[href^="mailto"]::after {
+        content: " (" attr(href) ")";
+        font-size: 9pt;
+        word-break: break-all
+      }
+
+      article,
+      dl {
+        break-inside: avoid
+      }
+
+      h2,
+      h3 {
+        break-after: avoid
+      }
+
+      .bascule,
+      .evitement,
+      nav {
+        display: none
+      }
+    }
+  </style>
 </head>
+
 <body>
 
-<a class="evitement" href="#contenu">Aller au contenu</a>
+  <a class="evitement" href="#contenu">Aller au contenu</a>
 
-<header>
-  <p class="bascule">Version texte simple. <a href="index.html">Version terminal</a> · <a href="llms.txt">llms.txt</a></p>
+  <header>
+    <p class="bascule">Version texte simple. <a href="index.html">Version terminal</a> · <a href="llms.txt">llms.txt</a>
+    </p>
 
-  <hgroup>
-    <h1>Benjamin David</h1>
-    <p>Concepteur orchestrateur IA · Développeur Full Stack · Nantes</p>
-  </hgroup>
+    <hgroup>
+      <h1>Benjamin David</h1>
+      <p>Concepteur orchestrateur IA · Développeur Full Stack · Nantes</p>
+    </hgroup>
 
-  <p>Serveurs <abbr title="Model Context Protocol">MCP</abbr>, <span lang="en">Specification-Driven Development</span>, applications accessibles et éco-conçues.</p>
-  <p>Huit ans à faire tourner des choses en production, de la baie réseau au serveur d'agents.</p>
-  <p>Quelqu'un qui adore apprendre et approfondir tout un tas de trucs.</p>
-  <p class="dispo">En poste chez Kereis depuis mai 2026. Ouvert aux opportunités en numérique responsable.</p>
+    <p>Serveurs <abbr title="Model Context Protocol">MCP</abbr>, <span lang="en">Specification-Driven
+        Development</span>, applications accessibles et éco-conçues.</p>
+    <p>Huit ans à faire tourner des choses en production, de la baie réseau au serveur d'agents.</p>
+    <p>Quelqu'un qui adore apprendre et approfondir tout un tas de trucs.</p>
+    <p class="dispo">En poste chez Kereis depuis mai 2026. Ouvert aux opportunités en numérique responsable.</p>
 
-  <address>
-    <a href="mailto:benjamin.david1@hotmail.fr">benjamin.david1@hotmail.fr</a> ·
-    <a href="https://www.linkedin.com/in/benjamin--david">LinkedIn</a> ·
-    <a href="https://github.com/brezinben">GitHub</a>
-  </address>
+    <address>
+      <a href="mailto:benjamin.david1@hotmail.fr">benjamin.david1@hotmail.fr</a> ·
+      <a href="https://www.linkedin.com/in/benjamin--david">LinkedIn</a> ·
+      <a href="https://github.com/brezinben">GitHub</a>
+    </address>
 
-  <dl>
-    <dt>Poste</dt>
-    <dd>Développeur IA / Full Stack</dd>
-    <dt>Entreprise</dt>
-    <dd>Kereis · via digital4better</dd>
-    <dt>Depuis</dt>
-    <dd><time datetime="2026-05">mai 2026</time></dd>
-    <dt>Base</dt>
-    <dd>Nantes, France</dd>
-    <dt>Langues</dt>
-    <dd>français, anglais technique</dd>
-  </dl>
-</header>
-
-<nav aria-labelledby="sommaire">
-  <h2 id="sommaire">Sommaire</h2>
-  <ol>
-    <li><a href="#parcours">Parcours</a></li>
-    <li><a href="#impact">Numérique responsable</a></li>
-    <li><a href="#competences">Compétences techniques</a></li>
-    <li><a href="#formation">Formation</a></li>
-    <li><a href="#contact">Contact</a></li>
-  </ol>
-</nav>
-
-<main id="contenu">
-
-<section aria-labelledby="parcours">
-  <h2 id="parcours">Parcours</h2>
-
-  <article>
-    <h3>Kereis</h3>
-    <p class="meta"><time datetime="2026-05">mai 2026</time> → aujourd'hui · Développeur IA / Full Stack · pôle <abbr title="Direction des systèmes d'information">DSI</abbr> · via digital4better</p>
-    <p>Kereis construit plutôt qu'il n'achète. On me demande de prouver par le code ce qu'une licence coûteuse ne ferait qu'à moitié.</p>
-    <ul>
-      <li>Le cadrage du code passe en premier. Linter et règles avant la première fonctionnalité : l'IA produit sous contrainte, un humain relit.</li>
-      <li>Serveurs MCP : les outils internes s'ouvrent aux agents. Le point dur est l'autorisation, pas l'exposition.</li>
-      <li>Simulateur de tarif d'assurance de prêt. L'utilisateur décrit son projet en langage naturel, le MCP répond un tarif.</li>
-      <li>Cartographie du <abbr title="système d'information">SI</abbr> sous Backstage. Sources AWS, GitLab et Zeenea branchées, puis un MCP pour que les agents lisent la carte.</li>
-      <li>Application de compte rendu. Le texte dicté est nettoyé, l'e-mail rédigé, la réunion suivante préparée.</li>
-      <li>Revue de spécification par l'IA : ~20 min là où un humain passerait une journée. Étape obligatoire à chaque fonctionnalité.</li>
-    </ul>
     <dl>
-      <dt>Statut</dt>
-      <dd>en cours</dd>
-      <dt>Rôle</dt>
-      <dd>développeur IA / full stack</dd>
-      <dt>Client</dt>
-      <dd>Kereis · pôle DSI</dd>
-      <dt>Via</dt>
-      <dd>digital4better</dd>
-      <dt>Pile</dt>
-      <dd>MCP, SpecKit, LiteLLM, Langfuse</dd>
-      <dt>Apport</dt>
-      <dd>cadrer l'IA par la spec</dd>
-    </dl>
-  </article>
-
-  <article>
-    <h3>SNCF Gares &amp; Connexions — Assist'enGare</h3>
-    <p class="meta"><time datetime="2024-09">sept. 2024</time> → <time datetime="2026-05">mai 2026</time> · Développeur Full Stack · via digital4better</p>
-    <p>Réservation de prestations d'assistance pour les personnes en situation de handicap (PSH/PMR) souhaitant accéder à leur train.</p>
-    <ul>
-      <li>Front grand public de Gares &amp; Connexions. La déclaration d'accessibilité affiche 96 % de conformité moyenne au <abbr title="Référentiel général d'amélioration de l'accessibilité">RGAA</abbr> 4.1, sous audits successifs.</li>
-      <li>Règles axe au linter, essais au lecteur d'écran sous NVDA et TalkBack. Le critère d'accessibilité entre dans la spécification, pas dans le correctif.</li>
-      <li>MUI ne couvre pas tout le référentiel. Le reste s'écrit à la main : copie des références, vocalisation correcte des marques.</li>
-      <li>La brique parle à tout le SI SNCF. Le spécifique devient générique : ActiveMQ réécrit d'AMQP vers STOMP, routage dynamique par entité métier.</li>
-      <li>Voyage en deux segments SNCF et Trenitalia : chaque transporteur ne reçoit que le segment qui le concerne.</li>
-      <li>Validation automatique des dossiers d'assistance. Environ 3 000 dossiers par jour, une dizaine de notifications chacun, et davantage en vacances.</li>
-      <li>Ce volume impose des instances multiples et une observabilité Datadog.</li>
-      <li>Le code était bon, mais rien n'empêchait le mauvais code. J'ai posé les règles : Oxlint et oxfmt à la place d'ESLint et Prettier.</li>
-      <li>Appui aux autres équipes du pôle : migrations JavaScript vers TypeScript, et Vue 2 vers Vue 3.</li>
-    </ul>
-    <dl>
-      <dt>Statut</dt>
-      <dd>livré</dd>
-      <dt>Rôle</dt>
-      <dd>développeur full stack</dd>
-      <dt>Client</dt>
-      <dd>SNCF Gares &amp; Connexions</dd>
-      <dt>Produit</dt>
-      <dd>Assist'enGare</dd>
-      <dt>Public</dt>
-      <dd>voyageurs PSH / PMR</dd>
-      <dt>Volume</dt>
-      <dd>~3 000 dossiers / jour</dd>
-      <dt>RGAA 4.1</dt>
-      <dd>96 % · déclaration publique</dd>
-      <dt>Pile</dt>
-      <dd>React, MUI, NestJS, PostgreSQL</dd>
-    </dl>
-  </article>
-
-  <article>
-    <h3>digital4better — équipe RUN</h3>
-    <p class="meta"><time datetime="2023-10">oct. 2023</time> → <time datetime="2024-09">sept. 2024</time> · Développeur Full Stack / IA</p>
-    <p>Quatre projets clients en parallèle : Body Nature, Dorval AM, PiLeJe et Servier. Quatre piles, quatre historiques. Le RUN oblige à entrer vite dans du code qu'on n'a pas écrit.</p>
-    <ul>
-      <li>Supervision : monitoring des performances, détection et analyse des anomalies avant la remontée utilisateur.</li>
-      <li>Maintenance et montées de version. Correctifs de sécurité tenus à jour sur le parc, provisionnés par Ansible.</li>
-      <li>Évolutions produit sur Body Nature, en échange direct avec l'équipe produit.</li>
-      <li>Éco-conception mesurée avec fruggr, l'outil maison. L'impact d'une application se constate, il ne se déclare pas.</li>
-      <li>Optimisation des pipelines <abbr title="intégration et livraison continues">CI/CD</abbr> : moins de temps de calcul, donc moins de gaspillage.</li>
-    </ul>
-    <p class="dispo">Assurer la disponibilité des services en appliquant les principes du numérique responsable.</p>
-    <dl>
-      <dt>Statut</dt>
-      <dd>livré</dd>
-      <dt>Rôle</dt>
-      <dd>full stack / IA</dd>
-      <dt>Employeur</dt>
-      <dd>digital4better</dd>
-      <dt>Clients</dt>
-      <dd>Body Nature, Dorval AM, PiLeJe, Servier</dd>
-      <dt>Périmètre</dt>
-      <dd>RUN, support, sécurité</dd>
-      <dt>Mesure</dt>
-      <dd>fruggr · éco-conception</dd>
-    </dl>
-  </article>
-
-  <article>
-    <h3>Transway — mobilité durable</h3>
-    <p class="meta"><time datetime="2021-09">sept. 2021</time> → <time datetime="2023-09">sept. 2023</time> · Full Stack, puis <span lang="en">Technical Lead Developer</span></p>
-    <p>Première mission hors alternance. Deux produits d'incitation à la mobilité durable : WeFlo Pro pour les entreprises, IREBY pour les collectivités.</p>
-    <ul>
-      <li>WeFlo Pro : déclaration des trajets au titre du forfait mobilité durable. Laravel, PHP et Vue.js.</li>
-      <li>IREBY : l'usager gagne des points en tram, en bus, à pied ou à vélo, puis les dépense en boutique. NestJS et Vue 3.</li>
-      <li>Migration de la V1 vers la V3 : plus de 300 000 utilisateurs transférés, avec leurs offres et leurs images. Script de transformation écrit et mené seul.</li>
-      <li>Branchements aux systèmes des réseaux partenaires : TCL à Lyon, STAR à Rennes.</li>
-      <li>L'interface se configure depuis l'administration. La page reste générique, la vue du client se paramètre.</li>
-      <li>Passage au rôle de lead technique : encadrement de quatre à six développeurs, et la main sur les choix techniques.</li>
-      <li>Migration Vue 2 vers Vue 3, montées de version Node, renforcements de sécurité après audit.</li>
-    </ul>
-    <dl>
-      <dt>Statut</dt>
-      <dd>livré</dd>
-      <dt>Rôle</dt>
-      <dd>full stack → tech lead</dd>
-      <dt>Produits</dt>
-      <dd>WeFlo Pro, IREBY</dd>
-      <dt>Encadrement</dt>
-      <dd>4 à 6 développeurs</dd>
-      <dt>Migration</dt>
-      <dd>+300 000 utilisateurs</dd>
-      <dt>Pile</dt>
-      <dd>Laravel, NestJS, Vue 3</dd>
-    </dl>
-  </article>
-
-  <article>
-    <h3>LDC Services</h3>
-    <p class="meta"><time datetime="2020">2020</time> → <time datetime="2021">2021</time> · Concepteur Développeur d'Application · alternance</p>
-    <p>Développement logiciel classique et qualité du code.</p>
-  </article>
-
-  <article>
-    <h3>FPEE Industries</h3>
-    <p class="meta"><time datetime="2018">2018</time> → <time datetime="2020">2020</time> · Technicien réseau · alternance</p>
-    <p>Comprendre le problème de l'utilisateur avant de le réparer. Tout part de là.</p>
-  </article>
-</section>
-
-<section aria-labelledby="impact">
-  <h2 id="impact">Numérique responsable</h2>
-
-  <ul>
-    <li>Accessibilité — contrastes vérifiés, navigation clavier complète, focus visibles, structure sémantique.</li>
-    <li>Sobriété — aucune vidéo, aucune image, une seule police, animations désactivables.</li>
-    <li>Mesure — l'impact environnemental d'une application se constate, il ne se déclare pas.</li>
-    <li>Arbitrage — chaque fonctionnalité a un coût ; certaines ne valent pas leur empreinte.</li>
-  </ul>
-
-  <p class="dispo">Le numérique responsable n'est pas un supplément : c'est une contrainte de conception, au même titre que la sécurité.</p>
-</section>
-
-<section aria-labelledby="competences">
-  <h2 id="competences">Compétences techniques</h2>
-
-  <section aria-labelledby="c-frontend">
-    <h3 id="c-frontend">Frontend — interfaces accessibles</h3>
-    <dl>
-      <dt>HTML</dt>
-      <dd><span class="ou">toutes les missions</span> — Le bon élément porte le sens. Un lecteur d'écran suit la structure du document.</dd>
-      <dt>CSS</dt>
-      <dd><span class="ou">toutes les missions</span> — Grille, variables, et requêtes de préférence pour le mouvement réduit et le thème sombre.</dd>
-      <dt>Tailwind</dt>
-      <dd><span class="ou">Transway, digital4better</span> — Rapidité de mise en page sans feuille de style à maintenir. Attention portée à la taille finale du CSS.</dd>
-      <dt>Sass</dt>
-      <dd><span class="ou">Transway, LDC Services</span> — Variables et imbrication sur les feuilles de style héritées, avant que les variables CSS suffisent.</dd>
-      <dt>Vuetify</dt>
-      <dd><span class="ou">Transway</span> — Base de composants accessibles, complétée à la main sur les points que le RGAA impose.</dd>
-      <dt>MUI</dt>
-      <dd><span class="ou">Assist'enGare</span> — Base de composants React. Elle ne couvre pas tout le RGAA : le reste s'écrit à la main.</dd>
-      <dt>TypeScript</dt>
-      <dd><span class="ou">toutes les missions depuis 2021</span> — Typage strict côté front comme côté NestJS. Non négociable sur un projet à plusieurs mains.</dd>
-      <dt>Vue.js</dt>
-      <dd><span class="ou">Transway, Kereis, appui SNCF</span> — Framework principal sur la majorité des interfaces livrées. <span lang="en">Composition API</span>, stores, routage. Migration Vue 2 vers Vue 3 faite deux fois.</dd>
-      <dt>React</dt>
-      <dd><span class="ou">Assist'enGare</span> — Front grand public de Gares &amp; Connexions, tenu sous audits d'accessibilité pendant vingt-et-un mois.</dd>
-      <dt>Svelte</dt>
-      <dd><span class="ou">veille et prototypes</span> — Choisi quand le poids du bundle compte plus que l'écosystème.</dd>
-      <dt>Pinia</dt>
-      <dd><span class="ou">Transway, Kereis</span> — Gestion d'état des applications Vue : sessions, réservations, cache local.</dd>
-      <dt>RxJS</dt>
-      <dd><span class="ou">NestJS, formulaires réactifs</span> — Flux asynchrones et annulation de requêtes concurrentes.</dd>
-      <dt>Vite</dt>
-      <dd><span class="ou">depuis 2021</span> — Serveur de développement et construction. Le rechargement instantané raccourcit la boucle d'essai.</dd>
-    </dl>
-  </section>
-
-  <section aria-labelledby="c-backend">
-    <h3 id="c-backend">Backend — services et données</h3>
-    <dl>
-      <dt>Laravel</dt>
-      <dd><span class="ou">LDC Services, digital4better</span> — API et back-offices : Eloquent, files de traitement, authentification.</dd>
-      <dt>NestJS</dt>
-      <dd><span class="ou">Transway, SNCF, Kereis</span> — Architecture modulaire, injection de dépendances, TypeORM.</dd>
-      <dt>PHP</dt>
-      <dd><span class="ou">LDC Services, Transway, digital4better</span> — Langage des back-offices Laravel. Typage strict et outillage moderne depuis la 8.</dd>
-      <dt>API REST</dt>
-      <dd><span class="ou">toutes les missions</span> — Contrats documentés en OpenAPI avant l'implémentation — la spec précède le code.</dd>
-      <dt>OpenAPI</dt>
-      <dd><span class="ou">toutes les missions</span> — Le contrat s'écrit avant l'implémentation. Le front et le back avancent en parallèle sans se bloquer.</dd>
-      <dt>JWT</dt>
-      <dd><span class="ou">Transway, SNCF, Kereis</span> — Jetons d'authentification entre services. Sur un serveur MCP, la difficulté porte sur les droits accordés à l'agent.</dd>
-      <dt>PostgreSQL</dt>
-      <dd><span class="ou">Transway, SNCF</span> — Base de référence : requêtes analytiques, index, migrations versionnées.</dd>
-      <dt>MySQL</dt>
-      <dd><span class="ou">LDC Services, digital4better</span> — Base des projets hérités. Migrations versionnées et index relus avant chaque mise en production.</dd>
-      <dt>Redis</dt>
-      <dd><span class="ou">digital4better, Transway</span> — Cache et files de messages. Réduit la charge serveur, donc l'empreinte.</dd>
-      <dt>ActiveMQ</dt>
-      <dd><span class="ou">Assist'enGare</span> — Bus de messages entre la brique et le reste du SI SNCF. Réécriture d'AMQP vers STOMP, puis routage dynamique par entité métier.</dd>
-    </dl>
-  </section>
-
-  <section aria-labelledby="c-ia">
-    <h3 id="c-ia">IA — orchestration d'agents</h3>
-    <dl>
-      <dt>Serveurs MCP</dt>
-      <dd><span class="ou">Kereis, 2026</span> — Exposition des outils internes aux agents : tools, resources, prompts, avec les garde-fous d'accès.</dd>
-      <dt>SpecKit</dt>
-      <dd><span class="ou">Kereis, 2026</span> — spec-it, plan, tasks. La spécification devient l'artefact de référence, le code en découle.</dd>
-      <dt><abbr title="Specification-Driven Development">SDD</abbr></dt>
-      <dd><span class="ou">Kereis</span> — <span lang="en">Specification-Driven Development</span> : décrire l'intention, faire valider, puis générer et vérifier.</dd>
-      <dt>Claude</dt>
-      <dd><span class="ou">Kereis, 2026</span> — Toute la gamme Anthropic : l'agent en terminal pour le code, l'application pour la spec. Le cadrage vient des règles du dépôt, qui survivent à la session.</dd>
-      <dt>herdr</dt>
-      <dd><span class="ou">Kereis, 2026</span> — Multiplexeur de terminal en Rust. Plusieurs agents travaillent en parallèle et leur état reste lisible.</dd>
-      <dt>LiteLLM</dt>
-      <dd><span class="ou">Kereis, 2026</span> — Passerelle unique devant plusieurs fournisseurs de modèles. Le code ne dépend d'aucun d'eux.</dd>
-      <dt>Langfuse</dt>
-      <dd><span class="ou">Kereis, 2026</span> — Traces et évaluation des appels de modèle, pour comparer deux versions d'un agent sur les mêmes cas.</dd>
-      <dt>LangGraph</dt>
-      <dd><span class="ou">Kereis, 2026</span> — Enchaînements conditionnels entre prompts. L'agent devient un graphe que l'on peut relire.</dd>
-      <dt>Agents</dt>
-      <dd><span class="ou">Kereis</span> — Revue automatisée de spécification : ~20 min contre une journée humaine, à chaque fonctionnalité.</dd>
-      <dt><span lang="en">Harness engineering</span></dt>
-      <dd><span class="ou">Kereis, 2026</span> — Construire la machinerie autour du modèle : nettoyage de l'entrée, enchaînement des étapes, contrôle de la sortie. C'est cette machinerie qui rend le résultat livrable.</dd>
-      <dt>Évaluation</dt>
-      <dd><span class="ou">Kereis</span> — Mesurer ce que produit un agent, jeu de cas après jeu de cas, avant et après chaque changement.</dd>
-      <dt>Prompting</dt>
-      <dd><span class="ou">Kereis</span> — Le prompt porte l'intention de la demande. Les contraintes durables restent dans le dépôt.</dd>
-    </dl>
-  </section>
-
-  <section aria-labelledby="c-devops">
-    <h3 id="c-devops">DevOps — livrer sans casser</h3>
-    <dl>
-      <dt>Docker</dt>
-      <dd><span class="ou">depuis 2020</span> — Environnements reproductibles en local comme en CI. Compose pour les dépendances.</dd>
-      <dt>Compose</dt>
-      <dd><span class="ou">depuis 2020</span> — Les dépendances d'un projet démarrent en une commande. Un nouvel arrivant travaille le premier jour.</dd>
-      <dt>GitLab CI</dt>
-      <dd><span class="ou">digital4better, SNCF</span> — Pipelines de test, build et déploiement. Optimisation des durées pour limiter le gaspillage.</dd>
-      <dt>Jenkins</dt>
-      <dd><span class="ou">Assist'enGare</span> — Déploiements du service, en tandem avec les intégrations GitLab.</dd>
-      <dt>GitHub Actions</dt>
-      <dd><span class="ou">projets personnels</span> — Mêmes étapes que GitLab CI : tests, construction, publication.</dd>
-      <dt>AWS</dt>
-      <dd><span class="ou">Assist'enGare, Kereis</span> — Hébergement du service et source de la cartographie du SI.</dd>
-      <dt>Linux</dt>
-      <dd><span class="ou">depuis FPEE, 2018</span> — Administration, scripts Bash, accès SSH. Le socle du reste.</dd>
-      <dt>Bash</dt>
-      <dd><span class="ou">depuis FPEE, 2018</span> — Scripts de migration, de sauvegarde et de déploiement, sur les serveurs comme en intégration continue.</dd>
-      <dt>Ansible</dt>
-      <dd><span class="ou">équipe RUN, digital4better</span> — Provisionnement et mises à jour de sécurité automatisées sur le parc.</dd>
-      <dt>Datadog</dt>
-      <dd><span class="ou">Assist'enGare</span> — Observabilité d'un service à fort volume : traces, alertes, dimensionnement des instances.</dd>
-      <dt>Monitoring</dt>
-      <dd><span class="ou">équipe RUN, digital4better</span> — Supervision des performances, détection et analyse des anomalies avant remontée utilisateur.</dd>
-    </dl>
-  </section>
-
-  <section aria-labelledby="c-qualite">
-    <h3 id="c-qualite">Qualité &amp; sobriété — ce qui tient dans le temps</h3>
-    <dl>
-      <dt>Tests unitaires</dt>
-      <dd><span class="ou">toutes les missions</span> — Ils tiennent la logique métier. Un test qui échoue localise le défaut à la ligne près.</dd>
-      <dt><abbr title="tests de bout en bout">E2E</abbr></dt>
-      <dd><span class="ou">Transway, ce portfolio</span> — Le parcours complet dans un vrai navigateur. Ce niveau attrape les défauts d'assemblage que les tests unitaires laissent passer.</dd>
-      <dt>Cypress</dt>
-      <dd><span class="ou">Transway</span> — Tests de bout en bout sur les parcours critiques — réservation, authentification.</dd>
-      <dt>ESLint</dt>
-      <dd><span class="ou">toutes les missions</span> — Règles partagées : la revue humaine se concentre sur le fond, pas sur la forme.</dd>
-      <dt>Oxlint</dt>
-      <dd><span class="ou">Assist'enGare, ce portfolio</span> — Remplace ESLint. Assez rapide pour tourner à chaque sauvegarde, et non plus seulement en intégration continue.</dd>
-      <dt>Prettier</dt>
-      <dd><span class="ou">missions jusqu'en 2025</span> — Mise en forme automatique. La revue humaine porte sur le fond.</dd>
-      <dt>oxfmt</dt>
-      <dd><span class="ou">Assist'enGare</span> — Remplace Prettier. Même mise en forme, exécution plus rapide.</dd>
-      <dt>axe</dt>
-      <dd><span class="ou">Assist'enGare</span> — Règles d'accessibilité branchées sur le linter. Une régression d'accessibilité apparaît dès la sauvegarde, des mois avant l'audit.</dd>
-      <dt>Éco-conception</dt>
-      <dd><span class="ou">digital4better</span> — Mesure de l'impact des applications avec fruggr, l'outil maison, et arbitrages assumés entre fonctionnalité et empreinte.</dd>
-      <dt>RGAA</dt>
-      <dd><span class="ou">Assist'enGare</span> — 96 % de conformité moyenne à la déclaration publique. Essais au lecteur d'écran sous NVDA et TalkBack.</dd>
-      <dt><span lang="en">Pair-programming</span></dt>
-      <dd><span class="ou">Transway, Kereis</span> — Transmission plus rapide qu'une documentation, surtout sur les parties sensibles.</dd>
-    </dl>
-  </section>
-</section>
-
-<section aria-labelledby="formation">
-  <h2 id="formation">Formation</h2>
-
-  <ul>
-    <li><time datetime="2021">2021</time> → aujourd'hui — On n'arrête jamais d'apprendre. Veille continue, certifications, expérimentations, d'autant plus à l'ère de l'IA.</li>
-    <li><time datetime="2020">2020</time> – <time datetime="2021">2021</time> — Titre Professionnel Concepteur Développeur d'Applications.</li>
-    <li><time datetime="2018">2018</time> – <time datetime="2020">2020</time> — <abbr title="brevet de technicien supérieur, services informatiques aux organisations">BTS SIO</abbr> option <abbr title="solutions d'infrastructure, systèmes et réseaux">SISR</abbr>, en alternance.</li>
-    <li><time datetime="2016">2016</time> – <time datetime="2018">2018</time> — Baccalauréat <abbr title="sciences et technologies de l'industrie et du développement durable">STI2D</abbr>.</li>
-  </ul>
-
-  <dl>
-    <dt>En cours</dt>
-    <dd>MCP, agents, évaluation</dd>
-    <dt>Méthode</dt>
-    <dd>lire, tester, casser, recommencer</dd>
-  </dl>
-</section>
-
-<section aria-labelledby="contact">
-  <h2 id="contact">Contact</h2>
-
-  <address>
-    <dl>
-      <dt>E-mail</dt>
-      <dd><a href="mailto:benjamin.david1@hotmail.fr">benjamin.david1@hotmail.fr</a></dd>
-      <dt>LinkedIn</dt>
-      <dd><a href="https://www.linkedin.com/in/benjamin--david">in/benjamin--david</a></dd>
-      <dt>GitHub</dt>
-      <dd><a href="https://github.com/brezinben">brezinben</a></dd>
-      <dt>Site</dt>
-      <dd><a href="index.html">portfolio.brezinben.dpdns.org</a></dd>
-      <dt>Ville</dt>
+      <dt>Poste</dt>
+      <dd>Développeur IA / Full Stack</dd>
+      <dt>Entreprise</dt>
+      <dd>Kereis · via digital4better</dd>
+      <dt>Depuis</dt>
+      <dd><time datetime="2026-05">mai 2026</time></dd>
+      <dt>Base</dt>
       <dd>Nantes, France</dd>
-      <dt>Recherche</dt>
-      <dd>missions IA, full stack, numérique responsable</dd>
-      <dt>Délai de réponse</dt>
-      <dd>48 heures</dd>
+      <dt>Langues</dt>
+      <dd>français, anglais technique</dd>
     </dl>
-  </address>
-</section>
+  </header>
 
-</main>
+  <nav aria-labelledby="sommaire">
+    <h2 id="sommaire">Sommaire</h2>
+    <ol>
+      <li><a href="#parcours">Parcours</a></li>
+      <li><a href="#impact">Numérique responsable</a></li>
+      <li><a href="#competences">Compétences techniques</a></li>
+      <li><a href="#formation">Formation</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ol>
+  </nav>
 
-<hr>
+  <main id="contenu">
 
-<footer>
-  <p>Benjamin David · 2026</p>
-</footer>
+    <section aria-labelledby="parcours">
+      <h2 id="parcours">Parcours</h2>
+
+      <article>
+        <h3>Kereis</h3>
+        <p class="meta"><time datetime="2026-05">mai 2026</time> → aujourd'hui · Développeur IA / Full Stack · pôle
+          <abbr title="Direction des systèmes d'information">DSI</abbr> · via digital4better
+        </p>
+        <p>Kereis construit plutôt qu'il n'achète. On me demande de prouver par le code ce qu'une licence coûteuse ne
+          ferait qu'à moitié.</p>
+        <ul>
+          <li>Le cadrage du code passe en premier. Linter et règles avant la première fonctionnalité : l'IA produit sous
+            contrainte, un humain relit.</li>
+          <li>Serveurs MCP : les outils internes s'ouvrent aux agents. Le point dur est l'autorisation, pas
+            l'exposition.</li>
+          <li>Simulateur de tarif d'assurance de prêt. L'utilisateur décrit son projet en langage naturel, le MCP répond
+            un tarif.</li>
+          <li>Cartographie du <abbr title="système d'information">SI</abbr> sous Backstage. Sources AWS, GitLab et
+            Zeenea branchées, puis un MCP pour que les agents lisent la carte.</li>
+          <li>Application de compte rendu. Le texte dicté est nettoyé, l'e-mail rédigé, la réunion suivante préparée.
+          </li>
+          <li>Revue de spécification par l'IA : ~20 min là où un humain passerait une journée. Étape obligatoire à
+            chaque fonctionnalité.</li>
+        </ul>
+        <dl>
+          <dt>Statut</dt>
+          <dd>en cours</dd>
+          <dt>Rôle</dt>
+          <dd>développeur IA / full stack</dd>
+          <dt>Client</dt>
+          <dd>Kereis · pôle DSI</dd>
+          <dt>Via</dt>
+          <dd>digital4better</dd>
+          <dt>Pile</dt>
+          <dd>MCP, SpecKit, LiteLLM, Langfuse</dd>
+          <dt>Apport</dt>
+          <dd>cadrer l'IA par la spec</dd>
+        </dl>
+      </article>
+
+      <article>
+        <h3>SNCF Gares &amp; Connexions — Assist'enGare</h3>
+        <p class="meta"><time datetime="2024-09">sept. 2024</time> → <time datetime="2026-05">mai 2026</time> ·
+          Développeur Full Stack · via digital4better</p>
+        <p>Réservation de prestations d'assistance pour les personnes en situation de handicap (PSH/PMR) souhaitant
+          accéder à leur train.</p>
+        <ul>
+          <li>Front grand public de Gares &amp; Connexions. La déclaration d'accessibilité affiche 96 % de conformité
+            moyenne au <abbr title="Référentiel général d'amélioration de l'accessibilité">RGAA</abbr> 4.1, sous audits
+            successifs.</li>
+          <li>Règles axe au linter, essais au lecteur d'écran sous NVDA et TalkBack. Le critère d'accessibilité entre
+            dans la spécification, pas dans le correctif.</li>
+          <li>MUI ne couvre pas tout le référentiel. Le reste s'écrit à la main : copie des références, vocalisation
+            correcte des marques.</li>
+          <li>La brique parle à tout le SI SNCF. Le spécifique devient générique : ActiveMQ réécrit d'AMQP vers STOMP,
+            routage dynamique par entité métier.</li>
+          <li>Voyage en deux segments SNCF et Trenitalia : chaque transporteur ne reçoit que le segment qui le concerne.
+          </li>
+          <li>Validation automatique des dossiers d'assistance. Environ 3 000 dossiers par jour, une dizaine de
+            notifications chacun, et davantage en vacances.</li>
+          <li>Ce volume impose des instances multiples et une observabilité Datadog.</li>
+          <li>Le code était bon, mais rien n'empêchait le mauvais code. J'ai posé les règles : Oxlint et oxfmt à la
+            place d'ESLint et Prettier.</li>
+          <li>Appui aux autres équipes du pôle : migrations JavaScript vers TypeScript, et Vue 2 vers Vue 3.</li>
+        </ul>
+        <dl>
+          <dt>Statut</dt>
+          <dd>livré</dd>
+          <dt>Rôle</dt>
+          <dd>développeur full stack</dd>
+          <dt>Client</dt>
+          <dd>SNCF Gares &amp; Connexions</dd>
+          <dt>Produit</dt>
+          <dd>Assist'enGare</dd>
+          <dt>Public</dt>
+          <dd>voyageurs PSH / PMR</dd>
+          <dt>Volume</dt>
+          <dd>~3 000 dossiers / jour</dd>
+          <dt>RGAA 4.1</dt>
+          <dd>96 % · déclaration publique</dd>
+          <dt>Pile</dt>
+          <dd>React, MUI, NestJS, PostgreSQL</dd>
+        </dl>
+      </article>
+
+      <article>
+        <h3>digital4better — équipe RUN</h3>
+        <p class="meta"><time datetime="2023-10">oct. 2023</time> → <time datetime="2024-09">sept. 2024</time> ·
+          Développeur Full Stack / IA</p>
+        <p>Quatre projets clients en parallèle : Body Nature, Dorval AM, PiLeJe et Servier. Quatre piles, quatre
+          historiques. Le RUN oblige à entrer vite dans du code qu'on n'a pas écrit.</p>
+        <ul>
+          <li>Supervision : monitoring des performances, détection et analyse des anomalies avant la remontée
+            utilisateur.</li>
+          <li>Maintenance et montées de version. Correctifs de sécurité tenus à jour sur le parc, provisionnés par
+            Ansible.</li>
+          <li>Évolutions produit sur Body Nature, en échange direct avec l'équipe produit.</li>
+          <li>Éco-conception mesurée avec fruggr, l'outil maison. L'impact d'une application se constate, il ne se
+            déclare pas.</li>
+          <li>Optimisation des pipelines <abbr title="intégration et livraison continues">CI/CD</abbr> : moins de temps
+            de calcul, donc moins de gaspillage.</li>
+        </ul>
+        <p class="dispo">Assurer la disponibilité des services en appliquant les principes du numérique responsable.</p>
+        <dl>
+          <dt>Statut</dt>
+          <dd>livré</dd>
+          <dt>Rôle</dt>
+          <dd>full stack / IA</dd>
+          <dt>Employeur</dt>
+          <dd>digital4better</dd>
+          <dt>Clients</dt>
+          <dd>Body Nature, Dorval AM, PiLeJe, Servier</dd>
+          <dt>Périmètre</dt>
+          <dd>RUN, support, sécurité</dd>
+          <dt>Mesure</dt>
+          <dd>fruggr · éco-conception</dd>
+        </dl>
+      </article>
+
+      <article>
+        <h3>Transway — mobilité durable</h3>
+        <p class="meta"><time datetime="2021-09">sept. 2021</time> → <time datetime="2023-09">sept. 2023</time> · Full
+          Stack, puis <span lang="en">Technical Lead Developer</span></p>
+        <p>Première mission hors alternance. Deux produits d'incitation à la mobilité durable : WeFlo Pro pour les
+          entreprises, IREBY pour les collectivités.</p>
+        <ul>
+          <li>WeFlo Pro : déclaration des trajets au titre du forfait mobilité durable. Laravel, PHP et Vue.js.</li>
+          <li>IREBY : l'usager gagne des points en tram, en bus, à pied ou à vélo, puis les dépense en boutique. NestJS
+            et Vue 3.</li>
+          <li>Migration de la V1 vers la V3 : plus de 300 000 utilisateurs transférés, avec leurs offres et leurs
+            images. Script de transformation écrit et mené seul.</li>
+          <li>Branchements aux systèmes des réseaux partenaires : TCL à Lyon, STAR à Rennes.</li>
+          <li>L'interface se configure depuis l'administration. La page reste générique, la vue du client se paramètre.
+          </li>
+          <li>Passage au rôle de lead technique : encadrement de quatre à six développeurs, et la main sur les choix
+            techniques.</li>
+          <li>Migration Vue 2 vers Vue 3, montées de version Node, renforcements de sécurité après audit.</li>
+        </ul>
+        <dl>
+          <dt>Statut</dt>
+          <dd>livré</dd>
+          <dt>Rôle</dt>
+          <dd>full stack → tech lead</dd>
+          <dt>Produits</dt>
+          <dd>WeFlo Pro, IREBY</dd>
+          <dt>Encadrement</dt>
+          <dd>4 à 6 développeurs</dd>
+          <dt>Migration</dt>
+          <dd>+300 000 utilisateurs</dd>
+          <dt>Pile</dt>
+          <dd>Laravel, NestJS, Vue 3</dd>
+        </dl>
+      </article>
+
+      <article>
+        <h3>LDC Services</h3>
+        <p class="meta"><time datetime="2020">2020</time> → <time datetime="2021">2021</time> · Concepteur Développeur
+          d'Application · alternance</p>
+        <p>Développement logiciel classique et qualité du code.</p>
+      </article>
+
+      <article>
+        <h3>FPEE Industries</h3>
+        <p class="meta"><time datetime="2018">2018</time> → <time datetime="2020">2020</time> · Technicien réseau ·
+          alternance</p>
+        <p>Comprendre le problème de l'utilisateur avant de le réparer. Tout part de là.</p>
+      </article>
+    </section>
+
+    <section aria-labelledby="impact">
+      <h2 id="impact">Numérique responsable</h2>
+
+      <ul>
+        <li>Accessibilité — contrastes vérifiés, navigation clavier complète, focus visibles, structure sémantique.</li>
+        <li>Sobriété — aucune vidéo, aucune image, une seule police, animations désactivables.</li>
+        <li>Mesure — l'impact environnemental d'une application se constate, il ne se déclare pas.</li>
+        <li>Arbitrage — chaque fonctionnalité a un coût ; certaines ne valent pas leur empreinte.</li>
+      </ul>
+
+      <p class="dispo">Le numérique responsable n'est pas un supplément : c'est une contrainte de conception, au même
+        titre que la sécurité.</p>
+    </section>
+
+    <section aria-labelledby="competences">
+      <h2 id="competences">Compétences techniques</h2>
+
+      <section aria-labelledby="c-frontend">
+        <h3 id="c-frontend">Frontend — interfaces accessibles</h3>
+        <dl>
+          <dt>HTML</dt>
+          <dd><span class="ou">toutes les missions</span> — Le bon élément porte le sens. Un lecteur d'écran suit la
+            structure du document.</dd>
+          <dt>CSS</dt>
+          <dd><span class="ou">toutes les missions</span> — Grille, variables, et requêtes de préférence pour le
+            mouvement réduit et le thème sombre.</dd>
+          <dt>Tailwind</dt>
+          <dd><span class="ou">Transway, digital4better</span> — Rapidité de mise en page sans feuille de style à
+            maintenir. Attention portée à la taille finale du CSS.</dd>
+          <dt>Sass</dt>
+          <dd><span class="ou">Transway, LDC Services</span> — Variables et imbrication sur les feuilles de style
+            héritées, avant que les variables CSS suffisent.</dd>
+          <dt>Vuetify</dt>
+          <dd><span class="ou">Transway</span> — Base de composants accessibles, complétée à la main sur les points que
+            le RGAA impose.</dd>
+          <dt>MUI</dt>
+          <dd><span class="ou">Assist'enGare</span> — Base de composants React. Elle ne couvre pas tout le RGAA : le
+            reste s'écrit à la main.</dd>
+          <dt>TypeScript</dt>
+          <dd><span class="ou">toutes les missions depuis 2021</span> — Typage strict côté front comme côté NestJS. Non
+            négociable sur un projet à plusieurs mains.</dd>
+          <dt>Vue.js</dt>
+          <dd><span class="ou">Transway, Kereis, appui SNCF</span> — Framework principal sur la majorité des interfaces
+            livrées. <span lang="en">Composition API</span>, stores, routage. Migration Vue 2 vers Vue 3 faite deux
+            fois.</dd>
+          <dt>React</dt>
+          <dd><span class="ou">Assist'enGare</span> — Front grand public de Gares &amp; Connexions, tenu sous audits
+            d'accessibilité pendant vingt-et-un mois.</dd>
+          <dt>Svelte</dt>
+          <dd><span class="ou">veille et prototypes</span> — Choisi quand le poids du bundle compte plus que
+            l'écosystème.</dd>
+          <dt>Pinia</dt>
+          <dd><span class="ou">Transway, Kereis</span> — Gestion d'état des applications Vue : sessions, réservations,
+            cache local.</dd>
+          <dt>RxJS</dt>
+          <dd><span class="ou">NestJS, formulaires réactifs</span> — Flux asynchrones et annulation de requêtes
+            concurrentes.</dd>
+          <dt>Vite</dt>
+          <dd><span class="ou">depuis 2021</span> — Serveur de développement et construction. Le rechargement instantané
+            raccourcit la boucle d'essai.</dd>
+        </dl>
+      </section>
+
+      <section aria-labelledby="c-backend">
+        <h3 id="c-backend">Backend — services et données</h3>
+        <dl>
+          <dt>Laravel</dt>
+          <dd><span class="ou">LDC Services, digital4better</span> — API et back-offices : Eloquent, files de
+            traitement, authentification.</dd>
+          <dt>NestJS</dt>
+          <dd><span class="ou">Transway, SNCF, Kereis</span> — Architecture modulaire, injection de dépendances,
+            TypeORM.</dd>
+          <dt>PHP</dt>
+          <dd><span class="ou">LDC Services, Transway, digital4better</span> — Langage des back-offices Laravel. Typage
+            strict et outillage moderne depuis la 8.</dd>
+          <dt>API REST</dt>
+          <dd><span class="ou">toutes les missions</span> — Contrats documentés en OpenAPI avant l'implémentation — la
+            spec précède le code.</dd>
+          <dt>OpenAPI</dt>
+          <dd><span class="ou">toutes les missions</span> — Le contrat s'écrit avant l'implémentation. Le front et le
+            back avancent en parallèle sans se bloquer.</dd>
+          <dt>JWT</dt>
+          <dd><span class="ou">Transway, SNCF, Kereis</span> — Jetons d'authentification entre services. Sur un serveur
+            MCP, la difficulté porte sur les droits accordés à l'agent.</dd>
+          <dt>PostgreSQL</dt>
+          <dd><span class="ou">Transway, SNCF</span> — Base de référence : requêtes analytiques, index, migrations
+            versionnées.</dd>
+          <dt>MySQL</dt>
+          <dd><span class="ou">LDC Services, digital4better</span> — Base des projets hérités. Migrations versionnées et
+            index relus avant chaque mise en production.</dd>
+          <dt>Redis</dt>
+          <dd><span class="ou">digital4better, Transway</span> — Cache et files de messages. Réduit la charge serveur,
+            donc l'empreinte.</dd>
+          <dt>ActiveMQ</dt>
+          <dd><span class="ou">Assist'enGare</span> — Bus de messages entre la brique et le reste du SI SNCF. Réécriture
+            d'AMQP vers STOMP, puis routage dynamique par entité métier.</dd>
+        </dl>
+      </section>
+
+      <section aria-labelledby="c-ia">
+        <h3 id="c-ia">IA — orchestration d'agents</h3>
+        <dl>
+          <dt>Serveurs MCP</dt>
+          <dd><span class="ou">Kereis, 2026</span> — Exposition des outils internes aux agents : tools, resources,
+            prompts, avec les garde-fous d'accès.</dd>
+          <dt>SpecKit</dt>
+          <dd><span class="ou">Kereis, 2026</span> — spec-it, plan, tasks. La spécification devient l'artefact de
+            référence, le code en découle.</dd>
+          <dt><abbr title="Specification-Driven Development">SDD</abbr></dt>
+          <dd><span class="ou">Kereis</span> — <span lang="en">Specification-Driven Development</span> : décrire
+            l'intention, faire valider, puis générer et vérifier.</dd>
+          <dt>Claude</dt>
+          <dd><span class="ou">Kereis, 2026</span> — Toute la gamme Anthropic : l'agent en terminal pour le code,
+            l'application pour la spec. Le cadrage vient des règles du dépôt, qui survivent à la session.</dd>
+          <dt>herdr</dt>
+          <dd><span class="ou">Kereis, 2026</span> — Multiplexeur de terminal en Rust. Plusieurs agents travaillent en
+            parallèle et leur état reste lisible.</dd>
+          <dt>LiteLLM</dt>
+          <dd><span class="ou">Kereis, 2026</span> — Passerelle unique devant plusieurs fournisseurs de modèles. Le code
+            ne dépend d'aucun d'eux.</dd>
+          <dt>Langfuse</dt>
+          <dd><span class="ou">Kereis, 2026</span> — Traces et évaluation des appels de modèle, pour comparer deux
+            versions d'un agent sur les mêmes cas.</dd>
+          <dt>LangGraph</dt>
+          <dd><span class="ou">Kereis, 2026</span> — Enchaînements conditionnels entre prompts. L'agent devient un
+            graphe que l'on peut relire.</dd>
+          <dt>Agents</dt>
+          <dd><span class="ou">Kereis</span> — Revue automatisée de spécification : ~20 min contre une journée humaine,
+            à chaque fonctionnalité.</dd>
+          <dt><span lang="en">Harness engineering</span></dt>
+          <dd><span class="ou">Kereis, 2026</span> — Construire la machinerie autour du modèle : nettoyage de l'entrée,
+            enchaînement des étapes, contrôle de la sortie. C'est cette machinerie qui rend le résultat livrable.</dd>
+          <dt>Évaluation</dt>
+          <dd><span class="ou">Kereis</span> — Mesurer ce que produit un agent, jeu de cas après jeu de cas, avant et
+            après chaque changement.</dd>
+          <dt>Prompting</dt>
+          <dd><span class="ou">Kereis</span> — Le prompt porte l'intention de la demande. Les contraintes durables
+            restent dans le dépôt.</dd>
+        </dl>
+      </section>
+
+      <section aria-labelledby="c-devops">
+        <h3 id="c-devops">DevOps — livrer sans casser</h3>
+        <dl>
+          <dt>Docker</dt>
+          <dd><span class="ou">depuis 2020</span> — Environnements reproductibles en local comme en CI. Compose pour les
+            dépendances.</dd>
+          <dt>Compose</dt>
+          <dd><span class="ou">depuis 2020</span> — Les dépendances d'un projet démarrent en une commande. Un nouvel
+            arrivant travaille le premier jour.</dd>
+          <dt>GitLab CI</dt>
+          <dd><span class="ou">digital4better, SNCF</span> — Pipelines de test, build et déploiement. Optimisation des
+            durées pour limiter le gaspillage.</dd>
+          <dt>Jenkins</dt>
+          <dd><span class="ou">Assist'enGare</span> — Déploiements du service, en tandem avec les intégrations GitLab.
+          </dd>
+          <dt>GitHub Actions</dt>
+          <dd><span class="ou">projets personnels</span> — Mêmes étapes que GitLab CI : tests, construction,
+            publication.</dd>
+          <dt>AWS</dt>
+          <dd><span class="ou">Assist'enGare, Kereis</span> — Hébergement du service et source de la cartographie du SI.
+          </dd>
+          <dt>Linux</dt>
+          <dd><span class="ou">depuis FPEE, 2018</span> — Administration, scripts Bash, accès SSH. Le socle du reste.
+          </dd>
+          <dt>Bash</dt>
+          <dd><span class="ou">depuis FPEE, 2018</span> — Scripts de migration, de sauvegarde et de déploiement, sur les
+            serveurs comme en intégration continue.</dd>
+          <dt>Ansible</dt>
+          <dd><span class="ou">équipe RUN, digital4better</span> — Provisionnement et mises à jour de sécurité
+            automatisées sur le parc.</dd>
+          <dt>Datadog</dt>
+          <dd><span class="ou">Assist'enGare</span> — Observabilité d'un service à fort volume : traces, alertes,
+            dimensionnement des instances.</dd>
+          <dt>Monitoring</dt>
+          <dd><span class="ou">équipe RUN, digital4better</span> — Supervision des performances, détection et analyse
+            des anomalies avant remontée utilisateur.</dd>
+        </dl>
+      </section>
+
+      <section aria-labelledby="c-qualite">
+        <h3 id="c-qualite">Qualité &amp; sobriété — ce qui tient dans le temps</h3>
+        <dl>
+          <dt>Tests unitaires</dt>
+          <dd><span class="ou">toutes les missions</span> — Ils tiennent la logique métier. Un test qui échoue localise
+            le défaut à la ligne près.</dd>
+          <dt><abbr title="tests de bout en bout">E2E</abbr></dt>
+          <dd><span class="ou">Transway, ce portfolio</span> — Le parcours complet dans un vrai navigateur. Ce niveau
+            attrape les défauts d'assemblage que les tests unitaires laissent passer.</dd>
+          <dt>Cypress</dt>
+          <dd><span class="ou">Transway</span> — Tests de bout en bout sur les parcours critiques — réservation,
+            authentification.</dd>
+          <dt>ESLint</dt>
+          <dd><span class="ou">toutes les missions</span> — Règles partagées : la revue humaine se concentre sur le
+            fond, pas sur la forme.</dd>
+          <dt>Oxlint</dt>
+          <dd><span class="ou">Assist'enGare, ce portfolio</span> — Remplace ESLint. Assez rapide pour tourner à chaque
+            sauvegarde, et non plus seulement en intégration continue.</dd>
+          <dt>Prettier</dt>
+          <dd><span class="ou">missions jusqu'en 2025</span> — Mise en forme automatique. La revue humaine porte sur le
+            fond.</dd>
+          <dt>oxfmt</dt>
+          <dd><span class="ou">Assist'enGare</span> — Remplace Prettier. Même mise en forme, exécution plus rapide.</dd>
+          <dt>axe</dt>
+          <dd><span class="ou">Assist'enGare</span> — Règles d'accessibilité branchées sur le linter. Une régression
+            d'accessibilité apparaît dès la sauvegarde, des mois avant l'audit.</dd>
+          <dt>Éco-conception</dt>
+          <dd><span class="ou">digital4better</span> — Mesure de l'impact des applications avec fruggr, l'outil maison,
+            et arbitrages assumés entre fonctionnalité et empreinte.</dd>
+          <dt>RGAA</dt>
+          <dd><span class="ou">Assist'enGare</span> — 96 % de conformité moyenne à la déclaration publique. Essais au
+            lecteur d'écran sous NVDA et TalkBack.</dd>
+          <dt><span lang="en">Pair-programming</span></dt>
+          <dd><span class="ou">Transway, Kereis</span> — Transmission plus rapide qu'une documentation, surtout sur les
+            parties sensibles.</dd>
+        </dl>
+      </section>
+    </section>
+
+    <section aria-labelledby="formation">
+      <h2 id="formation">Formation</h2>
+
+      <ul>
+        <li><time datetime="2021">2021</time> → aujourd'hui — On n'arrête jamais d'apprendre. Veille continue,
+          certifications, expérimentations, d'autant plus à l'ère de l'IA.</li>
+        <li><time datetime="2020">2020</time> – <time datetime="2021">2021</time> — Titre Professionnel Concepteur
+          Développeur d'Applications.</li>
+        <li><time datetime="2018">2018</time> – <time datetime="2020">2020</time> — <abbr
+            title="brevet de technicien supérieur, services informatiques aux organisations">BTS SIO</abbr> option <abbr
+            title="solutions d'infrastructure, systèmes et réseaux">SISR</abbr>, en alternance.</li>
+        <li><time datetime="2016">2016</time> – <time datetime="2018">2018</time> — Baccalauréat <abbr
+            title="sciences et technologies de l'industrie et du développement durable">STI2D</abbr>.</li>
+      </ul>
+
+      <dl>
+        <dt>En cours</dt>
+        <dd>MCP, agents, évaluation</dd>
+        <dt>Méthode</dt>
+        <dd>lire, tester, casser, recommencer</dd>
+      </dl>
+    </section>
+
+    <section aria-labelledby="contact">
+      <h2 id="contact">Contact</h2>
+
+      <address>
+        <dl>
+          <dt>E-mail</dt>
+          <dd><a href="mailto:benjamin.david1@hotmail.fr">benjamin.david1@hotmail.fr</a></dd>
+          <dt>LinkedIn</dt>
+          <dd><a href="https://www.linkedin.com/in/benjamin--david">in/benjamin--david</a></dd>
+          <dt>GitHub</dt>
+          <dd><a href="https://github.com/brezinben">brezinben</a></dd>
+          <dt>Site</dt>
+          <dd><a href="index.html">me.brezinben.dpdns.org</a></dd>
+          <dt>Ville</dt>
+          <dd>Nantes, France</dd>
+          <dt>Recherche</dt>
+          <dd>missions IA, full stack, numérique responsable</dd>
+          <dt>Délai de réponse</dt>
+          <dd>48 heures</dd>
+        </dl>
+      </address>
+    </section>
+
+  </main>
+
+  <hr>
+
+  <footer>
+    <p>Benjamin David · 2026</p>
+  </footer>
 
 </body>
+
 </html>
