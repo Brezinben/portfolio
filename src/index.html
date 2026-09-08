@@ -918,7 +918,7 @@
     .tm [data-ctl]:focus-visible,
     .tm [data-pane="out"] [tabindex="0"]:focus-visible {
       outline: 2px solid var(--acc);
-      outline-offset: 2px
+      outline-offset: -2px;
     }
 
     .tm [data-pane="main"] p[tabindex] {
@@ -1135,7 +1135,7 @@
           <template x-for="(line, index) in current.lines" :key="`${current.id}-${index}`">
             <p :tabindex="current.id === 'contact' ? 0 : null"
               :data-edge="index === 0 || index === current.lines.length - 1 ? '' : null"
-              :style="current.id === 'contact' ? `margin:0;display:grid;grid-template-columns:18px 1fr;gap:8px;align-items:baseline;padding:5px 8px 5px calc(10px + ${line.pad ?? '0px'});border-left:3px solid var(--row-acc,transparent)` : `margin:0;display:grid;grid-template-columns:18px 1fr;gap:8px;align-items:baseline;padding-left:${line.pad ?? '0'}`">
+              :style="current.id === 'contact' ? `margin:0;display:grid;grid-template-columns:18px 1fr;gap:8px;align-items:baseline;padding:5px 8px 5px calc(10px + ${line.pad ?? '0px'});border-left:2px solid var(--row-acc,transparent)` : `margin:0;display:grid;grid-template-columns:18px 1fr;gap:8px;align-items:baseline;padding-left:${line.pad ?? '0'}`">
               <span aria-hidden="true" :style="`color:var(--${line.markerTone ?? 'fg2'})`"
                 x-text="line.marker ?? ''"></span>
               <span

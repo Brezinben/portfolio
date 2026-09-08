@@ -391,7 +391,7 @@ const BOOT_MS = 2000,
   // compte a rebours : 400 ms coupaient l'animation au milieu d'une phrase, et la personne
   // qui tape regarde ses mots, pas la mascotte. La veille attend dix secondes sans geste.
   // Au repos, une chance sur vingt-cinq toutes les cinq secondes.
-  TYPE_REST_MS = 800,
+  TYPE_REST_MS = 1400,
   // La modale retient le regard, et une passe de mue dure deux secondes et demie. La mue
   // rejoue donc tant que la modale est ouverte, puis court encore ce sursis apres.
   MORPH_HOLD_MS = 600,
