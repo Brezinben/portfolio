@@ -243,19 +243,21 @@ test("la teinte arrive avec la mue, pas avant elle", async ({ page }) => {
 // Sans mascotte, changer de theme ne doit rien jouer ni rien telecharger : la promesse
 // « aucune feuille en mouvement reduit » vaut aussi quand le theme change.
 // Trop court, la personne qui tape ne voit jamais l'animation : elle regarde ses mots.
-test("la frappe tient huit cents millisecondes après la dernière touche", async ({ page }) => {
+test("la frappe tient mille quatre cents millisecondes après la dernière touche", async ({
+  page,
+}) => {
   const cli = await boot(page);
 
   await cli.pressSequentially("hel");
   await expect(mascot(page)).toHaveClass(/slime--type/u);
 
-  await page.waitForTimeout(550);
-  expect(await mascot(page).getAttribute("class"), "elle tape encore à 550 ms").toBe(
+  await page.waitForTimeout(1100);
+  expect(await mascot(page).getAttribute("class"), "elle tape encore à 1100 ms").toBe(
     "slime slime--type",
   );
 
-  await page.waitForTimeout(500);
-  expect(await mascot(page).getAttribute("class"), "elle a rendu la main après 800 ms").not.toBe(
+  await page.waitForTimeout(600);
+  expect(await mascot(page).getAttribute("class"), "elle a rendu la main après 1400 ms").not.toBe(
     "slime slime--type",
   );
 });
