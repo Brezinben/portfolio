@@ -29,7 +29,12 @@ test("share vers le lien copie l'adresse", async ({ page, context }) => {
   await run(cli, "share link");
 
   await expect(page.locator("[data-journal]")).toContainText("partage vers");
-  expect(await page.evaluate(() => navigator.clipboard.readText())).toContain("portfolio");
+
+  // L'adresse partagee est celle d'ou la page vient, pas celle que content.json annonce :
+  // le lien copie depuis une preproduction doit ramener a cette preproduction.
+  const here = await page.evaluate(() => globalThis.location.origin + globalThis.location.pathname);
+
+  expect(await page.evaluate(() => navigator.clipboard.readText())).toContain(here);
 });
 
 test("une cible inconnue le dit sans rien ouvrir", async ({ page }) => {
