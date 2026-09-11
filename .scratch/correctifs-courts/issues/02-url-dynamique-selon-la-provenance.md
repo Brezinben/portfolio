@@ -30,3 +30,26 @@ l'interface (commandes, retour...) ». Trois questions avant d'écrire une ligne
 
 Ma lecture : deux mécanismes distincts, et pas un seul. Une variable de construction pour
 les trois fichiers de SEO, et `location.host` pour l'interface. À confirmer.
+
+## Comments
+
+**Benjamin** — Deux domaines : `https://me.brezinben.dpdns.org/` et
+`https://benjamindavid.dpdns.org/`.
+
+**Benjamin** — « il faut juste que ça soit cohérent avec ce qui est affiché partout dans
+le site, du titre au JSON et dans le contenu. »
+
+### Ce que cela tranche
+
+La question 1 est close : deux domaines, pas une liste ouverte.
+
+La question 3 se reformule. La demande n'est pas « lire `location.host` » mais **« aucune
+adresse affichée ne doit contredire celle d'où la page vient »**. C'est plus large : le
+titre, `content.json`, les sorties de commande et le SEO doivent dire la même chose.
+
+Une moitié est déjà faite sans que le TODO le sache : `src/app.ts` pose
+`this.share.url = location.origin + location.pathname` depuis le commit `2419a1b`. La
+commande `/share link` copie donc déjà l'adresse de provenance.
+
+La question 2 reste entière : `sitemap.xml` et `robots.txt` sont lus sans JavaScript. Ils
+demandent une variable de construction, et **une construction par domaine**.

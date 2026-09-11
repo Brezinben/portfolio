@@ -37,3 +37,24 @@ ni `src/content.json`. C'est une création complète, pas un ajustement.
 
 La question du son est la plus lourde. Une piste audio réelle ajoute un fichier au
 budget, un `AudioContext`, et une politique d'autoplay à respecter.
+
+## Comments
+
+**Benjamin** — « Le plus simple, dans un premier temps, j'aimerais reprendre le son de la
+vidéo YouTube de Claude Radio. Sinon faire une musique directement dans le navigateur en
+local. Pas un gros truc, mais histoire de toucher à l'API de création de son. »
+
+### Ce que cela tranche
+
+La question du son est répondue, et elle a deux réponses dans l'ordre.
+
+1. **Une piste reprise de la vidéo Claude Radio.** Un fichier audio au budget. À 150 Ko de
+   plafond et 69 Ko consommés, **une piste ne tient pas au premier chargement** : elle doit
+   être chargée à la demande, quand `/radio` est tapée, jamais avant.
+2. **Sinon, une musique générée par la Web Audio API.** Zéro octet au chargement, et le
+   spectre du visualiseur devient réel au lieu d'être décoratif.
+
+La seconde est la plus juste pour ce site, et Benjamin la nomme lui-même. La première pose
+une question de droits qu'il faut vérifier avant de publier.
+
+**Le prompt de design ci-dessus reste valable : la question qu'il pose est répondue.**
