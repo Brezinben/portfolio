@@ -518,6 +518,14 @@
       --acc-text: var(--acc)
     }
 
+    /* Le reglage d'animation se coupait treize fois, une par liaison. Il se coupe ici, une
+       fois. La regle de mouvement reduit, elle, coupe aussi « transition » : celle-ci ne
+       le doit pas, sinon les transitions d'Alpine sur les suggestions changeraient de
+       comportement des que le reglage est eteint. */
+    .tm[data-anim="false"] * {
+      animation: none !important
+    }
+
     /* Mascotte : trente-deux feuilles de 32 px par frame, affichées à ×2, soit 64 px. Le pas
        d'un keyframe est lié à la taille d'affichage : à ×2 ce sont -768px et -1024px, et
        non les -1536px / -2048px de la spécification, calés sur ×4. */
@@ -1024,8 +1032,9 @@
       font-weight: 700
     }
 
-    /* L'animation reste en ligne : son delai suit l'index de la proposition. */
+    /* Le delai suit le rang de la proposition : la ligne ne porte plus que ce rang. */
     .tm [data-suggestion] {
+      animation: suggRow .2s ease calc(var(--at) * 24ms) both;
       min-height: 32px;
       display: flex;
       align-items: center;
@@ -1140,11 +1149,12 @@
     <a class="skip" href="texte.html">Aller à la version texte, plus simple avec un lecteur
       d'écran.</a>
   </header>
-  <div class="tm" x-data="terminal" :data-theme="theme" x-cloak @keydown.window="onKey($event)"
+  <div class="tm" x-data="terminal" :data-theme="theme" :data-anim="anim ? 'true' : 'false'" :data-power="power" x-cloak
+    @keydown.window="onKey($event)"
     style="background:var(--bg);color:var(--fg);height:100dvh;max-height:100dvh;overflow:hidden;box-sizing:border-box;padding:14px clamp(12px,2.5vw,26px) 14px;font-size:14px;line-height:1.6;position:relative;display:flex;flex-direction:column;gap:10px">
 
     <main data-panes
-      :style="`flex:1;min-height:0;display:flex;flex-wrap:nowrap;gap:10px;align-items:stretch;overflow:var(--panes-overflow,hidden);max-width:2400px;width:100%;margin:0;animation:${power === 'fade' && anim ? 'revealUp .62s cubic-bezier(.2,.7,.3,1) both' : 'none'}`">
+      :style="`flex:1;min-height:0;display:flex;flex-wrap:nowrap;gap:10px;align-items:stretch;overflow:var(--panes-overflow,hidden);max-width:2400px;width:100%;margin:0;animation:${power === 'fade' ? 'revealUp .62s cubic-bezier(.2,.7,.3,1) both' : 'none'}`">
 
       <h1 class="titre">Benjamin David — Développeur IA et Full Stack</h1>
 
@@ -1167,7 +1177,7 @@
                   <button type="button" data-ctl="nav" :aria-current="item.id === section ? 'true' : 'false'"
                     @click="goSection(item.id)">
                     <span aria-hidden="true"
-                      :style="`width:8px;height:8px;background:var(--${item.dot});animation:${item.dot === 'acc' && anim ? 'dotPulse 1.2s ease-in-out infinite' : 'none'}`"></span>
+                      :style="`width:8px;height:8px;background:var(--${item.dot});animation:${item.dot === 'acc' ? 'dotPulse 1.2s ease-in-out infinite' : 'none'}`"></span>
                     <span style="display:grid;gap:1px;min-width:0">
                       <span :style="`font-weight:${item.id === section ? '700' : '400'}`" x-text="item.label"></span>
                       <span
@@ -1190,7 +1200,7 @@
                   <button type="button" data-ctl="nav" :aria-current="item.id === section ? 'true' : 'false'"
                     @click="goSection(item.id)">
                     <span aria-hidden="true"
-                      :style="`width:8px;height:8px;background:var(--${item.dot});animation:${item.dot === 'acc' && anim ? 'dotPulse 1.2s ease-in-out infinite' : 'none'}`"></span>
+                      :style="`width:8px;height:8px;background:var(--${item.dot});animation:${item.dot === 'acc' ? 'dotPulse 1.2s ease-in-out infinite' : 'none'}`"></span>
                     <span style="display:grid;gap:1px;min-width:0">
                       <span :style="`font-weight:${item.id === section ? '700' : '400'}`" x-text="item.label"></span>
                       <span
@@ -1209,19 +1219,19 @@
         style="position:relative;flex:var(--pane-flex,3 1 360px);min-width:0;min-height:var(--pane-min,0px);display:flex;flex-direction:column;gap:10px;border:1px solid var(--edge);border-radius:var(--radius);background:var(--panel);padding:14px;overflow:hidden">
         <div aria-hidden="true" style="position:absolute;inset:0;pointer-events:none;overflow:hidden;opacity:.5">
           <div
-            :style="`height:2px;background:linear-gradient(90deg,transparent,var(--acc),transparent);opacity:.16;animation:${anim ? 'scan 9s linear infinite' : 'none'}`">
+            :style="`height:2px;background:linear-gradient(90deg,transparent,var(--acc),transparent);opacity:.16;animation:scan 9s linear infinite`">
           </div>
         </div>
         <p style="margin:0;font-size:13px;color:var(--fg2);flex:none"><span aria-hidden="true"
             style="color:var(--acc-text)">›&nbsp;</span><span style="color:var(--fg)" x-text="typed"></span><span
             x-show="!running && anim" aria-hidden="true"
-            :style="`color:var(--acc-text);animation:${anim ? 'caret 1s steps(1) infinite' : 'none'}`">_</span></p>
+            :style="`color:var(--acc-text);animation:caret 1s steps(1) infinite`">_</span></p>
         <template x-if="running">
           <p data-running
             style="flex:none;margin:0;color:var(--fg2);display:flex;align-items:center;gap:10px;font-size:13px"><span
               aria-hidden="true"
-              :style="`color:var(--acc);animation:${anim ? 'dotPulse 1s ease-in-out infinite' : 'none'}`">▚</span><span
-              :style="`animation:${anim ? 'dotPulse 1.2s ease-in-out infinite' : 'none'}`">exécution…</span></p>
+              :style="`color:var(--acc);animation:dotPulse 1s ease-in-out infinite`">▚</span><span
+              :style="`animation:dotPulse 1.2s ease-in-out infinite`">exécution…</span></p>
         </template>
         <div data-result
           :style="`flex:1 1 auto;min-height:0;overflow-y:auto;padding-right:4px;align-content:start;display:grid;gap:2px;line-height:1.6;visibility:${running ? 'hidden' : 'visible'}`">
@@ -1348,7 +1358,7 @@
           style="flex:none;position:relative;height:64px;overflow:visible;border-bottom:1px solid var(--edge)">
           <template x-if="bubble">
             <span data-bubble aria-live="polite"
-              :style="`position:absolute;bottom:52px;left:${at}px;border:1px solid var(--edge);background:var(--panel);color:var(--fg);padding:2px 8px;font-size:12px;white-space:nowrap;pointer-events:none;animation:${anim ? 'lineIn .24s ease both' : 'none'}`"
+              :style="`position:absolute;bottom:52px;left:${at}px;border:1px solid var(--edge);background:var(--panel);color:var(--fg);padding:2px 8px;font-size:12px;white-space:nowrap;pointer-events:none;animation:lineIn .24s ease both`"
               x-text="bubble"></span>
           </template>
 
@@ -1390,7 +1400,7 @@
             <template x-for="(hit, index) in sugg" :key="hit">
               <button type="button" data-suggestion role="option" :aria-selected="index === suggAt"
                 @pointerdown.prevent="pickSugg(index, $event)"
-                :style="`animation:${anim ? `suggRow .2s ease ${(index * 0.024).toFixed(3)}s both` : 'none'}`"><span
+                :style="`--at:${index}`"><span
                   style="color:var(--acc-text)" x-text="suggFrag"></span><span style="margin-left:-8px"
                   x-text="hit.slice(suggFrag.length)"></span></button>
             </template>
@@ -1442,7 +1452,7 @@
           style="margin:0;padding:9px 12px;font-size:11px;letter-spacing:.12em;color:var(--fg2);border-bottom:1px solid var(--edge);display:flex;justify-content:space-between;gap:10px">
           <span x-text="open.out.title"></span><span :style="`color:var(--${running ? 'warn' : 'ok'})`"><span
               data-outdot aria-hidden="true"
-              :style="`animation:${anim ? 'dotPulse 1.2s ease-in-out infinite' : 'none'}`">●</span> <span
+              :style="`animation:dotPulse 1.2s ease-in-out infinite`">●</span> <span
               x-text="outStatus"></span></span>
         </p>
         <div tabindex="0" role="region" aria-label="Contenu de la sortie"
@@ -1451,8 +1461,8 @@
             <p data-waiting
               style="margin:0;display:grid;grid-template-columns:auto 1fr;gap:10px;font-size:13px;color:var(--fg2)">
               <span aria-hidden="true"
-                :style="`color:var(--acc);animation:${anim ? 'dotPulse 1s ease-in-out infinite' : 'none'}`">▚</span><span
-                :style="`animation:${anim ? 'dotPulse 1.2s ease-in-out infinite' : 'none'}`">en attente de la
+                :style="`color:var(--acc);animation:dotPulse 1s ease-in-out infinite`">▚</span><span
+                :style="`animation:dotPulse 1.2s ease-in-out infinite`">en attente de la
                 sortie…</span>
             </p>
           </template>
@@ -1471,7 +1481,7 @@
 
           <template x-if="techNote">
             <div data-technote
-              :style="`border-top:1px solid var(--edge);padding-top:8px;display:grid;gap:4px;animation:${anim ? 'lineIn .26s ease both' : 'none'}`">
+              :style="`border-top:1px solid var(--edge);padding-top:8px;display:grid;gap:4px;animation:lineIn .26s ease both`">
               <p style="margin:0;color:var(--acc-text);font-weight:700" x-text="tech"></p>
               <p style="margin:0;color:var(--fg2);font-size:12px" x-text="techNote.where"></p>
               <p style="margin:0;text-wrap:pretty" x-text="techNote.note"></p>

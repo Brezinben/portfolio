@@ -168,7 +168,9 @@ for (const theme of THEMES) {
 
     await page.locator('[data-ctl="opts"]').click();
     await expect(page.locator("[data-opts]")).toBeVisible();
-    // Les bascules sont toutes actives au demarrage. En eteindre une donne la paire.
+    // Les bascules sont toutes actives au demarrage. En eteindre une donne la paire. La
+    // premiere est le reglage d'animation : l'instantane enregistre donc aussi la coupure,
+    // et la modale y perd son popIn.
     await page.locator("[data-toggle]").first().click();
 
     await fige(page, `options-${theme}`, {
