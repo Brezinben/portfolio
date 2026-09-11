@@ -125,7 +125,10 @@ const CLES = ["--bg", "--panel", "--edge", "--fg", "--fg2", "--acc"],
       releve[nom] ??= {};
 
       for (const regle of regles) {
-        releve[nom][regle.groups?.cle ?? ""] = regle.groups?.valeur?.trim() ?? "";
+        // La casse d'un hexadecimal n'est pas une couleur. Le formateur la met en minuscules
+        // dans la feuille, et il ne lit pas texte.html : comparer a la lettre ferait rougir
+        // ce test pour un « F » devenu « f ».
+        releve[nom][regle.groups?.cle ?? ""] = (regle.groups?.valeur ?? "").trim().toLowerCase();
       }
     }
 
@@ -133,7 +136,8 @@ const CLES = ["--bg", "--panel", "--edge", "--fg", "--fg2", "--acc"],
   };
 
 test("les huit thèmes de la version texte reprennent les couleurs de la version terminal", () => {
-  const source = themes(read("index.html"), String.raw`\.tm`),
+  // Les themes vivent dans la feuille depuis qu'elle a quitte la page.
+  const source = themes(read("styles.css"), String.raw`\.tm`),
     copie = themes(texte, ":root"),
     noms = Object.keys(source);
 

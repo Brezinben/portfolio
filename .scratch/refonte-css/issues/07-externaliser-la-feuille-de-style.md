@@ -1,6 +1,6 @@
 # Externaliser la feuille de style
 
-Status: needs-info
+Status: resolved
 Type: task
 Blocked by: 06
 
@@ -35,3 +35,29 @@ prendre séparément.
 - `SHEET_URL` balaye **tout le fichier**, attributs `style=` compris : aucun
   `sprites/slime-*.png` ne doit apparaître ailleurs.
 - `tests/browser/budget.spec.ts` reste le garde-fou du poids.
+
+## Réponse
+
+**Ce ticket affirmait que l'externalisation ne réglerait pas le formatage. C'est faux :
+`oxfmt` formate le CSS.** Il ne le voyait pas, parce que `.oxfmtrc.json` exclut
+`src/**/*.html` et que la feuille vivait dedans. Sortie du fichier, elle est formatée, et
+`bun run format:check` la garde. C'était le grief d'origine, et il est réglé.
+
+La première lecture est retenue : `src/styles.css` est la source, `tools/build.ts`
+l'injecte dans `dist/index.html`. On gagne l'édition et le formatage, on ne perd pas la
+requête épargnée au premier rendu.
+
+`src/index.html` passe de 1912 à 484 lignes.
+
+## Ce que le formatage a réveillé
+
+`BASE_RULE` exigeait **l'absence** de point-virgule sur la dernière déclaration d'un bloc,
+là où le formateur en pose un. Le build jetait. Les trois expressions l'acceptent
+désormais, et celle du slime **s'ancre sur son sélecteur** : sans ancre elle prenait la
+première position de la feuille, quelle qu'elle soit, et une règle placée avant `.slime`
+aurait reçu l'image fusionnée sans que rien ne le signale. La mascotte aurait disparu de
+`dist/` seulement.
+
+`tests/unit/agents.test.ts` lisait les huit thèmes dans `index.html` : il les lit dans la
+feuille. Il comparait aussi les hexadécimaux à la lettre, et le formateur les met en
+minuscules d'un côté sans lire `texte.html` de l'autre. La casse n'est pas une couleur.

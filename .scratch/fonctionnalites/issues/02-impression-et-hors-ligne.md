@@ -41,3 +41,18 @@ cela ajoute un cycle de vie de cache à gérer. Ne pas le faire sans décision e
 
 Un test qui imprime en PDF via Playwright et vérifie que les trois volets ne s'empilent
 pas en pages vides. Un test qui simule `offline` via le contexte Playwright.
+
+
+## L'impression, faite ici
+
+La feuille d'impression vit dans `src/styles.css`. **Elle n'était pas écrivable avant** :
+un style en ligne bat une requête de média, et chaque déclaration en portait un.
+
+Le premier chemin du ticket est retenu — une feuille `@media print` sur `index.html`, pas
+une redirection vers `texte.html`. Une personne qui imprime ce qu'elle voit s'attend à
+l'imprimer. `texte.html` a servi de cible visuelle : sa feuille d'impression emploie la
+même technique de surcharge de variables.
+
+La colonne se déplie, le fond passe au blanc dans les huit thèmes, et ce qui n'a pas de
+sens sur papier disparaît : la ligne de saisie, la barre d'état, la mascotte, le décor, les
+suggestions, le bouton des options.

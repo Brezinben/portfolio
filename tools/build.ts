@@ -32,7 +32,11 @@ const ROOT = fileURLToPath(new URL("../", import.meta.url)),
   LEGACY = join(ROOT, ".versions", `${OUTPUT}.reprise`),
   KEPT_VERSIONS = 3,
   CONTENT = "content.json",
-  TRANSFORMED = new Set([CONTENT, "index.html", "texte.html"]),
+  STYLES = "styles.css",
+  // La feuille n'est pas copiee : elle entre dans la page, et la page entiere est minifiee
+  // d'un bloc. Une feuille servie a part couterait une requete au premier rendu, pour un
+  // fichier que le budget compte deja dans les nonante kilo-octets.
+  TRANSFORMED = new Set([CONTENT, STYLES, "index.html", "texte.html"]),
   // Ces noms sont des contrats avec l'extérieur : iOS demande /apple-touch-icon.png sans
   // balise, la page charge content.json par une URL relative, et les robots lisent llms.txt.
   FIXED_NAMES = new Set([
@@ -46,6 +50,7 @@ const ROOT = fileURLToPath(new URL("../", import.meta.url)),
   STAMPED_EXTENSIONS = new Set([".css", ".js", ".pdf", ".png", ".svg", ".woff2"]),
   PAGES = ["index.html", "texte.html"],
   MODULE_TAG = '<script type="module" src="app.ts"></script>',
+  STYLE_TAG = `<link rel="stylesheet" href="${STYLES}">`,
   // Une case de mascotte fait 32 px natifs et s'affiche à x2. Voir l'ADR 0004.
   FRAME = 32,
   SCALE = 2,
@@ -69,11 +74,18 @@ const ROOT = fileURLToPath(new URL("../", import.meta.url)),
   SHEET_URL = /assets\/sprites\/(?:[a-z]+)\/[^"]+\.png/gu,
   // La règle de base d'une forme porte la position de départ. Elle reçoit l'image fusionnée,
   // que les règles d'état ne déclarent plus. Le slime est la forme par défaut, sans attribut.
+  //
+  // Le point-virgule final est facultatif : le formateur le pose sur la dernière
+  // déclaration d'un bloc, et la feuille s'écrivait sans lui avant qu'il la relise.
+  // La règle du slime s'ancre sur son sélecteur. Sans ancre elle prenait la première
+  // position de la feuille, quelle qu'elle soit, et une règle placée avant aurait reçu
+  // l'image fusionnée sans que rien ne le signale : la mascotte aurait disparu de dist/
+  // seulement.
   BASE_RULE = {
-    cube: /(?<head>\.slime\[data-form="cube"\] \{\n)(?<indent>[^\S\n]*)background-position: 0 0\n/u,
+    cube: /(?<head>\.slime\[data-form="cube"\] \{\n)(?<indent>[^\S\n]*)background-position: 0 0;?\n/u,
     pingouin:
-      /(?<head>\.slime\[data-form="pingouin"\] \{\n)(?<indent>[^\S\n]*)background-position: 0 0\n/u,
-    slime: /(?<head>)(?<indent>[^\S\n]*)background-position: 0 0;\n/u,
+      /(?<head>\.slime\[data-form="pingouin"\] \{\n)(?<indent>[^\S\n]*)background-position: 0 0;?\n/u,
+    slime: /(?<head>\.slime \{\n(?:[^}]*\n)??)(?<indent>[^\S\n]*)background-position: 0 0;?\n/u,
   },
   // MinifyJS reste absent. Rolldown a déjà minifié le seul script en ligne du projet.
   // RemoveAttributeQuotes et removeOptionalTags rendent le balisage déroutant pour 0,3 Ko.
@@ -359,7 +371,15 @@ const unfilter = (filter: number, value: number, around: Around) => {
       throw new Error(`index.html ne porte plus ${MODULE_TAG}`);
     }
 
-    const folded = await foldSheets(staging, page),
+    if (!page.includes(STYLE_TAG)) {
+      throw new Error(`index.html ne porte plus ${STYLE_TAG}`);
+    }
+
+    // La feuille entre avant le pliage des feuilles de mascotte : c'est elle qui nomme une
+    // image par etat, et le pliage lit la page.
+    const sheet = await readFile(join(SOURCE, STYLES), "utf8"),
+      styled = page.replace(STYLE_TAG, () => `<style>\n${sheet}</style>`),
+      folded = await foldSheets(staging, styled),
       bundled = await bundle(),
       // Une fonction de remplacement, car un remplacement littéral interprète les motifs en
       // dollar. Le code source porte « $$ » dans les yeux de cowsay.
