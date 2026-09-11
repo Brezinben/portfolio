@@ -526,6 +526,30 @@
       animation: none !important
     }
 
+    /* Le ton est un ensemble ferme de cinq valeurs, et « safeTone » ramene tout le reste a
+       « fg » : content.json ne peut donc pas ouvrir ce que ces regles ferment.
+       « acc » designe l'ambre decoratif, mais un ton colore du texte : la correspondance
+       vers l'ambre textuel s'ecrit ici, une fois, au lieu de six ternaires identiques. */
+    .tm [data-tone="acc"] {
+      color: var(--acc-text)
+    }
+
+    .tm [data-tone="fg"] {
+      color: var(--fg)
+    }
+
+    .tm [data-tone="fg2"] {
+      color: var(--fg2)
+    }
+
+    .tm [data-tone="ok"] {
+      color: var(--ok)
+    }
+
+    .tm [data-tone="warn"] {
+      color: var(--warn)
+    }
+
     /* Mascotte : trente-deux feuilles de 32 px par frame, affichées à ×2, soit 64 px. Le pas
        d'un keyframe est lié à la taille d'affichage : à ×2 ce sont -768px et -1024px, et
        non les -1536px / -2048px de la spécification, calés sur ×4. */
@@ -1300,10 +1324,11 @@
             <p :tabindex="current.id === 'contact' ? 0 : null"
               :data-edge="index === 0 || index === current.lines.length - 1 ? '' : null"
               :style="current.id === 'contact' ? `margin:0;display:grid;grid-template-columns:18px 1fr;gap:8px;align-items:baseline;padding:5px 8px 5px calc(10px + ${line.pad ?? '0px'});border-left:2px solid var(--row-acc,transparent)` : `margin:0;display:grid;grid-template-columns:18px 1fr;gap:8px;align-items:baseline;padding-left:${line.pad ?? '0'}`">
-              <span aria-hidden="true" :style="`color:var(--${line.markerTone ?? 'fg2'})`"
+              <span aria-hidden="true" :data-tone="line.markerTone ?? 'fg2'"
                 x-text="line.marker ?? ''"></span>
               <span
-                :style="`color:var(--${(line.tone ?? 'fg') === 'acc' ? 'acc-text' : (line.tone ?? 'fg')});font-size:${line.size ?? '14px'};font-weight:${line.weight ?? '400'};letter-spacing:${line.letterSpacing ?? '0'};text-wrap:pretty`">
+                :data-tone="line.tone ?? 'fg'"
+                :style="`font-size:${line.size ?? '14px'};font-weight:${line.weight ?? '400'};letter-spacing:${line.letterSpacing ?? '0'};text-wrap:pretty`">
                 <template x-if="line.banner">
                   <span role="img" :aria-label="line.banner.label" style="margin-bottom:12px"
                     :style="`display:block;position:relative;width:${line.banner.width};height:${line.banner.height};max-width:100%`"><span
@@ -1312,7 +1337,7 @@
                 </template>
                 <template x-if="!line.banner && line.tokens">
                   <span><template x-for="(tk, at) in line.tokens" :key="at"><span
-                        :style="`color:var(--${tk.c === 'acc' ? 'acc-text' : tk.c});font-weight:${tk.w}`"
+                        :data-tone="tk.c" :style="`font-weight:${tk.w}`"
                         x-text="tk.t"></span></template></span>
                 </template>
                 <template x-if="!line.banner && !line.tokens">
@@ -1337,10 +1362,9 @@
           <template x-for="(entry, index) in journal" :key="index">
             <p
               style="margin:0;display:grid;grid-template-columns:18px minmax(0,1fr);gap:8px;align-items:baseline;line-height:1.5">
-              <span aria-hidden="true" :style="`color:var(--${entry.mc === 'acc' ? 'acc-text' : entry.mc})`"
-                x-text="entry.m"></span>
-              <span
-                :style="`color:var(--${entry.c === 'acc' ? 'acc-text' : entry.c});white-space:pre-wrap;overflow-wrap:anywhere`"
+              <span aria-hidden="true" :data-tone="entry.mc" x-text="entry.m"></span>
+              <span :data-tone="entry.c"
+                style="white-space:pre-wrap;overflow-wrap:anywhere"
                 x-text="entry.t"></span>
             </p>
           </template>
@@ -1471,9 +1495,9 @@
               <!-- La colonne des cles prend la largeur de la plus longue de la section :
                    les valeurs restent alignees sans que la moitie du volet reste vide. -->
               <div :style="`display:grid;grid-template-columns:${outKeyWidth} minmax(0,1fr);gap:10px`">
-                <dt :style="`color:var(--${row.kc === 'acc' ? 'acc-text' : row.kc});margin:0`" x-text="row.k"></dt>
-                <dd
-                  :style="`color:var(--${row.vc === 'acc' ? 'acc-text' : row.vc});margin:0;overflow-wrap:anywhere;text-wrap:pretty`"
+                <dt :data-tone="row.kc" style="margin:0" x-text="row.k"></dt>
+                <dd :data-tone="row.vc"
+                  style="margin:0;overflow-wrap:anywhere;text-wrap:pretty"
                   x-text="row.v"></dd>
               </div>
             </template>

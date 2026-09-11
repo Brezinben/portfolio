@@ -21,6 +21,12 @@ Tout ce qui se dessine dans une zone : boutons, bascules, entrées de liste, sug
 élément intérieur reste à angle droit, et c'est lui qui prend le focus.
 _Avoid_: contrôle, widget, item.
 
+**Ton** (`tone`) :
+Le rôle d'une couleur de texte, parmi cinq : `acc`, `fg`, `fg2`, `ok`, `warn`. Un ton nomme
+un rôle, pas une teinte : le thème décide de la teinte. `safeTone` ramène toute autre valeur
+à `fg`, donc `content.json` ne peut pas en inventer un sixième.
+_Avoid_: couleur, teinte, variante.
+
 **Volet gauche** (`leftPane`) :
 Colonne qui porte le bouton des options, la liste des sections et la liste des missions.
 _Avoid_: menu, navigation, sidebar.
