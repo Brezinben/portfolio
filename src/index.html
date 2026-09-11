@@ -945,6 +945,165 @@
       outline-width: 3px
     }
 
+    /* Sept elements encodaient « selectionne » dans une liaison de style, alors qu'ils
+       portaient deja l'attribut ARIA qui dit la meme chose. Le CSS lit ce que
+       l'accessibilite expose : aucun etat nouveau n'a ete invente.
+       La declaration entiere descend ici, pas seulement la part qui depend de l'etat. Un
+       style en ligne bat un selecteur d'attribut, quelle que soit sa specificite : laisser
+       « border-left: 2px solid transparent » dans l'attribut ferait taire la regle d'etat,
+       sans erreur et sans trace. */
+    .tm [data-ctl="nav"] {
+      width: 100%;
+      min-height: 44px;
+      display: grid;
+      grid-template-columns: 12px 1fr;
+      gap: 8px;
+      align-items: center;
+      text-align: left;
+      padding: 5px 8px;
+      border: 0;
+      border-left: 2px solid transparent;
+      background: transparent;
+      color: var(--fg);
+      font-family: inherit;
+      font-size: 14px;
+      cursor: pointer
+    }
+
+    .tm [data-ctl="nav"][aria-current="true"] {
+      border-left-color: var(--acc);
+      background: var(--acc-soft)
+    }
+
+    .tm [data-ctl="tl"] {
+      display: grid;
+      grid-template-columns: 14px 14px 1fr;
+      gap: 8px;
+      text-align: left;
+      padding: 6px 8px;
+      border: 0;
+      border-left: 2px solid transparent;
+      background: transparent;
+      color: var(--fg);
+      font-family: inherit;
+      font-size: 13px;
+      cursor: pointer
+    }
+
+    .tm [data-ctl="tl"][aria-selected="true"] {
+      border-left-color: var(--acc);
+      background: var(--acc-soft)
+    }
+
+    .tm [data-ctl="tl"] [data-guide] {
+      color: var(--fg2)
+    }
+
+    .tm [data-ctl="tl"][aria-selected="true"] [data-guide] {
+      color: var(--acc-text)
+    }
+
+    .tm [data-ctl="tech"] {
+      display: grid;
+      grid-template-columns: 12px 1fr;
+      gap: 7px;
+      align-items: baseline;
+      text-align: left;
+      padding: 1px 4px 1px 0;
+      border: 0;
+      background: transparent;
+      color: var(--fg);
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 400;
+      cursor: pointer
+    }
+
+    .tm [data-ctl="tech"][aria-pressed="true"] {
+      color: var(--acc-text);
+      font-weight: 700
+    }
+
+    /* L'animation reste en ligne : son delai suit l'index de la proposition. */
+    .tm [data-suggestion] {
+      min-height: 32px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0 8px;
+      border: 0;
+      border-left: 2px solid transparent;
+      background: transparent;
+      color: var(--fg);
+      font-family: inherit;
+      font-size: 13px;
+      text-align: left;
+      cursor: pointer
+    }
+
+    .tm [data-suggestion][aria-selected="true"] {
+      border-left-color: var(--acc);
+      background: var(--acc-soft)
+    }
+
+    /* La pastille de couleur garde ses trois valeurs en ligne : elles decrivent un theme
+       qui n'est pas applique, et le CSS ne sait pas lire les variables d'un autre theme. */
+    .tm [data-theme-choice] {
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 0 10px;
+      border: 1px solid var(--edge);
+      background: transparent;
+      color: var(--fg);
+      font-family: inherit;
+      font-size: 13px;
+      cursor: pointer;
+      text-align: left
+    }
+
+    .tm [data-theme-choice][aria-pressed="true"] {
+      border-color: var(--acc);
+      background: var(--acc-soft)
+    }
+
+    /* Une bascule verrouillee est aussi « disabled » : l'etat grise se lit sur l'attribut
+       que le navigateur connait deja, sans en ajouter un second qui dirait la meme chose. */
+    .tm [data-toggle] {
+      width: 100%;
+      min-height: 44px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 0 12px;
+      border: 1px solid var(--edge);
+      border-left: 2px solid var(--fg2);
+      background: transparent;
+      color: var(--fg);
+      font-family: inherit;
+      font-size: 13px;
+      cursor: pointer
+    }
+
+    .tm [data-toggle][aria-pressed="true"] {
+      border-left-color: var(--ok)
+    }
+
+    .tm [data-toggle]:disabled {
+      color: var(--fg2);
+      cursor: not-allowed
+    }
+
+    .tm [data-toggle] [data-toggle-value] {
+      color: var(--fg2)
+    }
+
+    .tm [data-toggle][aria-pressed="true"] [data-toggle-value] {
+      color: var(--ok)
+    }
+
     /* Sous 900 px les trois volets s'empilent en une colonne. Une requête de média ne
        peut pas s'écrire en style inline : c'est la seconde chose, avec le survol et le
        focus, qui sort des styles inline. Mais un style inline bat une feuille de style :
@@ -1006,8 +1165,7 @@
               <template x-for="item in sections" :key="item.id">
                 <li>
                   <button type="button" data-ctl="nav" :aria-current="item.id === section ? 'true' : 'false'"
-                    @click="goSection(item.id)"
-                    :style="`width:100%;min-height:44px;display:grid;grid-template-columns:12px 1fr;gap:8px;align-items:center;text-align:left;padding:5px 8px;border:0;border-left:2px solid ${item.id === section ? 'var(--acc)' : 'transparent'};background:${item.id === section ? 'var(--acc-soft)' : 'transparent'};color:var(--fg);font-family:inherit;font-size:14px;cursor:pointer`">
+                    @click="goSection(item.id)">
                     <span aria-hidden="true"
                       :style="`width:8px;height:8px;background:var(--${item.dot});animation:${item.dot === 'acc' && anim ? 'dotPulse 1.2s ease-in-out infinite' : 'none'}`"></span>
                     <span style="display:grid;gap:1px;min-width:0">
@@ -1030,8 +1188,7 @@
               <template x-for="item in missions" :key="item.id">
                 <li>
                   <button type="button" data-ctl="nav" :aria-current="item.id === section ? 'true' : 'false'"
-                    @click="goSection(item.id)"
-                    :style="`width:100%;min-height:44px;display:grid;grid-template-columns:12px 1fr;gap:8px;align-items:center;text-align:left;padding:5px 8px;border:0;border-left:2px solid ${item.id === section ? 'var(--acc)' : 'transparent'};background:${item.id === section ? 'var(--acc-soft)' : 'transparent'};color:var(--fg);font-family:inherit;font-size:14px;cursor:pointer`">
+                    @click="goSection(item.id)">
                     <span aria-hidden="true"
                       :style="`width:8px;height:8px;background:var(--${item.dot});animation:${item.dot === 'acc' && anim ? 'dotPulse 1.2s ease-in-out infinite' : 'none'}`"></span>
                     <span style="display:grid;gap:1px;min-width:0">
@@ -1074,12 +1231,10 @@
               style="display:grid;gap:2px;align-content:start">
               <template x-for="(entry, index) in timeline" :key="entry.id">
                 <button type="button" role="option" data-ctl="tl" :aria-selected="index === timelineAt"
-                  @click="openTimeline(index)" @focus="timelineAt = index"
-                  :style="`display:grid;grid-template-columns:14px 14px 1fr;gap:8px;text-align:left;padding:6px 8px;border:0;border-left:2px solid ${index === timelineAt ? 'var(--acc)' : 'transparent'};background:${index === timelineAt ? 'var(--acc-soft)' : 'transparent'};color:var(--fg);font-family:inherit;font-size:13px;cursor:pointer`">
+                  @click="openTimeline(index)" @focus="timelineAt = index">
                   <span aria-hidden="true" style="color:var(--acc-text)"
                     x-text="index === timelineAt ? '›' : ' '"></span>
                   <span data-guide aria-hidden="true"
-                    :style="`color:var(--${index === timelineAt ? 'acc-text' : 'fg2'})`"
                     x-text="index === timeline.length - 1 ? '└' : '├'"></span>
                   <span style="display:grid;gap:2px;min-width:0">
                     <span data-years style="font-variant-numeric:tabular-nums;color:var(--fg2);font-size:12px"
@@ -1120,8 +1275,7 @@
                     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:1px 18px">
                       <template x-for="(kid, at) in root.kids" :key="kid">
                         <button type="button" data-ctl="tech" data-tech :aria-pressed="tech === kid"
-                          @click="followTech(kid)" @focus="followTech(kid)"
-                          :style="`display:grid;grid-template-columns:12px 1fr;gap:7px;align-items:baseline;text-align:left;padding:1px 4px 1px 0;border:0;background:transparent;color:var(--${tech === kid ? 'acc-text' : 'fg'});font-family:inherit;font-size:13px;font-weight:${tech === kid ? '700' : '400'};cursor:pointer`"><span
+                          @click="followTech(kid)" @focus="followTech(kid)"><span
                             data-guide aria-hidden="true" style="color:var(--fg2)"
                             x-text="at === root.kids.length - 1 ? '└' : '├'"></span><span x-text="kid"></span></button>
                       </template>
@@ -1236,7 +1390,7 @@
             <template x-for="(hit, index) in sugg" :key="hit">
               <button type="button" data-suggestion role="option" :aria-selected="index === suggAt"
                 @pointerdown.prevent="pickSugg(index, $event)"
-                :style="`min-height:32px;display:flex;align-items:center;gap:8px;padding:0 8px;border:0;border-left:2px solid ${index === suggAt ? 'var(--acc)' : 'transparent'};background:${index === suggAt ? 'var(--acc-soft)' : 'transparent'};color:var(--fg);font-family:inherit;font-size:13px;text-align:left;cursor:pointer;animation:${anim ? `suggRow .2s ease ${(index * 0.024).toFixed(3)}s both` : 'none'}`"><span
+                :style="`animation:${anim ? `suggRow .2s ease ${(index * 0.024).toFixed(3)}s both` : 'none'}`"><span
                   style="color:var(--acc-text)" x-text="suggFrag"></span><span style="margin-left:-8px"
                   x-text="hit.slice(suggFrag.length)"></span></button>
             </template>
@@ -1344,8 +1498,7 @@
               style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:6px">
               <template x-for="entry in THEMES" :key="entry.id">
                 <button type="button" data-ctl="opt" :data-theme-choice="entry.id" :aria-pressed="entry.id === theme"
-                  @click="setTheme(entry.id, $event)"
-                  :style="`min-height:44px;display:flex;align-items:center;gap:9px;padding:0 10px;border:1px solid ${entry.id === theme ? 'var(--acc)' : 'var(--edge)'};background:${entry.id === theme ? 'var(--acc-soft)' : 'transparent'};color:var(--fg);font-family:inherit;font-size:13px;cursor:pointer;text-align:left`">
+                  @click="setTheme(entry.id, $event)">
                   <span aria-hidden="true"
                     :style="`width:18px;height:18px;flex:none;border:1px solid ${entry.edge};background:${entry.bg};position:relative;overflow:hidden`"><span
                       :style="`position:absolute;inset:auto 0 0 0;height:7px;background:${entry.acc}`"></span></span>
@@ -1358,9 +1511,8 @@
           <div role="group" aria-label="Affichage" style="display:grid;gap:6px">
             <template x-for="toggle in TOGGLES" :key="toggle.key">
               <button type="button" data-ctl="opt" data-toggle :aria-pressed="value(toggle.key)"
-                :disabled="lockedToggle(toggle.key)" @click="flip(toggle.key)"
-                :style="`width:100%;min-height:44px;display:flex;justify-content:space-between;align-items:center;gap:12px;padding:0 12px;border:1px solid var(--edge);border-left:2px solid ${value(toggle.key) ? 'var(--ok)' : 'var(--fg2)'};background:transparent;color:var(--${lockedToggle(toggle.key) ? 'fg2' : 'fg'});font-family:inherit;font-size:13px;cursor:${lockedToggle(toggle.key) ? 'not-allowed' : 'pointer'}`"><span
-                  x-text="toggle.label"></span><span :style="`color:${value(toggle.key) ? 'var(--ok)' : 'var(--fg2)'}`"
+                :disabled="lockedToggle(toggle.key)" @click="flip(toggle.key)"><span
+                  x-text="toggle.label"></span><span data-toggle-value
                   x-text="lockedToggle(toggle.key) ? 'système' : (value(toggle.key) ? toggle.on : toggle.off)"></span></button>
             </template>
           </div>
