@@ -1,6 +1,6 @@
 # Mode impression propre et mode hors ligne
 
-Status: ready-for-agent
+Status: resolved
 Type: task
 
 Deux lignes de l'issue GitHub #2, fusionnées : toutes deux se règlent dans la page servie,
@@ -41,3 +41,35 @@ cela ajoute un cycle de vie de cache à gérer. Ne pas le faire sans décision e
 
 Un test qui imprime en PDF via Playwright et vérifie que les trois volets ne s'empilent
 pas en pages vides. Un test qui simule `offline` via le contexte Playwright.
+
+
+## Réponse
+
+**Le ticket groupait mal.** L'impression est du travail de feuille de style, le hors ligne
+est du comportement. Ils ne partagent ni fichier, ni test, ni base de branche.
+
+Le hors ligne est fait ici. **L'impression part avec la refonte CSS**, parce qu'elle en
+dépend : sur `main`, `index.html` porte encore 169 attributs de style en ligne, et
+**aucune requête de média ne bat un style en ligne**. Une feuille d'impression y serait un
+mur de `!important`, qui deviendraient du bruit dès la refonte fusionnée.
+
+### Ce qui est fait
+
+`navigator.onLine`, plus les événements `online` et `offline`. L'API ne promet pas
+l'internet, seulement une interface active : elle dit « hors ligne » sans se tromper, et
+« en ligne » avec optimisme. C'est le sens utile ici, puisque la page ne s'en sert que pour
+refuser une commande vouée à l'échec.
+
+L'indication suit la demande du ticket. Elle ne dit pas « vous êtes hors ligne », elle dit
+**quelle commande ne marchera pas, et laquelle marche encore** :
+
+| Commande | Sans réseau |
+|---|---|
+| `share linkedin`, `share profil`, `share github` | refusée, renvoie vers `share link` |
+| `/propose` | refusée, renvoie vers `mail` |
+| `share link`, `mail`, la navigation, les easter eggs | inchangées |
+
+Un marqueur `hors ligne` en `--warn` entre dans la barre d'état, à côté de la branche.
+
+**Aucun service worker.** Le ticket le déconseille, et il ajouterait un cycle de vie de
+cache à tenir pour un site qui tient déjà en mémoire une fois chargé.

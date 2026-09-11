@@ -510,6 +510,7 @@ interface State {
   loaded: Set<string>;
   // Qui a ouvert la modale : le bouton de l'en-tete, ou la saisie via la commande.
   optsReturn: HTMLElement | undefined;
+  online: boolean;
   out: boolean;
   pane: string;
   pending: string | undefined;
@@ -609,6 +610,7 @@ document.addEventListener("alpine:init", () => {
       form: "slime",
       becoming: "",
       loaded: new Set(["slime"]),
+      online: true,
       out: true,
       pane: "nav",
       pending: undefined,
@@ -657,6 +659,7 @@ document.addEventListener("alpine:init", () => {
         }, COMPACT_TICK_MS);
         this.startMascot();
         globalThis.addEventListener("popstate", () => this.fromHash());
+        this.watchNetwork();
         globalThis.addEventListener("resize", () => this.setLogHeight(this.logHeight));
         this.load();
       },
@@ -2091,6 +2094,17 @@ document.addEventListener("alpine:init", () => {
           return;
         }
 
+        // Ouvrir un onglet vers LinkedIn sans reseau laisse une page d'erreur du navigateur,
+        // et le visiteur croit que le portfolio a casse.
+        if (!this.online) {
+          this.refuseOffline(
+            `ouvrir ${effect.kind}`,
+            "« share link » copie l'adresse de cette page, sans réseau.",
+          );
+
+          return;
+        }
+
         globalThis.open(effect.url, "_blank", "noopener");
       },
 
@@ -2163,6 +2177,29 @@ document.addEventListener("alpine:init", () => {
         }
       },
 
+      // L'API onLine ne promet pas l'internet, seulement une interface active. Elle dit
+      // « hors ligne » sans se tromper, et « en ligne » avec optimisme : c'est le sens
+      // utile ici, puisque la page ne sert qu'a refuser une commande vouee a l'echec.
+      watchNetwork() {
+        this.online = globalThis.navigator?.onLine ?? true;
+        globalThis.addEventListener("online", () => {
+          this.online = true;
+        });
+        globalThis.addEventListener("offline", () => {
+          this.online = false;
+        });
+      },
+
+      // Le site entier tient en memoire une fois charge : seules les commandes qui partent
+      // ailleurs cassent. Le refus les nomme, et il nomme ce qui marche encore.
+      refuseOffline(what: string, instead: string) {
+        this.journal = [
+          ...this.journal,
+          { c: "warn", m: "✗", mc: "warn", t: `${what} demande le réseau, et il est coupé.` },
+          { c: "fg2", m: "·", mc: "fg2", t: instead },
+        ];
+      },
+
       // La coquille applique ce que l'interpréteur décrit. Les effets des tickets à
       // venir sont ignorés ici plutôt que simulés.
       apply(effects: Effect[]) {
@@ -2186,7 +2223,14 @@ document.addEventListener("alpine:init", () => {
             this.pending = effect.payload;
             this.input = effect.answer ?? "";
           } else if (effect.type === "send") {
-            this.send(effect.payload);
+            if (this.online) {
+              this.send(effect.payload);
+            } else {
+              this.refuseOffline(
+                "envoyer une proposition",
+                "« mail » copie mon adresse, elle partira au retour du réseau.",
+              );
+            }
           } else if (effect.type === "share") {
             this.shareTo(effect);
           } else if (effect.type === "shareMenu") {

@@ -1264,7 +1264,9 @@
         <p data-status
           style="flex:none;margin:0;display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:11px;color:var(--fg2);padding-top:6px">
           <span data-branch style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><span
-              x-text="`~/${current.id || section}`"></span> <span style="color:var(--acc-text)">main</span> ✳ </span>
+              x-text="`~/${current.id || section}`"></span> <span style="color:var(--acc-text)">main</span> ✳ <template
+              x-if="!online"><span data-offline role="status"
+              style="color:var(--warn)">hors ligne</span></template></span>
           <!-- Pendant la compaction, l'animation prend la place des cellules : le cadre
                « ctx [ … ] » ne bouge pas, et une seule barre reste a l'ecran. -->
           <span data-gauge aria-hidden="true" style="flex:none;white-space:pre"><span style="color:var(--fg2)">ctx
