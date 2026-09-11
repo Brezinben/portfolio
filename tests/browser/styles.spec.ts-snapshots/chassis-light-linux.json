@@ -487,7 +487,7 @@
     "box-sizing": "border-box",
     "color": "rgb(36, 37, 56)",
     "column-gap": "normal",
-    "display": "block",
+    "display": "flex",
     "flex-basis": "230px",
     "flex-direction": "column",
     "flex-grow": "1.3",
