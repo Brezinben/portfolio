@@ -6,14 +6,24 @@ import { test } from "node:test";
 const CONTEXT: Context = {
     columns: 60,
     current: { cmd: "bd whoami --verbose", id: "whoami" },
-    details: [{ id: "m-kereis", label: "Kereis" }],
+    details: [
+      {
+        ask: "Chez Kereis depuis 2026 : preuves de concept IA, serveurs MCP.",
+        id: "m-kereis",
+        label: "Kereis",
+      },
+    ],
     feedback: {},
     jokeIndex: 0,
     jokes: ["une blague", "une autre"],
     mascot: "here",
     sections: [
-      { id: "whoami", label: "whoami" },
-      { id: "stack", label: "stack" },
+      {
+        ask: "Benjamin David, développeur IA et full stack à Nantes.",
+        id: "whoami",
+        label: "whoami",
+      },
+      { ask: "Vue, React, NestJS, PostgreSQL, accessibilité RGAA.", id: "stack", label: "stack" },
     ],
     share: {},
     shareTargets: [],
@@ -339,7 +349,6 @@ test("chaque alias se comporte comme sa commande", () => {
 test("les commandes déléguées rendent chacune son descripteur", () => {
   const expected: [string, Effect["type"]][] = [
     ["ai", "probeAI"],
-    ["ask", "ask"],
     ["email", "email"],
     ["options", "options"],
     ["send-mail", "sendMail"],
@@ -350,8 +359,34 @@ test("les commandes déléguées rendent chacune son descripteur", () => {
   }
 });
 
-test("ask transporte la question dans son descripteur", () => {
-  assert.equal(effectOf(interpret("ask qui es-tu", CONTEXT), "ask")?.query, "qui es-tu");
+test("ask répond avec le passage du corpus, jamais avec un texte produit", () => {
+  const result = interpret("ask accessibilité RGAA", CONTEXT);
+
+  assert.ok(texts(result).includes("stack"), "ask doit nommer la source de sa réponse");
+  assert.ok(
+    texts(result).some((t) => t.includes("accessibilité RGAA")),
+    "la réponse est le texte du corpus",
+  );
+});
+
+// Le descripteur ne sert qu'a un modele local, quand il y en a un : il porte les candidats
+// que ce modele a le droit de departager, et rien d'autre.
+test("ask transporte la question et ses candidats", () => {
+  const descripteur = effectOf(interpret("ask nantes développeur", CONTEXT), "ask");
+
+  assert.equal(descripteur?.query, "nantes développeur");
+  assert.deepEqual(descripteur?.candidates, ["whoami"]);
+});
+
+test("ask sans réponse le dit, et ne propose aucun candidat", () => {
+  const result = interpret("ask zzzzz", CONTEXT);
+
+  assert.ok(texts(result).some((t) => t.includes("rien ne répond")));
+  assert.equal(effectOf(result, "ask"), undefined);
+});
+
+test("ask sans question rappelle comment l'employer", () => {
+  assert.ok(texts(interpret("ask", CONTEXT)).some((t) => t.startsWith("ask —")));
 });
 
 // Les deux modes partagent une branche. Sans ce test, corriger le texte de l'un

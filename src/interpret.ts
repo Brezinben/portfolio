@@ -42,7 +42,7 @@ export interface Token {
 // applique. Cette union est le contrat entre les deux seams.
 export type Effect =
   | { type: "activity"; name: string }
-  | { type: "ask"; query: string }
+  | { candidates: string[]; query: string; type: "ask" }
   | { type: "blowUp" }
   | { type: "clear" }
   | { type: "cv" }
@@ -122,6 +122,9 @@ export interface Share {
 // Ce que la coquille passe a l'interpreteur : la section ouverte, le contenu charge, et
 // l'attente d'une reponse oui ou non.
 export interface Entry {
+  // Le resume que la recherche interroge. Il est ecrit a la main dans content.json : c'est
+  // la seule prose du site qui repond a une question au lieu de decrire un ecran.
+  ask?: string;
   cmd?: string;
   id: string;
   label: string;
@@ -570,6 +573,140 @@ export const candidates = (value: string, context: CompletionContext) => {
 };
 
 // Tab complète jusqu'au plus long préfixe commun, puis laisse la liste faire le reste.
+// Les mots trop frequents pour departager deux passages. La liste est courte a dessein :
+// une question posee a un portfolio tient en quelques mots, et en retirer trop la vide.
+const VIDES = new Set([
+    "a",
+    "au",
+    "aux",
+    "avec",
+    "ce",
+    "ces",
+    "dans",
+    "de",
+    "des",
+    "du",
+    "elle",
+    "en",
+    "et",
+    "il",
+    "je",
+    "la",
+    "le",
+    "les",
+    "leur",
+    "lui",
+    "ma",
+    "mais",
+    "me",
+    "mes",
+    "mon",
+    "ne",
+    "nous",
+    "on",
+    "ou",
+    "par",
+    "pas",
+    "pour",
+    "qu",
+    "que",
+    "qui",
+    "sa",
+    "se",
+    "ses",
+    "son",
+    "sur",
+    "ta",
+    "te",
+    "tes",
+    "toi",
+    "ton",
+    "tu",
+    "un",
+    "une",
+    "vos",
+    "votre",
+    "vous",
+    "y",
+  ]),
+  // Une recherche ne doit pas dependre des accents ni de la casse : « éco-conception » se
+  // cherche « eco conception ».
+  mots = (texte: string): string[] =>
+    texte
+      .normalize("NFD")
+      .replaceAll(/\p{Diacritic}/gu, "")
+      .toLowerCase()
+      .split(/[^\p{Letter}\p{Number}]+/u)
+      .filter((mot) => mot.length > 1 && !VIDES.has(mot));
+
+// Un score par recouvrement de mots, sans index ni modele. Le corpus fait dix passages
+// ecrits a la main : tout ce qui serait plus savant couterait plus qu'il ne rapporte.
+//
+// Un mot du titre pese trois fois : demander « stack » doit ouvrir la section stack, meme
+// si un autre passage prononce le mot plus souvent.
+export const search = (query: string, entries: Entry[]) => {
+  const cherches = new Set(mots(query));
+
+  if (cherches.size === 0) {
+    return [];
+  }
+
+  return entries
+    .filter((entry) => (entry.ask ?? "") !== "")
+    .map((entry) => {
+      const corpus = mots(entry.ask ?? ""),
+        titre = new Set(mots(entry.label)),
+        touches = corpus.filter((mot) => cherches.has(mot)).length,
+        vus = new Set(corpus.filter((mot) => cherches.has(mot))).size,
+        dansTitre = [...cherches].filter((mot) => titre.has(mot)).length;
+
+      // Le nombre de mots distincts touches prime sur les repetitions : un passage qui
+      // repond a toute la question vaut mieux qu'un qui martele un seul de ses mots.
+      return { entry, score: vus * 10 + touches + dansTitre * 30 };
+    })
+    .filter((hit) => hit.score > 0)
+    .toSorted((une, autre) => autre.score - une.score);
+};
+
+// La reponse est toujours le texte du corpus, jamais un texte produit. Un modele, quand il
+// y en a un, ne fait que choisir parmi ces passages : il ne parle pas a la place de
+// Benjamin.
+const answer = (query: string, entries: Entry[]) => {
+  if (query.trim() === "") {
+    return {
+      effects: [],
+      lines: [info("ask — posez une question en français. Par exemple : ask accessibilité")],
+    };
+  }
+
+  const trouves = search(query, entries),
+    [meilleur] = trouves;
+
+  if (!meilleur) {
+    return {
+      effects: [track("ask_sans_reponse", { query })],
+      lines: [
+        failed("rien ne répond à cette question dans ce portfolio."),
+        muted("help donne la liste des commandes."),
+      ],
+    };
+  }
+
+  const autres = trouves.slice(1, 4).map((hit) => hit.entry.label);
+
+  return {
+    effects: [
+      track("ask", { query }),
+      { candidates: trouves.map((hit) => hit.entry.id), query, type: "ask" } satisfies Effect,
+    ],
+    lines: [
+      done(meilleur.entry.label),
+      line({ text: meilleur.entry.ask ?? "" }),
+      ...(autres.length > 0 ? [muted(`voir aussi : ${autres.join(" · ")}`)] : []),
+    ],
+  };
+};
+
 export const commonPrefix = (entries: string[]): string => {
   if (entries.length === 0) {
     return "";
@@ -981,11 +1118,16 @@ export const interpret = (raw: string, context: Context): Outcome => {
     return out(egg.lines, [track("easter_egg", { nom: egg.egg }), ...(egg.say ? [egg.say] : [])]);
   }
 
+  if (command === "ask") {
+    const trouve = answer(rest, sections);
+
+    return out(trouve.lines, trouve.effects);
+  }
+
   // Ces commandes appartiennent à d'autres tickets. Elles passent quand même par le
   // dispatcher, pour qu'il reste le point unique.
   const deferred = {
       ai: { type: "probeAI" },
-      ask: { query: rest, type: "ask" },
       email: { type: "email" },
       options: { type: "options" },
 

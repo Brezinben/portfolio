@@ -11,6 +11,7 @@ import {
   hintFor,
   interpret,
   safeTone,
+  search,
 } from "./interpret.ts";
 
 // Le bandeau que la coquille calcule : l'interpreteur ne rend qu'un mot a dessiner, le
@@ -275,6 +276,7 @@ const BOOT_MS = 2000,
     title: out?.title ?? "",
   }),
   section = (raw: RawSection) => ({
+    ask: raw.ask ?? "",
     cmd: raw.cmd ?? "",
     dot: safeTone(raw.dot, "ok"),
     id: raw.id,
@@ -411,9 +413,27 @@ interface Umami {
   track?: (name: string, data?: Record<string, TrackValue>) => void;
 }
 
+// L'API Prompt du navigateur, proposee par le W3C et disponible dans Chrome seulement.
+// MDN la donne « limited availability » : elle n'est pas Baseline, et elle exige un
+// contexte securise. « absent » est donc le cas majoritaire, pas le cas d'erreur.
+//
+// Le contrat se reduit a ce dont la recherche a besoin : savoir si un modele est la, et
+// lui faire choisir une reponse dans une liste fermee.
+interface LanguageModelSession {
+  destroy: () => void;
+  prompt: (input: string, options?: { responseConstraint?: object }) => Promise<string>;
+}
+
+interface LanguageModelApi {
+  availability: () => Promise<"available" | "downloadable" | "downloading" | "unavailable">;
+  create: () => Promise<LanguageModelSession>;
+}
+
 declare global {
   // eslint-disable-next-line no-var, vars-on-top
   var umami: Umami | undefined;
+  // eslint-disable-next-line no-var, vars-on-top
+  var LanguageModel: LanguageModelApi | undefined;
 }
 
 // Une cle libre dans une table fermee : la table garde son type, l'appelant recoit
@@ -508,6 +528,7 @@ interface State {
   form: string;
   becoming: string;
   loaded: Set<string>;
+  modelState: string;
   // Qui a ouvert la modale : le bouton de l'en-tete, ou la saisie via la commande.
   optsReturn: HTMLElement | undefined;
   out: boolean;
@@ -609,6 +630,7 @@ document.addEventListener("alpine:init", () => {
       form: "slime",
       becoming: "",
       loaded: new Set(["slime"]),
+      modelState: "unknown",
       out: true,
       pane: "nav",
       pending: undefined,
@@ -2163,6 +2185,93 @@ document.addEventListener("alpine:init", () => {
         }
       },
 
+      // Le modele local ne produit jamais de texte : il choisit un identifiant dans une
+      // liste fermee, et la page affiche le passage que cet identifiant designe. Une
+      // recherche par recouvrement de mots rate « comment tu bosses » face a un passage qui
+      // parle de methode sans reprendre le mot ; un modele, lui, le voit. Le laisser
+      // repondre a la place de Benjamin, en revanche, n'apporterait rien qu'une invention
+      // possible sur son propre parcours.
+      async refineAsk(query: string, pistes: string[]) {
+        if (pistes.length < 2 || globalThis.LanguageModel === undefined) {
+          return;
+        }
+
+        try {
+          if ((await globalThis.LanguageModel.availability()) !== "available") {
+            return;
+          }
+
+          const session = await globalThis.LanguageModel.create();
+
+          try {
+            const choix = await session.prompt(
+              `Question : « ${query} ». Parmi ces sujets, lequel y répond le mieux ? ${pistes.join(", ")}`,
+              { responseConstraint: { enum: pistes, type: "string" } },
+            );
+
+            this.applyAskChoice(query, choix.trim());
+          } finally {
+            session.destroy();
+          }
+        } catch {
+          // Un modele indisponible, refuse ou interrompu laisse la reponse lexicale, qui est
+          // deja affichee. Ce n'est pas une panne de la recherche.
+        }
+      },
+
+      // La reponse lexicale est deja a l'ecran : un autre choix s'ajoute, il ne remplace
+      // rien. Le meme choix ne dit rien de plus, et se tait.
+      applyAskChoice(query: string, id: string) {
+        const corpus = [...this.sections, ...this.details],
+          trouve = corpus.find((entry) => entry.id === id),
+          [premier] = search(query, corpus);
+
+        if (!trouve || (trouve.ask ?? "") === "" || premier?.entry.id === id) {
+          return;
+        }
+
+        this.journal = [
+          ...this.journal,
+          { c: "fg2", m: "·", mc: "acc", t: `le modèle local lit plutôt : ${trouve.label}` },
+          { c: "fg", m: " ", mc: "fg2", t: trouve.ask ?? "" },
+        ];
+      },
+
+      // « availability » distingue quatre etats, et trois d'entre eux ne sont pas des
+      // pannes. La commande les dit tels quels : un modele telechargeable n'est pas un
+      // modele absent.
+      async probeAI() {
+        const dit = (texte: string, ton: Tone) => {
+          this.journal = [...this.journal, { c: ton, m: "·", mc: ton, t: texte }];
+        };
+
+        if (globalThis.LanguageModel === undefined) {
+          this.modelState = "unavailable";
+          dit("aucun modèle local : ce navigateur ne porte pas l'API Prompt.", "fg2");
+          dit("la recherche « ask » marche quand même, et sans réseau.", "fg2");
+
+          return;
+        }
+
+        try {
+          const etat = await globalThis.LanguageModel.availability();
+
+          this.modelState = etat;
+          dit(
+            {
+              available: "un modèle local répond. « ask » s'en sert pour mieux choisir.",
+              downloadable: "un modèle local est installable, mais pas installé.",
+              downloading: "un modèle local est en cours de téléchargement.",
+              unavailable: "l'API Prompt est là, mais aucun modèle ne tient sur cet appareil.",
+            }[etat],
+            etat === "available" ? "ok" : "fg2",
+          );
+        } catch {
+          this.modelState = "unavailable";
+          dit("l'API Prompt a refusé de répondre.", "warn");
+        }
+      },
+
       // La coquille applique ce que l'interpréteur décrit. Les effets des tickets à
       // venir sont ignorés ici plutôt que simulés.
       apply(effects: Effect[]) {
@@ -2185,6 +2294,10 @@ document.addEventListener("alpine:init", () => {
           } else if (effect.type === "pending") {
             this.pending = effect.payload;
             this.input = effect.answer ?? "";
+          } else if (effect.type === "ask") {
+            this.refineAsk(effect.query, effect.candidates);
+          } else if (effect.type === "probeAI") {
+            this.probeAI();
           } else if (effect.type === "send") {
             this.send(effect.payload);
           } else if (effect.type === "share") {
