@@ -793,6 +793,23 @@
     }
 
     /* La colonne qui defile sous le bouton des options : elle porte les deux cartes. */
+    .tm [data-pane="out"] dl > div {
+      display: grid;
+      grid-template-columns: var(--out-key) minmax(0, 1fr);
+      gap: 10px
+    }
+
+    /* Trois liaisons restent, et elles doivent rester. Une classe ne doit jamais fermer ce
+       que content.json a le droit d'ouvrir : « pad », « size », « weight » et
+       « letterSpacing » traversent sans filtre, et les figer echangerait une valeur
+       modifiable sans redeploiement contre une valeur bloquee par un deploiement.
+       Deux autres tiennent a une mesure, pas a un etat : la hauteur du journal est tiree a
+       la souris, la position de la mascotte est reecrite a chaque pointermove. Les tests
+       les lisent d'ailleurs sur node.style. Une propriete personnalisee n'y ajouterait
+       qu'une indirection.
+       La derniere decrit la palette d'un theme qui n'est pas applique. Le CSS ne sait pas
+       lire les variables d'un theme qu'il ne porte pas. */
+
     .tm [data-pane="nav"] > div {
       flex: 1 1 auto;
       min-height: 0;
@@ -1796,7 +1813,7 @@
             <template x-for="(row, index) in open.out.lines" :key="index">
               <!-- La colonne des cles prend la largeur de la plus longue de la section :
                    les valeurs restent alignees sans que la moitie du volet reste vide. -->
-              <div :style="`display:grid;grid-template-columns:${outKeyWidth} minmax(0,1fr);gap:10px`">
+              <div :style="`--out-key:${outKeyWidth}`">
                 <dt :data-tone="row.kc" x-text="row.k"></dt>
                 <dd :data-tone="row.vc"
  style="overflow-wrap:anywhere;text-wrap:pretty"

@@ -1,6 +1,6 @@
 # Lot 6 — savoir s'arrêter
 
-Status: ready-for-agent
+Status: resolved
 Type: task
 Blocked by: 05
 
@@ -33,3 +33,11 @@ déploiement — ce que `CONTEXT.md` et l'ADR 0002 refusent.
 ## Vérification
 
 `bun run test:browser` vert.
+
+## Réponse
+
+Fait. `grid-template-columns:${outKeyWidth}` est devenu `--out-key`, et la règle porte le
+calcul. Les trois refus sont écrits en commentaire dans la feuille, avec leur raison.
+
+Le chantier s'arrête ici. 169 attributs `style=` au départ, 68 à la fin. 47 liaisons
+`:style`, 30 à la fin.
