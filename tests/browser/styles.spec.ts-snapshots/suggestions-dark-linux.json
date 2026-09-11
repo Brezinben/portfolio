@@ -2,6 +2,7 @@
   "boite": {
     "align-content": "normal",
     "align-items": "normal",
+    "animation-delay": "0s",
     "animation-duration": "0s",
     "animation-name": "none",
     "background-color": "rgba(0, 0, 0, 0)",
@@ -25,6 +26,7 @@
     "font-family": "\"JetBrains Mono\", ui-monospace, SFMono-Regular, Menlo, monospace",
     "font-size": "14px",
     "font-weight": "400",
+    "grid-template-columns": "599.359px",
     "justify-content": "normal",
     "letter-spacing": "normal",
     "line-height": "22.4px",
@@ -49,6 +51,7 @@
   "indice": {
     "align-content": "normal",
     "align-items": "normal",
+    "animation-delay": "0s",
     "animation-duration": "0s",
     "animation-name": "none",
     "background-color": "rgba(0, 0, 0, 0)",
@@ -72,6 +75,7 @@
     "font-family": "\"JetBrains Mono\", ui-monospace, SFMono-Regular, Menlo, monospace",
     "font-size": "11px",
     "font-weight": "400",
+    "grid-template-columns": "none",
     "justify-content": "normal",
     "letter-spacing": "normal",
     "line-height": "17.6px",
@@ -96,6 +100,7 @@
   "suggestion-non-selectionnee": {
     "align-content": "normal",
     "align-items": "center",
+    "animation-delay": "0.024s",
     "animation-duration": "0.2s",
     "animation-name": "suggRow",
     "background-color": "rgba(0, 0, 0, 0)",
@@ -119,6 +124,7 @@
     "font-family": "\"JetBrains Mono\", ui-monospace, SFMono-Regular, Menlo, monospace",
     "font-size": "13px",
     "font-weight": "400",
+    "grid-template-columns": "none",
     "justify-content": "normal",
     "letter-spacing": "normal",
     "line-height": "normal",
@@ -143,6 +149,7 @@
   "suggestion-selectionnee": {
     "align-content": "normal",
     "align-items": "center",
+    "animation-delay": "0s",
     "animation-duration": "0.2s",
     "animation-name": "suggRow",
     "background-color": "rgba(245, 184, 59, 0.14)",
@@ -166,6 +173,7 @@
     "font-family": "\"JetBrains Mono\", ui-monospace, SFMono-Regular, Menlo, monospace",
     "font-size": "13px",
     "font-weight": "400",
+    "grid-template-columns": "none",
     "justify-content": "normal",
     "letter-spacing": "normal",
     "line-height": "normal",

@@ -2,6 +2,7 @@
   "arbre": {
     "align-content": "start",
     "align-items": "normal",
+    "animation-delay": "0s",
     "animation-duration": "0s",
     "animation-name": "none",
     "background-color": "rgba(0, 0, 0, 0)",
@@ -25,6 +26,7 @@
     "font-family": "\"JetBrains Mono\", ui-monospace, SFMono-Regular, Menlo, monospace",
     "font-size": "13px",
     "font-weight": "400",
+    "grid-template-columns": "605.359px",
     "justify-content": "normal",
     "letter-spacing": "normal",
     "line-height": "20.8px",
@@ -49,6 +51,7 @@
   "guide": {
     "align-content": "normal",
     "align-items": "normal",
+    "animation-delay": "0s",
     "animation-duration": "0s",
     "animation-name": "none",
     "background-color": "rgba(0, 0, 0, 0)",
@@ -72,6 +75,7 @@
     "font-family": "\"JetBrains Mono\", ui-monospace, SFMono-Regular, Menlo, monospace",
     "font-size": "13px",
     "font-weight": "700",
+    "grid-template-columns": "none",
     "justify-content": "normal",
     "letter-spacing": "normal",
     "line-height": "normal",
@@ -96,6 +100,7 @@
   "tech-non-pressee": {
     "align-content": "normal",
     "align-items": "baseline",
+    "animation-delay": "0s",
     "animation-duration": "0s",
     "animation-name": "none",
     "background-color": "rgba(0, 0, 0, 0)",
@@ -119,6 +124,7 @@
     "font-family": "\"JetBrains Mono\", ui-monospace, SFMono-Regular, Menlo, monospace",
     "font-size": "13px",
     "font-weight": "400",
+    "grid-template-columns": "12px 156.125px",
     "justify-content": "normal",
     "letter-spacing": "normal",
     "line-height": "normal",
@@ -143,6 +149,7 @@
   "tech-pressee": {
     "align-content": "normal",
     "align-items": "baseline",
+    "animation-delay": "0s",
     "animation-duration": "0s",
     "animation-name": "none",
     "background-color": "rgba(0, 0, 0, 0)",
@@ -166,6 +173,7 @@
     "font-family": "\"JetBrains Mono\", ui-monospace, SFMono-Regular, Menlo, monospace",
     "font-size": "13px",
     "font-weight": "700",
+    "grid-template-columns": "12px 156.109px",
     "justify-content": "normal",
     "letter-spacing": "normal",
     "line-height": "normal",

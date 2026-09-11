@@ -21,12 +21,6 @@ Tout ce qui se dessine dans une zone : boutons, bascules, entrées de liste, sug
 élément intérieur reste à angle droit, et c'est lui qui prend le focus.
 _Avoid_: contrôle, widget, item.
 
-**Ton** (`tone`) :
-Le rôle d'une couleur de texte, parmi cinq : `acc`, `fg`, `fg2`, `ok`, `warn`. Un ton nomme
-un rôle, pas une teinte : le thème décide de la teinte. `safeTone` ramène toute autre valeur
-à `fg`, donc `content.json` ne peut pas en inventer un sixième.
-_Avoid_: couleur, teinte, variante.
-
 **Volet gauche** (`leftPane`) :
 Colonne qui porte le bouton des options, la liste des sections et la liste des missions.
 _Avoid_: menu, navigation, sidebar.
@@ -70,7 +64,8 @@ _Avoid_: parcours, chronologie, historique.
 
 **Ton** (`tone`) :
 La couleur de sens portée par une ligne ou un jeton. Cinq valeurs : `acc`, `fg`, `fg2`,
-`ok`, `warn`. Toute valeur inconnue retombe sur `fg`.
+`ok`, `warn`. Toute valeur inconnue retombe sur `fg`. Un ton colore du texte : `acc` y
+désigne l'ambre textuel, jamais l'ambre décoratif qui habille un glyphe.
 _Avoid_: couleur, teinte, style.
 
 **Log de boot** (`bootLog`) :

@@ -1,10 +1,10 @@
 import { expect, test } from "@playwright/test";
 import type { Page } from "@playwright/test";
 
-// Ce fichier est le filet de la refonte CSS : il fige le rendu calcule avant que les 465
-// declarations en ligne ne partent en classes. Il ne decrit aucune intention de design.
-// Si un instantane bouge, c'est que le deplacement a change le rendu, pas que le rendu
-// devait changer.
+// Ce fichier fige le rendu calculé. Il ne décrit aucune intention de design : si un
+// instantané bouge, c'est que le style a changé, pas qu'il devait changer.
+// Il sert un déplacement de déclarations du balisage vers la feuille, où la relecture ne
+// voit rien et où le navigateur voit tout.
 //
 // Un instantane ne prouve rien s'il est pris sur un seul theme. « dark » est le defaut,
 // « light » est le seul a redefinir --acc-text, « noctis » applique un hue-rotate.
@@ -14,6 +14,7 @@ const THEMES = ["dark", "light", "noctis"],
   PROPS = [
     "align-content",
     "align-items",
+    "animation-delay",
     "animation-duration",
     "animation-name",
     "background-color",
@@ -37,6 +38,7 @@ const THEMES = ["dark", "light", "noctis"],
     "font-family",
     "font-size",
     "font-weight",
+    "grid-template-columns",
     "justify-content",
     "letter-spacing",
     "line-height",
@@ -67,6 +69,7 @@ const THEMES = ["dark", "light", "noctis"],
       (saved: string) => globalThis.localStorage.setItem("bd-term-opts", saved),
       JSON.stringify({ theme }),
     );
+    await page.setViewportSize({ height: 900, width: 1280 });
     await page.goto(section === "" ? "/" : `/#${section}`);
     await expect(page.locator("[data-boot]")).toHaveCount(0, { timeout: 10_000 });
     await expect(page.locator(".tm")).toHaveAttribute("data-theme", theme);
@@ -111,10 +114,12 @@ for (const theme of THEMES) {
       "carte-missions": '[data-pane="nav"] > div > div:nth-of-type(2)',
       "carte-sections": '[data-pane="nav"] > div > div:nth-of-type(1)',
       "entete-carte": '[data-pane="nav"] > div > div:nth-of-type(1) > p',
+      "lien-pied": '.tm footer a[href="texte.html"]',
       "liste-carte": '[data-pane="nav"] ul',
       "nav-non-selectionne": '[data-ctl="nav"][aria-current="false"]',
       "nav-selectionne": '[data-ctl="nav"][aria-current="true"]',
       panes: "[data-panes]",
+      "pied-de-page": ".tm footer",
       "volet-central": '[data-pane="main"]',
       "volet-gauche": '[data-pane="nav"]',
       "volet-sortie": '[data-pane="out"]',
@@ -132,11 +137,43 @@ for (const theme of THEMES) {
       cli: "#cli",
       gauge: "[data-gauge]",
       journal: "[data-journal]",
+      "liste-sortie": '[data-pane="out"] dl',
       "point-sortie": "[data-outdot]",
       resultat: "[data-result]",
       statut: "[data-status]",
       "volet-sortie-region": '[data-pane="out"] [tabindex="0"]',
     });
+  });
+}
+
+// La poignee n'apparait qu'une fois le journal deborde.
+for (const theme of THEMES) {
+  test(`le journal débordé ne bouge pas en thème ${theme}`, async ({ page }) => {
+    await boot(page, theme);
+
+    const cli = page.getByLabel("Commande");
+
+    for (const _ of Array.from({ length: 6 })) {
+      // Les commandes doivent s'enchainer : les paralleliser ne remplirait pas le journal.
+      // eslint-disable-next-line no-await-in-loop
+      await cli.fill("xyzzy");
+      // eslint-disable-next-line no-await-in-loop
+      await cli.press("Enter");
+    }
+
+    await expect(page.locator("[data-handle]")).toBeVisible();
+    await fige(page, `deborde-${theme}`, { poignee: "[data-handle]" });
+  });
+}
+
+// Trois regles de survol dormaient : un style en ligne les battait. Elles s'appliquent
+// depuis que le style a quitte le balisage, et rien ne les couvrait.
+for (const theme of THEMES) {
+  test(`le survol ne bouge pas en thème ${theme}`, async ({ page }) => {
+    await boot(page, theme);
+
+    await page.locator('[data-ctl="opts"]').hover();
+    await fige(page, `survol-${theme}`, { "bouton-options": '[data-ctl="opts"]' });
   });
 }
 
@@ -168,10 +205,10 @@ for (const theme of THEMES) {
 
     await page.locator('[data-ctl="opts"]').click();
     await expect(page.locator("[data-opts]")).toBeVisible();
-    // Les bascules sont toutes actives au demarrage. En eteindre une donne la paire. La
-    // premiere est le reglage d'animation : l'instantane enregistre donc aussi la coupure,
-    // et la modale y perd son popIn.
-    await page.locator("[data-toggle]").first().click();
+    // Les bascules sont toutes actives au demarrage, et en eteindre une donne la paire.
+    // Jamais la premiere : c'est le reglage d'animation, et l'eteindre couperait le popIn
+    // de la modale, la seule animation deplacee que cet instantane puisse verifier.
+    await page.locator("[data-toggle]").nth(1).click();
 
     await fige(page, `options-${theme}`, {
       "bascule-active": '[data-toggle][aria-pressed="true"]',
@@ -180,6 +217,28 @@ for (const theme of THEMES) {
       modale: "[data-opts]",
       "theme-actif": '[data-theme-choice][aria-pressed="true"]',
       "theme-inactif": '[data-theme-choice][aria-pressed="false"]',
+    });
+  });
+}
+
+// Le reglage d'animation n'a jamais touche le demarrage, et il ne le doit pas : la
+// coupure figerait un splash dont les minuteries, elles, ne raccourcissent pas.
+for (const theme of THEMES) {
+  test(`le démarrage ne bouge pas en thème ${theme}`, async ({ page }) => {
+    await page.setViewportSize({ height: 900, width: 1280 });
+    await page.addInitScript(
+      (saved: string) => globalThis.localStorage.setItem("bd-term-opts", saved),
+      JSON.stringify({ anim: false, theme }),
+    );
+    await page.goto("/");
+
+    const cadre = page.locator("[data-boot]");
+
+    await expect(cadre).toBeVisible();
+    await fige(page, `demarrage-${theme}`, {
+      "cadre-boot": "[data-boot]",
+      "ligne-boot": "[data-boot] > div p",
+      "zone-boot": "[data-boot] > div",
     });
   });
 }
