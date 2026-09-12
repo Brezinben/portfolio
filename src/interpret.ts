@@ -42,7 +42,9 @@ export interface Token {
 // applique. Cette union est le contrat entre les deux seams.
 export type Effect =
   | { type: "activity"; name: string }
-  | { type: "ask"; query: string }
+  // « lexical » n'est rempli que si un modele doit choisir avant d'afficher. La coquille
+  // le garde sous la main : il sort si le modele echoue ou depasse son delai.
+  | { candidates: string[]; query: string; type: "ask"; lexical?: Line[] }
   | { type: "blowUp" }
   | { type: "clear" }
   | { type: "cv" }
@@ -54,7 +56,6 @@ export type Effect =
   | { type: "options" }
   | { type: "pending"; answer?: string; payload: string }
   | { type: "power"; mode: string }
-  | { type: "probeAI" }
   | { type: "replay" }
   | { type: "say"; expression: Expression; text: string }
   | { type: "send"; payload: string }
@@ -122,6 +123,9 @@ export interface Share {
 // Ce que la coquille passe a l'interpreteur : la section ouverte, le contenu charge, et
 // l'attente d'une reponse oui ou non.
 export interface Entry {
+  // Le resume que la recherche interroge. Il est ecrit a la main dans content.json : c'est
+  // la seule prose du site qui repond a une question au lieu de decrire un ecran.
+  ask?: string;
   cmd?: string;
   id: string;
   label: string;
@@ -130,6 +134,9 @@ export interface Entry {
 // Ce que la completion a besoin de connaitre : les noms qu'elle peut proposer. Elle ne
 // lit que les identifiants, pas les libelles.
 export interface CompletionContext {
+  // Un modele local installe et disponible. La coquille l'apprend d'un appel asynchrone au
+  // demarrage, que l'interpreteur ne peut pas faire : il est pur et synchrone.
+  model: boolean;
   details: { id: string }[];
   sections: { id: string }[];
   shareTargets: string[];
@@ -218,8 +225,23 @@ const line = ({
   // Une activité demande un accessoire, là où une expression se lit sur le visage. Le glossaire
   // les sépare, et la commande aussi : « slime activity <nom> ».
   ACTIVITIES = ["bike", "coffee", "goal", "juggle", "lift", "train"],
-  HELP = [
+  // La recherche porte deux noms, jamais les deux a la fois. Sans modele elle repond par
+  // recouvrement de mots ; avec un modele, c'est lui qui choisit le passage, et l'etincelle
+  // le dit. Une commande « ai » separee obligeait a demander si le modele etait la : le nom
+  // de la commande le montre maintenant.
+  ASK = "ask",
+  ASK_MODEL = "ask✨",
+  // L'etincelle occupe deux colonnes dans une police a chasse fixe. Sans ce comptage, la
+  // ligne d'aide qui la porte decalerait son tiret d'une colonne.
+  displayWidth = (text: string) => text.length + (text.includes("✨") ? 1 : 0),
+  askLine = (model: boolean) => {
+    const shown = `${model ? ASK_MODEL : ASK} <question>`;
+
+    return `${shown}${" ".repeat(Math.max(1, 34 - displayWidth(shown)))}— chercher dans le site`;
+  },
+  helpLines = (model: boolean) => [
     "ls · cd <section> · bd <section>  — naviguer",
+    askLine(model),
     "theme <nom> · clear · options     — affichage",
     "cv · email · send-mail            — CV et contact",
     "share <cible>                     — LinkedIn, GitHub, lien",
@@ -280,6 +302,7 @@ const line = ({
   ALIASES = {
     "?": "help",
     aide: "help",
+    [ASK_MODEL]: ASK,
     brezinben: "benjamin",
     cat: "slime",
     cls: "clear",
@@ -288,7 +311,6 @@ const line = ({
     emacs: "vim",
     exit: "shutdown",
     feedback: "propose",
-    ia: "ai",
     idee: "propose",
     mascotte: "slime",
     nano: "vim",
@@ -437,6 +459,9 @@ const line = ({
     "theme",
   ],
   VERBS = [...PLAIN, ...[...SLASH_ONLY].map((egg) => `/${egg}`)],
+  // Les deux noms de la recherche ne s'offrent jamais ensemble : le vocabulaire ne porte
+  // que celui qui correspond a l'etat du modele.
+  vocabulary = (model: boolean) => [model ? ASK_MODEL : ASK, ...VERBS],
   // Le vocabulaire dépend du chemin déjà tapé, et pas seulement du premier mot : « slime »
   // propose ses sous-commandes, « slime expression » les expressions, « slime activity » les
   // activités. Proposer le vocabulaire entier après l'un ou l'autre ferait du bruit.
@@ -474,6 +499,8 @@ const line = ({
       "/vim": "le piège classique",
       "?": "la liste des commandes",
       aide: "la liste des commandes",
+      ask: "cherche dans le texte du site",
+      "ask✨": "un modèle local choisit la réponse",
       bd: "ouvre une section",
       cd: "ouvre une section",
       clear: "vide le journal",
@@ -539,7 +566,7 @@ export const candidates = (value: string, context: CompletionContext) => {
 
   if (parts.length === 1) {
     const pool = [
-        ...VERBS,
+        ...vocabulary(context.model),
         ...context.sections.map((entry) => entry.id),
         ...context.details.map((entry) => entry.id),
       ],
@@ -570,6 +597,148 @@ export const candidates = (value: string, context: CompletionContext) => {
 };
 
 // Tab complète jusqu'au plus long préfixe commun, puis laisse la liste faire le reste.
+// Les mots trop frequents pour departager deux passages. La liste est courte a dessein :
+// une question posee a un portfolio tient en quelques mots, et en retirer trop la vide.
+const VIDES = new Set([
+    "a",
+    "au",
+    "aux",
+    "avec",
+    "ce",
+    "ces",
+    "dans",
+    "de",
+    "des",
+    "du",
+    "elle",
+    "en",
+    "et",
+    "il",
+    "je",
+    "la",
+    "le",
+    "les",
+    "leur",
+    "lui",
+    "ma",
+    "mais",
+    "me",
+    "mes",
+    "mon",
+    "ne",
+    "nous",
+    "on",
+    "ou",
+    "par",
+    "pas",
+    "pour",
+    "qu",
+    "que",
+    "qui",
+    "sa",
+    "se",
+    "ses",
+    "son",
+    "sur",
+    "ta",
+    "te",
+    "tes",
+    "toi",
+    "ton",
+    "tu",
+    "un",
+    "une",
+    "vos",
+    "votre",
+    "vous",
+    "y",
+  ]),
+  // Une recherche ne doit pas dependre des accents ni de la casse : « éco-conception » se
+  // cherche « eco conception ».
+  words = (text: string): string[] =>
+    text
+      .normalize("NFD")
+      .replaceAll(/\p{Diacritic}/gu, "")
+      .toLowerCase()
+      .split(/[^\p{Letter}\p{Number}]+/u)
+      .filter((mot) => mot.length > 1 && !VIDES.has(mot));
+
+// Un score par recouvrement de mots, sans index ni modele. Le corpus fait dix passages
+// ecrits a la main : tout ce qui serait plus savant couterait plus qu'il ne rapporte.
+//
+// Un mot du titre pese trois fois : demander « stack » doit ouvrir la section stack, meme
+// si un autre passage prononce le mot plus souvent.
+export const search = (query: string, entries: Entry[]) => {
+  const wanted = new Set(words(query));
+
+  if (wanted.size === 0) {
+    return [];
+  }
+
+  return entries
+    .filter((entry) => (entry.ask ?? "") !== "")
+    .map((entry) => {
+      const body = words(entry.ask ?? ""),
+        title = new Set(words(entry.label)),
+        shared = body.filter((word) => wanted.has(word)),
+        hitCount = shared.length,
+        distinct = new Set(shared).size,
+        inTitle = [...wanted].filter((word) => title.has(word)).length;
+
+      // Le nombre de mots distincts touches prime sur les repetitions : un passage qui
+      // repond a toute la question vaut mieux qu'un qui martele un seul de ses mots.
+      return { entry, score: distinct * 10 + hitCount + inTitle * 30 };
+    })
+    .filter((hit) => hit.score > 0)
+    .toSorted((one, other) => other.score - one.score);
+};
+
+// La reponse est toujours le texte du corpus, jamais un texte produit. Un modele, quand il
+// y en a un, ne fait que choisir parmi ces passages : il ne parle pas a la place de
+// Benjamin.
+const answer = (query: string, entries: Entry[], model: boolean) => {
+  const shown = model ? ASK_MODEL : ASK;
+
+  if (query.trim() === "") {
+    return {
+      effects: [],
+      lines: [
+        info(`${shown} — posez une question en français. Par exemple : ${shown} accessibilité`),
+      ],
+    };
+  }
+
+  const hits = search(query, entries),
+    [best] = hits,
+    others = hits.slice(1, 4).map((hit) => hit.entry.label),
+    // Le modele voit tous les passages, pas seulement ceux qui partagent un mot avec la
+    // question. Lui donner la liste du recouvrement le reduirait a reclasser ce que la
+    // recherche lexicale a deja trouve, et « comment tu bosses » ne trouve rien du tout.
+    answerable = entries.filter((entry) => (entry.ask ?? "") !== "").map((entry) => entry.id),
+    lexical = best
+      ? [
+          done(best.entry.label),
+          line({ text: best.entry.ask ?? "" }),
+          ...(others.length > 0 ? [muted(`voir aussi : ${others.join(" · ")}`)] : []),
+        ]
+      : [
+          failed("rien ne répond à cette question dans ce portfolio."),
+          muted("help donne la liste des commandes."),
+        ],
+    measured = track(best ? "ask" : "ask_sans_reponse", { query });
+
+  if (!model || answerable.length === 0) {
+    return { effects: [measured], lines: lexical };
+  }
+
+  // Sans modele, la reponse part tout de suite. Avec un modele, elle attend son choix :
+  // deux reponses de suite pour une seule question se liraient comme une hesitation.
+  return {
+    effects: [measured, { candidates: answerable, lexical, query, type: "ask" } satisfies Effect],
+    lines: [],
+  };
+};
+
 export const commonPrefix = (entries: string[]): string => {
   if (entries.length === 0) {
     return "";
@@ -820,7 +989,7 @@ export const interpret = (raw: string, context: Context): Outcome => {
     return {
       ...out([], [say("essaie « /joke »", "happy")]),
       result: [
-        ...HELP.map((text) => ({ m: "·", t: text })),
+        ...helpLines(context.model).map((text) => ({ m: "·", t: text })),
         { m: "›", mc: "acc", t: KEYBOARD, tone: "fg2" },
       ],
     };
@@ -981,11 +1150,15 @@ export const interpret = (raw: string, context: Context): Outcome => {
     return out(egg.lines, [track("easter_egg", { nom: egg.egg }), ...(egg.say ? [egg.say] : [])]);
   }
 
+  if (command === "ask") {
+    const trouve = answer(rest, sections, context.model);
+
+    return out(trouve.lines, trouve.effects);
+  }
+
   // Ces commandes appartiennent à d'autres tickets. Elles passent quand même par le
   // dispatcher, pour qu'il reste le point unique.
   const deferred = {
-      ai: { type: "probeAI" },
-      ask: { query: rest, type: "ask" },
       email: { type: "email" },
       options: { type: "options" },
 

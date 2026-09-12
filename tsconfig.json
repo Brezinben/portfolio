@@ -17,7 +17,7 @@
     "skipLibCheck": true,
     "strict": true,
     "target": "ES2024",
-    "types": ["node"],
+    "types": ["node", "dom-chromium-ai"],
     "verbatimModuleSyntax": true
   },
   "exclude": [

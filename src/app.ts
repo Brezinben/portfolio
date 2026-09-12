@@ -276,6 +276,7 @@ const BOOT_MS = 2000,
     title: out?.title ?? "",
   }),
   section = (raw: RawSection) => ({
+    ask: raw.ask ?? "",
     cmd: raw.cmd ?? "",
     dot: safeTone(raw.dot, "ok"),
     id: raw.id,
@@ -396,6 +397,10 @@ const BOOT_MS = 2000,
   // La modale retient le regard, et une passe de mue dure deux secondes et demie. La mue
   // rejoue donc tant que la modale est ouverte, puis court encore ce sursis apres.
   MORPH_HOLD_MS = 600,
+  // La premiere question paie la mise en route du modele, qui tient rarement en cinq
+  // secondes. L'attente se voit a l'ecran, donc mieux vaut la laisser courir que rendre
+  // une reponse par defaut alors que le modele allait repondre.
+  ASK_MS = 15_000,
   SLEEP_MS = 10_000,
   TWITCH_MS = 5000,
   TWITCH_ODDS = 0.04,
@@ -412,6 +417,15 @@ interface Umami {
   track?: (name: string, data?: Record<string, TrackValue>) => void;
 }
 
+// L'API Prompt du navigateur, proposee par le W3C et disponible dans Chrome seulement.
+// MDN la donne « limited availability » : elle n'est pas Baseline, et elle exige un
+// contexte securise. « absent » est donc le cas majoritaire, pas le cas d'erreur.
+//
+// Les types viennent de « @types/dom-chromium-ai ». Ils declarent « LanguageModel » comme
+// toujours present, a la facon du reste du DOM : d'ou le « in globalThis » plutot qu'une
+// comparaison a undefined, qui ne compilerait pas. « topK » et « temperature » n'existent
+// que dans les extensions Chrome, et « samplingMode » n'est ouvert au web qu'en essai
+// d'origine : aucun des trois n'a sa place ici.
 declare global {
   // eslint-disable-next-line no-var, vars-on-top
   var umami: Umami | undefined;
@@ -420,6 +434,26 @@ declare global {
 // Une cle libre dans une table fermee : la table garde son type, l'appelant recoit
 // undefined quand la cle n'y est pas.
 const lookup = <V>(table: Readonly<Record<string, V>>, key: string): V | undefined => table[key];
+
+// « responseConstraint » fait rendre du JSON : un identifiant en sort entre guillemets. Le
+// comparer tel quel ne trouvait jamais le passage, et la reponse du corpus sortait a chaque
+// fois. Un modele qui ignore la contrainte rend du texte brut, qui reste utilisable.
+//
+// Un identifiant du corpus n'a ni guillemet ni echappement : retirer la paire suffit, et
+// evite de decoder du JSON pour en tirer une chaine. L'identifiant est de toute facon
+// cherche dans le corpus, ou un inconnu ne designe rien.
+const readChoice = (raw: string) => {
+  const trimmed = raw.trim();
+
+  return trimmed.startsWith('"') && trimmed.endsWith('"') ? trimmed.slice(1, -1) : trimmed;
+};
+
+// L'attente depassee et le refus ne se reparent pas de la meme facon : l'une demande de
+// patienter, l'autre de regarder l'etat du modele.
+const askFailure = (cause: unknown) =>
+  cause instanceof DOMException && cause.name === "TimeoutError"
+    ? `le modèle local n'a pas répondu en ${ASK_MS / 1000} s.`
+    : "le modèle local a refusé de répondre.";
 
 // Alpine pose ses magies sur le composant apres l'avoir construit : elles ne sont pas
 // dans l'objet litteral, mais « this » les voit a l'execution.
@@ -454,6 +488,7 @@ type Beat = ReturnType<typeof setInterval>;
 // Ce que la page tient en memoire. Les minuteurs en font partie : les declarer les rend
 // visibles, et dit d'un coup d'oeil ce que la page a en vol.
 interface State {
+  asker: AbortController | undefined;
   bubbleTimer: Delay | undefined;
   compactor: Delay | undefined;
   latency: Delay | undefined;
@@ -509,6 +544,7 @@ interface State {
   form: string;
   becoming: string;
   loaded: Set<string>;
+  modelState: string;
   // Qui a ouvert la modale : le bouton de l'en-tete, ou la saisie via la commande.
   optsReturn: HTMLElement | undefined;
   online: boolean;
@@ -520,6 +556,8 @@ interface State {
   recallAt: number;
   resizing: { height: number; y: number } | undefined;
   running: boolean;
+  // Le modele cherche, et rien n'est encore affiche : sa reponse remplacera l'attente.
+  thinking: boolean;
   section: string;
   wantResult: boolean;
   sections: Section[];
@@ -558,6 +596,7 @@ document.addEventListener("alpine:init", () => {
     withMagics({
       THEMES,
       TOGGLES,
+      asker: undefined,
       bubbleTimer: undefined,
       compactor: undefined,
       latency: undefined,
@@ -611,6 +650,7 @@ document.addEventListener("alpine:init", () => {
       form: "slime",
       becoming: "",
       loaded: new Set(["slime"]),
+      modelState: "unknown",
       online: true,
       out: true,
       pane: "nav",
@@ -620,6 +660,7 @@ document.addEventListener("alpine:init", () => {
       recallAt: -1,
       resizing: undefined,
       running: false,
+      thinking: false,
       section: "whoami",
       wantResult: false,
       sections: [],
@@ -661,6 +702,7 @@ document.addEventListener("alpine:init", () => {
         this.startMascot();
         globalThis.addEventListener("popstate", () => this.fromHash());
         this.watchNetwork();
+        this.learnModel();
         globalThis.addEventListener("resize", () => this.setLogHeight(this.logHeight));
         this.load();
       },
@@ -2082,6 +2124,14 @@ document.addEventListener("alpine:init", () => {
           return;
         }
 
+        // Une question en vol n'a plus rien a dire des que la commande suivante part. Sans
+        // cette coupure ici, seule une seconde question l'arretait : « clear » vidait le
+        // journal et la reponse d'avant y tombait toute seule, et une question sans
+        // trouvaille laissait la precedente repondre par-dessus son refus.
+        this.asker?.abort();
+        this.asker = undefined;
+        this.thinking = false;
+
         const { effects, lines, result } = interpret(raw, {
           columns: Math.floor((this.$refs["cli"]?.clientWidth ?? 400) / CHAR_PX),
           current: this.current,
@@ -2090,6 +2140,7 @@ document.addEventListener("alpine:init", () => {
           jokeIndex: this.jokeIndex,
           jokes: this.jokes,
           mascot: this.mascotStanding(),
+          model: this.modelState === "available",
           pending: this.pending,
           sections: this.sections,
           share: this.share,
@@ -2238,7 +2289,124 @@ document.addEventListener("alpine:init", () => {
         }
       },
 
-      // L'API onLine ne promet pas l'internet, seulement une interface active. Elle dit
+      // Le modele local ne produit jamais de texte : il choisit un identifiant dans une
+      // liste fermee, et la page affiche le passage que cet identifiant designe. Une
+      // recherche par recouvrement de mots rate « comment tu bosses » face a un passage qui
+      // parle de methode sans reprendre le mot ; un modele, lui, le voit. Le laisser
+      // repondre a la place de Benjamin, en revanche, n'apporterait rien qu'une invention
+      // possible sur son propre parcours.
+      //
+      // « lexical » n'arrive que si l'interpreteur a retenu sa reponse pour laisser le
+      // modele choisir. Elle sort telle quelle des qu'il echoue, refuse ou tarde trop.
+      async answerWithModel(query: string, candidateIds: string[], lexical?: Line[]) {
+        if (lexical === undefined || !("LanguageModel" in globalThis)) {
+          return;
+        }
+
+        const asker = new AbortController();
+
+        this.asker = asker;
+        this.thinking = true;
+
+        // Une session fermee de travers ne doit pas faire repasser la question par le repli :
+        // la reponse est deja affichee, elle sortirait deux fois.
+        let answered = false;
+
+        try {
+          const session = await LanguageModel.create({
+            // La question et les passages sont en francais. Le declarer laisse le navigateur
+            // refuser tout de suite plutot que de repondre depuis un modele d'une autre langue.
+            expectedInputs: [{ languages: ["fr"], type: "text" }],
+            signal: AbortSignal.any([asker.signal, AbortSignal.timeout(ASK_MS)]),
+          });
+
+          try {
+            const choice = await session.prompt(this.askPrompt(query, candidateIds), {
+              responseConstraint: { enum: candidateIds, type: "string" },
+              signal: AbortSignal.any([asker.signal, AbortSignal.timeout(ASK_MS)]),
+            });
+
+            this.showAskChoice(readChoice(choice), lexical, asker);
+            answered = true;
+          } finally {
+            session.destroy();
+          }
+        } catch (error) {
+          // Le modele muet, refuse ou trop lent ne doit pas laisser la question sans
+          // reponse : celle du corpus attendait pour ce cas. Une question remplacee par une
+          // autre, elle, n'a plus rien a dire.
+          //
+          // Son echec se dit, il ne se confond pas avec la reponse. « rien ne repond dans ce
+          // portfolio » et « le modele a lache » se lisaient pareil, et menaient a chercher
+          // le defaut du mauvais cote.
+          if (!answered && this.asker === asker) {
+            this.journal = [
+              ...this.journal,
+              { c: "warn", m: "✗", mc: "warn", t: askFailure(error) } satisfies Line,
+              ...lexical,
+            ];
+          }
+        } finally {
+          // La question coupee n'eteint pas l'attente de celle qui l'a remplacee.
+          if (this.asker === asker) {
+            this.thinking = false;
+          }
+        }
+      },
+
+      // « m-transway » ne dit rien de ce que la mission couvre. Sans le texte en face, le
+      // modele choisit sur la forme de l'identifiant, et perd l'avantage qu'il avait sur le
+      // recouvrement de mots. La contrainte de reponse, elle, reste sur les identifiants.
+      askPrompt(query: string, candidateIds: string[]) {
+        const corpus = [...this.sections, ...this.details],
+          topics = candidateIds.map((id) => {
+            const found = corpus.find((entry) => entry.id === id);
+
+            return `${id} : ${found?.label ?? id} — ${found?.ask ?? ""}`;
+          });
+
+        return [
+          `Question : « ${query} ».`,
+          "Voici les sujets de ce portfolio, chacun précédé de son identifiant.",
+          ...topics,
+          "Réponds uniquement par l'identifiant du sujet qui répond le mieux.",
+        ].join("\n");
+      },
+
+      // Le choix du modele designe un passage du corpus, et c'est ce passage qui s'affiche.
+      // Un identifiant inconnu ne designe rien : la reponse du corpus reprend la main.
+      showAskChoice(id: string, lexical: Line[], asker: AbortController) {
+        if (this.asker !== asker) {
+          return;
+        }
+
+        const found = [...this.sections, ...this.details].find((entry) => entry.id === id);
+
+        this.journal =
+          !found || (found.ask ?? "") === ""
+            ? [...this.journal, ...lexical]
+            : [
+                ...this.journal,
+                { c: "fg", m: "✓", mc: "ok", t: found.label } satisfies Line,
+                { c: "fg", m: " ", mc: "fg2", t: found.ask ?? "" } satisfies Line,
+              ];
+      },
+
+      // « availability » est asynchrone, l'interpreteur ne l'est pas : sans cette lecture au
+      // demarrage, la premiere question partirait en croyant qu'aucun modele n'est la.
+      async learnModel() {
+        if (!("LanguageModel" in globalThis)) {
+          return;
+        }
+
+        try {
+          this.modelState = await LanguageModel.availability();
+        } catch {
+          // Un refus au demarrage laisse « unknown » : « ask » repond alors sans modele,
+          // ce qui est le comportement sans API.
+        }
+      },
+
       // « hors ligne » sans se tromper, et « en ligne » avec optimisme : c'est le sens
       // utile ici, puisque la page ne sert qu'a refuser une commande vouee a l'echec.
       watchNetwork() {
@@ -2289,6 +2457,8 @@ document.addEventListener("alpine:init", () => {
           } else if (effect.type === "pending") {
             this.pending = effect.payload;
             this.input = effect.answer ?? "";
+          } else if (effect.type === "ask") {
+            this.answerWithModel(effect.query, effect.candidates, effect.lexical);
           } else if (effect.type === "send") {
             if (this.online) {
               this.send(effect.payload);
@@ -2349,6 +2519,7 @@ document.addEventListener("alpine:init", () => {
       suggest() {
         const result = candidates(this.input, {
           details: this.details,
+          model: this.modelState === "available",
           sections: this.sections,
           shareTargets: this.shareTargets,
           themes: THEMES.map((entry) => entry.id),
