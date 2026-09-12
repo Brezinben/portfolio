@@ -146,10 +146,12 @@ test("theme propose ses thèmes au second mot", () => {
   assert.deepEqual(candidates("theme ", CONTEXT).hits, ["dark", "light", "noctis"]);
 });
 
-// Les proposer ferait taper une commande qui ne rend rien.
-test("ai et ask sortent du vocabulaire tant qu'ils ne rendent rien", () => {
-  assert.ok(!hits("a").includes("ai"));
-  assert.ok(!hits("a").includes("ask"));
+// Les deux rendent maintenant une réponse. Les garder hors du vocabulaire les rendait
+// introuvables : ni l'aide ni la complétion ne les nommait.
+test("ai et ask font partie du vocabulaire", () => {
+  assert.ok(hits("a").includes("ai"));
+  assert.ok(hits("a").includes("ask"));
+  assert.equal(hintFor("", "ask"), "pose une question au site");
 });
 
 // La liste ne montre que des noms. « goal » ou « bd » ne s'apprennent pas d'un nom :

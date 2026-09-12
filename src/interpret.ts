@@ -223,6 +223,7 @@ const line = ({
   ACTIVITIES = ["bike", "coffee", "goal", "juggle", "lift", "train"],
   HELP = [
     "ls · cd <section> · bd <section>  — naviguer",
+    "ask <question> · ai               — chercher dans le site",
     "theme <nom> · clear · options     — affichage",
     "cv · email · send-mail            — CV et contact",
     "share <cible>                     — LinkedIn, GitHub, lien",
@@ -419,7 +420,9 @@ const line = ({
   // slash : sinon l'autocompletion propose ce que le dispatcher refuse.
   PLAIN = [
     "?",
+    "ai",
     "aide",
+    "ask",
     "bd",
     "cd",
     "clear",
@@ -476,7 +479,9 @@ const line = ({
       "/sudo": "non.",
       "/vim": "le piège classique",
       "?": "la liste des commandes",
+      ai: "l'état du modèle local",
       aide: "la liste des commandes",
+      ask: "pose une question au site",
       bd: "ouvre une section",
       cd: "ouvre une section",
       clear: "vide le journal",

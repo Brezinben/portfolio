@@ -176,3 +176,15 @@ test("une seconde question coupe le choix du modèle sur la première", async ({
     "un seul choix de modèle, celui de la question en cours",
   ).toHaveCount(1);
 });
+
+// Une commande qu'on doit deja connaitre pour la taper n'existe pas pour le visiteur.
+test("ask se decouvre par la completion et par l'aide", async ({ page }) => {
+  const cli = await boot(page);
+
+  await cli.fill("a");
+  await expect(page.locator("[data-suggestions]")).toContainText("ask");
+
+  await cli.fill("help");
+  await cli.press("Enter");
+  await expect(page.locator("[data-result]")).toContainText("ask <question>");
+});
