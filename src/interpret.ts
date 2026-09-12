@@ -14,12 +14,24 @@ import {
   helpLines,
   vocabulary,
 } from "./interpret/vocabulary.ts";
+import {
+  type Line,
+  MAX_SUGGESTIONS,
+  done,
+  echoed,
+  failed,
+  info,
+  line,
+  muted,
+  offer,
+} from "./interpret/lines.ts";
 import { type Share, shareTarget } from "./interpret/share.ts";
 import { type Tone, safeTone } from "./interpret/tone.ts";
 import { lookup } from "./interpret/lookup.ts";
 
 // La facade : les tests et la coquille passent par cette porte, jamais par un module de
 // « interpret/ ». Elle n'expose que ce qui a un consommateur.
+export { MAX_SUGGESTIONS, type Line } from "./interpret/lines.ts";
 export { TONES, type Tone, safeTone } from "./interpret/tone.ts";
 export {
   type Share,
@@ -32,22 +44,9 @@ export {
 const YES = /^(?<yes>o|oui|y|yes|ok)$/iu,
   NO = /^(?<no>n|non|no|annuler|cancel)$/iu;
 
-// Dix propositions au maximum, sans défilement. Le même seuil décide si une aide en
-// ligne peut lister ses valeurs ou doit renvoyer à la tabulation.
-export const MAX_SUGGESTIONS = 10;
-
 export type TrackValue = boolean | number | string;
 
 export type Expression = "alert" | "happy" | "idle" | "laugh" | "sad" | "scared" | "sleep";
-
-// Une ligne du journal : puce, couleur de puce, texte, ton. Les noms courts viennent du
-// canvas et voyagent jusqu'au balisage.
-export interface Line {
-  c: Tone;
-  m: string;
-  mc: Tone;
-  t: string;
-}
 
 // Un morceau colore a l'interieur d'une ligne de contenu.
 export interface Token {
@@ -167,36 +166,7 @@ export interface Context extends CompletionContext {
   share: Share;
 }
 
-const line = ({
-    marker = "",
-    markerTone = "fg2",
-    text = "",
-    tone = "fg",
-  }: {
-    marker?: string;
-    markerTone?: Tone;
-    text?: string;
-    tone?: Tone;
-  }): Line => ({
-    c: tone,
-    m: marker,
-    mc: markerTone,
-    t: text,
-  }),
-  info = (t: string) => line({ marker: "·", text: t }),
-  muted = (t: string) => line({ marker: "·", text: t, tone: "fg2" }),
-  done = (t: string) => line({ marker: "✓", markerTone: "ok", text: t }),
-  failed = (t: string) => line({ marker: "✗", markerTone: "warn", text: t }),
-  echoed = (t: string) => line({ marker: "›", markerTone: "acc", text: t, tone: "fg2" }),
-  // Sous dix valeurs, la liste tient sur une ligne et se lit d'un coup. Au-dela, elle
-  // deborde du volet : la completion la montre mieux, et la ligne apprend la touche.
-  offer = (usage: string, values: string[]) =>
-    info(
-      values.length < MAX_SUGGESTIONS
-        ? `${usage} — ${values.join(" · ")}`
-        : `${usage} — Tab propose les ${Math.min(values.length, MAX_SUGGESTIONS)} valeurs`,
-    ),
-  track = (event: string, props: Record<string, TrackValue>): Effect => ({
+const track = (event: string, props: Record<string, TrackValue>): Effect => ({
     event,
     props,
     type: "track",
