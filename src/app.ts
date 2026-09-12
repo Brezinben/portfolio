@@ -397,9 +397,8 @@ const BOOT_MS = 2000,
   // La modale retient le regard, et une passe de mue dure deux secondes et demie. La mue
   // rejoue donc tant que la modale est ouverte, puis court encore ce sursis apres.
   MORPH_HOLD_MS = 600,
-  // « ai » interroge vraiment le modele, et un modele local peut prendre son temps a la
-  // premiere question. Au-dela, la commande repond « installe, mais il n'a pas repondu »
-  // plutot que de laisser le journal muet.
+  // Un modele local peut prendre son temps a la premiere question. Au-dela, la reponse du
+  // corpus sort a sa place, plutot que de laisser le journal muet.
   PROBE_MS = 5000,
   SLEEP_MS = 10_000,
   TWITCH_MS = 5000,
@@ -554,7 +553,7 @@ interface State {
   recallAt: number;
   resizing: { height: number; y: number } | undefined;
   running: boolean;
-  // Le modele cherche pendant que la reponse lexicale est deja a l'ecran.
+  // Le modele cherche, et rien n'est encore affiche : sa reponse remplacera l'attente.
   thinking: boolean;
   section: string;
   wantResult: boolean;
@@ -2122,6 +2121,14 @@ document.addEventListener("alpine:init", () => {
           return;
         }
 
+        // Une question en vol n'a plus rien a dire des que la commande suivante part. Sans
+        // cette coupure ici, seule une seconde question l'arretait : « clear » vidait le
+        // journal et la reponse d'avant y tombait toute seule, et une question sans
+        // trouvaille laissait la precedente repondre par-dessus son refus.
+        this.asker?.abort();
+        this.asker = undefined;
+        this.thinking = false;
+
         const { effects, lines, result } = interpret(raw, {
           columns: Math.floor((this.$refs["cli"]?.clientWidth ?? 400) / CHAR_PX),
           current: this.current,
@@ -2293,14 +2300,14 @@ document.addEventListener("alpine:init", () => {
           return;
         }
 
-        // Deux « ask » de suite courent l'un contre l'autre. Sans cette coupure, la reponse
-        // de la premiere question arrive apres celle de la seconde, et s'ecrit dessous.
-        this.asker?.abort();
-
         const asker = new AbortController();
 
         this.asker = asker;
         this.thinking = true;
+
+        // Une session fermee de travers ne doit pas faire repasser la question par le repli :
+        // la reponse est deja affichee, elle sortirait deux fois.
+        let repondu = false;
 
         try {
           const session = await globalThis.LanguageModel.create({
@@ -2311,15 +2318,13 @@ document.addEventListener("alpine:init", () => {
           });
 
           try {
-            const choix = await session.prompt(
-              `Question : « ${query} ». Parmi ces sujets, lequel y répond le mieux ? ${pistes.join(", ")}`,
-              {
-                responseConstraint: { enum: pistes, type: "string" },
-                signal: AbortSignal.any([asker.signal, AbortSignal.timeout(PROBE_MS)]),
-              },
-            );
+            const choix = await session.prompt(this.askPrompt(query, pistes), {
+              responseConstraint: { enum: pistes, type: "string" },
+              signal: AbortSignal.any([asker.signal, AbortSignal.timeout(PROBE_MS)]),
+            });
 
             this.showAskChoice(choix.trim(), lexical, asker);
+            repondu = true;
           } finally {
             session.destroy();
           }
@@ -2327,7 +2332,7 @@ document.addEventListener("alpine:init", () => {
           // Le modele muet, refuse ou trop lent ne doit pas laisser la question sans
           // reponse : celle du corpus attendait pour ce cas. Une question remplacee par une
           // autre, elle, n'a plus rien a dire.
-          if (this.asker === asker) {
+          if (!repondu && this.asker === asker) {
             this.journal = [...this.journal, ...lexical];
           }
         } finally {
@@ -2336,6 +2341,25 @@ document.addEventListener("alpine:init", () => {
             this.thinking = false;
           }
         }
+      },
+
+      // « m-transway » ne dit rien de ce que la mission couvre. Sans le texte en face, le
+      // modele choisit sur la forme de l'identifiant, et perd l'avantage qu'il avait sur le
+      // recouvrement de mots. La contrainte de reponse, elle, reste sur les identifiants.
+      askPrompt(query: string, pistes: string[]) {
+        const corpus = [...this.sections, ...this.details],
+          sujets = pistes.map((id) => {
+            const trouve = corpus.find((entry) => entry.id === id);
+
+            return `${id} : ${trouve?.label ?? id} — ${trouve?.ask ?? ""}`;
+          });
+
+        return [
+          `Question : « ${query} ».`,
+          "Voici les sujets de ce portfolio, chacun précédé de son identifiant.",
+          ...sujets,
+          "Réponds uniquement par l'identifiant du sujet qui répond le mieux.",
+        ].join("\n");
       },
 
       // Le choix du modele designe un passage du corpus, et c'est ce passage qui s'affiche.

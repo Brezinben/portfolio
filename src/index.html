@@ -1657,10 +1657,9 @@
                 x-text="entry.t"></span>
             </p>
           </template>
-          <!-- La reponse lexicale est deja affichee quand le modele commence a chercher.
-               Sans cette ligne, rien ne dit qu'une seconde reponse peut encore arriver, et
-               le visiteur croit la commande finie. Meme caractere et meme pulsation que
-               « execution… », pour que les deux attentes se lisent pareil. -->
+          <!-- Quand un modele choisit la reponse, rien ne s'affiche avant qu'il ait choisi.
+               Sans cette ligne, la commande paraitrait sans effet. Meme caractere et meme
+               pulsation que « execution… », pour que les deux attentes se lisent pareil. -->
           <template x-if="thinking">
             <p data-thinking
               style="display:grid;grid-template-columns:18px minmax(0,1fr);gap:8px;align-items:baseline;line-height:1.5">

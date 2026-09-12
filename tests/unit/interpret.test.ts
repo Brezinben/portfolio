@@ -30,6 +30,8 @@ const CONTEXT: Context = {
     shareTargets: [],
     themes: ["dark", "light", "noctis"],
   },
+  // Le meme contexte, avec un modele local disponible : la recherche lui laisse choisir.
+  AVEC_MODELE: Context = { ...CONTEXT, model: true },
   texts = (result: Outcome) => result.lines.map((line) => line.t),
   // Ce qu'une commande met dans le resultat, la ou le journal ne recoit que l'echo.
   resultTexts = (result: Outcome) => (result.result ?? []).map((line) => line.t ?? ""),
@@ -362,16 +364,49 @@ test("ask répond avec le passage du corpus, jamais avec un texte produit", () =
   );
 });
 
-// Le descripteur ne sert qu'a un modele local, quand il y en a un : il porte les candidats
-// que ce modele a le droit de departager, et rien d'autre.
-test("ask transporte la question et ses candidats", () => {
-  const descripteur = effectOf(interpret("ask nantes développeur", CONTEXT), "ask");
+// Sans modele, la reponse part telle quelle : aucun descripteur, personne pour le lire.
+test("sans modèle, ask répond seul et ne décrit aucun candidat", () => {
+  const result = interpret("ask nantes développeur", CONTEXT);
 
-  assert.equal(descripteur?.query, "nantes développeur");
-  assert.deepEqual(descripteur?.candidates, ["whoami"]);
+  assert.equal(effectOf(result, "ask"), undefined);
+  assert.ok(texts(result).some((t) => t.includes("Nantes")));
 });
 
-test("ask sans réponse le dit, et ne propose aucun candidat", () => {
+// Le modele voit tous les passages, pas seulement ceux qui partagent un mot avec la
+// question. Ne lui donner que les trouvailles lexicales le reduirait a les reclasser.
+test("avec un modèle, ask lui soumet tous les passages", () => {
+  const descripteur = effectOf(interpret("ask nantes développeur", AVEC_MODELE), "ask");
+
+  assert.equal(descripteur?.query, "nantes développeur");
+  assert.deepEqual(descripteur?.candidates, ["whoami", "stack", "m-kereis"]);
+});
+
+// La reponse attend le modele, mais elle voyage avec le descripteur : elle sort si le
+// modele echoue, et la coquille n'a pas a la reconstruire.
+test("avec un modèle, la réponse du corpus attend dans le descripteur", () => {
+  const result = interpret("ask nantes développeur", AVEC_MODELE),
+    descripteur = effectOf(result, "ask");
+
+  assert.deepEqual(texts(result), ["ask nantes développeur"], "rien ne s'affiche encore");
+  assert.ok(
+    (descripteur?.lexical ?? []).some((entry) => entry.t.includes("Nantes")),
+    "la réponse lexicale est en réserve",
+  );
+});
+
+// Le recouvrement de mots ne trouve rien des que la question est tournee autrement. C'est
+// le cas ou un modele sert le plus : il doit etre consulte, pas court-circuite.
+test("sans trouvaille lexicale, le modèle est quand même consulté", () => {
+  const descripteur = effectOf(interpret("ask zzzzz", AVEC_MODELE), "ask");
+
+  assert.deepEqual(descripteur?.candidates, ["whoami", "stack", "m-kereis"]);
+  assert.ok(
+    (descripteur?.lexical ?? []).some((entry) => entry.t.includes("rien ne répond")),
+    "le refus reste en réserve, si le modèle ne trouve pas non plus",
+  );
+});
+
+test("sans modèle, ask sans réponse le dit et ne propose aucun candidat", () => {
   const result = interpret("ask zzzzz", CONTEXT);
 
   assert.ok(texts(result).some((t) => t.includes("rien ne répond")));

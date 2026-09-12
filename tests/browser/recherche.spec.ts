@@ -1,6 +1,13 @@
 import { expect, test } from "@playwright/test";
 import type { Page } from "@playwright/test";
 
+// Le faux modele pose sa gachette sur la page. La declarer evite de la retrouver par une
+// assertion de type, qui masquerait une vraie erreur si le nom changeait.
+declare global {
+  // eslint-disable-next-line no-var, vars-on-top
+  var repondre: ((id: string) => void) | undefined;
+}
+
 const boot = async (page: Page) => {
     await page.goto("/");
     await expect(page.locator("[data-boot]")).toHaveCount(0, { timeout: 10_000 });
@@ -30,10 +37,13 @@ const boot = async (page: Page) => {
         },
       });
     }, choix),
-  // Un modele qui ne repond qu'a l'abandon : il laisse voir laquelle des deux questions
-  // est coupee, ce qu'un modele instantane cacherait.
+  // Un modele qui ne repond que sur ordre. Un minuteur ferait courir le test contre la
+  // latence de la machine : l'attente doit tenir tant que le test ne l'a pas relachee.
   poserModeleLent = (page: Page) =>
     page.addInitScript(() => {
+      const { promise, reject, resolve } = Promise.withResolvers<string>();
+
+      globalThis.repondre = resolve;
       Object.defineProperty(globalThis, "LanguageModel", {
         configurable: true,
         value: {
@@ -42,20 +52,19 @@ const boot = async (page: Page) => {
             Promise.resolve({
               destroy: () => undefined,
               prompt: (_input: string, options?: { signal?: AbortSignal }) => {
-                const { promise, reject, resolve } = Promise.withResolvers<string>();
-
                 options?.signal?.addEventListener("abort", () => {
                   reject(new Error("coupé"));
                 });
-                setTimeout(() => {
-                  resolve("contact");
-                }, 300);
 
                 return promise;
               },
             }),
         },
       });
+    }),
+  relacherModele = (page: Page) =>
+    page.evaluate(() => {
+      globalThis.repondre?.("contact");
     });
 
 test("ask répond avec le texte du portfolio, sans modèle et sans réseau", async ({ page }) => {
@@ -74,6 +83,8 @@ test("ask répond avec le texte du portfolio, sans modèle et sans réseau", asy
 });
 
 test("ask sans réponse le dit au lieu d'inventer", async ({ page }) => {
+  await retirerModele(page);
+
   const cli = await boot(page);
 
   await cli.fill("ask zzzzzzz");
@@ -83,6 +94,8 @@ test("ask sans réponse le dit au lieu d'inventer", async ({ page }) => {
 });
 
 test("ask sans question rappelle comment l'employer", async ({ page }) => {
+  await retirerModele(page);
+
   const cli = await boot(page);
 
   await cli.fill("ask");
@@ -137,6 +150,7 @@ test("une seconde question coupe le choix du modèle sur la première", async ({
   const journal = page.locator("[data-journal]");
 
   await expect(journal).toContainText("RGAA");
+  await relacherModele(page);
   await expect(
     journal.locator("text=48 heures"),
     "une seule réponse de modèle, celle de la question en cours",
@@ -145,6 +159,8 @@ test("une seconde question coupe le choix du modèle sur la première", async ({
 
 // Une commande qu'on doit deja connaitre pour la taper n'existe pas pour le visiteur.
 test("ask se decouvre par la completion et par l'aide", async ({ page }) => {
+  await retirerModele(page);
+
   const cli = await boot(page);
 
   await cli.fill("a");
@@ -155,13 +171,13 @@ test("ask se decouvre par la completion et par l'aide", async ({ page }) => {
   await expect(page.locator("[data-result]")).toContainText("ask <question>");
 });
 
-// La reponse lexicale est deja affichee quand le modele commence. Sans marque d'attente,
-// la commande parait finie, et la piste qui arrive ensuite surprend.
+// Rien ne s'affiche avant que le modele ait choisi. Sans marque d'attente, la commande
+// paraitrait sans effet.
 test("l'attente du modèle se voit, puis disparaît", async ({ page }) => {
   await poserModeleLent(page);
 
-  const cli = await boot(page);
-  const attente = page.locator("[data-thinking]");
+  const cli = await boot(page),
+    attente = page.locator("[data-thinking]");
 
   await cli.fill("ask où travailles-tu à Nantes");
   await cli.press("Enter");
@@ -169,8 +185,29 @@ test("l'attente du modèle se voit, puis disparaît", async ({ page }) => {
   await expect(attente).toBeVisible();
   await expect(attente).toContainText("le modèle réfléchit");
 
+  await relacherModele(page);
   await expect(page.locator("[data-journal]")).toContainText("48 heures");
   await expect(attente, "l'attente s'efface avec la réponse").toHaveCount(0);
+});
+
+// « clear » vidait le journal sans arreter la question en vol : la reponse d'avant y
+// tombait toute seule, dans un journal cense etre vide.
+test("clear arrête la question en vol", async ({ page }) => {
+  await poserModeleLent(page);
+
+  const cli = await boot(page),
+    journal = page.locator("[data-journal]");
+
+  await cli.fill("ask où travailles-tu à Nantes");
+  await cli.press("Enter");
+  await expect(page.locator("[data-thinking]")).toBeVisible();
+
+  await cli.fill("clear");
+  await cli.press("Enter");
+  await expect(page.locator("[data-thinking]"), "l'attente tombe aussi").toHaveCount(0);
+
+  await relacherModele(page);
+  await expect(journal).not.toContainText("48 heures");
 });
 
 // Le modele repond en premier, donc son silence laisserait la question sans reponse. Celle
@@ -233,4 +270,20 @@ test("l'aide nomme la recherche sous le nom qui s'offre", async ({ page }) => {
   await cli.fill("help");
   await cli.press("Enter");
   await expect(page.locator("[data-result]")).toContainText("ask✨ <question>");
+});
+
+// Le defaut que la revue a trouve : le recouvrement de mots ne trouvait rien, et le modele
+// n'etait meme pas consulte. C'est pourtant le seul cas ou il apporte quelque chose.
+test("une question qu'aucun mot ne trouve passe quand même par le modèle", async ({ page }) => {
+  await poserModele(page, "contact");
+
+  const cli = await boot(page);
+
+  await cli.fill("ask comment tu bosses");
+  await cli.press("Enter");
+
+  const journal = page.locator("[data-journal]");
+
+  await expect(journal, "le modèle a choisi un passage").toContainText("48 heures");
+  await expect(journal).not.toContainText("rien ne répond");
 });

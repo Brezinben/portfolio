@@ -680,8 +680,9 @@ export const search = (query: string, entries: Entry[]) => {
     .map((entry) => {
       const corpus = mots(entry.ask ?? ""),
         titre = new Set(mots(entry.label)),
-        touches = corpus.filter((mot) => cherches.has(mot)).length,
-        vus = new Set(corpus.filter((mot) => cherches.has(mot))).size,
+        communs = corpus.filter((mot) => cherches.has(mot)),
+        touches = communs.length,
+        vus = new Set(communs).size,
         dansTitre = [...cherches].filter((mot) => titre.has(mot)).length;
 
       // Le nombre de mots distincts touches prime sur les repetitions : un passage qui
@@ -696,46 +697,53 @@ export const search = (query: string, entries: Entry[]) => {
 // y en a un, ne fait que choisir parmi ces passages : il ne parle pas a la place de
 // Benjamin.
 const answer = (query: string, entries: Entry[], model: boolean) => {
+  const nom = model ? ASK_MODEL : ASK;
+
   if (query.trim() === "") {
     return {
       effects: [],
-      lines: [info("ask — posez une question en français. Par exemple : ask accessibilité")],
+      lines: [info(`${nom} — posez une question en français. Par exemple : ${nom} accessibilité`)],
     };
   }
 
   const trouves = search(query, entries),
     [meilleur] = trouves;
 
-  if (!meilleur) {
-    return {
-      effects: [track("ask_sans_reponse", { query })],
-      lines: [
-        failed("rien ne répond à cette question dans ce portfolio."),
-        muted("help donne la liste des commandes."),
-      ],
-    };
+  // Le modele voit tous les passages, pas seulement ceux qui partagent un mot avec la
+  // question. Lui donner la liste du recouvrement le reduirait a reclasser ce que la
+  // recherche lexicale a deja trouve, et « comment tu bosses » ne trouve rien du tout.
+  const repondables = entries.filter((entry) => (entry.ask ?? "") !== "").map((entry) => entry.id),
+    lexical = meilleur
+      ? [
+          done(meilleur.entry.label),
+          line({ text: meilleur.entry.ask ?? "" }),
+          ...(trouves.slice(1, 4).length > 0
+            ? [
+                muted(
+                  `voir aussi : ${trouves
+                    .slice(1, 4)
+                    .map((hit) => hit.entry.label)
+                    .join(" · ")}`,
+                ),
+              ]
+            : []),
+        ]
+      : [
+          failed("rien ne répond à cette question dans ce portfolio."),
+          muted("help donne la liste des commandes."),
+        ],
+    mesure = track(meilleur ? "ask" : "ask_sans_reponse", { query });
+
+  if (!model || repondables.length === 0) {
+    return { effects: [mesure], lines: lexical };
   }
-
-  const autres = trouves.slice(1, 4).map((hit) => hit.entry.label),
-    lexical = [
-      done(meilleur.entry.label),
-      line({ text: meilleur.entry.ask ?? "" }),
-      ...(autres.length > 0 ? [muted(`voir aussi : ${autres.join(" · ")}`)] : []),
-    ];
-
-  const demande: Extract<Effect, { type: "ask" }> = {
-    candidates: trouves.map((hit) => hit.entry.id),
-    query,
-    type: "ask",
-  };
 
   // Sans modele, la reponse part tout de suite. Avec un modele, elle attend son choix :
   // deux reponses de suite pour une seule question se liraient comme une hesitation.
-  if (model) {
-    demande.lexical = lexical;
-  }
-
-  return { effects: [track("ask", { query }), demande], lines: model ? [] : lexical };
+  return {
+    effects: [mesure, { candidates: repondables, lexical, query, type: "ask" } satisfies Effect],
+    lines: [],
+  };
 };
 
 export const commonPrefix = (entries: string[]): string => {
