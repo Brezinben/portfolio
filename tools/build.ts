@@ -33,6 +33,9 @@ const ROOT = fileURLToPath(new URL("../", import.meta.url)),
   KEPT_VERSIONS = 3,
   CONTENT = "content.json",
   TRANSFORMED = new Set([CONTENT, "index.html", "texte.html"]),
+  // Les dossiers qui ne portent que des modules TypeScript. Le bundle les absorbe : les
+  // copier ne publierait que des dossiers vides.
+  SOURCE_ONLY = new Set(["interpret", "terminal"]),
   // Ces noms sont des contrats avec l'extérieur : iOS demande /apple-touch-icon.png sans
   // balise, la page charge content.json par une URL relative, et les robots lisent llms.txt.
   FIXED_NAMES = new Set([
@@ -508,7 +511,14 @@ try {
   await cp(SOURCE, version, {
     // Une regle plutot qu'une liste de noms : le bundle absorbe les modules, et un
     // renommage ne doit pas republier la source en silence.
-    filter: (from: string) => extname(from) !== ".ts" && !TRANSFORMED.has(relative(SOURCE, from)),
+    //
+    // Le filtre s'applique aussi aux dossiers, et un dossier n'a pas d'extension : sans le
+    // second test, un dossier qui ne contient que du TypeScript est cree dans l'artefact
+    // puis vide de tous ses enfants. Il y est publie vide, et aucun test ne le voit.
+    filter: (from: string) =>
+      extname(from) !== ".ts" &&
+      !TRANSFORMED.has(relative(SOURCE, from)) &&
+      !SOURCE_ONLY.has(relative(SOURCE, from)),
     // Sans ça, chaque construction date à neuf des fichiers identiques. Leur ETag change,
     // et la revalidation « no-cache » du serveur ne rend jamais de 304.
     preserveTimestamps: true,
