@@ -311,8 +311,8 @@ test("chaque alias se comporte comme sa commande", () => {
     ["/emacs", "/vim"],
     ["exit", "shutdown"],
     ["/feedback", "/propose"],
-    ["ia", "ai"],
     ["/idee", "/propose"],
+    ["ask✨ où", "ask où"],
     ["/mascotte", "/slime"],
     ["/nano", "/vim"],
     ["partager", "share"],
@@ -342,7 +342,6 @@ test("chaque alias se comporte comme sa commande", () => {
 // rendent, et le ticket qui les finira doit savoir lequel il reprend.
 test("les commandes déléguées rendent chacune son descripteur", () => {
   const expected: [string, Effect["type"]][] = [
-    ["ai", "probeAI"],
     ["email", "email"],
     ["options", "options"],
     ["send-mail", "sendMail"],

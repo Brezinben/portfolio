@@ -56,7 +56,6 @@ export type Effect =
   | { type: "options" }
   | { type: "pending"; answer?: string; payload: string }
   | { type: "power"; mode: string }
-  | { type: "probeAI" }
   | { type: "replay" }
   | { type: "say"; expression: Expression; text: string }
   | { type: "send"; payload: string }
@@ -135,6 +134,9 @@ export interface Entry {
 // Ce que la completion a besoin de connaitre : les noms qu'elle peut proposer. Elle ne
 // lit que les identifiants, pas les libelles.
 export interface CompletionContext {
+  // Un modele local installe et disponible. La coquille l'apprend d'un appel asynchrone au
+  // demarrage, que l'interpreteur ne peut pas faire : il est pur et synchrone.
+  model: boolean;
   details: { id: string }[];
   sections: { id: string }[];
   shareTargets: string[];
@@ -152,9 +154,6 @@ export interface Context extends CompletionContext {
   // presente mais indisponible. « asleep » : le reseau est coupe, elle dort jusqu'a son
   // retour. La coquille sait, l'interpreteur ne devine pas.
   mascot: "asleep" | "away" | "busy" | "here";
-  // Un modele local installe et disponible. La coquille l'apprend d'un appel asynchrone au
-  // demarrage, que l'interpreteur ne peut pas faire : il est pur et synchrone.
-  model: boolean;
   details: Entry[];
   sections: Entry[];
   current: { cmd?: string; id?: string; label?: string };
@@ -226,9 +225,23 @@ const line = ({
   // Une activité demande un accessoire, là où une expression se lit sur le visage. Le glossaire
   // les sépare, et la commande aussi : « slime activity <nom> ».
   ACTIVITIES = ["bike", "coffee", "goal", "juggle", "lift", "train"],
-  HELP = [
+  // La recherche porte deux noms, jamais les deux a la fois. Sans modele elle repond par
+  // recouvrement de mots ; avec un modele, c'est lui qui choisit le passage, et l'etincelle
+  // le dit. Une commande « ai » separee obligeait a demander si le modele etait la : le nom
+  // de la commande le montre maintenant.
+  ASK = "ask",
+  ASK_MODEL = "ask✨",
+  // L'etincelle occupe deux colonnes dans une police a chasse fixe. Sans ce comptage, la
+  // ligne d'aide qui la porte decalerait son tiret d'une colonne.
+  colonnes = (texte: string) => texte.length + (texte.includes("✨") ? 1 : 0),
+  ligneAsk = (model: boolean) => {
+    const nom = `${model ? ASK_MODEL : ASK} <question>`;
+
+    return `${nom}${" ".repeat(Math.max(1, 34 - colonnes(nom)))}— chercher dans le site`;
+  },
+  aide = (model: boolean) => [
     "ls · cd <section> · bd <section>  — naviguer",
-    "ask <question> · ai               — chercher dans le site",
+    ligneAsk(model),
     "theme <nom> · clear · options     — affichage",
     "cv · email · send-mail            — CV et contact",
     "share <cible>                     — LinkedIn, GitHub, lien",
@@ -289,6 +302,7 @@ const line = ({
   ALIASES = {
     "?": "help",
     aide: "help",
+    [ASK_MODEL]: ASK,
     brezinben: "benjamin",
     cat: "slime",
     cls: "clear",
@@ -297,7 +311,6 @@ const line = ({
     emacs: "vim",
     exit: "shutdown",
     feedback: "propose",
-    ia: "ai",
     idee: "propose",
     mascotte: "slime",
     nano: "vim",
@@ -425,9 +438,7 @@ const line = ({
   // slash : sinon l'autocompletion propose ce que le dispatcher refuse.
   PLAIN = [
     "?",
-    "ai",
     "aide",
-    "ask",
     "bd",
     "cd",
     "clear",
@@ -448,6 +459,9 @@ const line = ({
     "theme",
   ],
   VERBS = [...PLAIN, ...[...SLASH_ONLY].map((egg) => `/${egg}`)],
+  // Les deux noms de la recherche ne s'offrent jamais ensemble : le vocabulaire ne porte
+  // que celui qui correspond a l'etat du modele.
+  vocabulaire = (model: boolean) => [model ? ASK_MODEL : ASK, ...VERBS],
   // Le vocabulaire dépend du chemin déjà tapé, et pas seulement du premier mot : « slime »
   // propose ses sous-commandes, « slime expression » les expressions, « slime activity » les
   // activités. Proposer le vocabulaire entier après l'un ou l'autre ferait du bruit.
@@ -484,9 +498,9 @@ const line = ({
       "/sudo": "non.",
       "/vim": "le piège classique",
       "?": "la liste des commandes",
-      ai: "l'état du modèle local",
       aide: "la liste des commandes",
-      ask: "pose une question au site",
+      ask: "cherche dans le texte du site",
+      "ask✨": "un modèle local choisit la réponse",
       bd: "ouvre une section",
       cd: "ouvre une section",
       clear: "vide le journal",
@@ -552,7 +566,7 @@ export const candidates = (value: string, context: CompletionContext) => {
 
   if (parts.length === 1) {
     const pool = [
-        ...VERBS,
+        ...vocabulaire(context.model),
         ...context.sections.map((entry) => entry.id),
         ...context.details.map((entry) => entry.id),
       ],
@@ -974,7 +988,7 @@ export const interpret = (raw: string, context: Context): Outcome => {
     return {
       ...out([], [say("essaie « /joke »", "happy")]),
       result: [
-        ...HELP.map((text) => ({ m: "·", t: text })),
+        ...aide(context.model).map((text) => ({ m: "·", t: text })),
         { m: "›", mc: "acc", t: KEYBOARD, tone: "fg2" },
       ],
     };
@@ -1144,7 +1158,6 @@ export const interpret = (raw: string, context: Context): Outcome => {
   // Ces commandes appartiennent à d'autres tickets. Elles passent quand même par le
   // dispatcher, pour qu'il reste le point unique.
   const deferred = {
-      ai: { type: "probeAI" },
       email: { type: "email" },
       options: { type: "options" },
 

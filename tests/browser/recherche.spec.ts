@@ -122,75 +122,6 @@ test("un modèle qui invente un identifiant laisse répondre le corpus", async (
   ).toContainText("Nantes");
 });
 
-test("ai dit honnêtement qu'aucun modèle n'est là", async ({ page }) => {
-  await retirerModele(page);
-
-  const cli = await boot(page);
-
-  await cli.fill("ai");
-  await cli.press("Enter");
-
-  const journal = page.locator("[data-journal]");
-
-  await expect(journal).toContainText("aucun modèle local");
-  await expect(journal, "le repli est nommé").toContainText("marche quand même");
-});
-
-// L'API presente et le modele absent est le cas le plus frequent. Il n'est pas une panne,
-// et la commande ne doit pas le dire comme si c'en etait une.
-test("ai distingue un modèle installable d'un modèle absent", async ({ page }) => {
-  const cli = await boot(page);
-
-  await cli.fill("ai");
-  await cli.press("Enter");
-
-  await expect(page.locator("[data-journal]")).toContainText("installable, mais pas installé");
-});
-
-// « availability » dit qu'un modele est installe, pas qu'il repond. La commande le mesure,
-// et la duree prouve qu'une question est bien partie.
-test("ai interroge le modèle et donne son temps de réponse", async ({ page }) => {
-  await poserModele(page, "whoami");
-
-  const cli = await boot(page);
-
-  await cli.fill("ai");
-  await cli.press("Enter");
-
-  const journal = page.locator("[data-journal]");
-
-  await expect(journal).toContainText(/un modèle local répond en \d+ ms/u);
-  await expect(journal, "ce que le modèle dit s'affiche").toContainText("« whoami »");
-});
-
-// Un modele installe qui ne repond pas n'est pas un modele qui repond. La commande a
-// longtemps annonce l'un pour l'autre, sur la seule foi de « availability ».
-test("ai distingue un modèle installé d'un modèle qui répond", async ({ page }) => {
-  await page.addInitScript(() => {
-    Object.defineProperty(globalThis, "LanguageModel", {
-      configurable: true,
-      value: {
-        availability: () => Promise.resolve("available"),
-        create: () =>
-          Promise.resolve({
-            destroy: () => undefined,
-            prompt: () => Promise.reject(new Error("muet")),
-          }),
-      },
-    });
-  });
-
-  const cli = await boot(page);
-
-  await cli.fill("ai");
-  await cli.press("Enter");
-
-  const journal = page.locator("[data-journal]");
-
-  await expect(journal).toContainText("installé, mais il n'a pas répondu");
-  await expect(journal, "le repli est nommé").toContainText("marche quand même");
-});
-
 // Deux « ask » de suite : le choix de la premiere question ne doit pas s'ecrire sous la
 // reponse de la seconde. La coupure passe par le signal donne au modele.
 test("une seconde question coupe le choix du modèle sur la première", async ({ page }) => {
@@ -264,4 +195,42 @@ test("un modèle muet laisse la réponse du corpus sortir", async ({ page }) => 
 
   await expect(journal).toContainText("RGAA");
   await expect(page.locator("[data-thinking]"), "l'attente s'efface aussi").toHaveCount(0);
+});
+
+// L'etincelle est la seule chose qui dise au visiteur qu'un modele local est la. Sans
+// modele, elle ne doit jamais apparaitre : elle promettrait un choix que personne ne fait.
+test("l'étincelle n'apparaît que si un modèle est là", async ({ page }) => {
+  await retirerModele(page);
+
+  const cli = await boot(page),
+    liste = page.locator("[data-suggestions]");
+
+  await cli.fill("a");
+  await expect(liste).toContainText("ask");
+  await expect(liste, "aucun modèle, aucune étincelle").not.toContainText("✨");
+});
+
+test("avec un modèle, la recherche porte l'étincelle et elle seule", async ({ page }) => {
+  await poserModele(page, "contact");
+
+  const cli = await boot(page),
+    liste = page.locator("[data-suggestions]");
+
+  await cli.fill("a");
+  await expect(liste).toContainText("ask✨");
+  await expect(
+    liste.locator("[data-suggestion]", { hasText: /^ask$/u }),
+    "les deux noms ne s'offrent jamais ensemble",
+  ).toHaveCount(0);
+});
+
+// L'aide doit nommer la commande telle qu'elle s'offre, sinon elle envoie dans le mur.
+test("l'aide nomme la recherche sous le nom qui s'offre", async ({ page }) => {
+  await poserModele(page, "contact");
+
+  const cli = await boot(page);
+
+  await cli.fill("help");
+  await cli.press("Enter");
+  await expect(page.locator("[data-result]")).toContainText("ask✨ <question>");
 });

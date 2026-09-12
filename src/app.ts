@@ -401,9 +401,6 @@ const BOOT_MS = 2000,
   // premiere question. Au-dela, la commande repond « installe, mais il n'a pas repondu »
   // plutot que de laisser le journal muet.
   PROBE_MS = 5000,
-  // Le modele repond librement a « ai », et rien ne borne sa phrase. Au-dela, elle
-  // deborderait du journal et noierait les deux lignes qui l'entourent.
-  SAID_MAX = 160,
   SLEEP_MS = 10_000,
   TWITCH_MS = 5000,
   TWITCH_ODDS = 0.04,
@@ -455,19 +452,6 @@ declare global {
 // Une cle libre dans une table fermee : la table garde son type, l'appelant recoit
 // undefined quand la cle n'y est pas.
 const lookup = <V>(table: Readonly<Record<string, V>>, key: string): V | undefined => table[key];
-
-// Une phrase trop longue coupee au dernier espace, pour ne pas trancher un mot en deux.
-const trim = (texte: string, max: number) => {
-  const propre = texte.trim().replace(/\s+/gu, " ");
-
-  if (propre.length <= max) {
-    return propre;
-  }
-
-  const coupe = propre.slice(0, max);
-
-  return `${coupe.slice(0, Math.max(coupe.lastIndexOf(" "), 1))}…`;
-};
 
 // Alpine pose ses magies sur le composant apres l'avoir construit : elles ne sont pas
 // dans l'objet litteral, mais « this » les voit a l'execution.
@@ -2388,97 +2372,6 @@ document.addEventListener("alpine:init", () => {
         }
       },
 
-      // « availability » distingue quatre etats, et trois d'entre eux ne sont pas des
-      // pannes. La commande les dit tels quels : un modele telechargeable n'est pas un
-      // modele absent.
-      async probeAI() {
-        const dit = (texte: string, ton: Tone) => {
-          this.journal = [...this.journal, { c: ton, m: "·", mc: ton, t: texte }];
-        };
-
-        if (globalThis.LanguageModel === undefined) {
-          this.modelState = "unavailable";
-          dit("aucun modèle local : ce navigateur ne porte pas l'API Prompt.", "fg2");
-          dit("la recherche « ask » marche quand même, et sans réseau.", "fg2");
-
-          return;
-        }
-
-        try {
-          const etat = await globalThis.LanguageModel.availability();
-
-          this.modelState = etat;
-
-          if (etat !== "available") {
-            dit(
-              {
-                downloadable: "un modèle local est installable, mais pas installé.",
-                downloading: "un modèle local est en cours de téléchargement.",
-                unavailable: "l'API Prompt est là, mais aucun modèle ne tient sur cet appareil.",
-              }[etat],
-              "fg2",
-            );
-
-            return;
-          }
-
-          const essai = await this.timeModel();
-
-          if (!essai) {
-            dit("un modèle local est installé, mais il n'a pas répondu.", "warn");
-            dit("« ask » marche quand même, sans lui.", "fg2");
-
-            return;
-          }
-
-          dit(`un modèle local répond en ${essai.delai} ms.`, "ok");
-          this.journal = [
-            ...this.journal,
-            { c: "fg", m: "›", mc: "acc", t: `« ${essai.dit} »` } satisfies Line,
-          ];
-          dit("« ask » s'en sert pour choisir le passage qui répond.", "fg2");
-        } catch {
-          this.modelState = "unavailable";
-          dit("l'API Prompt a refusé de répondre.", "warn");
-        }
-      },
-
-      // « availability » dit qu'un modele est installe, pas qu'il repond. La seule facon de
-      // l'affirmer est de lui poser une question, et de montrer ce qu'il en dit. Il parle de
-      // lui, jamais de Benjamin : rien de ce qu'il rend ici ne peut inventer un parcours.
-      async timeModel() {
-        if (globalThis.LanguageModel === undefined) {
-          return undefined;
-        }
-
-        const debut = performance.now();
-
-        this.thinking = true;
-
-        try {
-          const session = await globalThis.LanguageModel.create({
-            expectedInputs: [{ languages: ["fr"], type: "text" }],
-            signal: AbortSignal.timeout(PROBE_MS),
-          });
-
-          try {
-            const said = await session.prompt(
-              "En une phrase courte et en français, qui es-tu ? Ne parle que de toi.",
-              { signal: AbortSignal.timeout(PROBE_MS) },
-            );
-
-            return { delai: Math.round(performance.now() - debut), dit: trim(said, SAID_MAX) };
-          } finally {
-            session.destroy();
-          }
-        } catch {
-          return undefined;
-        } finally {
-          this.thinking = false;
-        }
-      },
-
-      // L'API onLine ne promet pas l'internet, seulement une interface active. Elle dit
       // « hors ligne » sans se tromper, et « en ligne » avec optimisme : c'est le sens
       // utile ici, puisque la page ne sert qu'a refuser une commande vouee a l'echec.
       watchNetwork() {
@@ -2531,8 +2424,6 @@ document.addEventListener("alpine:init", () => {
             this.input = effect.answer ?? "";
           } else if (effect.type === "ask") {
             this.answerWithModel(effect.query, effect.candidates, effect.lexical);
-          } else if (effect.type === "probeAI") {
-            this.probeAI();
           } else if (effect.type === "send") {
             if (this.online) {
               this.send(effect.payload);
@@ -2593,6 +2484,7 @@ document.addEventListener("alpine:init", () => {
       suggest() {
         const result = candidates(this.input, {
           details: this.details,
+          model: this.modelState === "available",
           sections: this.sections,
           shareTargets: this.shareTargets,
           themes: THEMES.map((entry) => entry.id),
