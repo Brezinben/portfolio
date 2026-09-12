@@ -9,7 +9,7 @@ const open = async (page: Page, hash: string) => {
 
 // La frise et l'arbre sont le contenu de la section : ils s'affichent au centre. Le volet
 // de sortie garde ses paires et la fiche techno.
-test("la frise du parcours s'affiche dans le volet central", async ({ page }) => {
+test("should show the timeline in the main pane", async ({ page }) => {
   await open(page, "#parcours");
 
   await expect(page.locator('[data-pane="main"] [data-timeline]')).toBeVisible();
@@ -19,7 +19,7 @@ test("la frise du parcours s'affiche dans le volet central", async ({ page }) =>
   await expect(page.getByRole("option")).not.toHaveCount(0);
 });
 
-test("les années de la frise sont en chiffres tabulaires", async ({ page }) => {
+test("should set the timeline years in tabular figures", async ({ page }) => {
   await open(page, "#parcours");
 
   const years = page.locator("[data-years]").first();
@@ -30,7 +30,7 @@ test("les années de la frise sont en chiffres tabulaires", async ({ page }) => 
   );
 });
 
-test("valider une entrée de la frise ouvre la fiche de mission", async ({ page }) => {
+test("should open the mission when a timeline entry is confirmed", async ({ page }) => {
   await open(page, "#parcours");
   await page.getByRole("option", { name: /Kereis/ }).click();
 
@@ -39,7 +39,7 @@ test("valider une entrée de la frise ouvre la fiche de mission", async ({ page 
 
 // Le canvas dispose la stack comme la sortie d'un ls : un rail par domaine, et les
 // technologies qui coulent en colonnes, chacune precedee de son trait d'arborescence.
-test("l'arbre de la stack s'affiche au centre, en colonnes", async ({ page }) => {
+test("should show the stack tree in the main pane, in columns", async ({ page }) => {
   await open(page, "#stack");
 
   await expect(page.locator('[data-pane="main"] [data-tree]')).toBeVisible();
@@ -54,12 +54,12 @@ test("l'arbre de la stack s'affiche au centre, en colonnes", async ({ page }) =>
       (node) => getComputedStyle(node.parentElement!).gridTemplateColumns.split(" ").length,
     );
 
-  expect(columns, "les technologies coulent sur plusieurs colonnes").toBeGreaterThan(1);
+  expect(columns, "the technologies flow over several columns").toBeGreaterThan(1);
 });
 
 // Aucun texte d'invite au depart : rien ne s'affiche tant qu'aucune technologie n'a le
 // focus. Des qu'une en a un, sa fiche suit immediatement.
-test("la fiche techno suit le focus dès la première technologie", async ({ page }) => {
+test("should follow the focus with the tech note from the first technology", async ({ page }) => {
   await open(page, "#stack");
 
   await expect(page.locator("[data-technote]")).toHaveCount(0);
@@ -74,7 +74,7 @@ test("la fiche techno suit le focus dès la première technologie", async ({ pag
 });
 
 // La stack est une grille : les quatre fleches y naviguent, pas seulement la tabulation.
-test("les quatre flèches naviguent dans la grille de la stack", async ({ page }) => {
+test("should move through the stack grid with the four arrows", async ({ page }) => {
   await open(page, "#stack");
   await page.locator("[data-tech]").first().focus();
 
@@ -91,7 +91,7 @@ test("les quatre flèches naviguent dans la grille de la stack", async ({ page }
   expect(await focused()).toBe(first);
 
   await page.keyboard.press("ArrowDown");
-  expect(await focused(), "la flèche bas descend d'une ligne").not.toBe(first);
+  expect(await focused(), "the down arrow moves one row down").not.toBe(first);
 
   await page.keyboard.press("ArrowUp");
   expect(await focused()).toBe(first);
@@ -100,7 +100,7 @@ test("les quatre flèches naviguent dans la grille de la stack", async ({ page }
 // Chaque bloc de la stack est une grille independante. Un pas fixe, calcule sur la
 // premiere ligne du premier bloc, faisait changer de colonne des qu'une ligne etait
 // incomplete ou qu'on passait d'une categorie a la suivante.
-test("la flèche bas garde la colonne d'une ligne de la stack à la suivante", async ({ page }) => {
+test("should keep the column from one stack row to the next on arrow down", async ({ page }) => {
   await open(page, "#stack");
 
   const strayed = await page.evaluate(() => {
@@ -136,10 +136,10 @@ test("la flèche bas garde la colonne d'une ligne de la stack à la suivante", a
     return wrong;
   });
 
-  expect(strayed, "la flèche bas prend la cellule la plus proche de la colonne").toEqual([]);
+  expect(strayed, "the down arrow takes the cell closest to the column").toEqual([]);
 });
 
-test("la sortie contact est colorée par type", async ({ page }) => {
+test("should colour the contact output by type", async ({ page }) => {
   await open(page, "#contact");
 
   const colours = await page
@@ -148,12 +148,12 @@ test("la sortie contact est colorée par type", async ({ page }) => {
 
   expect(
     new Set(colours).size,
-    "clés, valeurs et ponctuation ne partagent pas une couleur",
+    "keys, values and punctuation do not share one colour",
   ).toBeGreaterThan(2);
   await expect(page.locator('[data-pane="main"]')).toContainText('"email"');
 });
 
-test("la section contact précharge sa commande dans la saisie", async ({ page }) => {
+test("should preload its command in the command line on the contact section", async ({ page }) => {
   await open(page, "#contact");
 
   await expect(page.getByLabel("Commande")).toHaveValue("/send-mail benjamin.david1@hotmail.fr");

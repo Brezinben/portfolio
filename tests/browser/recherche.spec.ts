@@ -71,7 +71,9 @@ const boot = async (page: Page) => {
       globalThis.repondre?.("contact");
     });
 
-test("ask répond avec le texte du portfolio, sans modèle et sans réseau", async ({ page }) => {
+test("should answer with the portfolio text on ask, with no model and no network", async ({
+  page,
+}) => {
   await retirerModele(page);
 
   const cli = await boot(page);
@@ -83,10 +85,10 @@ test("ask répond avec le texte du portfolio, sans modèle et sans réseau", asy
   const journal = page.locator("[data-journal]");
 
   await expect(journal).toContainText("RGAA");
-  await expect(journal, "la réponse nomme sa source").toContainText("impact");
+  await expect(journal, "the answer names its source").toContainText("impact");
 });
 
-test("ask sans réponse le dit au lieu d'inventer", async ({ page }) => {
+test("should say so instead of inventing when ask finds no answer", async ({ page }) => {
   await retirerModele(page);
 
   const cli = await boot(page);
@@ -97,7 +99,7 @@ test("ask sans réponse le dit au lieu d'inventer", async ({ page }) => {
   await expect(page.locator("[data-journal]")).toContainText("rien ne répond");
 });
 
-test("ask sans question rappelle comment l'employer", async ({ page }) => {
+test("should recall its usage when ask comes without a question", async ({ page }) => {
   await retirerModele(page);
 
   const cli = await boot(page);
@@ -110,7 +112,7 @@ test("ask sans question rappelle comment l'employer", async ({ page }) => {
 
 // Le modele choisit un identifiant dans une liste fermee, et c'est son choix qui repond.
 // Ce qui s'affiche reste le texte du corpus : il ne parle jamais a la place de Benjamin.
-test("le modèle répond en premier, et le corpus fournit le texte", async ({ page }) => {
+test("should let the model answer first and take the text from the corpus", async ({ page }) => {
   await poserModele(page, "contact");
 
   const cli = await boot(page);
@@ -120,28 +122,29 @@ test("le modèle répond en premier, et le corpus fournit le texte", async ({ pa
 
   const journal = page.locator("[data-journal]");
 
-  await expect(journal, "le passage affiché vient du corpus").toContainText("48 heures");
-  await expect(journal, "une seule réponse, pas deux").not.toContainText("whoami");
+  await expect(journal, "the passage shown comes from the corpus").toContainText("48 heures");
+  await expect(journal, "one answer, not two").not.toContainText("whoami");
 });
 
 // Un modele qui repond n'importe quoi ne doit rien pouvoir afficher : l'identifiant est
 // cherche dans le corpus, et un inconnu ne designe rien.
-test("un modèle qui invente un identifiant laisse répondre le corpus", async ({ page }) => {
+test("should let the corpus answer when the model invents an identifier", async ({ page }) => {
   await poserModele(page, "une-section-qui-n-existe-pas");
 
   const cli = await boot(page);
 
   await cli.fill("ask où travailles-tu à Nantes");
   await cli.press("Enter");
-  await expect(
-    page.locator("[data-journal]"),
-    "la réponse du corpus reprend la main",
-  ).toContainText("Nantes");
+  await expect(page.locator("[data-journal]"), "the corpus answer takes over").toContainText(
+    "Nantes",
+  );
 });
 
 // Deux « ask » de suite : le choix de la premiere question ne doit pas s'ecrire sous la
 // reponse de la seconde. La coupure passe par le signal donne au modele.
-test("une seconde question coupe le choix du modèle sur la première", async ({ page }) => {
+test("should cut the model choice of the first question when a second one comes", async ({
+  page,
+}) => {
   await poserModeleLent(page);
 
   const cli = await boot(page);
@@ -157,12 +160,14 @@ test("une seconde question coupe le choix du modèle sur la première", async ({
   await relacherModele(page);
   await expect(
     journal.locator("text=48 heures"),
-    "une seule réponse de modèle, celle de la question en cours",
+    "one model answer only, the one of the current question",
   ).toHaveCount(0);
 });
 
 // Une commande qu'on doit deja connaitre pour la taper n'existe pas pour le visiteur.
-test("ask se decouvre par la completion et par l'aide", async ({ page }) => {
+test("should make ask discoverable through the completion and through the help", async ({
+  page,
+}) => {
   await retirerModele(page);
 
   const cli = await boot(page);
@@ -177,7 +182,7 @@ test("ask se decouvre par la completion et par l'aide", async ({ page }) => {
 
 // Rien ne s'affiche avant que le modele ait choisi. Sans marque d'attente, la commande
 // paraitrait sans effet.
-test("l'attente du modèle se voit, puis disparaît", async ({ page }) => {
+test("should show the wait for the model, then clear it", async ({ page }) => {
   await poserModeleLent(page);
 
   const cli = await boot(page),
@@ -191,12 +196,12 @@ test("l'attente du modèle se voit, puis disparaît", async ({ page }) => {
 
   await relacherModele(page);
   await expect(page.locator("[data-journal]")).toContainText("48 heures");
-  await expect(attente, "l'attente s'efface avec la réponse").toHaveCount(0);
+  await expect(attente, "the wait clears with the answer").toHaveCount(0);
 });
 
 // « clear » vidait le journal sans arreter la question en vol : la reponse d'avant y
 // tombait toute seule, dans un journal cense etre vide.
-test("clear arrête la question en vol", async ({ page }) => {
+test("should stop the question in flight on clear", async ({ page }) => {
   await poserModeleLent(page);
 
   const cli = await boot(page),
@@ -208,7 +213,7 @@ test("clear arrête la question en vol", async ({ page }) => {
 
   await cli.fill("clear");
   await cli.press("Enter");
-  await expect(page.locator("[data-thinking]"), "l'attente tombe aussi").toHaveCount(0);
+  await expect(page.locator("[data-thinking]"), "the wait falls too").toHaveCount(0);
 
   await relacherModele(page);
   await expect(journal).not.toContainText("48 heures");
@@ -216,7 +221,7 @@ test("clear arrête la question en vol", async ({ page }) => {
 
 // Le modele repond en premier, donc son silence laisserait la question sans reponse. Celle
 // du corpus attend pour ce cas precis, et elle doit sortir.
-test("un modèle muet laisse la réponse du corpus sortir", async ({ page }) => {
+test("should let the corpus answer come out when the model stays silent", async ({ page }) => {
   await page.addInitScript(() => {
     Object.defineProperty(globalThis, "LanguageModel", {
       configurable: true,
@@ -235,12 +240,12 @@ test("un modèle muet laisse la réponse du corpus sortir", async ({ page }) => 
   const journal = page.locator("[data-journal]");
 
   await expect(journal).toContainText("RGAA");
-  await expect(page.locator("[data-thinking]"), "l'attente s'efface aussi").toHaveCount(0);
+  await expect(page.locator("[data-thinking]"), "the wait clears too").toHaveCount(0);
 });
 
 // L'etincelle est la seule chose qui dise au visiteur qu'un modele local est la. Sans
 // modele, elle ne doit jamais apparaitre : elle promettrait un choix que personne ne fait.
-test("l'étincelle n'apparaît que si un modèle est là", async ({ page }) => {
+test("should show the sparkle only when a model is there", async ({ page }) => {
   await retirerModele(page);
 
   const cli = await boot(page),
@@ -248,10 +253,12 @@ test("l'étincelle n'apparaît que si un modèle est là", async ({ page }) => {
 
   await cli.fill("a");
   await expect(liste).toContainText("ask");
-  await expect(liste, "aucun modèle, aucune étincelle").not.toContainText("✨");
+  await expect(liste, "no model, no sparkle").not.toContainText("✨");
 });
 
-test("avec un modèle, la recherche porte l'étincelle et elle seule", async ({ page }) => {
+test("should carry the sparkle on the search name alone when a model is there", async ({
+  page,
+}) => {
   await poserModele(page, "contact");
 
   const cli = await boot(page),
@@ -261,12 +268,12 @@ test("avec un modèle, la recherche porte l'étincelle et elle seule", async ({ 
   await expect(liste).toContainText("ask✨");
   await expect(
     liste.locator("[data-suggestion]", { hasText: /^ask$/u }),
-    "les deux noms ne s'offrent jamais ensemble",
+    "the two names are never offered together",
   ).toHaveCount(0);
 });
 
 // L'aide doit nommer la commande telle qu'elle s'offre, sinon elle envoie dans le mur.
-test("l'aide nomme la recherche sous le nom qui s'offre", async ({ page }) => {
+test("should name the search in the help under the name that is offered", async ({ page }) => {
   await poserModele(page, "contact");
 
   const cli = await boot(page);
@@ -278,7 +285,7 @@ test("l'aide nomme la recherche sous le nom qui s'offre", async ({ page }) => {
 
 // Le defaut que la revue a trouve : le recouvrement de mots ne trouvait rien, et le modele
 // n'etait meme pas consulte. C'est pourtant le seul cas ou il apporte quelque chose.
-test("une question qu'aucun mot ne trouve passe quand même par le modèle", async ({ page }) => {
+test("should still go through the model for a question that no word matches", async ({ page }) => {
   await poserModele(page, "contact");
 
   const cli = await boot(page);
@@ -288,13 +295,13 @@ test("une question qu'aucun mot ne trouve passe quand même par le modèle", asy
 
   const journal = page.locator("[data-journal]");
 
-  await expect(journal, "le modèle a choisi un passage").toContainText("48 heures");
+  await expect(journal, "the model chose a passage").toContainText("48 heures");
   await expect(journal).not.toContainText("rien ne répond");
 });
 
 // Un modele qui ignore la contrainte rend l'identifiant nu. Il doit rester utilisable :
 // l'API ne promet pas que tous les modeles la respectent.
-test("un identifiant rendu sans JSON reste utilisable", async ({ page }) => {
+test("should still use an identifier returned without JSON", async ({ page }) => {
   await page.addInitScript(() => {
     Object.defineProperty(globalThis, "LanguageModel", {
       configurable: true,
@@ -318,7 +325,7 @@ test("un identifiant rendu sans JSON reste utilisable", async ({ page }) => {
 
 // « rien ne repond dans ce portfolio » et « le modele a lache » se lisaient pareil. Le
 // premier envoyait chercher le defaut dans le contenu, quand il etait dans le modele.
-test("l'échec du modèle se distingue d'une absence de réponse", async ({ page }) => {
+test("should tell a model failure apart from a missing answer", async ({ page }) => {
   await page.addInitScript(() => {
     Object.defineProperty(globalThis, "LanguageModel", {
       configurable: true,
@@ -337,5 +344,5 @@ test("l'échec du modèle se distingue d'une absence de réponse", async ({ page
   const journal = page.locator("[data-journal]");
 
   await expect(journal).toContainText("le modèle local a refusé de répondre");
-  await expect(journal, "la réponse du corpus suit quand même").toContainText("rien ne répond");
+  await expect(journal, "the corpus answer follows anyway").toContainText("rien ne répond");
 });

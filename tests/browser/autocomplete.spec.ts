@@ -9,7 +9,7 @@ const boot = async (page: Page) => {
   },
   list = (page: Page) => page.locator("[data-suggestions]");
 
-test("taper un préfixe déplie la liste", async ({ page }) => {
+test("should unfold the list when a prefix is typed", async ({ page }) => {
   const cli = await boot(page);
 
   await cli.fill("/su");
@@ -19,7 +19,7 @@ test("taper un préfixe déplie la liste", async ({ page }) => {
   await expect(list(page)).toContainText("sudo");
 });
 
-test("la liste ne dépasse jamais dix propositions et ne défile pas", async ({ page }) => {
+test("should keep the list at ten suggestions at most and never scroll", async ({ page }) => {
   const cli = await boot(page);
 
   await cli.fill("s");
@@ -33,10 +33,10 @@ test("la liste ne dépasse jamais dix propositions et ne défile pas", async ({ 
 
   const overflow = await list(page).evaluate((node) => getComputedStyle(node).overflowY);
 
-  expect(overflow, "la liste ne défile pas : elle est bornée à dix").not.toBe("scroll");
+  expect(overflow, "the list does not scroll: it is limited to ten").not.toBe("scroll");
 });
 
-test("le second mot propose le bon vocabulaire", async ({ page }) => {
+test("should propose the right vocabulary for the second word", async ({ page }) => {
   const cli = await boot(page);
 
   await cli.fill("/slime ");
@@ -46,7 +46,7 @@ test("le second mot propose le bon vocabulaire", async ({ page }) => {
   await expect(list(page)).not.toContainText("sudo");
 });
 
-test("tabulation complète jusqu'au préfixe commun", async ({ page }) => {
+test("should complete up to the common prefix on tab", async ({ page }) => {
   const cli = await boot(page);
 
   await cli.fill("/c");
@@ -62,7 +62,9 @@ test("tabulation complète jusqu'au préfixe commun", async ({ page }) => {
 // La liste rend la premiere ligne « aria-selected ». Refuser de la prendre rendait la
 // tabulation muette des que le prefixe commun n'apportait rien : « / » met « /slime » en
 // tete, et Tab ne faisait rien.
-test("la tabulation prend la ligne en avant quand le préfixe n'apporte rien", async ({ page }) => {
+test("should take the leading line on tab when the common prefix adds nothing", async ({
+  page,
+}) => {
   const cli = await boot(page);
 
   await cli.fill("/");
@@ -75,7 +77,7 @@ test("la tabulation prend la ligne en avant quand le préfixe n'apporte rien", a
   await expect(cli).toHaveValue("/slime ");
 });
 
-test("tabulation sur une seule proposition la complète", async ({ page }) => {
+test("should complete the only suggestion on tab", async ({ page }) => {
   const cli = await boot(page);
 
   await cli.fill("/su");
@@ -86,7 +88,9 @@ test("tabulation sur une seule proposition la complète", async ({ page }) => {
   await expect(list(page)).toBeHidden();
 });
 
-test("les flèches changent de proposition sans toucher à l'historique", async ({ page }) => {
+test("should move between suggestions with the arrows without touching the history", async ({
+  page,
+}) => {
   const cli = await boot(page);
 
   await cli.fill("/co");
@@ -94,10 +98,10 @@ test("les flèches changent de proposition sans toucher à l'historique", async 
   await cli.press("ArrowDown");
 
   await expect(page.locator("[data-suggestion][aria-selected='true']")).toHaveCount(1);
-  await expect(cli, "la saisie ne doit pas être remplacée par l'historique").toHaveValue("/co");
+  await expect(cli, "the input must not be replaced by the history").toHaveValue("/co");
 });
 
-test("échap referme la liste avant de vider la saisie", async ({ page }) => {
+test("should close the list on escape before it clears the input", async ({ page }) => {
   const cli = await boot(page);
 
   await cli.fill("/su");
@@ -113,7 +117,7 @@ test("échap referme la liste avant de vider la saisie", async ({ page }) => {
 
 // La fermeture doit rester déterministe : la liste ne doit jamais rester montée
 // par-dessus la session, ce qui était le piège du canvas.
-test("perdre le focus vide la liste", async ({ page }) => {
+test("should empty the list when the input loses the focus", async ({ page }) => {
   const cli = await boot(page);
 
   await cli.fill("/su");
@@ -126,7 +130,7 @@ test("perdre le focus vide la liste", async ({ page }) => {
   await expect(page.locator("[data-suggestion]")).toHaveCount(0);
 });
 
-test("cliquer une proposition la saisit", async ({ page }) => {
+test("should enter a suggestion when it is clicked", async ({ page }) => {
   const cli = await boot(page);
 
   await cli.fill("/co");
@@ -138,10 +142,10 @@ test("cliquer une proposition la saisit", async ({ page }) => {
 
 // Au doigt, la proposition vaut la commande : la valider la lance, sans passer par une
 // touche entrée que le clavier tactile place ailleurs.
-test.describe("au doigt", () => {
+test.describe("with touch input", () => {
   test.use({ hasTouch: true });
 
-  test("toucher une proposition lance la commande", async ({ page }) => {
+  test("should run the command when a suggestion is tapped", async ({ page }) => {
     const cli = await boot(page);
 
     await cli.fill("/su");
@@ -152,7 +156,9 @@ test.describe("au doigt", () => {
     await expect(cli).toHaveValue("");
   });
 
-  test("toucher un premier mot qui attend un argument ouvre sa liste", async ({ page }) => {
+  test("should open the argument list when a first word that needs an argument is tapped", async ({
+    page,
+  }) => {
     const cli = await boot(page);
 
     await cli.fill("/sli");
@@ -166,7 +172,9 @@ test.describe("au doigt", () => {
 
   // Le second niveau doit se toucher comme le premier : la liste rouvre, la commande ne
   // part pas incomplete. C'est la ou pickSugg ne regardait que le premier mot.
-  test("toucher une sous-commande ouvre son niveau sans lancer", async ({ page }) => {
+  test("should open the next level without running when a sub-command is tapped", async ({
+    page,
+  }) => {
     const cli = await boot(page);
 
     await cli.fill("/sli");
@@ -179,7 +187,7 @@ test.describe("au doigt", () => {
     await expect(page.locator("[data-journal]")).not.toContainText("/slime expression <nom>");
   });
 
-  test("toucher un argument lance la commande complète", async ({ page }) => {
+  test("should run the complete command when an argument is tapped", async ({ page }) => {
     const cli = await boot(page);
 
     await cli.fill("/slime expression hap");
@@ -194,7 +202,9 @@ test.describe("au doigt", () => {
 // Compléter une commande qui attend un argument doit montrer l'argument. Le chemin
 // tactile le faisait déjà ; le clavier laissait la liste fermée, et rien n'annonçait
 // qu'un second mot était possible.
-test("compléter une commande à argument rouvre la liste sur ses valeurs", async ({ page }) => {
+test("should reopen the list on the values when a command that takes an argument is completed", async ({
+  page,
+}) => {
   const cli = await boot(page);
 
   await cli.fill("/sli");
@@ -206,7 +216,9 @@ test("compléter une commande à argument rouvre la liste sur ses valeurs", asyn
   await expect(list(page)).toContainText("activity");
 });
 
-test("compléter une commande sans argument laisse la liste fermée", async ({ page }) => {
+test("should leave the list closed when a command without argument is completed", async ({
+  page,
+}) => {
   const cli = await boot(page);
 
   await cli.fill("/su");
@@ -219,7 +231,7 @@ test("compléter une commande sans argument laisse la liste fermée", async ({ p
 
 // Un nom ne dit pas ce qu'il fait : « bd » ou « goal » ne se devinent pas. La ligne suit
 // la sélection, niveau par niveau.
-test("une ligne sous la liste décrit la proposition choisie", async ({ page }) => {
+test("should describe the selected suggestion on a line below the list", async ({ page }) => {
   const cli = await boot(page),
     hint = page.locator("[data-sugg-hint]");
 
@@ -234,7 +246,9 @@ test("une ligne sous la liste décrit la proposition choisie", async ({ page }) 
   await expect(hint).toHaveText("il marque un but");
 });
 
-test("la ligne se tait devant une proposition venue du contenu", async ({ page }) => {
+test("should keep that line silent for a suggestion that comes from the content", async ({
+  page,
+}) => {
   const cli = await boot(page);
 
   await cli.fill("cd who");
@@ -247,7 +261,7 @@ test("la ligne se tait devant une proposition venue du contenu", async ({ page }
 // La liste rouverte sur un argument neuf n'a aucun fragment tape : aucun prefixe commun ne
 // peut la faire avancer. Sans ce comportement, il fallait une fleche bas avant chaque
 // tabulation, a chaque niveau.
-test("la tabulation choisit la ligne en avant sur un argument neuf", async ({ page }) => {
+test("should select the leading line on tab for a new argument", async ({ page }) => {
   const cli = await boot(page);
 
   await cli.fill("/sli");

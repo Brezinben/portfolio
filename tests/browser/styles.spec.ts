@@ -106,7 +106,7 @@ const THEMES = ["dark", "light", "noctis"],
 
 // Le chassis : les six zones qui portent le rayon, et les trois volets qui les tiennent.
 for (const theme of THEMES) {
-  test(`le châssis ne bouge pas en thème ${theme}`, async ({ page }) => {
+  test(`should keep the chassis unchanged on the ${theme} theme`, async ({ page }) => {
     await boot(page, theme);
 
     await fige(page, `chassis-${theme}`, {
@@ -130,7 +130,7 @@ for (const theme of THEMES) {
 // Le journal, la ligne de commande et la barre d'etat : le volet central hors resultat, et
 // le chassis du volet de sortie.
 for (const theme of THEMES) {
-  test(`le journal ne bouge pas en thème ${theme}`, async ({ page }) => {
+  test(`should keep the log unchanged on the ${theme} theme`, async ({ page }) => {
     await boot(page, theme);
 
     await fige(page, `journal-${theme}`, {
@@ -148,7 +148,7 @@ for (const theme of THEMES) {
 
 // La poignee n'apparait qu'une fois le journal deborde.
 for (const theme of THEMES) {
-  test(`le journal débordé ne bouge pas en thème ${theme}`, async ({ page }) => {
+  test(`should keep the overflowing log unchanged on the ${theme} theme`, async ({ page }) => {
     await boot(page, theme);
 
     const cli = page.getByLabel("Commande");
@@ -169,7 +169,7 @@ for (const theme of THEMES) {
 // Trois regles de survol dormaient : un style en ligne les battait. Elles s'appliquent
 // depuis que le style a quitte le balisage, et rien ne les couvrait.
 for (const theme of THEMES) {
-  test(`le survol ne bouge pas en thème ${theme}`, async ({ page }) => {
+  test(`should keep the hover unchanged on the ${theme} theme`, async ({ page }) => {
     await boot(page, theme);
 
     await page.locator('[data-ctl="opts"]').hover();
@@ -179,7 +179,7 @@ for (const theme of THEMES) {
 
 // Les suggestions n'existent qu'une fois la saisie commencee.
 for (const theme of THEMES) {
-  test(`les suggestions ne bougent pas en thème ${theme}`, async ({ page }) => {
+  test(`should keep the suggestions unchanged on the ${theme} theme`, async ({ page }) => {
     await boot(page, theme);
 
     // « c » propose plusieurs commandes : la premiere est selectionnee d'office, les
@@ -200,7 +200,7 @@ for (const theme of THEMES) {
 // La modale d'options porte les deux dernieres familles d'etat : le choix de theme et la
 // bascule.
 for (const theme of THEMES) {
-  test(`la modale d'options ne bouge pas en thème ${theme}`, async ({ page }) => {
+  test(`should keep the options modal unchanged on the ${theme} theme`, async ({ page }) => {
     await boot(page, theme);
 
     await page.locator('[data-ctl="opts"]').click();
@@ -224,7 +224,7 @@ for (const theme of THEMES) {
 // Le reglage d'animation n'a jamais touche le demarrage, et il ne le doit pas : la
 // coupure figerait un splash dont les minuteries, elles, ne raccourcissent pas.
 for (const theme of THEMES) {
-  test(`le démarrage ne bouge pas en thème ${theme}`, async ({ page }) => {
+  test(`should keep the boot unchanged on the ${theme} theme`, async ({ page }) => {
     await page.setViewportSize({ height: 900, width: 1280 });
     await page.addInitScript(
       (saved: string) => globalThis.localStorage.setItem("bd-term-opts", saved),
@@ -246,7 +246,7 @@ for (const theme of THEMES) {
 // La frise vit dans la section « parcours », l'arbre dans « stack ». Aucune des deux n'est
 // affichee au demarrage.
 for (const theme of THEMES) {
-  test(`la frise ne bouge pas en thème ${theme}`, async ({ page }) => {
+  test(`should keep the timeline unchanged on the ${theme} theme`, async ({ page }) => {
     await boot(page, theme, "parcours");
     await expect(page.locator("[data-timeline]")).toBeVisible();
 
@@ -259,7 +259,7 @@ for (const theme of THEMES) {
 }
 
 for (const theme of THEMES) {
-  test(`l'arbre ne bouge pas en thème ${theme}`, async ({ page }) => {
+  test(`should keep the tree unchanged on the ${theme} theme`, async ({ page }) => {
     await boot(page, theme, "stack");
     await expect(page.locator("[data-tree]")).toBeVisible();
     // Aucune technologie n'est pressee au depart. En designer une donne la paire.

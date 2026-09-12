@@ -21,7 +21,7 @@ const BUDGET_KO = 150,
 //
 // Le contenu entre dans le budget depuis que la page ne le charge plus depuis GitHub. Il
 // part avec l'artefact et il pèse sur le premier chargement, donc il compte.
-test("le premier chargement tient dans le budget de poids", async ({ page }) => {
+test("should keep the first load inside the weight budget", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByRole("img", { name: "Benjamin" })).toBeVisible({ timeout: 10_000 });
   await expect(page.locator("[data-boot]")).toHaveCount(0, { timeout: 10_000 });
@@ -51,19 +51,19 @@ test("le premier chargement tient dans le budget de poids", async ({ page }) => 
     }),
     totalKo = Math.round(measured.total / 102.4) / 10;
 
-  expect(totalKo, `détail : ${JSON.stringify(measured.détail)}`).toBeLessThanOrEqual(BUDGET_KO);
+  expect(totalKo, `detail: ${JSON.stringify(measured.détail)}`).toBeLessThanOrEqual(BUDGET_KO);
 
   // Une absence est normale : la mesure d'audience échoue en silence quand elle est bloquée.
   // Une présence inattendue ne l'est pas.
   const inconnus = measured.tiers.filter((url) => !HORS_MESURE.has(url));
 
-  expect(inconnus, `tiers vus : ${JSON.stringify(measured.tiers)}`).toEqual([]);
+  expect(inconnus, `third parties seen: ${JSON.stringify(measured.tiers)}`).toEqual([]);
 });
 
 // La construction fusionne les feuilles d'une forme en une seule image. Ce plafond porte sur
 // la source, et non sur ce qui part sur le réseau.
 for (const [forme, plafond] of Object.entries(SPRITES_KO)) {
-  test(`les feuilles du ${forme} tiennent dans leur plafond`, async () => {
+  test(`should keep the ${forme} sheets under their ceiling`, async () => {
     const dossier = new URL(`../../src/assets/sprites/${forme}/`, import.meta.url),
       feuilles = await readdir(dossier),
       poids = await Promise.all(
@@ -75,7 +75,7 @@ for (const [forme, plafond] of Object.entries(SPRITES_KO)) {
       ),
       total = poids.reduce((somme, octets) => somme + octets, 0);
 
-    expect(Math.round(total / 102.4) / 10, `${feuilles.length} feuilles`).toBeLessThanOrEqual(
+    expect(Math.round(total / 102.4) / 10, `${feuilles.length} sheets`).toBeLessThanOrEqual(
       plafond,
     );
   });
@@ -84,7 +84,7 @@ for (const [forme, plafond] of Object.entries(SPRITES_KO)) {
 // Le premier rendu tire une image de mascotte, et une seule. Elle porte les neuf états,
 // donc elle pèse dès le démarrage : le nombre de requêtes ne suffit plus à la surveiller,
 // son poids compte autant.
-test("le premier chargement ne tire qu'une image de mascotte", async ({ page }) => {
+test("should pull only one mascot image on the first load", async ({ page }) => {
   await page.goto("/");
   await expect(page.locator("[data-boot]")).toHaveCount(0, { timeout: 10_000 });
 
@@ -102,12 +102,12 @@ test("le premier chargement ne tire qu'une image de mascotte", async ({ page }) 
 
   expect(images).toHaveLength(1);
   expect(images[0]?.url).toContain("slime-sheets");
-  expect(images[0]?.ko, `mesure : ${JSON.stringify(images)}`).toBeLessThanOrEqual(FUSION_KO);
+  expect(images[0]?.ko, `measure: ${JSON.stringify(images)}`).toBeLessThanOrEqual(FUSION_KO);
 });
 
 // Le cube et le pingouin pesent plus que le slime, et presque personne ne tapera la
 // commande. Leur feuille ne doit partir qu'a la demande.
-test("les autres formes ne partent pas au premier chargement", async ({ page }) => {
+test("should not send the other shapes on the first load", async ({ page }) => {
   await page.goto("/");
   await expect(page.locator("[data-boot]")).toHaveCount(0, { timeout: 10_000 });
 
@@ -125,7 +125,7 @@ test("les autres formes ne partent pas au premier chargement", async ({ page }) 
 
 // Le mouvement réduit retire la mascotte. Aucune feuille ne doit donc partir : c'est tout
 // l'intérêt de la retirer plutôt que de la figer.
-test("le mouvement réduit ne charge aucune feuille", async ({ page }) => {
+test("should load no sheet when reduced motion is on", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
   await expect(page.locator("[data-boot]")).toHaveCount(0, { timeout: 10_000 });
@@ -143,7 +143,7 @@ test("le mouvement réduit ne charge aucune feuille", async ({ page }) => {
 // La version texte a son propre budget. Elle échappait à celui de la version terminal, qui
 // ne mesure que « / », et elle tire depuis peu une police de 34 Ko : sans ce plafond, une
 // seconde police ou une image entrerait dans la page de repli sans que personne ne le voie.
-test("la version texte tient dans son budget de poids", async ({ page }) => {
+test("should keep the text version inside its weight budget", async ({ page }) => {
   await page.goto("/texte.html");
   await page.evaluate(() => document.fonts.ready);
 
@@ -168,7 +168,7 @@ test("la version texte tient dans son budget de poids", async ({ page }) => {
     }),
     totalKo = Math.round(measured.total / 102.4) / 10;
 
-  expect(totalKo, `détail : ${JSON.stringify(measured.détail)}`).toBeLessThanOrEqual(TEXTE_KO);
+  expect(totalKo, `detail: ${JSON.stringify(measured.détail)}`).toBeLessThanOrEqual(TEXTE_KO);
 
   // La page de repli ne sort vers aucun hôte tiers, mesure d'audience comprise.
   expect(measured.tiers).toBe(0);

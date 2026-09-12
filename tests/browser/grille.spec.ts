@@ -50,12 +50,12 @@ const LARGEUR = 1280,
       return -1;
     });
 
-test("la flèche bas garde la colonne quand la ligne suivante est plus courte", async ({ page }) => {
+test("should keep the column on the down arrow when the next row is shorter", async ({ page }) => {
   await boot(page);
 
   const rang = await celluleSansSuiteDansSaColonne(page);
 
-  expect(rang, "la grille doit porter une ligne plus courte que la précédente").toBeGreaterThan(-1);
+  expect(rang, "the grid must carry a row shorter than the previous one").toBeGreaterThan(-1);
 
   const cellules = page.locator("[data-tech]"),
     depart = cellules.nth(rang);
@@ -72,11 +72,11 @@ test("la flèche bas garde la colonne quand la ligne suivante est plus courte", 
     return actif instanceof HTMLElement ? actif.getBoundingClientRect().left : -1;
   });
 
-  expect(Math.round(apres), "le curseur descend dans sa colonne").toBe(Math.round(avant));
+  expect(Math.round(apres), "the cursor goes down inside its column").toBe(Math.round(avant));
 });
 
 // Le cas ordinaire ne doit pas regresser : quand la colonne existe en dessous, rien ne change.
-test("la flèche bas garde la colonne quand la ligne suivante est pleine", async ({ page }) => {
+test("should keep the column on the down arrow when the next row is full", async ({ page }) => {
   await boot(page);
 
   const cellules = page.locator("[data-tech]");

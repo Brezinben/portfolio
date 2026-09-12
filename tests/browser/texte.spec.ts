@@ -6,7 +6,7 @@ const THEMES = ["dark", "light", "noctis", "azureus", "uva", "bordo", "lux", "hi
 
 // La page est le repli du portfolio : elle ne dépend d'aucune ressource externe, et son seul
 // script ne fait que reprendre le thème. Une panne de ce script ne coûte rien.
-test("la version texte se charge sans image ni script externe", async ({ page }) => {
+test("should load the text version with no image and no external script", async ({ page }) => {
   await page.goto("/texte.html");
 
   await expect(page).toHaveTitle(/Benjamin David/);
@@ -24,7 +24,7 @@ test("la version texte se charge sans image ni script externe", async ({ page })
   expect(scripts[0]?.split("\n")).toHaveLength(1);
 });
 
-test("la version texte renvoie vers la version terminal et vers llms.txt", async ({ page }) => {
+test("should link the text version to the terminal version and to llms.txt", async ({ page }) => {
   await page.goto("/texte.html");
 
   await expect(page.getByRole("link", { name: "Version terminal" })).toHaveAttribute(
@@ -36,7 +36,7 @@ test("la version texte renvoie vers la version terminal et vers llms.txt", async
 
 // Le lien de secours de l'écran de panique pointe vers cette page : aucun lien
 // de la version texte ne doit renvoyer vers un fichier du canvas.
-test("aucun lien ne pointe vers le canvas", async ({ page }) => {
+test("should point no link to the canvas", async ({ page }) => {
   await page.goto("/texte.html");
 
   const hrefs = await page
@@ -49,7 +49,7 @@ test("aucun lien ne pointe vers le canvas", async ({ page }) => {
 // La personne a déjà choisi son thème sur la version terminal. La page le reprend, et ne
 // propose aucun sélecteur : elle sera lue, imprimée, ou passée en mode lecture.
 for (const theme of THEMES) {
-  test(`la version texte reprend le thème ${theme}`, async ({ page }) => {
+  test(`should take over the ${theme} theme on the text version`, async ({ page }) => {
     await page.addInitScript((chosen) => {
       localStorage.setItem("bd-term-opts", JSON.stringify({ theme: chosen }));
     }, theme);
@@ -65,7 +65,7 @@ for (const theme of THEMES) {
 
 // Deux thèmes suffisent à prouver que le relevé distingue vraiment les huit blocs : sans ce
 // test, une feuille qui ignorerait data-theme passerait la boucle ci-dessus.
-test("deux thèmes ne donnent pas le même fond", async ({ page }) => {
+test("should not give the same background for two themes", async ({ page }) => {
   const lire = async (theme: string) => {
     await page.addInitScript((chosen) => {
       localStorage.setItem("bd-term-opts", JSON.stringify({ theme: chosen }));
@@ -80,7 +80,7 @@ test("deux thèmes ne donnent pas le même fond", async ({ page }) => {
 
 // Le script est un confort, pas une dépendance. Sans lui, la page garde ses couleurs et tout
 // son contenu.
-test("la page reste entière sans JavaScript", async ({ browser }) => {
+test("should keep the page whole without JavaScript", async ({ browser }) => {
   const context = await browser.newContext({ javaScriptEnabled: false }),
     page = await context.newPage();
 
@@ -95,7 +95,7 @@ test("la page reste entière sans JavaScript", async ({ browser }) => {
 
 // La page porte Atkinson Hyperlegible Next, dessinée pour la basse vision. Elle est
 // auto-hébergée : un CDN de polices remettrait la requête tierce que le portage a supprimée.
-test("la police est auto-hébergée, et rien d'autre ne sort", async ({ page }) => {
+test("should self-host the font and let nothing else out", async ({ page }) => {
   const vues: string[] = [];
 
   page.on("request", (requete) => vues.push(requete.url()));
@@ -106,7 +106,7 @@ test("la police est auto-hébergée, et rien d'autre ne sort", async ({ page }) 
     tiers = vues.filter((url) => new URL(url).origin !== origine),
     polices = vues.filter((url) => url.endsWith(".woff2"));
 
-  expect(tiers, `tiers vus : ${JSON.stringify(tiers)}`).toEqual([]);
+  expect(tiers, `third parties seen: ${JSON.stringify(tiers)}`).toEqual([]);
   expect(polices).toHaveLength(1);
   expect(polices[0]).toContain("atkinson-hyperlegible-next");
 
@@ -116,7 +116,7 @@ test("la police est auto-hébergée, et rien d'autre ne sort", async ({ page }) 
 });
 
 // Un lecteur d'écran navigue par repères et par titres. Les deux doivent tenir.
-test("la page offre ses repères de navigation", async ({ page }) => {
+test("should offer its navigation landmarks", async ({ page }) => {
   await page.goto("/texte.html");
 
   await expect(page.getByRole("banner")).toHaveCount(1);
@@ -126,7 +126,7 @@ test("la page offre ses repères de navigation", async ({ page }) => {
   await expect(page.getByRole("heading", { level: 1 })).toHaveCount(1);
 });
 
-test("aucun niveau de titre n'est sauté", async ({ page }) => {
+test("should skip no heading level", async ({ page }) => {
   await page.goto("/texte.html");
 
   const niveaux = await page
@@ -143,12 +143,12 @@ test("aucun niveau de titre n'est sauté", async ({ page }) => {
 // le demandent par ce nom.
 const PARTAGE = /property="og:image" content="https:\/\/[^"/]+\/(?<chemin>[^"]+\.png)"/u;
 
-test("les fichiers annexes sont servis", async ({ request }) => {
+test("should serve the side files", async ({ request }) => {
   const page = await request.get("/texte.html"),
     html = await page.text(),
     partage = html.match(PARTAGE)?.groups?.chemin;
 
-  expect(partage, "texte.html doit déclarer une image de partage").toBeDefined();
+  expect(partage, "texte.html must declare a share image").toBeDefined();
 
   const annexes: [string, string][] = [
       ["/llms.txt", "text/plain"],
@@ -159,7 +159,7 @@ test("les fichiers annexes sont servis", async ({ request }) => {
   for (const [index, response] of responses.entries()) {
     const [path, type] = annexes[index] ?? ["", ""];
 
-    expect(response.status(), `${path} doit être servi`).toBe(200);
+    expect(response.status(), `${path} must be served`).toBe(200);
     expect(response.headers()["content-type"]).toContain(type);
   }
 });

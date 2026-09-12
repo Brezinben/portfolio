@@ -82,6 +82,12 @@ _Avoid_: page, onglet, rubrique.
 Une expérience professionnelle, présentée en fiche depuis le volet gauche.
 _Avoid_: expérience, poste, projet.
 
+**Étincelle** (`sparkle`) :
+Le caractère `✨` qui suffixe la commande de recherche quand un modèle local répond.
+`ask` et `ask✨` sont la même commande sous deux noms, et ils ne s'offrent jamais
+ensemble : l'étincelle est la seule chose qui dise au visiteur qu'un modèle est là.
+_Avoid_: icône, emoji, marqueur.
+
 **Fiche techno** (`techNote`) :
 Texte attaché à une technologie de la stack, en trois parties : où, quoi, pourquoi.
 _Avoid_: tooltip, détail techno, carte.
@@ -166,6 +172,21 @@ l'interpréteur de commandes, testé sans navigateur, et la page servie, testée
 navigateur réel. Terme technique conservé en anglais, employé tel quel dans les documents.
 _Avoid_: couture, point de test, interface de test.
 
+**Libellé de test** (`test label`) :
+La phrase qui nomme un test. Elle s'écrit **en anglais** et **commence par `should`**,
+alors que le reste des documents parle français : un libellé décrit un comportement
+attendu, pas un écran, et il se lit dans la sortie d'un outil. Il dit ce que le code
+doit faire, jamais comment il s'y prend.
+
+    it("should keep the bar width, head included", …)
+    test("should put the mascot to sleep while the network is cut", …)
+
+Les tests unitaires emploient `it`, tenu par `jest/consistent-test-it`. Les tests
+navigateur gardent `test` : `@playwright/test` n'exporte pas `it`. Les messages
+d'assertion passent aussi en anglais, mais sans `should` — ce sont des explications
+d'échec, pas des noms.
+_Avoid_: nom de test, description, titre.
+
 ### Les artefacts
 
 **Version terminal** (`index.html`) :
@@ -181,8 +202,10 @@ lui.
 _Avoid_: version simple, version accessible, fallback.
 
 **Source** (`src/`) :
-Le dossier que l'on édite. Il reste servable tel quel par un serveur statique, sans étape
-de construction. S'appelait `production/` jusqu'au renommage.
+Le dossier que l'on édite. Il porte du TypeScript et des modules : il n'est plus servable
+tel quel, et l'ADR 0005 a retiré cette contrainte, devenue vestigiale. Ce qui reste vrai,
+c'est que l'artefact n'en contient aucune référence. S'appelait `production/` jusqu'au
+renommage.
 _Avoid_: production, app, sources.
 
 **Artefact compact** (`dist/`) :

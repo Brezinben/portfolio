@@ -3,7 +3,7 @@ import type { Page } from "@playwright/test";
 
 const BOOT_MS = 2000;
 
-test("le terminal démarre et affiche whoami", async ({ page }) => {
+test("should boot the terminal and show whoami", async ({ page }) => {
   await page.goto("/");
 
   await expect(page.locator('[data-pane="main"]')).toContainText("bd whoami --verbose", {
@@ -15,7 +15,7 @@ test("le terminal démarre et affiche whoami", async ({ page }) => {
   await expect(page.getByRole("img", { name: "David" })).toBeVisible();
 });
 
-test("les trois volets sont présents", async ({ page }) => {
+test("should render the three panes", async ({ page }) => {
   await page.goto("/");
   await expect(page.locator('[data-pane="main"]')).toBeVisible();
 
@@ -28,7 +28,7 @@ test("les trois volets sont présents", async ({ page }) => {
 
 // L'écran de boot dure au minimum deux secondes : valeur figée après itération. Mesurer
 // l'apparition du contenu ne prouverait rien, puisqu'il est rendu sous l'écran de boot.
-test("le boot dure au moins deux secondes", async ({ page }) => {
+test("should hold the boot for at least two seconds", async ({ page }) => {
   const started = Date.now();
 
   await page.goto("/");
@@ -41,7 +41,7 @@ test("le boot dure au moins deux secondes", async ({ page }) => {
 // Le plancher est un effet, et la section impact annonce des animations désactivables.
 // Un visiteur qui a réglé son système ne doit pas attendre devant un log qu'il n'a pas
 // demandé : il ne reste que le temps de charger le contenu.
-test("le mouvement réduit supprime le plancher du boot", async ({ page }) => {
+test("should drop the boot floor under reduced motion", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
 
   const started = Date.now();
@@ -53,10 +53,10 @@ test("le mouvement réduit supprime le plancher du boot", async ({ page }) => {
 });
 
 for (const [geste, jouer] of [
-  ["une touche", async (page: Page) => page.keyboard.press("Enter")],
-  ["un clic", async (page: Page) => page.locator("[data-boot]").click()],
+  ["a key", async (page: Page) => page.keyboard.press("Enter")],
+  ["a click", async (page: Page) => page.locator("[data-boot]").click()],
 ] as const) {
-  test(`${geste} abrège le boot`, async ({ page }) => {
+  test(`should cut the boot short on ${geste}`, async ({ page }) => {
     await page.goto("/");
     await expect(page.locator("[data-boot]")).toBeVisible();
 
@@ -70,7 +70,7 @@ for (const [geste, jouer] of [
 }
 
 // La touche qui abrège s'arrête là. Sinon le visiteur tape une commande sans le vouloir.
-test("la touche qui abrège le boot ne part pas dans la saisie", async ({ page }) => {
+test("should not send the key that cuts the boot short into the command line", async ({ page }) => {
   await page.goto("/");
   await expect(page.locator("[data-boot]")).toBeVisible();
   await page.keyboard.press("a");
@@ -81,7 +81,7 @@ test("la touche qui abrège le boot ne part pas dans la saisie", async ({ page }
 
 // Le seul tiers admis est la mesure d'audience auto-hébergée, différée et facultative.
 // Une police distante ou un CDN trahiraient la promesse en premier.
-test("la page ne fait aucune requête externe hors mesure d'audience", async ({ page }) => {
+test("should make no external request apart from the audience measurement", async ({ page }) => {
   const external: string[] = [],
     allowed = ["http://127.0.0.1", "https://umami.brezinben.dpdns.org"];
 
