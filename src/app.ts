@@ -397,9 +397,10 @@ const BOOT_MS = 2000,
   // La modale retient le regard, et une passe de mue dure deux secondes et demie. La mue
   // rejoue donc tant que la modale est ouverte, puis court encore ce sursis apres.
   MORPH_HOLD_MS = 600,
-  // Un modele local peut prendre son temps a la premiere question. Au-dela, la reponse du
-  // corpus sort a sa place, plutot que de laisser le journal muet.
-  PROBE_MS = 5000,
+  // La premiere question paie la mise en route du modele, qui tient rarement en cinq
+  // secondes. L'attente se voit a l'ecran, donc mieux vaut la laisser courir que rendre
+  // une reponse par defaut alors que le modele allait repondre.
+  ASK_MS = 15_000,
   SLEEP_MS = 10_000,
   TWITCH_MS = 5000,
   TWITCH_ODDS = 0.04,
@@ -433,6 +434,26 @@ declare global {
 // Une cle libre dans une table fermee : la table garde son type, l'appelant recoit
 // undefined quand la cle n'y est pas.
 const lookup = <V>(table: Readonly<Record<string, V>>, key: string): V | undefined => table[key];
+
+// « responseConstraint » fait rendre du JSON : un identifiant en sort entre guillemets. Le
+// comparer tel quel ne trouvait jamais le passage, et la reponse du corpus sortait a chaque
+// fois. Un modele qui ignore la contrainte rend du texte brut, qui reste utilisable.
+//
+// Un identifiant du corpus n'a ni guillemet ni echappement : retirer la paire suffit, et
+// evite de decoder du JSON pour en tirer une chaine. L'identifiant est de toute facon
+// cherche dans le corpus, ou un inconnu ne designe rien.
+const readChoice = (raw: string) => {
+  const trimmed = raw.trim();
+
+  return trimmed.startsWith('"') && trimmed.endsWith('"') ? trimmed.slice(1, -1) : trimmed;
+};
+
+// L'attente depassee et le refus ne se reparent pas de la meme facon : l'une demande de
+// patienter, l'autre de regarder l'etat du modele.
+const askFailure = (cause: unknown) =>
+  cause instanceof DOMException && cause.name === "TimeoutError"
+    ? `le modèle local n'a pas répondu en ${ASK_MS / 1000} s.`
+    : "le modèle local a refusé de répondre.";
 
 // Alpine pose ses magies sur le composant apres l'avoir construit : elles ne sont pas
 // dans l'objet litteral, mais « this » les voit a l'execution.
@@ -2296,26 +2317,34 @@ document.addEventListener("alpine:init", () => {
             // La question et les passages sont en francais. Le declarer laisse le navigateur
             // refuser tout de suite plutot que de repondre depuis un modele d'une autre langue.
             expectedInputs: [{ languages: ["fr"], type: "text" }],
-            signal: AbortSignal.any([asker.signal, AbortSignal.timeout(PROBE_MS)]),
+            signal: AbortSignal.any([asker.signal, AbortSignal.timeout(ASK_MS)]),
           });
 
           try {
             const choice = await session.prompt(this.askPrompt(query, candidateIds), {
               responseConstraint: { enum: candidateIds, type: "string" },
-              signal: AbortSignal.any([asker.signal, AbortSignal.timeout(PROBE_MS)]),
+              signal: AbortSignal.any([asker.signal, AbortSignal.timeout(ASK_MS)]),
             });
 
-            this.showAskChoice(choice.trim(), lexical, asker);
+            this.showAskChoice(readChoice(choice), lexical, asker);
             answered = true;
           } finally {
             session.destroy();
           }
-        } catch {
+        } catch (error) {
           // Le modele muet, refuse ou trop lent ne doit pas laisser la question sans
           // reponse : celle du corpus attendait pour ce cas. Une question remplacee par une
           // autre, elle, n'a plus rien a dire.
+          //
+          // Son echec se dit, il ne se confond pas avec la reponse. « rien ne repond dans ce
+          // portfolio » et « le modele a lache » se lisaient pareil, et menaient a chercher
+          // le defaut du mauvais cote.
           if (!answered && this.asker === asker) {
-            this.journal = [...this.journal, ...lexical];
+            this.journal = [
+              ...this.journal,
+              { c: "warn", m: "✗", mc: "warn", t: askFailure(error) } satisfies Line,
+              ...lexical,
+            ];
           }
         } finally {
           // La question coupee n'eteint pas l'attente de celle qui l'a remplacee.

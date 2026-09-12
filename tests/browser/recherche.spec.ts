@@ -23,6 +23,8 @@ const boot = async (page: Page) => {
     page.addInitScript(() => {
       Reflect.deleteProperty(globalThis, "LanguageModel");
     }),
+  // « responseConstraint » fait rendre du JSON au vrai modele : un identifiant en sort
+  // entre guillemets. Un faux modele qui rend l'identifiant nu cacherait ce piege.
   poserModele = (page: Page, choix: string) =>
     page.addInitScript((id: string) => {
       Object.defineProperty(globalThis, "LanguageModel", {
@@ -32,7 +34,7 @@ const boot = async (page: Page) => {
           create: () =>
             Promise.resolve({
               destroy: () => undefined,
-              prompt: () => Promise.resolve(id),
+              prompt: () => Promise.resolve(JSON.stringify(id)),
             }),
         },
       });
@@ -43,7 +45,9 @@ const boot = async (page: Page) => {
     page.addInitScript(() => {
       const { promise, reject, resolve } = Promise.withResolvers<string>();
 
-      globalThis.repondre = resolve;
+      globalThis.repondre = (id: string) => {
+        resolve(JSON.stringify(id));
+      };
       Object.defineProperty(globalThis, "LanguageModel", {
         configurable: true,
         value: {
@@ -286,4 +290,52 @@ test("une question qu'aucun mot ne trouve passe quand même par le modèle", asy
 
   await expect(journal, "le modèle a choisi un passage").toContainText("48 heures");
   await expect(journal).not.toContainText("rien ne répond");
+});
+
+// Un modele qui ignore la contrainte rend l'identifiant nu. Il doit rester utilisable :
+// l'API ne promet pas que tous les modeles la respectent.
+test("un identifiant rendu sans JSON reste utilisable", async ({ page }) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(globalThis, "LanguageModel", {
+      configurable: true,
+      value: {
+        availability: () => Promise.resolve("available"),
+        create: () =>
+          Promise.resolve({
+            destroy: () => undefined,
+            prompt: () => Promise.resolve("  contact  "),
+          }),
+      },
+    });
+  });
+
+  const cli = await boot(page);
+
+  await cli.fill("ask où travailles-tu");
+  await cli.press("Enter");
+  await expect(page.locator("[data-journal]")).toContainText("48 heures");
+});
+
+// « rien ne repond dans ce portfolio » et « le modele a lache » se lisaient pareil. Le
+// premier envoyait chercher le defaut dans le contenu, quand il etait dans le modele.
+test("l'échec du modèle se distingue d'une absence de réponse", async ({ page }) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(globalThis, "LanguageModel", {
+      configurable: true,
+      value: {
+        availability: () => Promise.resolve("available"),
+        create: () => Promise.reject(new Error("refus")),
+      },
+    });
+  });
+
+  const cli = await boot(page);
+
+  await cli.fill("ask zzzzz");
+  await cli.press("Enter");
+
+  const journal = page.locator("[data-journal]");
+
+  await expect(journal).toContainText("le modèle local a refusé de répondre");
+  await expect(journal, "la réponse du corpus suit quand même").toContainText("rien ne répond");
 });
