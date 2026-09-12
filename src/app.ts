@@ -34,7 +34,6 @@ import {
   REFORM_MIN_MS,
   REFORM_SPREAD_MS,
   SLEEP_MS,
-  SPLAT_MARGIN,
   TRANSITIONS,
   TWITCH_MS,
   TWITCH_ODDS,
@@ -57,6 +56,7 @@ import {
 import { type Section, barParts, printed, section } from "./terminal/format.ts";
 import type { Magics } from "./terminal/shell.ts";
 
+import { dragState } from "./terminal/mascot/drag.ts";
 import { mascotSlice } from "./terminal/mascot/slice.ts";
 
 // Une mission du volet gauche : sa pastille et son etat.
@@ -1262,62 +1262,13 @@ document.addEventListener("alpine:init", () => {
           this.dragged = true;
         }
 
-        const next = this.dragState(event, box, step);
+        const next = dragState(event, box, step);
 
         // Reaffecter la meme feuille remettrait l'animation a sa premiere case : la mascotte
         // paraitrait figee pendant tout le deplacement.
         if (next !== this.mascotState) {
           this.mascotPlay(next);
         }
-      },
-
-      // Le plaquage nait du curseur qui sort de la piste, et non d'une collision entre le
-      // sprite et un bord. Les quatre coins se testent avant les quatre murs : sur une
-      // diagonale les deux lectures sont vraies au meme instant, et un coin place apres un
-      // mur ne serait jamais atteint.
-      dragState(event: PointerEvent, box: DOMRect, step: number) {
-        const above = event.clientY < box.top - SPLAT_MARGIN,
-          below = event.clientY > box.bottom + SPLAT_MARGIN,
-          left = event.clientX < box.left,
-          right = event.clientX > box.right;
-
-        if (above && left) {
-          return "splatCeilingLeft";
-        }
-
-        if (above && right) {
-          return "splatCeilingRight";
-        }
-
-        if (below && left) {
-          return "splatFloorLeft";
-        }
-
-        if (below && right) {
-          return "splatFloorRight";
-        }
-
-        if (above) {
-          return "splatCeiling";
-        }
-
-        if (below) {
-          return "splatFloor";
-        }
-
-        if (left) {
-          return "splatLeft";
-        }
-
-        if (right) {
-          return "splatRight";
-        }
-
-        if (step > DRAG_STEP) {
-          return "dragRight";
-        }
-
-        return step < -DRAG_STEP ? "dragLeft" : "grab";
       },
 
       release() {

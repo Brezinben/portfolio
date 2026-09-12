@@ -77,12 +77,12 @@ export const HOLLOW = "░";
 // reste a faire, les cases vides. Rendue en deux morceaux, chacun avec sa couleur.
 // Sans `tick`, la barre ne progresse pas : elle n'a alors pas de tete.
 export const barParts = (done: number, total: number, tick?: number) => {
-  const posees = Math.max(0, Math.min(total, Math.floor(done))),
-    tete = tick === undefined || posees >= total ? "" : SPINNER[tick % SPINNER.length];
+  const placed = Math.max(0, Math.min(total, Math.floor(done))),
+    head = tick === undefined || placed >= total ? "" : SPINNER[tick % SPINNER.length];
 
   return {
-    filled: FILLED.repeat(posees) + tete,
-    hollow: HOLLOW.repeat(total - posees - (tete?.length ?? 0)),
+    filled: FILLED.repeat(placed) + head,
+    hollow: HOLLOW.repeat(total - placed - (head?.length ?? 0)),
   };
 };
 export const TONE = {
