@@ -1,6 +1,6 @@
 # Page 404 personnalisée et interactive
 
-Status: needs-design
+Status: done
 Type: task
 
 Vient de l'issue GitHub #2. Le dépôt n'a aucune page 404 : `dist/` sert `index.html`,
@@ -26,3 +26,9 @@ Vient de l'issue GitHub #2. Le dépôt n'a aucune page 404 : `dist/` sert `index
 >   forcément `content.json`.
 > - Elle doit rester légère : c'est une page qu'on ne veut pas faire payer cher.
 > - Huit thèmes. Le thème est retenu dans le stockage local — la page 404 doit le lire.
+
+## Fait
+
+`src/404.html` et `src/404.css`, portés de `design/export-404/`. Le sprite retenu est
+`alert`. L'interaction s'arrête au clic sur la mascotte : voir `design/DECISIONS.md` §26.
+Caddy renvoie les erreurs 404 vers cette page, statut conservé.

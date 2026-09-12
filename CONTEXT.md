@@ -107,8 +107,9 @@ _Avoid_: page d'erreur, écran 404.
 
 **Mascotte** (`mascot`) :
 Le slime. Il se déplace librement sur toute la fenêtre, et se plaque contre ses bords.
-Décorative : un lecteur d'écran ne l'annonce jamais. Elle disparaît quand le visiteur demande
-moins de mouvement. Le réseau coupé, elle dort : elle ne se déplace plus et ne répond plus,
+Décorative : un lecteur d'écran ne l'annonce jamais. La page introuvable est la seule
+exception : la mascotte y est le seul contrôle, donc elle y est annoncée. Elle disparaît
+quand le visiteur demande moins de mouvement. Le réseau coupé, elle dort : elle ne se déplace plus et ne répond plus,
 ni à une commande, ni à la souris, jusqu'au retour du réseau.
 _Avoid_: slime, avatar, personnage.
 
@@ -193,6 +194,13 @@ _Avoid_: nom de test, description, titre.
 La page principale, interface à trois volets. Seule variante qui lit le contenu JSON.
 _Avoid_: version principale, app.
 
+**Page introuvable** (`404.html`) :
+La page servie sur toute adresse que le site ne publie pas. Autonome : elle ne lit ni le
+contenu, ni le point d'entrée. Elle reprend le thème choisi sur la version terminal, et la
+mascotte y est le seul contrôle. Son style vit dans `404.css`, que la construction remet en
+ligne. Sans rapport avec l'écran de panique, qui parle d'un contenu qui ne charge pas.
+_Avoid_: page d'erreur, écran 404, 404.
+
 **Version texte** (`texte.html`) :
 Repli en une colonne, sans image. Cible du lien de secours de l'écran de panique. Contenu
 écrit en dur, recopié de `content.json`. Composée en Atkinson Hyperlegible Next, la police
@@ -209,7 +217,8 @@ renommage.
 _Avoid_: production, app, sources.
 
 **Artefact compact** (`dist/`) :
-Le dossier que la construction produit. Même page que `src/`, sous forme minifiée.
+Le dossier que la construction produit. Les trois mêmes pages que `src/`, sous forme
+minifiée.
 Hors de git. Les tests navigateur servent ce dossier.
 _Avoid_: sortie, distribution, bundle.
 

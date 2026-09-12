@@ -817,3 +817,92 @@ réécrit à chaque export. Sur 73 fichiers, 411 Ko de métadonnée, soit plus q
 
 **Renommage :** `slime-type-b.png` devient `slime-type.png`, le nom que les trois formes
 partagent.
+
+---
+
+## 26. La page introuvable
+
+> « Je t'ai mis un design pour la page quatre cent quatre. […] les variables qui sont déjà
+> en place, donc les couleurs, les arrondis des bordures, la police, ont le dessus sur la
+> maquette. La maquette, c'est à titre d'exemple. »
+
+**L'export de design est une référence visuelle, pas une référence de code.** Il porte un
+fichier unique, styles et balisage mêlés. Le port sépare `src/404.html` et `src/404.css`.
+
+**Décisions :**
+
+- **Le sprite est `alert`**, pas `load`. Aucune des trente-cinq feuilles ne porte un point
+  d'interrogation ; `alert` porte un « ! » au-dessus de la tête, et c'est celle qui se lit
+  le mieux comme une mascotte surprise par une adresse qui n'existe pas. La maquette
+  proposait `load`, ses trois points de réflexion.
+- **La page n'embarque pas d'interpréteur.** « Interactive » s'arrête au clic sur la
+  mascotte, qui passe en `happy` pendant 1,4 s. Une vraie saisie de commande demanderait
+  `interpret.ts` et `content.json` : le poids de l'accueil, sur la page qu'on paie sans
+  l'avoir voulu.
+- **Le jeton `--code` de la maquette est retiré.** Il donnait aux trois gros chiffres un
+  ambre plus profond que `--acc-text`, décliné sur les huit thèmes. Neuf déclarations de
+  plus à tenir en phase avec `index.html`, pour un écart d'ambre en thème sombre. Les
+  chiffres prennent `--acc-text`.
+- **Les marqueurs `›` `×` `·` sont des tons.** La maquette inventait `[data-marker]` ;
+  `[data-tone]` existe déjà, et le glossaire le définit.
+- **Le style sort du balisage.** `src/404.css` à l'édition, injecté en ligne à la
+  construction. C'est la lecture que
+  `.scratch/refonte-css/issues/07-externaliser-la-feuille-de-style.md` recommandait, restée
+  sans réponse jusqu'ici. La page 404 en est le premier cas : la page ne porte aucun
+  attribut `style=`.
+
+**Ce que la construction a dû apprendre :** elle pliait les feuilles de mascotte d'une seule
+page. `foldSheets` est découpé en `planSheets`, qui balaye `index.html` et rend la bande de
+chaque feuille, et `foldPage`, qui applique ce plan à n'importe quel texte. La 404 vise donc
+l'image fusionnée et sa bande, jamais une feuille unitaire — la construction efface leur
+dossier de l'artefact.
+
+**Le salto du zéro** vient de la maquette et part tel quel : un `rotateX(-360deg)` sur le
+`0` de « 404 », toutes les cinq secondes.
+
+**Le premier passage au clavier a trouvé cinq défauts :**
+
+- **Le contour de focus du slime virait au rose.** Le `hue-rotate` qui accorde les couleurs
+  cuites dans le PNG au thème repeint tout ce que l'élément dessine, contour compris. Sur
+  `azureus` l'ambre tournait au rouge, sur `noctis` au violet. Le sprite descend sur
+  `.slime::before` ; le bouton garde son contour.
+- **Les flèches haut et bas parcourent les contrôles**, comme `moveInPane` sur la version
+  terminal : elles s'arrêtent aux deux bouts, elles ne bouclent pas. La première pression
+  prend le contrôle le plus proche du sens demandé.
+- **Le nom du thème quitte le pied de page.** Il n'apprenait rien : le thème se voit.
+- **Le volet débordait l'écran sous 900 px.** Les jetons `--pane-flex` et `--pane-min`
+  décrivent trois colonnes qui s'empilent ; le `flex: none` de la bascule dimensionnait le
+  volet unique sur sa plus longue ligne, et le relevé sortait de l'écran sans barre de
+  défilement. Un seul volet, donc `flex: 1`, et les deux jetons disparaissent.
+- **Le texte ne suivait pas la largeur.** Le corps passe en `clamp(14px, 3.8vw, 16px)`, et
+  les tailles filles en `em`. Le code passe de `clamp(40px, 8vw, 64px)` à
+  `clamp(72px, 20vw, 112px)` : son plancher de 40 px le laissait plus petit sur un téléphone
+  que sur un écran deux fois plus large.
+
+**Et une demande de rythme :** l'état de repos tournait sans répit. Il joue maintenant ses
+seize cases en 1,6 s, puis tient la dernière — le slime revenu au calme, les yeux ronds —
+pendant dix secondes. Un `steps` sur toute la piste étalerait les cases sur onze secondes :
+le pas vit donc dans la première borne du keyframe, et `step-end` tient la pose sur la
+seconde.
+
+**La mise en avant est une sélection, pas une décoration.** Premier essai : le survol et le
+focus partageaient une règle, sur le motif de la frise (`src/index.html:1290`). Il était
+faux. `data-primary` restait cloué sur la première sortie, donc arriver sur la deuxième en
+peignait deux, et la première continuait de se lire comme choisie.
+
+`data-primary` marque désormais **une seule sortie à la fois**, et le script la déplace sous
+le pointeur comme sous le clavier. Au repos elle est sur le retour à l'accueil. C'est la
+sélection d'une liste, celle que la version terminal tient dans `aria-current`.
+
+Deux conséquences :
+
+- **Le fond et la barre ne se lisent que sur `data-primary`.** Une règle `:hover` en
+  peindrait une seconde dès que la souris quitterait la sortie qui porte le focus. Le prix :
+  sans script, aucun retour au survol. La page reste entière — les liens marchent — et son
+  script sert déjà à écrire le chemin demandé.
+- **Le contour reste.** Il dit le focus, que la mise en avant ne distingue pas du survol.
+  La frise le retire ; elle n'a pas de pointeur et de clavier à départager sur la même ligne.
+
+**Et la transition disparaît.** `[data-ctl="nav"]` la portait dans la maquette.
+`src/index.html` n'en porte plus sur ces entrées depuis la refonte CSS, qui avait laissé la
+question ouverte entre `nav` et `tl`. La page 404 suit la réponse du dépôt.

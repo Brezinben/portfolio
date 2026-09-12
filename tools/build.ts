@@ -32,7 +32,7 @@ const ROOT = fileURLToPath(new URL("../", import.meta.url)),
   LEGACY = join(ROOT, ".versions", `${OUTPUT}.reprise`),
   KEPT_VERSIONS = 3,
   CONTENT = "content.json",
-  TRANSFORMED = new Set([CONTENT, "index.html", "texte.html"]),
+  TRANSFORMED = new Set([CONTENT, "404.css", "404.html", "index.html", "texte.html"]),
   // Ces noms sont des contrats avec l'extérieur : iOS demande /apple-touch-icon.png sans
   // balise, la page charge content.json par une URL relative, et les robots lisent llms.txt.
   FIXED_NAMES = new Set([
@@ -44,8 +44,9 @@ const ROOT = fileURLToPath(new URL("../", import.meta.url)),
     "sitemap.xml",
   ]),
   STAMPED_EXTENSIONS = new Set([".css", ".js", ".pdf", ".png", ".svg", ".woff2"]),
-  PAGES = ["index.html", "texte.html"],
+  PAGES = ["404.html", "index.html", "texte.html"],
   MODULE_TAG = '<script type="module" src="app.ts"></script>',
+  STYLE_TAG = '<link rel="stylesheet" href="404.css">',
   // Une case de mascotte fait 32 px natifs et s'affiche à x2. Voir l'ADR 0004.
   FRAME = 32,
   SCALE = 2,
@@ -59,14 +60,17 @@ const ROOT = fileURLToPath(new URL("../", import.meta.url)),
     { dir: "pingouin", prefix: "peng" },
   ],
   sheetsOf = (dir: string) => `assets/sprites/${dir}-sheets.png`,
-  dirOf = (file: string) => file.split("/")[2] ?? "",
+  dirOf = (file: string) => file.replace(LEADING_SLASH, "").split("/")[2] ?? "",
   // Le CSS de src/ nomme une feuille par état, dans l'ordre des bandes attendues. La
   // construction empile les feuilles dans cet ordre, puis remplace chaque paire par le
   // décalage de sa bande. La liste des feuilles et l'ordre des bandes sortent du même
   // balayage : ils ne peuvent pas diverger.
   SHEET_RULE =
-    /(?<indent>[^\S\n]*)background-image: url\("assets\/sprites\/(?<dir>[a-z]+)\/[^"]+\.png"\);\n[^\S\n]*background-size: \d+px \d+px;\n/gu,
-  SHEET_URL = /assets\/sprites\/(?:[a-z]+)\/[^"]+\.png/gu,
+    /(?<indent>[^\S\n]*)background-image: url\("(?<file>\/?assets\/sprites\/[a-z]+\/[^"]+\.png)"\);\n[^\S\n]*background-size: \d+px \d+px;\n/gu,
+  SHEET_URL = /\/?assets\/sprites\/[a-z]+\/[^"]+\.png/gu,
+  // La 404 est servie sur une adresse quelconque : elle écrit des chemins absolus, là où
+  // index.html les écrit relatifs. Le plan, lui, ne connaît que la forme relative.
+  LEADING_SLASH = /^\//u,
   // La règle de base d'une forme porte la position de départ. Elle reçoit l'image fusionnée,
   // que les règles d'état ne déclarent plus. Le slime est la forme par défaut, sans attribut.
   BASE_RULE = {
@@ -143,6 +147,11 @@ const ROOT = fileURLToPath(new URL("../", import.meta.url)),
 // Le voisinage qu'un filtre PNG consulte : le pixel de gauche, celui du dessus, et le coin
 // entre les deux. Un voisin hors de l'image vaut zéro.
 type Around = { above: number; corner: number; left: number };
+
+// Ce qu'un balayage de index.html apprend sur les feuilles fusionnées : la bande de
+// chaque feuille source, et la taille d'affichage de l'image de chaque forme.
+type SheetSize = { height: number; width: number };
+type SheetPlan = { bands: Map<string, number>; sizes: Map<string, SheetSize> };
 
 // Les cinq filtres de ligne de la spécification PNG, défaits.
 const unfilter = (filter: number, value: number, around: Around) => {
@@ -280,8 +289,13 @@ const unfilter = (filter: number, value: number, around: Around) => {
   // Une seule requête au lieu d'une par état, et trois fois moins d'octets : un seul flux
   // deflate exploite la ressemblance entre les feuilles. src/ garde un fichier par état,
   // lisible un par un ; seul l'artefact les fusionne.
-  foldSheets = async (staging: string, page: string) => {
-    const declared = page.match(SHEET_URL) ?? [],
+  //
+  // Le plan sort d'un seul balayage de index.html : la liste des feuilles et l'ordre des
+  // bandes en viennent ensemble, donc ils ne peuvent pas diverger. Une deuxième page ne
+  // recompte rien, elle lit ce plan.
+  planSheets = async (staging: string) => {
+    const page = await readFile(join(SOURCE, "index.html"), "utf8"),
+      declared = page.match(SHEET_URL) ?? [],
       // Les trente-deux etats communs ne sont ecrits qu'une fois, sous le slime : les trois
       // formes portent les memes, dans le meme ordre, avec le meme nombre de cases. Les
       // autres formes les deduisent par leur prefixe, et n'ecrivent que leurs transitions.
@@ -291,52 +305,27 @@ const unfilter = (filter: number, value: number, around: Around) => {
       throw new Error("index.html ne déclare plus de feuille de mascotte");
     }
 
-    // La bande d'une regle depend de sa forme : une transition suit les trente-deux etats
-    // communs de la feuille ou elle vit.
-    const seen = new Map(FORMS.map(({ dir }) => [dir, dir === "slime" ? 0 : common.length])),
-      folded = page.replace(SHEET_RULE, (_rule, indent: string, dir: string) => {
-        const band = seen.get(dir) ?? 0;
-
-        seen.set(dir, band + 1);
-
-        return `${indent}background-position-y: ${-(band * BAND)}px;\n`;
-      }),
-      forms = FORMS.map(({ dir, prefix }) => {
-        const files = [
+    // Une transition suit les trente-deux etats communs de la feuille ou elle vit :
+    // « evolveCube » montre un slime, mais elle vit dans la feuille du cube.
+    const forms = FORMS.map(({ dir, prefix }) => ({
+        dir,
+        files: [
           ...common.map((file) => file.replace(`/slime/slime-`, `/${dir}/${prefix}-`)),
           ...declared.filter((file) => dirOf(file) === dir && !common.includes(file)),
-        ];
+        ],
+      })),
+      merges = await Promise.all(forms.map(({ files }) => mergeSheets(files))),
+      bands = new Map<string, number>(),
+      sizes = new Map<string, SheetSize>();
 
-        if ((seen.get(dir) ?? 0) !== files.length) {
-          throw new Error(`${dir} : ${files.length} feuilles, mais ${seen.get(dir)} bandes`);
-        }
+    forms.forEach(({ dir, files }, index) => {
+      const merged = merges[index];
 
-        return { dir, files };
-      }),
-      merges = await Promise.all(forms.map(({ files }) => mergeSheets(files)));
-
-    let based = folded;
-
-    forms.forEach(({ dir }, index) => {
-      const merged = merges[index],
-        // SAFETY: « dir » vient de FORMS, dont les trois noms sont exactement les clefs de
-        // BASE_RULE. Une forme ajoutee sans sa regle de base ne compilerait pas.
-        next = based.replace(
-          BASE_RULE[dir as keyof typeof BASE_RULE],
-          (_rule: string, head: string, indent: string) =>
-            `${head}${indent}background-image: url("${sheetsOf(dir)}");\n${
-              // Seule la forme par defaut pose la position de depart. Un « background-position »
-              // sur une regle d'attribut ecraserait le « background-position-y » des regles
-              // d'etat, moins specifiques : toutes les bandes retomberaient sur la premiere.
-              dir === "slime" ? `${indent}background-position: 0 0;\n` : ""
-            }${indent}background-size: ${(merged?.width ?? 0) * SCALE}px ${(merged?.height ?? 0) * SCALE}px;\n`,
-        );
-
-      if (next === based) {
-        throw new Error(`La règle de base de ${dir} ne porte plus « background-position: 0 0 »`);
-      }
-
-      based = next;
+      files.forEach((file, band) => bands.set(file, band));
+      sizes.set(dir, {
+        height: (merged?.height ?? 0) * SCALE,
+        width: (merged?.width ?? 0) * SCALE,
+      });
     });
 
     // Les feuilles source sortent de l'artefact : leur dossier ne sert plus a rien une fois
@@ -350,22 +339,87 @@ const unfilter = (filter: number, value: number, around: Around) => {
       ),
     ]);
 
-    return based;
+    return { bands, sizes };
   },
-  buildIndex = async (staging: string) => {
+  // Le texte plié est une page ou une feuille de style : seules les règles comptent.
+  foldPage = (text: string, plan: SheetPlan, dirs: string[]) => {
+    let seen = 0;
+
+    // L'adresse de l'image fusionnée reprend la forme de celles qu'elle remplace : une page
+    // servie sur une adresse quelconque écrit des chemins absolus, et les garde.
+    const root = LEADING_SLASH.test(text.match(SHEET_URL)?.[0] ?? "") ? "/" : "",
+      folded = text.replace(SHEET_RULE, (_rule, indent: string, file: string) => {
+        const band = plan.bands.get(file.replace(LEADING_SLASH, ""));
+
+        if (band === undefined) {
+          throw new Error(`${file} ne correspond à aucune bande de la feuille fusionnée`);
+        }
+
+        seen += 1;
+
+        return `${indent}background-position-y: ${-(band * BAND)}px;\n`;
+      });
+
+    if (seen === 0) {
+      throw new Error("aucune règle d'état de mascotte à plier");
+    }
+
+    return dirs.reduce((carry, dir) => {
+      const size = plan.sizes.get(dir),
+        // SAFETY: « dir » vient de FORMS, dont les trois noms sont exactement les clefs de
+        // BASE_RULE. Une forme ajoutee sans sa regle de base ne compilerait pas.
+        next = carry.replace(
+          BASE_RULE[dir as keyof typeof BASE_RULE],
+          (_rule: string, head: string, indent: string) =>
+            `${head}${indent}background-image: url("${root}${sheetsOf(dir)}");\n${
+              // Seule la forme par defaut pose la position de depart. Un « background-position »
+              // sur une regle d'attribut ecraserait le « background-position-y » des regles
+              // d'etat, moins specifiques : toutes les bandes retomberaient sur la premiere.
+              dir === "slime" ? `${indent}background-position: 0 0;\n` : ""
+            }${indent}background-size: ${size?.width ?? 0}px ${size?.height ?? 0}px;\n`,
+        );
+
+      if (next === carry) {
+        throw new Error(`La règle de base de ${dir} ne porte plus « background-position: 0 0 »`);
+      }
+
+      return next;
+    }, folded);
+  },
+  buildIndex = async (staging: string, plan: SheetPlan) => {
     const page = await readFile(join(SOURCE, "index.html"), "utf8");
 
     if (!page.includes(MODULE_TAG)) {
       throw new Error(`index.html ne porte plus ${MODULE_TAG}`);
     }
 
-    const folded = await foldSheets(staging, page),
+    const folded = foldPage(
+        page,
+        plan,
+        FORMS.map(({ dir }) => dir),
+      ),
       bundled = await bundle(),
       // Une fonction de remplacement, car un remplacement littéral interprète les motifs en
       // dollar. Le code source porte « $$ » dans les yeux de cowsay.
       replaced = folded.replace(MODULE_TAG, () => `<script type="module">${bundled}</script>`);
 
     await writeFile(join(staging, "index.html"), await minify(replaced, MINIFY));
+  },
+  // La page d'erreur garde sa feuille a part dans src/, pour qu'elle s'edite et se relise.
+  // L'artefact la remet en ligne : une adresse inconnue ne doit pas coûter une requete
+  // bloquante de plus. MINIFY porte deja minifyCSS, qui s'applique au bloc injecte.
+  build404 = async (staging: string, plan: SheetPlan) => {
+    const page = await readFile(join(SOURCE, "404.html"), "utf8"),
+      sheet = await readFile(join(SOURCE, "404.css"), "utf8");
+
+    if (!page.includes(STYLE_TAG)) {
+      throw new Error(`404.html ne porte plus ${STYLE_TAG}`);
+    }
+
+    const folded = foldPage(sheet, plan, ["slime"]),
+      inlined = page.replace(STYLE_TAG, () => `<style>${folded}</style>`);
+
+    await writeFile(join(staging, "404.html"), await minify(inlined, MINIFY));
   },
   buildTexte = async (staging: string) => {
     const page = await readFile(join(SOURCE, "texte.html"), "utf8");
@@ -558,7 +612,11 @@ try {
   // L'elagage part des enfants, jamais de la racine : celle-ci doit survivre meme vide,
   // sinon l'ecriture de index.html qui suit echouerait sur un dossier disparu.
   await pruneChildren(version);
-  await buildIndex(version);
+
+  const plan = await planSheets(version);
+
+  await buildIndex(version, plan);
+  await build404(version, plan);
   await buildTexte(version);
   await buildContent(version);
   await rewritePages(version, await stampAssets(version));
