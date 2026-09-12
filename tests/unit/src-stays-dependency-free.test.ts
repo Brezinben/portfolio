@@ -23,6 +23,6 @@ const PRODUCTION = fileURLToPath(new URL("../../src/", import.meta.url)),
 // Production/ reste la source, servable telle quelle sans npm. La construction produit
 // dist/ et n'écrit jamais ici. Un manifeste de dépendances ou un node_modules signifierait
 // que la construction a débordé, y compris sous src/vendor/ où Alpine est figé.
-it("src/ ne contient aucune dépendance ni artefact de construction", async () => {
+it("should keep src free of dependencies and build artefacts", async () => {
   assert.deepEqual(await findForbidden(PRODUCTION), []);
 });

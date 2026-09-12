@@ -38,28 +38,28 @@ const OUTPUT = fileURLToPath(
 
 // Le bundle absorbe les modules : aucune source ne doit atteindre l'artefact. Une liste
 // de noms ne le garantissait pas — un renommage a suffi pour publier 23 Ko de TypeScript.
-it("l'artefact ne publie aucune source", async () => {
+it("should publish no source file in the artefact", async () => {
   const files = await walk(OUTPUT).catch(() => []);
 
-  assert.notEqual(files.length, 0, "l'artefact doit avoir été construit avant ce test");
+  assert.notEqual(files.length, 0, "the artefact must be built before this test");
 
   const sources = files
     .filter((file) => file.endsWith(".ts") || file.endsWith(".map"))
     .map((file) => relative(OUTPUT, file));
 
-  assert.deepEqual(sources, [], "une source a été copiée au lieu d'être fondue");
+  assert.deepEqual(sources, [], "a source file was copied instead of being bundled");
 });
 
 // Le filtre de copie s'applique aussi aux dossiers, et un dossier n'a pas d'extension : un
 // dossier qui ne porte que du TypeScript etait cree puis vide de ses enfants, et publie
 // vide. Le test des sources ne le voyait pas, puisqu'il ne liste que des fichiers.
-it("l'artefact ne publie aucun dossier vide", async () => {
+it("should publish no empty directory in the artefact", async () => {
   const files = await walk(OUTPUT).catch(() => []);
 
-  assert.notEqual(files.length, 0, "l'artefact doit avoir été construit avant ce test");
+  assert.notEqual(files.length, 0, "the artefact must be built before this test");
 
   const found = await emptyDirs(OUTPUT),
     empty = found.map((directory) => relative(OUTPUT, directory));
 
-  assert.deepEqual(empty, [], "un dossier de source a été créé puis vidé");
+  assert.deepEqual(empty, [], "a source directory was created then emptied");
 });

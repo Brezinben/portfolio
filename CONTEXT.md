@@ -82,6 +82,12 @@ _Avoid_: page, onglet, rubrique.
 Une expérience professionnelle, présentée en fiche depuis le volet gauche.
 _Avoid_: expérience, poste, projet.
 
+**Étincelle** (`sparkle`) :
+Le caractère `✨` qui suffixe la commande de recherche quand un modèle local répond.
+`ask` et `ask✨` sont la même commande sous deux noms, et ils ne s'offrent jamais
+ensemble : l'étincelle est la seule chose qui dise au visiteur qu'un modèle est là.
+_Avoid_: icône, emoji, marqueur.
+
 **Fiche techno** (`techNote`) :
 Texte attaché à une technologie de la stack, en trois parties : où, quoi, pourquoi.
 _Avoid_: tooltip, détail techno, carte.

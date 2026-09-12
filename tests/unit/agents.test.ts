@@ -16,7 +16,7 @@ const SOURCE = new URL("../../src/", import.meta.url),
   texte = read("texte.html"),
   locs = [...sitemap.matchAll(/<loc>(?<url>[^<]+)<\/loc>/gu)].map((found) => found.groups?.url);
 
-it("le sitemap est équilibré et déclare l'espace de noms attendu", () => {
+it("should keep the sitemap balanced and declare the expected namespace", () => {
   assert.match(sitemap, /^<\?xml version="1\.0" encoding="UTF-8"\?>/u);
   assert.match(sitemap, /<urlset xmlns="http:\/\/www\.sitemaps\.org\/schemas\/sitemap\/0\.9">/u);
 
@@ -24,46 +24,50 @@ it("le sitemap est équilibré et déclare l'espace de noms attendu", () => {
     const opened = sitemap.match(new RegExp(`<${tag}[ >]`, "gu")) ?? [],
       closed = sitemap.match(new RegExp(`</${tag}>`, "gu")) ?? [];
 
-    assert.equal(opened.length, closed.length, `la balise ${tag} n'est pas fermée autant de fois`);
+    assert.equal(
+      opened.length,
+      closed.length,
+      `the ${tag} tag is not closed as many times as it is opened`,
+    );
   }
 });
 
-it("chaque adresse du sitemap désigne un fichier servi", () => {
+it("should point every sitemap address at a served file", () => {
   assert.deepEqual(locs, [`${ORIGINE}/`, `${ORIGINE}/texte.html`]);
 
   for (const loc of locs) {
     const name = loc.slice(ORIGINE.length + 1) || "index.html";
 
-    assert.doesNotThrow(() => read(name), `${loc} ne correspond à aucun fichier de src/`);
+    assert.doesNotThrow(() => read(name), `${loc} matches no file in src/`);
   }
 });
 
-it("robots.txt ouvre le site et désigne le sitemap", () => {
-  assert.ok(/^User-agent: \*$/mu.test(robots), "robots.txt ne porte pas de groupe universel");
-  assert.ok(/^Allow: \/$/mu.test(robots), "robots.txt n'ouvre pas la racine");
+it("should open the site and name the sitemap in robots.txt", () => {
+  assert.ok(/^User-agent: \*$/mu.test(robots), "robots.txt carries no universal group");
+  assert.ok(/^Allow: \/$/mu.test(robots), "robots.txt does not open the root");
   assert.ok(
     robots.includes(`Sitemap: ${ORIGINE}/sitemap.xml`),
-    "robots.txt ne cite pas le sitemap",
+    "robots.txt does not name the sitemap",
   );
 });
 
-it("llms.txt ne nomme que des adresses qui existent", () => {
-  assert.ok(!llms.includes(".dc.html"), "les noms du canvas ne sont pas des adresses servies");
+it("should name only existing addresses in llms.txt", () => {
+  assert.ok(!llms.includes(".dc.html"), "the canvas names are not served addresses");
 
   for (const loc of locs) {
-    assert.ok(loc && llms.includes(loc), `llms.txt ne cite pas ${loc}`);
+    assert.ok(loc && llms.includes(loc), `llms.txt does not name ${loc}`);
   }
 });
 
 // Le contresens le plus coûteux : croire que ce domaine héberge un serveur MCP parce que
 // Benjamin en conçoit pour ses clients. Le démenti tient dans le bloc de détails, que la
 // convention réserve à ce qui aide un agent à interpréter les documents listés.
-it("llms.txt dit ce que le site n'expose pas", () => {
-  assert.ok(llms.includes("## Quand ce site répond à votre question"), "la section manque");
-  assert.ok(llms.includes("n'en héberge aucun"), "llms.txt ne dément pas le serveur MCP hébergé");
-  assert.ok(llms.includes("ni produit, ni API"), "llms.txt ne dément pas l'API");
-  assert.ok(llmsFull.includes("n'en héberge aucun"), "le contenu complet ne porte pas le démenti");
-  assert.ok(llmsFull.includes("ni produit, ni API"), "le contenu complet ne dément pas l'API");
+it("should state in llms.txt what the site does not expose", () => {
+  assert.ok(llms.includes("## Quand ce site répond à votre question"), "the section is missing");
+  assert.ok(llms.includes("n'en héberge aucun"), "llms.txt does not deny the hosted MCP server");
+  assert.ok(llms.includes("ni produit, ni API"), "llms.txt does not deny the API");
+  assert.ok(llmsFull.includes("n'en héberge aucun"), "the full content does not carry the denial");
+  assert.ok(llmsFull.includes("ni produit, ni API"), "the full content does not deny the API");
 });
 
 // https://llmstxt.org/ : un H1, un résumé en blockquote, des détails sans titre, puis des
@@ -71,38 +75,38 @@ it("llms.txt dit ce que le site n'expose pas", () => {
 // le document qu'il était, et plus aucun analyseur ne sait le lire.
 const LIEN = /^- \[[^\]]+\]\(https:\/\/[^)]+\)(?<notes>: .+)?$/su;
 
-it("llms.txt suit la grammaire de la convention", () => {
+it("should follow the grammar of the convention in llms.txt", () => {
   const [titre, vide, resume] = llms.split("\n");
 
-  assert.match(titre ?? "", /^# \S/u, "la première ligne n'est pas le titre");
-  assert.equal(vide, "", "le titre n'est pas suivi d'une ligne vide");
-  assert.match(resume ?? "", /^> \S/u, "le résumé en blockquote ne suit pas le titre");
+  assert.match(titre ?? "", /^# \S/u, "the first line is not the title");
+  assert.equal(vide, "", "the title is not followed by an empty line");
+  assert.match(resume ?? "", /^> \S/u, "the blockquote summary does not follow the title");
 
   const sections = llms.split(/^## .+$/mu).slice(1);
 
-  assert.ok(sections.length >= 1, "llms.txt ne porte aucune section");
+  assert.ok(sections.length >= 1, "llms.txt carries no section");
 
   for (const section of sections) {
     const entrees = section.trim().split(/\n(?=- )/u);
 
     for (const entree of entrees) {
-      assert.match(entree, LIEN, "une section ne porte pas qu'une liste de liens");
+      assert.match(entree, LIEN, "a section carries more than a list of links");
     }
   }
 
-  assert.ok(llms.includes("## Optional"), "la section réservée au secondaire manque");
+  assert.ok(llms.includes("## Optional"), "the Optional section is missing");
   assert.ok(
     llms.includes(`${ORIGINE}/llms-full.txt`),
-    "llms.txt ne renvoie pas vers le contenu complet",
+    "llms.txt does not link to the full content",
   );
 });
 
-it("llms.txt et la version texte donnent le même contact", () => {
+it("should give the same contact in llms.txt and in the text version", () => {
   const contact = "benjamin.david1@hotmail.fr";
 
-  assert.ok(llms.includes(contact), "llms.txt ne donne pas le contact attendu");
-  assert.ok(llmsFull.includes(contact), "llms-full.txt ne donne pas le contact attendu");
-  assert.ok(texte.includes(contact), "texte.html ne donne pas le contact attendu");
+  assert.ok(llms.includes(contact), "llms.txt does not give the expected contact");
+  assert.ok(llmsFull.includes(contact), "llms-full.txt does not give the expected contact");
+  assert.ok(texte.includes(contact), "texte.html does not give the expected contact");
 });
 
 // La version texte recopie les huit thèmes de la version terminal, pour ne pas tirer une
@@ -132,17 +136,17 @@ const CLES = ["--bg", "--panel", "--edge", "--fg", "--fg2", "--acc"],
     return releve;
   };
 
-it("les huit thèmes de la version texte reprennent les couleurs de la version terminal", () => {
+it("should copy the terminal version colors into the eight themes of the text version", () => {
   const source = themes(read("index.html"), String.raw`\.tm`),
     copie = themes(texte, ":root"),
     noms = Object.keys(source);
 
-  assert.equal(noms.length, 8, "index.html ne déclare plus huit thèmes");
-  assert.deepEqual(Object.keys(copie), noms, "texte.html ne déclare pas les mêmes thèmes");
+  assert.equal(noms.length, 8, "index.html no longer declares eight themes");
+  assert.deepEqual(Object.keys(copie), noms, "texte.html does not declare the same themes");
 
   for (const nom of noms) {
     for (const cle of CLES) {
-      assert.equal(copie[nom]?.[cle], source[nom]?.[cle], `${nom} : ${cle} a dérivé`);
+      assert.equal(copie[nom]?.[cle], source[nom]?.[cle], `${nom}: ${cle} has drifted`);
     }
   }
 
@@ -154,7 +158,7 @@ it("les huit thèmes de la version texte reprennent les couleurs de la version t
 // Le contenu de la version texte est écrit en dur. content.json reste la source de vérité :
 // sans ce test, la page dériverait en silence au prochain changement de contenu. Le contenu
 // complet servi aux agents est une seconde copie, tenue par la même mesure.
-it("la version texte et le contenu complet portent tout le contenu de content.json", () => {
+it("should carry all of content.json in the text version and in the full content", () => {
   // SAFETY: content.json est un artefact du dépôt, versionné à côté de ce test, et son
   // schéma est tenu par tests/unit/content.test.ts. Seules trois clés sont lues ici.
   const contenu = JSON.parse(read("content.json")) as {
@@ -165,15 +169,19 @@ it("la version texte et le contenu complet portent tout le contenu de content.js
     absent = (valeur: string) =>
       !texte.includes(valeur.replaceAll("&", "&amp;")) || !llmsFull.includes(valeur);
 
-  assert.deepEqual(Object.keys(contenu.techNotes).filter(absent), [], "des fiches techno manquent");
+  assert.deepEqual(
+    Object.keys(contenu.techNotes).filter(absent),
+    [],
+    "some tech notes are missing",
+  );
   assert.deepEqual(
     contenu.stack.flatMap((groupe) => groupe.kids).filter(absent),
     [],
-    "des technos de la stack manquent",
+    "some stack technologies are missing",
   );
   assert.deepEqual(
     contenu.timeline.map((entree) => entree.org).filter(absent),
     [],
-    "des expériences de la frise manquent",
+    "some timeline entries are missing",
   );
 });

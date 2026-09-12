@@ -40,20 +40,20 @@ const CONTEXT: Context = {
   effectOf = <K extends Effect["type"]>(result: Outcome, kind: K) =>
     result.effects.find((entry): entry is Extract<Effect, { type: K }> => entry.type === kind);
 
-it("une entrée vide ne produit rien", () => {
+it("should produce nothing on an empty input", () => {
   for (const empty of ["", "   ", "\t"]) {
     assert.deepEqual(interpret(empty, CONTEXT), { effects: [], lines: [] });
   }
 });
 
-it("la ligne saisie est renvoyée en écho", () => {
+it("should echo the typed line", () => {
   const result = interpret("ls", CONTEXT);
 
   assert.equal(result.lines[0]?.t, "ls");
   assert.equal(result.lines[0]?.m, "›");
 });
 
-it("les espaces multiples sont normalisés", () => {
+it("should normalize repeated spaces", () => {
   const spaced = interpret("cd    stack", CONTEXT),
     single = interpret("cd stack", CONTEXT);
 
@@ -63,7 +63,7 @@ it("les espaces multiples sont normalisés", () => {
 
 // L'écho reprend la ligne telle qu'elle a été tapée, préfixe compris : seule la sortie
 // doit être identique.
-it("les préfixes slash et deux-points sont acceptés", () => {
+it("should accept the slash and the colon prefixes", () => {
   for (const prefix of ["/", ":", "//"]) {
     const prefixed = interpret(`${prefix}sudo`, CONTEXT);
 
@@ -72,14 +72,14 @@ it("les préfixes slash et deux-points sont acceptés", () => {
   }
 });
 
-it("chaque commande est marquée", () => {
+it("should track every command", () => {
   const effect = effectOf(interpret("/sudo", CONTEXT), "track");
 
   assert.equal(effect?.event, "commande");
   assert.deepEqual(effect?.props, { cmd: "sudo" });
 });
 
-it("ls liste les sections puis les fiches", () => {
+it("should list the sections then the missions with ls", () => {
   const result = interpret("ls", CONTEXT);
 
   assert.equal(result.lines[1]?.t, "whoami   stack");
@@ -88,7 +88,7 @@ it("ls liste les sections puis les fiches", () => {
 
 // La reponse de help ne tient pas dans le journal d'un ecran large : elle reclame le
 // resultat, et le journal ne garde que l'echo de la commande.
-it("help liste les commandes et rappelle le clavier dans le résultat", () => {
+it("should list the commands and recall the keyboard in the result of help", () => {
   const result = interpret("help", CONTEXT),
     body = resultTexts(result).join("\n");
 
@@ -98,11 +98,11 @@ it("help liste les commandes et rappelle le clavier dans le résultat", () => {
   assert.ok(result.effects.some((effect) => effect.type === "say"));
 });
 
-it("une commande ordinaire laisse le résultat à la section", () => {
+it("should leave the result to the section on an ordinary command", () => {
   assert.equal(interpret("ls", CONTEXT).result, undefined);
 });
 
-it("aide et point d'interrogation sont des alias de help", () => {
+it("should treat aide and the question mark as aliases of help", () => {
   for (const alias of ["aide", "?"]) {
     assert.deepEqual(
       resultTexts(interpret(alias, CONTEXT)),
@@ -111,57 +111,57 @@ it("aide et point d'interrogation sont des alias de help", () => {
   }
 });
 
-it("un nom de section seul y navigue", () => {
+it("should navigate to a section named alone", () => {
   const result = interpret("stack", CONTEXT);
 
   assert.ok(result.effects.some((effect) => effect.type === "navigate" && effect.id === "stack"));
   assert.match(result.lines[1]?.t ?? "", /section « stack » chargée/);
 });
 
-it("cd navigue aussi, et open et bd en sont des alias", () => {
+it("should navigate with cd, and with its aliases open and bd", () => {
   for (const verb of ["cd", "open", "bd"]) {
     const result = interpret(`${verb} stack`, CONTEXT);
 
     assert.ok(
       result.effects.some((effect) => effect.type === "navigate" && effect.id === "stack"),
-      `${verb} doit naviguer`,
+      `${verb} must navigate`,
     );
   }
 });
 
 // Retaper la commande de la section en cours la rejoue, plutôt que de l'empiler.
-it("retaper la commande de la section la rejoue", () => {
+it("should replay the section when its command is typed again", () => {
   const result = interpret("bd whoami --verbose", CONTEXT);
 
   assert.deepEqual(kinds(result), ["track", "replay"]);
   assert.deepEqual(result.lines, []);
 });
 
-it("clear vide le journal sans rien afficher", () => {
+it("should empty the log without showing anything", () => {
   const result = interpret("clear", CONTEXT);
 
   assert.ok(result.effects.some((effect) => effect.type === "clear"));
   assert.deepEqual(result.lines, []);
 });
 
-it("sudo refuse, et le signale", () => {
+it("should refuse and say so on sudo", () => {
   const result = interpret("/sudo", CONTEXT);
 
   assert.match(result.lines[1]?.t ?? "", /sudoers/);
   assert.equal(result.lines[1]?.m, "✗");
 });
 
-it("coffee répond 418", () => {
+it("should answer 418 on coffee", () => {
   assert.equal(interpret("/coffee", CONTEXT).lines[1]?.m, "418");
 });
 
-it("vim, nano et emacs tombent dans le même piège", () => {
+it("should trap vim, nano and emacs the same way", () => {
   for (const editor of ["/vim", "/nano", "/emacs"]) {
     assert.match(interpret(editor, CONTEXT).lines[1]?.t ?? "", /:q!/);
   }
 });
 
-it("sleep endort la mascotte", () => {
+it("should put the mascot to sleep on sleep", () => {
   const result = interpret("sleep", CONTEXT);
 
   assert.ok(
@@ -169,7 +169,7 @@ it("sleep endort la mascotte", () => {
   );
 });
 
-it("benjamin se présente et donne son adresse", () => {
+it("should introduce Benjamin and give his address", () => {
   const result = interpret("/benjamin", CONTEXT);
 
   assert.match(texts(result).join("\n"), /benjamin\.david1@hotmail\.fr/);
@@ -178,7 +178,7 @@ it("benjamin se présente et donne son adresse", () => {
   );
 });
 
-it("brezinben est un alias de benjamin", () => {
+it("should treat brezinben as an alias of benjamin", () => {
   assert.deepEqual(
     texts(interpret("/brezinben", CONTEXT)).slice(1),
     texts(interpret("/benjamin", CONTEXT)).slice(1),
@@ -186,35 +186,35 @@ it("brezinben est un alias de benjamin", () => {
 });
 
 // La blague est tiree au hasard, mais jamais deux fois la meme d'affilee.
-it("joke tire une blague différente de la précédente", () => {
+it("should draw a joke different from the previous one", () => {
   for (let attempt = 0; attempt < 40; attempt += 1) {
     const result = interpret("/joke", { ...CONTEXT, jokeIndex: 0 }),
       patch = effectOf(result, "state"),
       index = Number(patch?.patch["jokeIndex"]);
 
-    assert.notEqual(index, 0, "la blague courante ne se répète pas");
+    assert.notEqual(index, 0, "the current joke does not repeat");
     assert.equal(result.lines[1]?.t, CONTEXT.jokes[index]);
   }
 });
 
 // Un easter egg sans slash n'est pas une commande de terminal.
-it("un easter egg tapé sans slash n'est pas reconnu", () => {
+it("should not recognize an easter egg typed without its slash", () => {
   const result = interpret("joke", CONTEXT);
 
   assert.match(result.lines[1]?.t ?? "", /commande introuvable : joke/u);
   assert.match(result.lines[1]?.t ?? "", /essayez \/joke/u);
 });
 
-it("les vraies commandes marchent sans slash", () => {
+it("should accept the real commands without a slash", () => {
   for (const command of ["help", "ls", "clear"]) {
     assert.ok(
       !interpret(command, CONTEXT).lines.some((entry) => /introuvable/u.test(entry.t)),
-      `${command} doit rester une commande`,
+      `${command} must stay a command`,
     );
   }
 });
 
-it("une commande inconnue le dit et se marque comme telle", () => {
+it("should say so and track an unknown command", () => {
   const result = interpret("xyzzy", CONTEXT);
 
   assert.match(result.lines[1]?.t ?? "", /commande introuvable : xyzzy/);
@@ -225,7 +225,7 @@ it("une commande inconnue le dit et se marque comme telle", () => {
   );
 });
 
-it("la casse de la commande est ignorée", () => {
+it("should ignore the case of the command", () => {
   assert.deepEqual(
     texts(interpret("/SUDO", CONTEXT)).slice(1),
     texts(interpret("/sudo", CONTEXT)).slice(1),
@@ -233,7 +233,7 @@ it("la casse de la commande est ignorée", () => {
 });
 
 // L'interpréteur ne doit toucher à rien : ni DOM, ni réseau, ni minuteur.
-it("l'interprétation reste synchrone et sans effet de bord", () => {
+it("should stay synchronous and free of side effects", () => {
   const before = JSON.stringify(CONTEXT);
 
   for (const command of ["ls", "help", "joke", "cd stack", "xyzzy", "shutdown", "matrix"]) {
@@ -243,23 +243,23 @@ it("l'interprétation reste synchrone et sans effet de bord", () => {
     assert.ok(Array.isArray(result.effects));
   }
 
-  assert.equal(JSON.stringify(CONTEXT), before, "le contexte ne doit pas être muté");
+  assert.equal(JSON.stringify(CONTEXT), before, "the context must not be mutated");
 });
 
 // Chaque expression proposée doit jouer sa propre feuille. Une commande qui annonce quelque
 // chose et ne le fait pas est pire que son absence.
-it("chaque expression proposée rend son propre état", () => {
+it("should give each offered expression its own state", () => {
   for (const expression of ["alert", "happy", "laugh", "sad", "scared", "sleep"]) {
     const result = interpret(`/slime ${expression}`, CONTEXT),
       emote = effectOf(result, "emote");
 
-    assert.equal(emote?.expression, expression, `« ${expression} » doit émettre son expression`);
+    assert.equal(emote?.expression, expression, `${expression} must emit its own expression`);
   }
 });
 
 // « idle » reste dans le type, « say » s'en sert. La commande, elle, ne le propose plus :
 // il ne montrait rien.
-it("slime idle n'est plus une expression proposée", () => {
+it("should no longer offer idle as an expression of slime", () => {
   const result = interpret("/slime idle", CONTEXT);
 
   assert.equal(effectOf(result, "emote"), undefined);
@@ -276,15 +276,15 @@ it("slime idle n'est plus une expression proposée", () => {
   );
 });
 
-it("slime kill fait exploser la mascotte", () => {
+it("should blow the mascot up on slime kill", () => {
   assert.ok(kinds(interpret("/slime kill", CONTEXT)).includes("blowUp"));
 });
 
-it("slime drop fait tomber la mascotte", () => {
+it("should drop the mascot on slime drop", () => {
   assert.ok(kinds(interpret("/slime drop", CONTEXT)).includes("drop"));
 });
 
-it("slime activity joue l'activité nommée", () => {
+it("should play the named activity on slime activity", () => {
   const activity = effectOf(interpret("/slime activity bike", CONTEXT), "activity");
 
   assert.equal(activity?.name, "bike");
@@ -292,7 +292,7 @@ it("slime activity joue l'activité nommée", () => {
 
 // Une activité demande un accessoire : elle ne se tire jamais au hasard, et un nom inconnu
 // rend la liste plutôt qu'une animation prise au hasard.
-it("slime activity sans nom connu liste les activités", () => {
+it("should list the activities when slime activity gets no known name", () => {
   const result = interpret("/slime activity xyzzy", CONTEXT);
 
   assert.equal(effectOf(result, "activity"), undefined);
@@ -301,7 +301,7 @@ it("slime activity sans nom connu liste les activités", () => {
 
 // Quatre alias sur dix-huit seulement sont proposés par l'autocomplétion. Les autres ne
 // tomberaient sous aucun test : cette table est leur seule protection.
-it("chaque alias se comporte comme sa commande", () => {
+it("should make each alias behave like its command", () => {
   const pairs: [string, string][] = [
     ["?", "help"],
     ["aide", "help"],
@@ -330,19 +330,19 @@ it("chaque alias se comporte comme sa commande", () => {
     assert.deepEqual(
       texts(interpret(alias, CONTEXT)).slice(1),
       texts(interpret(command, CONTEXT)).slice(1),
-      `${alias} doit dire ce que dit ${command}`,
+      `${alias} must say what ${command} says`,
     );
     assert.deepEqual(
       kinds(interpret(alias, CONTEXT)),
       kinds(interpret(command, CONTEXT)),
-      `${alias} doit faire ce que fait ${command}`,
+      `${alias} must do what ${command} does`,
     );
   }
 });
 
 // Ces commandes n'ont pas encore de partie pure. Le descripteur est tout ce qu'elles
 // rendent, et le ticket qui les finira doit savoir lequel il reprend.
-it("les commandes déléguées rendent chacune son descripteur", () => {
+it("should return its own descriptor for each delegated command", () => {
   const expected: [string, Effect["type"]][] = [
     ["email", "email"],
     ["options", "options"],
@@ -350,22 +350,22 @@ it("les commandes déléguées rendent chacune son descripteur", () => {
   ];
 
   for (const [command, kind] of expected) {
-    assert.ok(kinds(interpret(command, CONTEXT)).includes(kind), `${command} doit rendre ${kind}`);
+    assert.ok(kinds(interpret(command, CONTEXT)).includes(kind), `${command} must return ${kind}`);
   }
 });
 
-it("ask répond avec le passage du corpus, jamais avec un texte produit", () => {
+it("should answer with a passage of the corpus, never with generated text", () => {
   const result = interpret("ask accessibilité RGAA", CONTEXT);
 
-  assert.ok(texts(result).includes("stack"), "ask doit nommer la source de sa réponse");
+  assert.ok(texts(result).includes("stack"), "ask must name the source of its answer");
   assert.ok(
     texts(result).some((t) => t.includes("accessibilité RGAA")),
-    "la réponse est le texte du corpus",
+    "the answer is the text of the corpus",
   );
 });
 
 // Sans modele, la reponse part telle quelle : aucun descripteur, personne pour le lire.
-it("sans modèle, ask répond seul et ne décrit aucun candidat", () => {
+it("should answer alone and describe no candidate when ask runs without a model", () => {
   const result = interpret("ask nantes développeur", CONTEXT);
 
   assert.equal(effectOf(result, "ask"), undefined);
@@ -374,7 +374,7 @@ it("sans modèle, ask répond seul et ne décrit aucun candidat", () => {
 
 // Le modele voit tous les passages, pas seulement ceux qui partagent un mot avec la
 // question. Ne lui donner que les trouvailles lexicales le reduirait a les reclasser.
-it("avec un modèle, ask lui soumet tous les passages", () => {
+it("should submit every passage to the model when ask runs with one", () => {
   const descripteur = effectOf(interpret("ask nantes développeur", AVEC_MODELE), "ask");
 
   assert.equal(descripteur?.query, "nantes développeur");
@@ -383,48 +383,48 @@ it("avec un modèle, ask lui soumet tous les passages", () => {
 
 // La reponse attend le modele, mais elle voyage avec le descripteur : elle sort si le
 // modele echoue, et la coquille n'a pas a la reconstruire.
-it("avec un modèle, la réponse du corpus attend dans le descripteur", () => {
+it("should keep the corpus answer waiting in the descriptor when ask runs with a model", () => {
   const result = interpret("ask nantes développeur", AVEC_MODELE),
     descripteur = effectOf(result, "ask");
 
-  assert.deepEqual(texts(result), ["ask nantes développeur"], "rien ne s'affiche encore");
+  assert.deepEqual(texts(result), ["ask nantes développeur"], "nothing is shown yet");
   assert.ok(
     (descripteur?.lexical ?? []).some((entry) => entry.t.includes("Nantes")),
-    "la réponse lexicale est en réserve",
+    "the lexical answer waits in reserve",
   );
 });
 
 // Le recouvrement de mots ne trouve rien des que la question est tournee autrement. C'est
 // le cas ou un modele sert le plus : il doit etre consulte, pas court-circuite.
-it("sans trouvaille lexicale, le modèle est quand même consulté", () => {
+it("should consult the model even without a lexical match", () => {
   const descripteur = effectOf(interpret("ask zzzzz", AVEC_MODELE), "ask");
 
   assert.deepEqual(descripteur?.candidates, ["whoami", "stack", "m-kereis"]);
   assert.ok(
     (descripteur?.lexical ?? []).some((entry) => entry.t.includes("rien ne répond")),
-    "le refus reste en réserve, si le modèle ne trouve pas non plus",
+    "the refusal waits in reserve, in case the model finds nothing either",
   );
 });
 
-it("sans modèle, ask sans réponse le dit et ne propose aucun candidat", () => {
+it("should say so and offer no candidate when ask finds no answer without a model", () => {
   const result = interpret("ask zzzzz", CONTEXT);
 
   assert.ok(texts(result).some((t) => t.includes("rien ne répond")));
   assert.equal(effectOf(result, "ask"), undefined);
 });
 
-it("ask sans question rappelle comment l'employer", () => {
+it("should recall its usage when ask gets no question", () => {
   assert.ok(texts(interpret("ask", CONTEXT)).some((t) => t.startsWith("ask —")));
 });
 
 // Les deux modes partagent une branche. Sans ce test, corriger le texte de l'un
 // emporterait le mode de l'autre en silence.
-it("shutdown et reboot rendent chacun son mode", () => {
+it("should return its own mode for shutdown and for reboot", () => {
   assert.equal(effectOf(interpret("shutdown", CONTEXT), "power")?.mode, "shutdown");
   assert.equal(effectOf(interpret("reboot", CONTEXT), "power")?.mode, "reboot");
 });
 
-it("matrix réveille Néo et effraie la mascotte", () => {
+it("should wake Neo up and scare the mascot on matrix", () => {
   const result = interpret("/matrix", CONTEXT);
 
   assert.match(result.lines[1]?.t ?? "", /Néo/u);
@@ -433,32 +433,32 @@ it("matrix réveille Néo et effraie la mascotte", () => {
 
 // Un easter egg annoncé sans son slash est refusé quand on le recopie. L'aide est le
 // premier endroit où l'on cherche : elle ne doit pas envoyer dans le mur.
-it("l'aide n'annonce jamais un easter egg sans son slash", () => {
+it("should never announce an easter egg without its slash in the help", () => {
   const result = interpret("help", CONTEXT),
     // La bulle de la mascotte est un texte d'aide de plus : elle nomme une commande.
     body = [...resultTexts(result), effectOf(result, "say")?.text ?? ""].join(" ");
 
   for (const egg of ["cowsay", "joke", "matrix", "propose", "slime"]) {
-    assert.ok(body.includes(`/${egg}`), `help doit écrire /${egg}`);
-    assert.doesNotMatch(body, new RegExp(`(?<!/)\\b${egg}\\b`, "u"), `${egg} sans slash`);
+    assert.ok(body.includes(`/${egg}`), `help must write /${egg}`);
+    assert.doesNotMatch(body, new RegExp(`(?<!/)\\b${egg}\\b`, "u"), `${egg} without its slash`);
   }
 });
 
-it("l'aide de slime porte le slash qu'elle exige", () => {
+it("should carry in the slime usage the slash that it demands", () => {
   for (const command of ["/slime", "/slime nawak", "/slime activity"]) {
     for (const text of texts(interpret(command, CONTEXT)).slice(1)) {
-      assert.match(text, /^\/slime /u, `« ${text} » doit commencer par /slime`);
+      assert.match(text, /^\/slime /u, `${text} must start with /slime`);
     }
   }
 });
 
-it("l'aide de propose porte le slash qu'elle exige", () => {
+it("should carry in the propose usage the slash that it demands", () => {
   assert.match(texts(interpret("/propose", CONTEXT))[1] ?? "", /^\/propose \[-y\] <idée>/u);
 });
 
 // Le test de section passait avant presque toutes les branches, sans regarder le verbe :
 // n'importe quel mot suivi d'un identifiant y menait.
-it("seuls cd, bd et open naviguent vers leur argument", () => {
+it("should navigate to the argument only with cd, bd and open", () => {
   for (const verb of ["bd", "cd", "open"]) {
     assert.equal(effectOf(interpret(`${verb} stack`, CONTEXT), "navigate")?.id, "stack", verb);
   }
@@ -468,32 +468,32 @@ it("seuls cd, bd et open naviguent vers leur argument", () => {
   }
 });
 
-it("un nom de section ou de fiche seul navigue toujours", () => {
+it("should still navigate on a section or a mission name alone", () => {
   assert.equal(effectOf(interpret("stack", CONTEXT), "navigate")?.id, "stack");
   assert.equal(effectOf(interpret("m-kereis", CONTEXT), "navigate")?.id, "m-kereis");
 });
 
-it("un easter egg suivi d'un nom de section garde son texte", () => {
+it("should keep its text when an easter egg is followed by a section name", () => {
   assert.match(texts(interpret("/sudo stack", CONTEXT))[1] ?? "", /sudoers/u);
 });
 
-it("clear suivi d'un nom de section vide quand même le journal", () => {
+it("should still empty the log when clear is followed by a section name", () => {
   assert.ok(kinds(interpret("clear stack", CONTEXT)).includes("clear"));
 });
 
 // Huit thèmes, donc moins de dix : la commande les liste plutôt que de renvoyer à Tab.
-it("theme sans nom liste les thèmes", () => {
+it("should list the themes when theme gets no name", () => {
   const result = interpret("theme", CONTEXT);
 
   assert.match(texts(result)[1] ?? "", /^theme <nom> — dark · light · noctis$/u);
   assert.equal(effectOf(result, "theme"), undefined);
 });
 
-it("theme applique le thème nommé", () => {
+it("should apply the named theme", () => {
   assert.equal(effectOf(interpret("theme noctis", CONTEXT), "theme")?.name, "noctis");
 });
 
-it("un thème inconnu le dit et rappelle la liste", () => {
+it("should say so and recall the list on an unknown theme", () => {
   const result = interpret("theme xyzzy", CONTEXT);
 
   assert.equal(effectOf(result, "theme"), undefined);
@@ -503,7 +503,7 @@ it("un thème inconnu le dit et rappelle la liste", () => {
 
 // « ai » et « ask » n'ont pas encore de partie pure. Les annoncer promet un résultat
 // qui ne vient pas : leur code reste, leur annonce part.
-it("l'aide n'annonce plus les commandes sans résultat", () => {
+it("should no longer announce the commands without a result in the help", () => {
   const shown = texts(interpret("help", CONTEXT)).slice(1).join(" ");
 
   assert.doesNotMatch(shown, /\bask\b/u);
@@ -512,7 +512,7 @@ it("l'aide n'annonce plus les commandes sans résultat", () => {
 
 // Il n'y a pas de PDF à servir. La commande ouvre la version texte, qui porte le parcours
 // complet, et le dit : une navigation muette se lit comme une commande cassée.
-it("cv annonce ce qu'il fait au lieu de se taire", () => {
+it("should announce what it does instead of staying silent on cv", () => {
   const result = interpret("cv", CONTEXT);
 
   assert.ok(kinds(result).includes("cv"));
@@ -521,7 +521,7 @@ it("cv annonce ce qu'il fait au lieu de se taire", () => {
 
 // « cd » est une commande, et l'aide l'annonce. Répondre « commande introuvable » à
 // « cd » nu envoie chercher une faute là où il manque seulement un argument.
-it("les verbes qui naviguent expliquent ce qu'ils attendent", () => {
+it("should explain what each navigation verb expects", () => {
   for (const verb of ["bd", "cd", "open"]) {
     const result = interpret(verb, CONTEXT);
 
@@ -537,14 +537,14 @@ it("les verbes qui naviguent expliquent ce qu'ils attendent", () => {
   }
 });
 
-it("une section inconnue le dit, et rappelle les sections", () => {
+it("should say so and recall the sections on an unknown section", () => {
   const result = interpret("cd xyzzy", CONTEXT);
 
   assert.match(texts(result)[1] ?? "", /section inconnue : xyzzy/u);
   assert.ok(texts(result).some((text) => text.includes("whoami")));
 });
 
-it("une cible de partage inconnue rappelle les cibles", () => {
+it("should recall the targets on an unknown share target", () => {
   const result = interpret("share xyzzy", { ...CONTEXT, shareTargets: ["linkedin"] });
 
   assert.match(texts(result)[1] ?? "", /cible inconnue : xyzzy/u);
@@ -556,7 +556,7 @@ it("une cible de partage inconnue rappelle les cibles", () => {
 const many = (count: number) =>
   Array.from({ length: count }, (_, index) => ({ id: `s-${index}`, label: `s-${index}` }));
 
-it("à partir de dix valeurs, l'aide renvoie à la tabulation", () => {
+it("should point to the tab key from ten values on", () => {
   const listed = interpret("cd", { ...CONTEXT, details: [], sections: many(9) }),
     deferred = interpret("cd", { ...CONTEXT, details: [], sections: many(10) });
 
@@ -566,14 +566,14 @@ it("à partir de dix valeurs, l'aide renvoie à la tabulation", () => {
 
 // « expression » descend d'un niveau : il devient une sous-commande de slime, symétrique de
 // « activity ». L'ancien alias « /expression » ne répond plus.
-it("slime expression joue l'expression nommée", () => {
+it("should play the named expression on slime expression", () => {
   assert.equal(
     effectOf(interpret("/slime expression happy", CONTEXT), "emote")?.expression,
     "happy",
   );
 });
 
-it("slime expression sans expression connue liste les expressions", () => {
+it("should list the expressions when slime expression gets no known expression", () => {
   for (const command of ["/slime expression", "/slime expression xyzzy"]) {
     const result = interpret(command, CONTEXT);
 
@@ -585,34 +585,34 @@ it("slime expression sans expression connue liste les expressions", () => {
   }
 });
 
-it("expression n'est plus une commande à lui seul", () => {
+it("should no longer accept expression as a command of its own", () => {
   assert.match(
     texts(interpret("/expression happy", CONTEXT))[1] ?? "",
     /commande introuvable : expression/u,
   );
 });
 
-it("reboot ne dit plus qu'il éteint", () => {
+it("should no longer say that reboot shuts down", () => {
   assert.match(texts(interpret("reboot", CONTEXT))[1] ?? "", /Redémarrage/u);
   assert.match(texts(interpret("shutdown", CONTEXT))[1] ?? "", /Extinction/u);
 });
 
 // « jump » était un second nom pour « drop » : la feuille de saut n'a jamais été jouée
 // par une commande.
-it("slime jump n'est plus un second nom pour drop", () => {
+it("should no longer accept slime jump as a second name for drop", () => {
   const result = interpret("/slime jump", CONTEXT);
 
   assert.equal(effectOf(result, "drop"), undefined);
   assert.ok(texts(result).some((text) => text.includes("/slime drop")));
 });
 
-it("matrix n'émet plus que son expression", () => {
+it("should emit nothing more than its expression on matrix", () => {
   assert.deepEqual(kinds(interpret("/matrix", CONTEXT)), ["track", "track", "emote"]);
 });
 
 // Le journal ne doit pas annoncer un geste que la coquille avale. La mascotte est absente
 // pendant son explosion et pendant son voyage en train.
-it("le slime absent refuse la commande au lieu de mentir", () => {
+it("should refuse the command instead of lying when the mascot is away", () => {
   const away = { ...CONTEXT, mascot: "away" } as const;
 
   for (const command of [
@@ -632,7 +632,7 @@ it("le slime absent refuse la commande au lieu de mentir", () => {
 
 // Le but se jouait sur l'aide : la coquille en deduisait « easter egg trouve, rien ne
 // bouge ». Une commande qui liste son usage le dit maintenant.
-it("lister l'usage de slime le signale comme tel", () => {
+it("should flag a slime usage listing as such", () => {
   for (const command of ["/slime", "/slime bogus", "/slime expression", "/slime activity"]) {
     assert.ok(effectOf(interpret(command, CONTEXT), "usage"), command);
   }
@@ -644,16 +644,16 @@ it("lister l'usage de slime le signale comme tel", () => {
 
 // La chaine des formes. La coquille pose l'effet, l'interpreteur ne connait ni la forme
 // courante ni la suivante : il ne dit que « change de forme ».
-it("slime evolve demande le changement de forme", () => {
+it("should ask for the form change on slime evolve", () => {
   const result = interpret("/slime evolve", CONTEXT);
 
-  assert.ok(effectOf(result, "evolve"), "l'effet manque");
+  assert.ok(effectOf(result, "evolve"), "the effect is missing");
   assert.match(texts(result)[1] ?? "", /change de forme/u);
 });
 
 // Endormie n'est ni absente ni occupee : la mascotte est la, et elle le reste. Le refus
 // nomme la cause et la sortie, comme les autres refus du mode hors ligne.
-it("sans réseau, la mascotte dort et la commande est refusée", () => {
+it("should sleep the mascot and refuse the command without a network", () => {
   const asleep = { ...CONTEXT, mascot: "asleep" } as const;
 
   for (const command of [
@@ -677,7 +677,7 @@ it("sans réseau, la mascotte dort et la commande est refusée", () => {
 
 // Occupee n'est pas absente : la mascotte est la, elle finit sa transformation. Le journal
 // doit le dire, et non annoncer un geste que la coquille avale.
-it("pendant un changement de forme, la commande est refusée sans mentir", () => {
+it("should refuse the command without lying during a form change", () => {
   const busy = { ...CONTEXT, mascot: "busy" } as const;
 
   for (const command of ["/slime evolve", "/slime kill", "/slime expression happy"]) {
