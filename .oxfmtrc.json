@@ -11,6 +11,7 @@
     "src/**/*.html",
     "src/content.json",
     "src/vendor/**",
+    "tests/**/*-snapshots/**",
     "docs/mascotte/**",
     "tools/oxlint/anti-slop/**"
   ]
