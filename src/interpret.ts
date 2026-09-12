@@ -4,15 +4,23 @@
 // minuteur. Il rend les lignes à afficher et des descripteurs d'effets que la coquille
 // applique. C'est ce qui permet de couvrir les commandes sans navigateur.
 
+import { type Share, shareTarget } from "./interpret/share.ts";
+import { type Tone, safeTone } from "./interpret/tone.ts";
+import { lookup } from "./interpret/lookup.ts";
+
+// La facade : les tests et la coquille passent par cette porte, jamais par un module de
+// « interpret/ ». Elle n'expose que ce qui a un consommateur.
+export { TONES, type Tone, safeTone } from "./interpret/tone.ts";
+export {
+  type Share,
+  type ShareTarget,
+  fillTokens,
+  isSafeUrl,
+  shareTarget,
+} from "./interpret/share.ts";
+
 const YES = /^(?<yes>o|oui|y|yes|ok)$/iu,
   NO = /^(?<no>n|non|no|annuler|cancel)$/iu;
-
-// Les tons sont interpolés dans un attribut style. Sans liste blanche, un ton venu du
-// contenu peut fermer la déclaration et injecter du CSS, jusqu'à faire sortir une requête
-// vers un serveur tiers.
-export const TONES = ["acc", "fg", "fg2", "ok", "warn"] as const;
-
-export type Tone = (typeof TONES)[number];
 
 // Dix propositions au maximum, sans défilement. Le même seuil décide si une aide en
 // ligne peut lister ses valeurs ou doit renvoyer à la tabulation.
@@ -105,21 +113,6 @@ export interface Outcome {
   result?: ContentLine[];
 }
 
-// La cible de partage declaree dans le contenu.
-export interface ShareTarget {
-  id: string;
-  kind: string;
-  label: string;
-  url: string;
-}
-
-export interface Share {
-  targets?: ShareTarget[];
-  text?: string;
-  title?: string;
-  url?: string;
-}
-
 // Ce que la coquille passe a l'interpreteur : la section ouverte, le contenu charge, et
 // l'attente d'une reponse oui ou non.
 export interface Entry {
@@ -163,15 +156,6 @@ export interface Context extends CompletionContext {
   pending?: string | undefined;
   share: Share;
 }
-
-// Une cle libre dans une table fermee. La table garde le type que l'inference lui donne,
-// et l'appelant recoit undefined quand la cle n'y est pas.
-const lookup = <V>(table: Readonly<Record<string, V>>, key: string): V | undefined =>
-    Object.hasOwn(table, key) ? table[key] : undefined,
-  isTone = (value: string): value is Tone => TONES.some((tone) => tone === value);
-
-export const safeTone = (tone: string | undefined, fallback: Tone = "fg"): Tone =>
-  tone !== undefined && isTone(tone) ? tone : fallback;
 
 const line = ({
     marker = "",
@@ -886,42 +870,6 @@ export const cowsay = (
 };
 
 export const COW_HEAD_MODES = COW_MODES;
-
-// Les jetons sont substitues dans les URL de partage declarees par content.json : une
-// nouvelle cible s'ajoute sans toucher au code.
-export const fillTokens = (template: string, share: Share): string =>
-  template
-    .replaceAll("{url}", encodeURIComponent(share.url ?? ""))
-    .replaceAll("{title}", encodeURIComponent(share.title ?? ""))
-    .replaceAll("{text}", encodeURIComponent(share.text ?? ""));
-
-const SAFE_SCHEMES = new Set(["https:", "http:", "mailto:"]);
-
-// Une cible déclarée dans le contenu ne doit pas pouvoir exécuter de script. Sans ce
-// contrôle, une URL en javascript: passée à open() s'exécute dans notre origine.
-export const isSafeUrl = (candidate: string): boolean => {
-  try {
-    return SAFE_SCHEMES.has(new URL(candidate, "https://portfolio.invalid/").protocol);
-  } catch {
-    return false;
-  }
-};
-
-export const shareTarget = (id: string, share: Share) => {
-  const target = (share.targets ?? []).find((entry) => entry.id === id);
-
-  if (!target) {
-    return undefined;
-  }
-
-  const url = fillTokens(target.url ?? "", share);
-
-  if (!isSafeUrl(url)) {
-    return undefined;
-  }
-
-  return { id: target.id, kind: target.kind, label: target.label, url };
-};
 
 // Consentement en deux temps : la commande dit ce qui part, ou, et ce qui ne part pas.
 // Rien n'est envoye avant un oui.
