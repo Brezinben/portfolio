@@ -14,6 +14,8 @@ import {
   helpLines,
   vocabulary,
 } from "./interpret/vocabulary.ts";
+import type { CompletionContext, Context, Entry } from "./interpret/context.ts";
+import { type Effect, type Expression, type Outcome, say, track } from "./interpret/effects.ts";
 import {
   type Line,
   MAX_SUGGESTIONS,
@@ -25,13 +27,19 @@ import {
   muted,
   offer,
 } from "./interpret/lines.ts";
-import { type Share, shareTarget } from "./interpret/share.ts";
-import type { ContentLine } from "./interpret/content.ts";
 import { lookup } from "./interpret/lookup.ts";
+import { shareTarget } from "./interpret/share.ts";
 
 // La facade : les tests et la coquille passent par cette porte, jamais par un module de
 // « interpret/ ». Elle n'expose que ce qui a un consommateur.
 export { type ContentLine, type Token, contentLine } from "./interpret/content.ts";
+export {
+  type Effect,
+  type Expression,
+  type Outcome,
+  type TrackValue,
+} from "./interpret/effects.ts";
+export { type CompletionContext, type Context, type Entry } from "./interpret/context.ts";
 export { MAX_SUGGESTIONS, type Line } from "./interpret/lines.ts";
 export { TONES, type Tone, safeTone } from "./interpret/tone.ts";
 export {
@@ -45,39 +53,6 @@ export {
 const YES = /^(?<yes>o|oui|y|yes|ok)$/iu,
   NO = /^(?<no>n|non|no|annuler|cancel)$/iu;
 
-export type TrackValue = boolean | number | string;
-
-export type Expression = "alert" | "happy" | "idle" | "laugh" | "sad" | "scared" | "sleep";
-
-// Ce que la coquille doit faire. L'interpreteur ne touche jamais au DOM : il decrit, elle
-// applique. Cette union est le contrat entre les deux seams.
-export type Effect =
-  | { type: "activity"; name: string }
-  // « lexical » n'est rempli que si un modele doit choisir avant d'afficher. La coquille
-  // le garde sous la main : il sort si le modele echoue ou depasse son delai.
-  | { candidates: string[]; query: string; type: "ask"; lexical?: Line[] }
-  | { type: "blowUp" }
-  | { type: "clear" }
-  | { type: "cv" }
-  | { type: "drop" }
-  | { type: "email" }
-  | { type: "emote"; expression: Expression }
-  | { type: "usage" }
-  | { type: "evolve" }
-  | { type: "options" }
-  | { type: "pending"; answer?: string; payload: string }
-  | { type: "power"; mode: string }
-  | { type: "replay" }
-  | { type: "say"; expression: Expression; text: string }
-  | { type: "send"; payload: string }
-  | { type: "sendMail" }
-  | { type: "share"; kind: string; url: string }
-  | { type: "shareMenu" }
-  | { type: "state"; patch: { jokeIndex?: number; pending?: undefined } }
-  | { type: "theme"; name: string }
-  | { type: "track"; event: string; props: Record<string, TrackValue> }
-  | { type: "navigate"; id: string };
-
 // Un easter egg : son nom pour la mesure, ses lignes, et ce qu'il fait dire.
 export interface Egg {
   egg: string;
@@ -90,65 +65,7 @@ export interface Told {
   lines: Line[];
 }
 
-export interface Outcome {
-  effects: Effect[];
-  lines: Line[];
-  // Une commande peut reclamer le resultat au lieu du journal. Le journal garde l'echo, le
-  // corps de la reponse va dans le volet central, ou la place existe.
-  result?: ContentLine[];
-}
-
-// Ce que la coquille passe a l'interpreteur : la section ouverte, le contenu charge, et
-// l'attente d'une reponse oui ou non.
-export interface Entry {
-  // Le resume que la recherche interroge. Il est ecrit a la main dans content.json : c'est
-  // la seule prose du site qui repond a une question au lieu de decrire un ecran.
-  ask?: string;
-  cmd?: string;
-  id: string;
-  label: string;
-}
-
-// Ce que la completion a besoin de connaitre : les noms qu'elle peut proposer. Elle ne
-// lit que les identifiants, pas les libelles.
-export interface CompletionContext {
-  // Un modele local installe et disponible. La coquille l'apprend d'un appel asynchrone au
-  // demarrage, que l'interpreteur ne peut pas faire : il est pur et synchrone.
-  model: boolean;
-  details: { id: string }[];
-  sections: { id: string }[];
-  shareTargets: string[];
-  themes: string[];
-}
-
-// Ce que la coquille passe a l'interpreteur. Tout est requis : la coquille ne l'appelle
-// qu'une fois le contenu charge, et un champ manquant serait un defaut de chargement,
-// pas un cas a traiter ici.
-export interface Context extends CompletionContext {
-  columns: number;
-  // La mascotte est absente pendant son explosion et pendant son voyage en train. Sans
-  // cette information, l'interpreteur annonce des gestes que la coquille ne joue pas.
-  // « away » : explosee ou partie en train. « busy » : en train de changer de forme, donc
-  // presente mais indisponible. « asleep » : le reseau est coupe, elle dort jusqu'a son
-  // retour. La coquille sait, l'interpreteur ne devine pas.
-  mascot: "asleep" | "away" | "busy" | "here";
-  details: Entry[];
-  sections: Entry[];
-  current: { cmd?: string; id?: string; label?: string };
-  feedback: Record<string, string>;
-  jokeIndex: number;
-  jokes: string[];
-  pending?: string | undefined;
-  share: Share;
-}
-
-const track = (event: string, props: Record<string, TrackValue>): Effect => ({
-    event,
-    props,
-    type: "track",
-  }),
-  say = (text: string, expression: Expression): Effect => ({ expression, text, type: "say" }),
-  EXPRESSIONS: Record<Expression, string> = {
+const EXPRESSIONS: Record<Expression, string> = {
     alert: "surpris",
     happy: "content",
     idle: "neutre",
