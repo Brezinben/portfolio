@@ -3,8 +3,8 @@
 
 import assert from "node:assert/strict";
 import { fileURLToPath } from "node:url";
+import { it } from "node:test";
 import { readFileSync } from "node:fs";
-import { test } from "node:test";
 
 const SOURCE = new URL("../../src/", import.meta.url),
   read = (name: string) => readFileSync(fileURLToPath(new URL(name, SOURCE)), "utf8"),
@@ -16,7 +16,7 @@ const SOURCE = new URL("../../src/", import.meta.url),
   texte = read("texte.html"),
   locs = [...sitemap.matchAll(/<loc>(?<url>[^<]+)<\/loc>/gu)].map((found) => found.groups?.url);
 
-test("le sitemap est équilibré et déclare l'espace de noms attendu", () => {
+it("le sitemap est équilibré et déclare l'espace de noms attendu", () => {
   assert.match(sitemap, /^<\?xml version="1\.0" encoding="UTF-8"\?>/u);
   assert.match(sitemap, /<urlset xmlns="http:\/\/www\.sitemaps\.org\/schemas\/sitemap\/0\.9">/u);
 
@@ -28,7 +28,7 @@ test("le sitemap est équilibré et déclare l'espace de noms attendu", () => {
   }
 });
 
-test("chaque adresse du sitemap désigne un fichier servi", () => {
+it("chaque adresse du sitemap désigne un fichier servi", () => {
   assert.deepEqual(locs, [`${ORIGINE}/`, `${ORIGINE}/texte.html`]);
 
   for (const loc of locs) {
@@ -38,7 +38,7 @@ test("chaque adresse du sitemap désigne un fichier servi", () => {
   }
 });
 
-test("robots.txt ouvre le site et désigne le sitemap", () => {
+it("robots.txt ouvre le site et désigne le sitemap", () => {
   assert.ok(/^User-agent: \*$/mu.test(robots), "robots.txt ne porte pas de groupe universel");
   assert.ok(/^Allow: \/$/mu.test(robots), "robots.txt n'ouvre pas la racine");
   assert.ok(
@@ -47,7 +47,7 @@ test("robots.txt ouvre le site et désigne le sitemap", () => {
   );
 });
 
-test("llms.txt ne nomme que des adresses qui existent", () => {
+it("llms.txt ne nomme que des adresses qui existent", () => {
   assert.ok(!llms.includes(".dc.html"), "les noms du canvas ne sont pas des adresses servies");
 
   for (const loc of locs) {
@@ -58,7 +58,7 @@ test("llms.txt ne nomme que des adresses qui existent", () => {
 // Le contresens le plus coûteux : croire que ce domaine héberge un serveur MCP parce que
 // Benjamin en conçoit pour ses clients. Le démenti tient dans le bloc de détails, que la
 // convention réserve à ce qui aide un agent à interpréter les documents listés.
-test("llms.txt dit ce que le site n'expose pas", () => {
+it("llms.txt dit ce que le site n'expose pas", () => {
   assert.ok(llms.includes("## Quand ce site répond à votre question"), "la section manque");
   assert.ok(llms.includes("n'en héberge aucun"), "llms.txt ne dément pas le serveur MCP hébergé");
   assert.ok(llms.includes("ni produit, ni API"), "llms.txt ne dément pas l'API");
@@ -71,7 +71,7 @@ test("llms.txt dit ce que le site n'expose pas", () => {
 // le document qu'il était, et plus aucun analyseur ne sait le lire.
 const LIEN = /^- \[[^\]]+\]\(https:\/\/[^)]+\)(?<notes>: .+)?$/su;
 
-test("llms.txt suit la grammaire de la convention", () => {
+it("llms.txt suit la grammaire de la convention", () => {
   const [titre, vide, resume] = llms.split("\n");
 
   assert.match(titre ?? "", /^# \S/u, "la première ligne n'est pas le titre");
@@ -97,7 +97,7 @@ test("llms.txt suit la grammaire de la convention", () => {
   );
 });
 
-test("llms.txt et la version texte donnent le même contact", () => {
+it("llms.txt et la version texte donnent le même contact", () => {
   const contact = "benjamin.david1@hotmail.fr";
 
   assert.ok(llms.includes(contact), "llms.txt ne donne pas le contact attendu");
@@ -132,7 +132,7 @@ const CLES = ["--bg", "--panel", "--edge", "--fg", "--fg2", "--acc"],
     return releve;
   };
 
-test("les huit thèmes de la version texte reprennent les couleurs de la version terminal", () => {
+it("les huit thèmes de la version texte reprennent les couleurs de la version terminal", () => {
   const source = themes(read("index.html"), String.raw`\.tm`),
     copie = themes(texte, ":root"),
     noms = Object.keys(source);
@@ -154,7 +154,7 @@ test("les huit thèmes de la version texte reprennent les couleurs de la version
 // Le contenu de la version texte est écrit en dur. content.json reste la source de vérité :
 // sans ce test, la page dériverait en silence au prochain changement de contenu. Le contenu
 // complet servi aux agents est une seconde copie, tenue par la même mesure.
-test("la version texte et le contenu complet portent tout le contenu de content.json", () => {
+it("la version texte et le contenu complet portent tout le contenu de content.json", () => {
   // SAFETY: content.json est un artefact du dépôt, versionné à côté de ce test, et son
   // schéma est tenu par tests/unit/content.test.ts. Seules trois clés sont lues ici.
   const contenu = JSON.parse(read("content.json")) as {

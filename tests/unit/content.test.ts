@@ -1,8 +1,8 @@
 import assert from "node:assert/strict";
 import { contentLine } from "../../src/interpret.ts";
-import { test } from "node:test";
+import { it } from "node:test";
 
-test("une ligne simple garde son texte, son ton et sa graisse", () => {
+it("une ligne simple garde son texte, son ton et sa graisse", () => {
   const result = contentLine({ t: "bonjour", tone: "acc", w: "700" });
 
   assert.equal(result.text, "bonjour");
@@ -11,7 +11,7 @@ test("une ligne simple garde son texte, son ton et sa graisse", () => {
   assert.equal(result.pad, "0");
 });
 
-test("une ligne bandeau porte son mot et son équivalent textuel", () => {
+it("une ligne bandeau porte son mot et son équivalent textuel", () => {
   const result = contentLine({ banner: "benjamin", t: "Benjamin" });
 
   assert.equal(result.banner, "benjamin");
@@ -19,7 +19,7 @@ test("une ligne bandeau porte son mot et son équivalent textuel", () => {
 });
 
 // La sortie jq est colorée par type : clé en ambre, chaîne en vert, nombre en orange.
-test("une paire jq est découpée en jetons colorés", () => {
+it("une paire jq est découpée en jetons colorés", () => {
   const result = contentLine({ jq: ["14px", "email", "a@b.c", "str", true] });
 
   assert.deepEqual(
@@ -34,7 +34,7 @@ test("une paire jq est découpée en jetons colorés", () => {
   assert.equal(result.pad, "14px");
 });
 
-test("un nombre jq n'est pas mis entre guillemets", () => {
+it("un nombre jq n'est pas mis entre guillemets", () => {
   const result = contentLine({ jq: ["0", "delai", 48, "num", false] });
 
   assert.equal(result.tokens?.[2]?.t, "48");
@@ -42,7 +42,7 @@ test("un nombre jq n'est pas mis entre guillemets", () => {
   assert.equal(result.tokens?.length, 3, "sans virgule finale");
 });
 
-test("une ouverture d'objet jq rend la clé et l'accolade", () => {
+it("une ouverture d'objet jq rend la clé et l'accolade", () => {
   const result = contentLine({ jqOpen: ["14px", "social"] });
 
   assert.deepEqual(
@@ -51,13 +51,13 @@ test("une ouverture d'objet jq rend la clé et l'accolade", () => {
   );
 });
 
-test("une ligne de ponctuation jq reste sourde", () => {
+it("une ligne de ponctuation jq reste sourde", () => {
   const result = contentLine({ jqLine: ["0", "}"] });
 
   assert.deepEqual(result.tokens, [{ c: "fg2", t: "}", w: "400" }]);
 });
 
-test("le retrait déclaré est conservé tel quel, unité comprise", () => {
+it("le retrait déclaré est conservé tel quel, unité comprise", () => {
   assert.equal(contentLine({ jq: ["30px", "k", "v", "str", false] }).pad, "30px");
   assert.equal(contentLine({ pad: "14px", t: "x" }).pad, "14px");
 });

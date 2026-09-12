@@ -1,6 +1,6 @@
 {
   "$schema": "https://raw.githubusercontent.com/oxc-project/oxc/main/npm/oxlint/configuration_schema.json",
-  "plugins": ["unicorn", "oxc", "promise", "import"],
+  "plugins": ["jest", "unicorn", "oxc", "promise", "import"],
   "jsPlugins": [
     "@stylistic/eslint-plugin",
     {
@@ -138,6 +138,8 @@
     "import/exports-last": "off",
     "id-length": "off",
     "eslint/one-var": "off",
+    "jest/prefer-each": "off",
+    "jest/require-hook": "off",
     "import/consistent-type-specifier-style": "off",
     "max-statements": "off"
   },
@@ -155,6 +157,12 @@
     "tools/oxlint/anti-slop/**"
   ],
   "overrides": [
+    {
+      "files": ["tests/unit/**"],
+      "rules": {
+        "jest/consistent-test-it": ["error", { "fn": "it" }]
+      }
+    },
     {
       "files": ["src/terminal/shell.ts"],
       "rules": {

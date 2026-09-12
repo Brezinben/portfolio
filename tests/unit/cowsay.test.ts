@@ -1,7 +1,7 @@
 import { COW_HEAD_MODES, cowsay, interpret } from "../../src/interpret.ts";
 import type { Context } from "../../src/interpret.ts";
 import assert from "node:assert/strict";
-import { test } from "node:test";
+import { it } from "node:test";
 
 const CONTEXT: Context = {
     columns: 40,
@@ -24,7 +24,7 @@ const CONTEXT: Context = {
       lines.findIndex((row: string) => row.includes("^__^")),
     );
 
-test("une phrase courte tient dans une bulle à chevrons", () => {
+it("une phrase courte tient dans une bulle à chevrons", () => {
   const lines = cowsay("Moo", { columns: 40 });
 
   assert.equal(lines[1], "< Moo >");
@@ -34,7 +34,7 @@ test("une phrase courte tient dans une bulle à chevrons", () => {
 
 // La bulle change de forme selon le nombre de lignes : c'est le comportement de
 // l'original, et il ne doit pas se perdre au portage.
-test("une phrase longue passe aux barres obliques", () => {
+it("une phrase longue passe aux barres obliques", () => {
   const lines = body(
     cowsay("un texte assez long pour forcer plusieurs lignes ici", { columns: 30 }),
   );
@@ -45,7 +45,7 @@ test("une phrase longue passe aux barres obliques", () => {
   assert.ok(lines[2]?.startsWith("|"), "les lignes du milieu sont droites");
 });
 
-test("le retour à la ligne suit la largeur demandée", () => {
+it("le retour à la ligne suit la largeur demandée", () => {
   const large = body(
       cowsay("un texte assez long pour forcer plusieurs lignes ici", { columns: 80 }),
     ),
@@ -56,7 +56,7 @@ test("le retour à la ligne suit la largeur demandée", () => {
 
 // La commande ne prend plus de drapeau : elle tire un visage au hasard a chaque appel. Les
 // huit restent donc atteignables par l'API, et c'est le repartiteur qui choisit.
-test("les huit modes de tête changent les yeux", () => {
+it("les huit modes de tête changent les yeux", () => {
   const eyes = new Set(
     COW_HEAD_MODES.map((mode) =>
       cowsay("x", { mode }).find((row) => row.includes(String.raw`)\_______`)),
@@ -67,7 +67,7 @@ test("les huit modes de tête changent les yeux", () => {
   assert.equal(eyes.size, 8, "chaque mode a ses yeux");
 });
 
-test("les modes mort et défoncé sortent la langue", () => {
+it("les modes mort et défoncé sortent la langue", () => {
   for (const mode of ["-d", "-s"]) {
     const tongue = cowsay("x", { mode }).find((row) => row.includes("||----w |"));
 
@@ -75,11 +75,11 @@ test("les modes mort et défoncé sortent la langue", () => {
   }
 });
 
-test("sans texte, la vache dit quelque chose quand même", () => {
+it("sans texte, la vache dit quelque chose quand même", () => {
   assert.ok(cowsay("", {}).some((row) => row.includes("Moo.")));
 });
 
-test("un mot plus long que la largeur ne boucle pas", () => {
+it("un mot plus long que la largeur ne boucle pas", () => {
   const lines = cowsay("anticonstitutionnellement", { columns: 10 });
 
   assert.ok(lines.length > 5);
@@ -88,7 +88,7 @@ test("un mot plus long que la largeur ne boucle pas", () => {
 
 // Les drapeaux ont disparu de la commande : « cowsay -d » ecrit « -d », il ne l'interprete
 // plus. Le visage se tire au hasard, donc le test verifie l'appartenance, pas l'identite.
-test("la commande tire un visage parmi les huit", () => {
+it("la commande tire un visage parmi les huit", () => {
   const yeux = new Set(
       Array.from({ length: 60 }, () => {
         const rendu = interpret("/cowsay bonjour", CONTEXT)

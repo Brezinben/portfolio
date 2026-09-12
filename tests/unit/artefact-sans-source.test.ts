@@ -1,8 +1,8 @@
 import assert from "node:assert/strict";
 import { fileURLToPath } from "node:url";
+import { it } from "node:test";
 import { readdir } from "node:fs/promises";
 import { relative } from "node:path";
-import { test } from "node:test";
 
 const OUTPUT = fileURLToPath(
     new URL(`../../${process.env["PORTFOLIO_DIST"] ?? "dist.test"}/`, import.meta.url),
@@ -38,7 +38,7 @@ const OUTPUT = fileURLToPath(
 
 // Le bundle absorbe les modules : aucune source ne doit atteindre l'artefact. Une liste
 // de noms ne le garantissait pas — un renommage a suffi pour publier 23 Ko de TypeScript.
-test("l'artefact ne publie aucune source", async () => {
+it("l'artefact ne publie aucune source", async () => {
   const files = await walk(OUTPUT).catch(() => []);
 
   assert.notEqual(files.length, 0, "l'artefact doit avoir été construit avant ce test");
@@ -53,7 +53,7 @@ test("l'artefact ne publie aucune source", async () => {
 // Le filtre de copie s'applique aussi aux dossiers, et un dossier n'a pas d'extension : un
 // dossier qui ne porte que du TypeScript etait cree puis vide de ses enfants, et publie
 // vide. Le test des sources ne le voyait pas, puisqu'il ne liste que des fichiers.
-test("l'artefact ne publie aucun dossier vide", async () => {
+it("l'artefact ne publie aucun dossier vide", async () => {
   const files = await walk(OUTPUT).catch(() => []);
 
   assert.notEqual(files.length, 0, "l'artefact doit avoir été construit avant ce test");
