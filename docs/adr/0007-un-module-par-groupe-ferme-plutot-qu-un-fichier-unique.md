@@ -40,8 +40,14 @@ identique, mais le même commit aurait bougé le code **et** ses témoins.
 
 `src/interpret.ts` ne contient plus que des ré-exports. La coquille et les tests
 unitaires passent par cette porte, jamais par un module du dossier. C'est ce qui a permis
-de prouver la neutralité du découpage : aucun fichier de test n'a changé d'un caractère,
-et leur verdict vert atteste que le déplacement n'a rien altéré.
+de prouver la neutralité du découpage : **pendant les commits d'extraction**, aucun
+fichier de test n'a changé d'un caractère, et leur verdict vert atteste que le déplacement
+n'a rien altéré.
+
+La même branche a ensuite traduit tous les libellés de test en anglais, ce qui a réécrit
+ces mêmes fichiers. Un `git log` sur la fusion montrera donc des tests modifiés : la
+preuve de neutralité se lit sur les commits allant de la sortie de `lookup`, `tone` et
+`share` à celle du répartiteur, pas sur le diff complet de la branche.
 
 Les modules s'ordonnent en rangs : un module n'importe que des modules de rang
 strictement inférieur. Il n'existe aucun cycle.
@@ -83,8 +89,9 @@ tous ses enfants, et publié vide. Le défaut est passé en production avant d'�
 parce qu'aucun test ne listait les dossiers. Corrigé par un élagage sur le contenu — une
 liste de noms aurait perdu un actif posé à côté des modules — et un test le garde.
 
-**Rien ne prévient un cycle automatiquement.** `import/no-cycle` existe dans oxlint et
-tient en une ligne de configuration. L'ordre des rangs est le seul autre garde-fou.
+**Un cycle ne casserait que l'artefact fondu**, sous forme de page blanche, en laissant
+les tests verts. `import/no-cycle` est donc active, et vérifiée en introduisant un vrai
+cycle. L'ordre des rangs reste le garde-fou de lecture ; la règle est celui de la machine.
 
 **Le premier chargement ne bouge pas d'un octet.** Rolldown fond le graphe comme il
 fondait le fichier unique. Les imports dynamiques, qui allégeraient la page, n'ont pas

@@ -57,6 +57,7 @@ import { type Section, barParts, printed, section } from "./terminal/format.ts";
 import type { Magics } from "./terminal/shell.ts";
 
 import { dragState } from "./terminal/mascot/drag.ts";
+import { lookup } from "./terminal/lookup.ts";
 import { mascotSlice } from "./terminal/mascot/slice.ts";
 
 // Une mission du volet gauche : sa pastille et son etat.
@@ -131,10 +132,6 @@ declare global {
   // eslint-disable-next-line no-var, vars-on-top
   var umami: Umami | undefined;
 }
-
-// Une cle libre dans une table fermee : la table garde son type, l'appelant recoit
-// undefined quand la cle n'y est pas.
-const lookup = <V>(table: Readonly<Record<string, V>>, key: string): V | undefined => table[key];
 
 // « responseConstraint » fait rendre du JSON : un identifiant en sort entre guillemets. Le
 // comparer tel quel ne trouvait jamais le passage, et la reponse du corpus sortait a chaque

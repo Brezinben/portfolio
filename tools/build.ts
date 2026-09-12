@@ -501,6 +501,16 @@ const unfilter = (filter: number, value: number, around: Around) => {
 
 // Un dossier vide n'a rien a faire dans l'artefact. L'elagage remonte des feuilles vers la
 // racine : un dossier qui ne contenait que des dossiers vides se vide a son tour.
+const pruneChildren = async (directory: string): Promise<void> => {
+  const entries = await readdir(directory, { withFileTypes: true });
+
+  await Promise.all(
+    entries
+      .filter((entry) => entry.isDirectory())
+      .map(async (entry) => pruneEmpty(join(directory, entry.name))),
+  );
+};
+
 const pruneEmpty = async (directory: string): Promise<boolean> => {
   const entries = await readdir(directory, { withFileTypes: true }),
     kept = await Promise.all(
@@ -527,7 +537,14 @@ try {
   await cp(SOURCE, version, {
     // Une regle plutot qu'une liste de noms : le bundle absorbe les modules, et un
     // renommage ne doit pas republier la source en silence.
-    filter: (from: string) => extname(from) !== ".ts" && !TRANSFORMED.has(relative(SOURCE, from)),
+    //
+    // Les CONTEXT.md sont de la documentation de depot, pas des actifs : les publier
+    // exposerait la carte des modules, et leur presence empecherait l'elagage de retirer
+    // le dossier qui ne porte qu'eux.
+    filter: (from: string) =>
+      extname(from) !== ".ts" &&
+      basename(from) !== "CONTEXT.md" &&
+      !TRANSFORMED.has(relative(SOURCE, from)),
     // Sans ça, chaque construction date à neuf des fichiers identiques. Leur ETag change,
     // et la revalidation « no-cache » du serveur ne rend jamais de 304.
     preserveTimestamps: true,
@@ -537,7 +554,10 @@ try {
   // ne porte que des modules est cree, puis vide de tous ses enfants, et publie vide. On
   // elague apres coup plutot que de nommer ces dossiers : un dossier qui porterait un actif
   // a cote de ses modules doit rester, et une liste de noms l'aurait supprime entier.
-  await pruneEmpty(version);
+  //
+  // L'elagage part des enfants, jamais de la racine : celle-ci doit survivre meme vide,
+  // sinon l'ecriture de index.html qui suit echouerait sur un dossier disparu.
+  await pruneChildren(version);
   await buildIndex(version);
   await buildTexte(version);
   await buildContent(version);

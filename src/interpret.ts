@@ -6,24 +6,18 @@
 
 // La facade : les tests et la coquille passent par cette porte, jamais par un module de
 // « interpret/ ». Elle n'expose que ce qui a un consommateur.
-export { type ContentLine, type Token, contentLine } from "./interpret/content.ts";
+export { type ContentLine, contentLine } from "./interpret/content.ts";
 export {
   type Effect,
   type Expression,
   type Outcome,
   type TrackValue,
 } from "./interpret/effects.ts";
-export { type CompletionContext, type Context, type Entry } from "./interpret/context.ts";
+export type { Context } from "./interpret/context.ts";
 export { COW_HEAD_MODES, cowsay } from "./interpret/cowsay.ts";
 export { candidates, commonPrefix, hintFor } from "./interpret/completion.ts";
 export { proposalPrompt } from "./interpret/consent.ts";
 export { MAX_SUGGESTIONS, type Line } from "./interpret/lines.ts";
 export { TONES, type Tone, safeTone } from "./interpret/tone.ts";
-export {
-  type Share,
-  type ShareTarget,
-  fillTokens,
-  isSafeUrl,
-  shareTarget,
-} from "./interpret/share.ts";
+export { type Share, fillTokens, isSafeUrl, shareTarget } from "./interpret/share.ts";
 export { interpret } from "./interpret/dispatch.ts";

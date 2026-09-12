@@ -63,3 +63,16 @@ it("should publish no empty directory in the artefact", async () => {
 
   assert.deepEqual(empty, [], "a source directory was created then emptied");
 });
+
+// Les CONTEXT.md ont ete publies une fois : ils ne portent pas l'extension que le test des
+// sources filtre, et leur presence empechait en plus l'elagage de retirer le dossier qui ne
+// contenait qu'eux. Un artefact ne sert que ce qu'un visiteur demande.
+it("should publish no repository documentation", async () => {
+  const files = await walk(OUTPUT).catch(() => []);
+
+  assert.notEqual(files.length, 0, "the artefact must be built before this test");
+
+  const docs = files.filter((file) => file.endsWith(".md")).map((file) => relative(OUTPUT, file));
+
+  assert.deepEqual(docs, [], "repository documentation was copied into the artefact");
+});

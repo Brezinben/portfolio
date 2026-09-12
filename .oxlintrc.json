@@ -138,6 +138,7 @@
     "import/exports-last": "off",
     "id-length": "off",
     "eslint/one-var": "off",
+    "import/no-cycle": "error",
     "jest/prefer-each": "off",
     "jest/require-hook": "off",
     "import/consistent-type-specifier-style": "off",

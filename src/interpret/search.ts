@@ -77,7 +77,7 @@ const words = (text: string): string[] =>
 
 // Un mot du titre pese trois fois : demander « stack » doit ouvrir la section stack, meme
 // si un autre passage prononce le mot plus souvent.
-export const search = (query: string, entries: Entry[]) => {
+const search = (query: string, entries: Entry[]) => {
   const wanted = new Set(words(query));
 
   if (wanted.size === 0) {
