@@ -398,6 +398,10 @@ const BOOT_MS = 2000,
   // La modale retient le regard, et une passe de mue dure deux secondes et demie. La mue
   // rejoue donc tant que la modale est ouverte, puis court encore ce sursis apres.
   MORPH_HOLD_MS = 600,
+  // « ai » interroge vraiment le modele, et un modele local peut prendre son temps a la
+  // premiere question. Au-dela, la commande repond « installe, mais il n'a pas repondu »
+  // plutot que de laisser le journal muet.
+  PROBE_MS = 5000,
   SLEEP_MS = 10_000,
   TWITCH_MS = 5000,
   TWITCH_ODDS = 0.04,
@@ -2356,19 +2360,66 @@ document.addEventListener("alpine:init", () => {
           const etat = await globalThis.LanguageModel.availability();
 
           this.modelState = etat;
-          dit(
-            {
-              available: "un modèle local répond. « ask » s'en sert pour mieux choisir.",
-              downloadable: "un modèle local est installable, mais pas installé.",
-              downloading: "un modèle local est en cours de téléchargement.",
-              unavailable: "l'API Prompt est là, mais aucun modèle ne tient sur cet appareil.",
-            }[etat],
-            etat === "available" ? "ok" : "fg2",
-          );
+
+          if (etat !== "available") {
+            dit(
+              {
+                downloadable: "un modèle local est installable, mais pas installé.",
+                downloading: "un modèle local est en cours de téléchargement.",
+                unavailable: "l'API Prompt est là, mais aucun modèle ne tient sur cet appareil.",
+              }[etat],
+              "fg2",
+            );
+
+            return;
+          }
+
+          const delai = await this.timeModel();
+
+          if (delai === undefined) {
+            dit("un modèle local est installé, mais il n'a pas répondu.", "warn");
+            dit("« ask » marche quand même, sans lui.", "fg2");
+
+            return;
+          }
+
+          dit(`un modèle local répond en ${delai} ms.`, "ok");
+          dit("« ask » s'en sert pour mieux choisir.", "fg2");
         } catch {
           this.modelState = "unavailable";
           dit("l'API Prompt a refusé de répondre.", "warn");
         }
+      },
+
+      // « availability » dit qu'un modele est installe, pas qu'il repond. La seule facon de
+      // l'affirmer est de lui poser une question. Elle est minuscule et contrainte a deux
+      // valeurs : ce qu'il choisit n'a aucune importance, seul compte qu'il choisisse.
+      async timeModel() {
+        if (globalThis.LanguageModel === undefined) {
+          return undefined;
+        }
+
+        const debut = performance.now();
+
+        try {
+          const session = await globalThis.LanguageModel.create({
+            expectedInputs: [{ languages: ["fr"], type: "text" }],
+            signal: AbortSignal.timeout(PROBE_MS),
+          });
+
+          try {
+            await session.prompt("Réponds « oui » ou « non ». Es-tu là ?", {
+              responseConstraint: { enum: ["oui", "non"], type: "string" },
+              signal: AbortSignal.timeout(PROBE_MS),
+            });
+          } finally {
+            session.destroy();
+          }
+        } catch {
+          return undefined;
+        }
+
+        return Math.round(performance.now() - debut);
       },
 
       // L'API onLine ne promet pas l'internet, seulement une interface active. Elle dit

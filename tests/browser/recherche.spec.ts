@@ -145,7 +145,9 @@ test("ai distingue un modèle installable d'un modèle absent", async ({ page })
   await expect(page.locator("[data-journal]")).toContainText("installable, mais pas installé");
 });
 
-test("ai reconnaît un modèle présent", async ({ page }) => {
+// « availability » dit qu'un modele est installe, pas qu'il repond. La commande le mesure,
+// et la duree prouve qu'une question est bien partie.
+test("ai interroge le modèle et donne son temps de réponse", async ({ page }) => {
   await poserModele(page, "whoami");
 
   const cli = await boot(page);
@@ -153,7 +155,35 @@ test("ai reconnaît un modèle présent", async ({ page }) => {
   await cli.fill("ai");
   await cli.press("Enter");
 
-  await expect(page.locator("[data-journal]")).toContainText("un modèle local répond");
+  await expect(page.locator("[data-journal]")).toContainText(/un modèle local répond en \d+ ms/u);
+});
+
+// Un modele installe qui ne repond pas n'est pas un modele qui repond. La commande a
+// longtemps annonce l'un pour l'autre, sur la seule foi de « availability ».
+test("ai distingue un modèle installé d'un modèle qui répond", async ({ page }) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(globalThis, "LanguageModel", {
+      configurable: true,
+      value: {
+        availability: () => Promise.resolve("available"),
+        create: () =>
+          Promise.resolve({
+            destroy: () => undefined,
+            prompt: () => Promise.reject(new Error("muet")),
+          }),
+      },
+    });
+  });
+
+  const cli = await boot(page);
+
+  await cli.fill("ai");
+  await cli.press("Enter");
+
+  const journal = page.locator("[data-journal]");
+
+  await expect(journal).toContainText("installé, mais il n'a pas répondu");
+  await expect(journal, "le repli est nommé").toContainText("marche quand même");
 });
 
 // Deux « ask » de suite : le choix de la premiere question ne doit pas s'ecrire sous la
