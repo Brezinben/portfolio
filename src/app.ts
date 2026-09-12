@@ -420,32 +420,14 @@ interface Umami {
 // MDN la donne « limited availability » : elle n'est pas Baseline, et elle exige un
 // contexte securise. « absent » est donc le cas majoritaire, pas le cas d'erreur.
 //
-// Le contrat se reduit a ce dont la recherche a besoin : savoir si un modele est la, et
-// lui faire choisir une reponse dans une liste fermee.
-interface LanguageModelSession {
-  destroy: () => void;
-  prompt: (
-    input: string,
-    options?: { responseConstraint?: object; signal?: AbortSignal },
-  ) => Promise<string>;
-}
-
-interface LanguageModelApi {
-  availability: () => Promise<"available" | "downloadable" | "downloading" | "unavailable">;
-  // « expectedInputs » porte la langue, pas « expectedInputLanguages ». « topK » et
-  // « temperature » n'existent que dans les extensions Chrome, et « samplingMode » n'est
-  // ouvert au web qu'en essai d'origine : aucun des trois n'a sa place ici.
-  create: (options?: {
-    expectedInputs?: { languages: string[]; type: string }[];
-    signal?: AbortSignal;
-  }) => Promise<LanguageModelSession>;
-}
-
+// Les types viennent de « @types/dom-chromium-ai ». Ils declarent « LanguageModel » comme
+// toujours present, a la facon du reste du DOM : d'ou le « in globalThis » plutot qu'une
+// comparaison a undefined, qui ne compilerait pas. « topK » et « temperature » n'existent
+// que dans les extensions Chrome, et « samplingMode » n'est ouvert au web qu'en essai
+// d'origine : aucun des trois n'a sa place ici.
 declare global {
   // eslint-disable-next-line no-var, vars-on-top
   var umami: Umami | undefined;
-  // eslint-disable-next-line no-var, vars-on-top
-  var LanguageModel: LanguageModelApi | undefined;
 }
 
 // Une cle libre dans une table fermee : la table garde son type, l'appelant recoit
@@ -2295,8 +2277,8 @@ document.addEventListener("alpine:init", () => {
       //
       // « lexical » n'arrive que si l'interpreteur a retenu sa reponse pour laisser le
       // modele choisir. Elle sort telle quelle des qu'il echoue, refuse ou tarde trop.
-      async answerWithModel(query: string, pistes: string[], lexical?: Line[]) {
-        if (lexical === undefined || globalThis.LanguageModel === undefined) {
+      async answerWithModel(query: string, candidateIds: string[], lexical?: Line[]) {
+        if (lexical === undefined || !("LanguageModel" in globalThis)) {
           return;
         }
 
@@ -2307,10 +2289,10 @@ document.addEventListener("alpine:init", () => {
 
         // Une session fermee de travers ne doit pas faire repasser la question par le repli :
         // la reponse est deja affichee, elle sortirait deux fois.
-        let repondu = false;
+        let answered = false;
 
         try {
-          const session = await globalThis.LanguageModel.create({
+          const session = await LanguageModel.create({
             // La question et les passages sont en francais. Le declarer laisse le navigateur
             // refuser tout de suite plutot que de repondre depuis un modele d'une autre langue.
             expectedInputs: [{ languages: ["fr"], type: "text" }],
@@ -2318,13 +2300,13 @@ document.addEventListener("alpine:init", () => {
           });
 
           try {
-            const choix = await session.prompt(this.askPrompt(query, pistes), {
-              responseConstraint: { enum: pistes, type: "string" },
+            const choice = await session.prompt(this.askPrompt(query, candidateIds), {
+              responseConstraint: { enum: candidateIds, type: "string" },
               signal: AbortSignal.any([asker.signal, AbortSignal.timeout(PROBE_MS)]),
             });
 
-            this.showAskChoice(choix.trim(), lexical, asker);
-            repondu = true;
+            this.showAskChoice(choice.trim(), lexical, asker);
+            answered = true;
           } finally {
             session.destroy();
           }
@@ -2332,7 +2314,7 @@ document.addEventListener("alpine:init", () => {
           // Le modele muet, refuse ou trop lent ne doit pas laisser la question sans
           // reponse : celle du corpus attendait pour ce cas. Une question remplacee par une
           // autre, elle, n'a plus rien a dire.
-          if (!repondu && this.asker === asker) {
+          if (!answered && this.asker === asker) {
             this.journal = [...this.journal, ...lexical];
           }
         } finally {
@@ -2346,18 +2328,18 @@ document.addEventListener("alpine:init", () => {
       // « m-transway » ne dit rien de ce que la mission couvre. Sans le texte en face, le
       // modele choisit sur la forme de l'identifiant, et perd l'avantage qu'il avait sur le
       // recouvrement de mots. La contrainte de reponse, elle, reste sur les identifiants.
-      askPrompt(query: string, pistes: string[]) {
+      askPrompt(query: string, candidateIds: string[]) {
         const corpus = [...this.sections, ...this.details],
-          sujets = pistes.map((id) => {
-            const trouve = corpus.find((entry) => entry.id === id);
+          topics = candidateIds.map((id) => {
+            const found = corpus.find((entry) => entry.id === id);
 
-            return `${id} : ${trouve?.label ?? id} — ${trouve?.ask ?? ""}`;
+            return `${id} : ${found?.label ?? id} — ${found?.ask ?? ""}`;
           });
 
         return [
           `Question : « ${query} ».`,
           "Voici les sujets de ce portfolio, chacun précédé de son identifiant.",
-          ...sujets,
+          ...topics,
           "Réponds uniquement par l'identifiant du sujet qui répond le mieux.",
         ].join("\n");
       },
@@ -2369,27 +2351,27 @@ document.addEventListener("alpine:init", () => {
           return;
         }
 
-        const trouve = [...this.sections, ...this.details].find((entry) => entry.id === id);
+        const found = [...this.sections, ...this.details].find((entry) => entry.id === id);
 
         this.journal =
-          !trouve || (trouve.ask ?? "") === ""
+          !found || (found.ask ?? "") === ""
             ? [...this.journal, ...lexical]
             : [
                 ...this.journal,
-                { c: "fg", m: "✓", mc: "ok", t: trouve.label } satisfies Line,
-                { c: "fg", m: " ", mc: "fg2", t: trouve.ask ?? "" } satisfies Line,
+                { c: "fg", m: "✓", mc: "ok", t: found.label } satisfies Line,
+                { c: "fg", m: " ", mc: "fg2", t: found.ask ?? "" } satisfies Line,
               ];
       },
 
       // « availability » est asynchrone, l'interpreteur ne l'est pas : sans cette lecture au
       // demarrage, la premiere question partirait en croyant qu'aucun modele n'est la.
       async learnModel() {
-        if (globalThis.LanguageModel === undefined) {
+        if (!("LanguageModel" in globalThis)) {
           return;
         }
 
         try {
-          this.modelState = await globalThis.LanguageModel.availability();
+          this.modelState = await LanguageModel.availability();
         } catch {
           // Un refus au demarrage laisse « unknown » : « ask » repond alors sans modele,
           // ce qui est le comportement sans API.

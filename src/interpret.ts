@@ -233,15 +233,15 @@ const line = ({
   ASK_MODEL = "ask✨",
   // L'etincelle occupe deux colonnes dans une police a chasse fixe. Sans ce comptage, la
   // ligne d'aide qui la porte decalerait son tiret d'une colonne.
-  colonnes = (texte: string) => texte.length + (texte.includes("✨") ? 1 : 0),
-  ligneAsk = (model: boolean) => {
-    const nom = `${model ? ASK_MODEL : ASK} <question>`;
+  displayWidth = (text: string) => text.length + (text.includes("✨") ? 1 : 0),
+  askLine = (model: boolean) => {
+    const shown = `${model ? ASK_MODEL : ASK} <question>`;
 
-    return `${nom}${" ".repeat(Math.max(1, 34 - colonnes(nom)))}— chercher dans le site`;
+    return `${shown}${" ".repeat(Math.max(1, 34 - displayWidth(shown)))}— chercher dans le site`;
   },
-  aide = (model: boolean) => [
+  helpLines = (model: boolean) => [
     "ls · cd <section> · bd <section>  — naviguer",
-    ligneAsk(model),
+    askLine(model),
     "theme <nom> · clear · options     — affichage",
     "cv · email · send-mail            — CV et contact",
     "share <cible>                     — LinkedIn, GitHub, lien",
@@ -461,7 +461,7 @@ const line = ({
   VERBS = [...PLAIN, ...[...SLASH_ONLY].map((egg) => `/${egg}`)],
   // Les deux noms de la recherche ne s'offrent jamais ensemble : le vocabulaire ne porte
   // que celui qui correspond a l'etat du modele.
-  vocabulaire = (model: boolean) => [model ? ASK_MODEL : ASK, ...VERBS],
+  vocabulary = (model: boolean) => [model ? ASK_MODEL : ASK, ...VERBS],
   // Le vocabulaire dépend du chemin déjà tapé, et pas seulement du premier mot : « slime »
   // propose ses sous-commandes, « slime expression » les expressions, « slime activity » les
   // activités. Proposer le vocabulaire entier après l'un ou l'autre ferait du bruit.
@@ -566,7 +566,7 @@ export const candidates = (value: string, context: CompletionContext) => {
 
   if (parts.length === 1) {
     const pool = [
-        ...vocabulaire(context.model),
+        ...vocabulary(context.model),
         ...context.sections.map((entry) => entry.id),
         ...context.details.map((entry) => entry.id),
       ],
@@ -655,8 +655,8 @@ const VIDES = new Set([
   ]),
   // Une recherche ne doit pas dependre des accents ni de la casse : « éco-conception » se
   // cherche « eco conception ».
-  mots = (texte: string): string[] =>
-    texte
+  words = (text: string): string[] =>
+    text
       .normalize("NFD")
       .replaceAll(/\p{Diacritic}/gu, "")
       .toLowerCase()
@@ -669,79 +669,72 @@ const VIDES = new Set([
 // Un mot du titre pese trois fois : demander « stack » doit ouvrir la section stack, meme
 // si un autre passage prononce le mot plus souvent.
 export const search = (query: string, entries: Entry[]) => {
-  const cherches = new Set(mots(query));
+  const wanted = new Set(words(query));
 
-  if (cherches.size === 0) {
+  if (wanted.size === 0) {
     return [];
   }
 
   return entries
     .filter((entry) => (entry.ask ?? "") !== "")
     .map((entry) => {
-      const corpus = mots(entry.ask ?? ""),
-        titre = new Set(mots(entry.label)),
-        communs = corpus.filter((mot) => cherches.has(mot)),
-        touches = communs.length,
-        vus = new Set(communs).size,
-        dansTitre = [...cherches].filter((mot) => titre.has(mot)).length;
+      const body = words(entry.ask ?? ""),
+        title = new Set(words(entry.label)),
+        shared = body.filter((word) => wanted.has(word)),
+        hitCount = shared.length,
+        distinct = new Set(shared).size,
+        inTitle = [...wanted].filter((word) => title.has(word)).length;
 
       // Le nombre de mots distincts touches prime sur les repetitions : un passage qui
       // repond a toute la question vaut mieux qu'un qui martele un seul de ses mots.
-      return { entry, score: vus * 10 + touches + dansTitre * 30 };
+      return { entry, score: distinct * 10 + hitCount + inTitle * 30 };
     })
     .filter((hit) => hit.score > 0)
-    .toSorted((une, autre) => autre.score - une.score);
+    .toSorted((one, other) => other.score - one.score);
 };
 
 // La reponse est toujours le texte du corpus, jamais un texte produit. Un modele, quand il
 // y en a un, ne fait que choisir parmi ces passages : il ne parle pas a la place de
 // Benjamin.
 const answer = (query: string, entries: Entry[], model: boolean) => {
-  const nom = model ? ASK_MODEL : ASK;
+  const shown = model ? ASK_MODEL : ASK;
 
   if (query.trim() === "") {
     return {
       effects: [],
-      lines: [info(`${nom} — posez une question en français. Par exemple : ${nom} accessibilité`)],
+      lines: [
+        info(`${shown} — posez une question en français. Par exemple : ${shown} accessibilité`),
+      ],
     };
   }
 
-  const trouves = search(query, entries),
-    [meilleur] = trouves;
-
-  // Le modele voit tous les passages, pas seulement ceux qui partagent un mot avec la
-  // question. Lui donner la liste du recouvrement le reduirait a reclasser ce que la
-  // recherche lexicale a deja trouve, et « comment tu bosses » ne trouve rien du tout.
-  const repondables = entries.filter((entry) => (entry.ask ?? "") !== "").map((entry) => entry.id),
-    lexical = meilleur
+  const hits = search(query, entries),
+    [best] = hits,
+    others = hits.slice(1, 4).map((hit) => hit.entry.label),
+    // Le modele voit tous les passages, pas seulement ceux qui partagent un mot avec la
+    // question. Lui donner la liste du recouvrement le reduirait a reclasser ce que la
+    // recherche lexicale a deja trouve, et « comment tu bosses » ne trouve rien du tout.
+    answerable = entries.filter((entry) => (entry.ask ?? "") !== "").map((entry) => entry.id),
+    lexical = best
       ? [
-          done(meilleur.entry.label),
-          line({ text: meilleur.entry.ask ?? "" }),
-          ...(trouves.slice(1, 4).length > 0
-            ? [
-                muted(
-                  `voir aussi : ${trouves
-                    .slice(1, 4)
-                    .map((hit) => hit.entry.label)
-                    .join(" · ")}`,
-                ),
-              ]
-            : []),
+          done(best.entry.label),
+          line({ text: best.entry.ask ?? "" }),
+          ...(others.length > 0 ? [muted(`voir aussi : ${others.join(" · ")}`)] : []),
         ]
       : [
           failed("rien ne répond à cette question dans ce portfolio."),
           muted("help donne la liste des commandes."),
         ],
-    mesure = track(meilleur ? "ask" : "ask_sans_reponse", { query });
+    measured = track(best ? "ask" : "ask_sans_reponse", { query });
 
-  if (!model || repondables.length === 0) {
-    return { effects: [mesure], lines: lexical };
+  if (!model || answerable.length === 0) {
+    return { effects: [measured], lines: lexical };
   }
 
   // Sans modele, la reponse part tout de suite. Avec un modele, elle attend son choix :
   // deux reponses de suite pour une seule question se liraient comme une hesitation.
   return {
-    effects: [mesure, { candidates: repondables, lexical, query, type: "ask" } satisfies Effect],
+    effects: [measured, { candidates: answerable, lexical, query, type: "ask" } satisfies Effect],
     lines: [],
   };
 };
@@ -996,7 +989,7 @@ export const interpret = (raw: string, context: Context): Outcome => {
     return {
       ...out([], [say("essaie « /joke »", "happy")]),
       result: [
-        ...aide(context.model).map((text) => ({ m: "·", t: text })),
+        ...helpLines(context.model).map((text) => ({ m: "·", t: text })),
         { m: "›", mc: "acc", t: KEYBOARD, tone: "fg2" },
       ],
     };
