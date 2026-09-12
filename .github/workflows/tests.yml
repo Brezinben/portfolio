@@ -28,6 +28,12 @@ jobs:
 
       - run: bun run typecheck
 
+      # « artefact-sans-source » lit le dossier construit : sans cette etape il ne trouve
+      # rien et echoue. En local la suite navigateur l'avait deja construit.
+      - run: bun run build
+        env:
+          PORTFOLIO_DIST: dist.test
+
       - run: bun run test:unit
 
       - run: bun run format:check
