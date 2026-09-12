@@ -588,6 +588,30 @@ test("slime evolve demande le changement de forme", () => {
   assert.match(texts(result)[1] ?? "", /change de forme/u);
 });
 
+// Endormie n'est ni absente ni occupee : la mascotte est la, et elle le reste. Le refus
+// nomme la cause et la sortie, comme les autres refus du mode hors ligne.
+test("sans réseau, la mascotte dort et la commande est refusée", () => {
+  const asleep = { ...CONTEXT, mascot: "asleep" } as const;
+
+  for (const command of [
+    "/slime kill",
+    "/slime drop",
+    "/slime evolve",
+    "/slime expression happy",
+    "/slime activity bike",
+  ]) {
+    const result = interpret(command, asleep);
+
+    assert.match(texts(result)[1] ?? "", /dort tant que le réseau est coupé/u, command);
+    assert.match(texts(result)[2] ?? "", /retour du réseau/u, command);
+    assert.ok(effectOf(result, "usage"), command);
+
+    for (const swallowed of ["blowUp", "drop", "evolve", "emote", "activity"] as const) {
+      assert.equal(effectOf(result, swallowed), undefined, `${command} / ${swallowed}`);
+    }
+  }
+});
+
 // Occupee n'est pas absente : la mascotte est la, elle finit sa transformation. Le journal
 // doit le dire, et non annoncer un geste que la coquille avale.
 test("pendant un changement de forme, la commande est refusée sans mentir", () => {

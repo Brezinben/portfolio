@@ -9,7 +9,8 @@ const boot = async (page: Page) => {
 
     return page.getByLabel("Commande");
   },
-  couper = (page: Page) => page.context().setOffline(true);
+  couper = (page: Page) => page.context().setOffline(true),
+  mascot = (page: Page) => page.locator("[data-mascot]");
 
 test("la barre d'état annonce la coupure, et l'oublie au retour", async ({ page }) => {
   await boot(page);
@@ -54,6 +55,62 @@ test("partager le lien marche toujours sans réseau", async ({ page, context }) 
   const ici = await page.evaluate(() => globalThis.location.origin + globalThis.location.pathname);
 
   expect(await page.evaluate(() => navigator.clipboard.readText())).toContain(ici);
+});
+
+test("la mascotte dort tant que le réseau est coupé", async ({ page }) => {
+  await boot(page);
+  await expect(mascot(page)).toHaveClass(/slime--idle/u);
+
+  await couper(page);
+  await expect(mascot(page)).toHaveClass(/slime--sleep/u);
+  // Une passe unique passerait le test, puis rendrait la main au repos. Seule la boucle
+  // tient jusqu'au retour du réseau.
+  await expect(mascot(page)).toHaveCSS("animation-iteration-count", "infinite");
+
+  await page.mouse.move(200, 200);
+  await page.keyboard.press("a");
+  await expect(mascot(page), "aucun geste ne la réveille").toHaveClass(/slime--sleep/u);
+
+  await page.context().setOffline(false);
+  await expect(mascot(page)).toHaveClass(/slime--idle/u);
+});
+
+test("commander la mascotte sans réseau dit qu'elle dort", async ({ page }) => {
+  const cli = await boot(page);
+
+  await couper(page);
+  await cli.fill("/slime kill");
+  await cli.press("Enter");
+
+  await expect(page.locator("[data-journal]")).toContainText("dort tant que le réseau est coupé");
+  await expect(mascot(page), "le journal ne ment pas : elle dort toujours").toHaveClass(
+    /slime--sleep/u,
+  );
+});
+
+// Le sommeil est total : la souris ne la réveille pas non plus. Sans ces deux refus, un
+// clic la ferait exploser sans feuille à jouer, et un glisser promènerait un dormeur.
+test("endormie, la mascotte ne répond ni au clic ni au glisser", async ({ page }) => {
+  await boot(page);
+  await couper(page);
+  await expect(mascot(page)).toHaveClass(/slime--sleep/u);
+
+  const avant = (await mascot(page).boundingBox())!;
+
+  await Array.from({ length: 5 }).reduce<Promise<unknown>>(
+    (chain) => chain.then(() => mascot(page).click({ force: true })),
+    Promise.resolve(),
+  );
+
+  await expect(mascot(page), "cinq clics ne la font plus exploser").toHaveClass(/slime--sleep/u);
+
+  await page.mouse.move(avant.x + 32, avant.y + 32);
+  await page.mouse.down();
+  await page.mouse.move(avant.x + 200, avant.y + 32, { steps: 12 });
+  await page.mouse.up();
+
+  await expect(mascot(page)).toHaveClass(/slime--sleep/u);
+  expect((await mascot(page).boundingBox())!.x, "elle n'a pas bougé").toBe(avant.x);
 });
 
 test("proposer sans réseau le dit plutôt que d'échouer en silence", async ({ page }) => {

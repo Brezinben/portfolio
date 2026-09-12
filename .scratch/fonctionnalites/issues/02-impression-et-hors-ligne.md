@@ -67,9 +67,24 @@ L'indication suit la demande du ticket. Elle ne dit pas « vous êtes hors ligne
 |---|---|
 | `share linkedin`, `share profil`, `share github` | refusée, renvoie vers `share link` |
 | `/propose` | refusée, renvoie vers `mail` |
-| `share link`, `mail`, la navigation, les easter eggs | inchangées |
+| `/slime` | refusée, la mascotte dort |
+| `share link`, `mail`, la navigation, les autres easter eggs | inchangées |
 
 Un marqueur `hors ligne` en `--warn` entre dans la barre d'état, à côté de la branche.
+
+### La mascotte dort
+
+Le réseau coupé, la mascotte joue `sleep` en boucle et rien ne la réveille : ni la souris,
+ni la frappe, ni un clic, ni un glisser. Elle reprend son repos au retour du réseau.
+
+La coquille le dit à l'interpréteur par une quatrième valeur de `mascot`, `asleep`, à côté
+de `away` et `busy`. Le refus vit donc dans le seam pur, comme les deux autres, et non dans
+la coquille.
+
+Deux gardes valent leur ligne. Le sommeil traverse `mascotPlay()`, qui refuse toute autre
+feuille. Mais `wander()`, `grab()` et `poke()` agissent hors de ce point de passage : sans
+leur propre refus, la mascotte glisserait encore sur sa piste, et le cinquième clic la
+ferait exploser sans feuille à jouer.
 
 **Aucun service worker.** Le ticket le déconseille, et il ajouterait un cycle de vie de
 cache à tenir pour un site qui tient déjà en mémoire une fois chargé.

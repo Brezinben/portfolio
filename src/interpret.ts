@@ -144,8 +144,9 @@ export interface Context extends CompletionContext {
   // La mascotte est absente pendant son explosion et pendant son voyage en train. Sans
   // cette information, l'interpreteur annonce des gestes que la coquille ne joue pas.
   // « away » : explosee ou partie en train. « busy » : en train de changer de forme, donc
-  // presente mais indisponible. La coquille sait, l'interpreteur ne devine pas.
-  mascot: "away" | "busy" | "here";
+  // presente mais indisponible. « asleep » : le reseau est coupe, elle dort jusqu'a son
+  // retour. La coquille sait, l'interpreteur ne devine pas.
+  mascot: "asleep" | "away" | "busy" | "here";
   details: Entry[];
   sections: Entry[];
   current: { cmd?: string; id?: string; label?: string };
@@ -342,11 +343,22 @@ const line = ({
     effects: [{ type: "usage" }],
     lines: [failed("la mascotte change de forme : laissez-la finir.")],
   },
-  // Trois etats possibles, un seul a la fois : la coquille dit lequel plutot que de passer
-  // deux booleens dont la moitie des combinaisons n'existe pas.
-  slime = (argument: string, name: string, mascot: "away" | "busy" | "here"): Told => {
+  dozing: Told = {
+    effects: [{ type: "usage" }],
+    lines: [
+      failed("la mascotte dort tant que le réseau est coupé."),
+      muted("elle se réveille d'elle-même au retour du réseau."),
+    ],
+  },
+  // Quatre etats possibles, un seul a la fois : la coquille dit lequel plutot que de passer
+  // trois booleens dont la plupart des combinaisons n'existent pas.
+  slime = (argument: string, name: string, mascot: Context["mascot"]): Told => {
     // Annoncer « le slime explose » pendant qu'il est deja parti fait mentir le journal :
-    // la coquille avale le geste, la ligne reste.
+    // la coquille avale le geste, la ligne reste. Endormie, elle avale tout de meme.
+    if (mascot === "asleep") {
+      return dozing;
+    }
+
     if (mascot === "away") {
       return absent;
     }
