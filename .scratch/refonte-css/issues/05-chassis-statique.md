@@ -1,6 +1,6 @@
 # Lot 5 — le châssis statique
 
-Status: ready-for-agent
+Status: resolved
 Type: task
 Blocked by: 04
 
@@ -56,3 +56,45 @@ si on lance la suite navigateur.
 ## Vérification
 
 `bun run test:browser` vert. `tests/browser/budget.spec.ts` une fois en fin de lot.
+
+## Réponse
+
+126 attributs et 474 déclarations au départ. **68 attributs et 156 déclarations restent.**
+Deux tiers des déclarations ont quitté le balisage.
+
+Trois noms nouveaux, comme prévu : `.zone`, `.zone__head`, `.zone__list`. Rien d'autre.
+Tout le reste passe par une prise qui existait déjà, ou par la structure.
+
+| Passe | Effet |
+|---|---|
+| Les six zones, trois en-têtes, deux listes | 11 attributs |
+| La marge par défaut de `p`, `dl`, `dt`, `dd` | 28 déclarations, une règle |
+| Les couleurs statiques qui sont des tons | 58 attributs allégés |
+| Les 17 éléments qui avaient déjà une prise | 17 attributs |
+| Cinq éléments atteignables par la structure | 5 attributs |
+
+## Un défaut trouvé en chemin
+
+**`[data-pane="out"]` rendait `block`, pas `flex`.** Sa déclaration `display:flex` vivait
+en ligne, et `x-show` d'Alpine appelle `style.removeProperty("display")` à chaque
+affichage : la déclaration était effacée à la première ouverture du volet. Depuis la
+feuille, elle tient. Mesuré : la géométrie ne change pas, le volet se tenait déjà comme
+voulu par accident.
+
+C'est exactement la classe de défaut que ce chantier existe pour supprimer.
+
+## Où je me suis arrêté, et pourquoi
+
+Les 68 attributs restants portent une à trois déclarations, sur des `span` et des `div`
+anonymes. Les sortir demanderait **d'inventer une soixantaine de sélecteurs**, ce que la
+consigne de nommage de ce ticket refuse.
+
+Un lot reste possible, et il demande une décision de vocabulaire :
+
+> Huit attributs portent `color:var(--acc)` ou `color:var(--edge)` sur des glyphes
+> décoratifs — la barre d'une jauge, les flèches d'une aide clavier. **Ce ne sont pas des
+> tons** : un ton nomme la couleur d'un texte, et `acc` en ton donne `var(--acc-text)`.
+> Il leur faudrait un second vocabulaire, et donc une entrée au glossaire.
+
+**Question pour Benjamin : comment nommer la couleur d'un glyphe décoratif ?** Tant qu'elle
+n'a pas de nom, ces huit attributs restent en ligne.

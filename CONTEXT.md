@@ -64,7 +64,8 @@ _Avoid_: parcours, chronologie, historique.
 
 **Ton** (`tone`) :
 La couleur de sens portée par une ligne ou un jeton. Cinq valeurs : `acc`, `fg`, `fg2`,
-`ok`, `warn`. Toute valeur inconnue retombe sur `fg`.
+`ok`, `warn`. Toute valeur inconnue retombe sur `fg`. Un ton colore du texte : `acc` y
+désigne l'ambre textuel, jamais l'ambre décoratif qui habille un glyphe.
 _Avoid_: couleur, teinte, style.
 
 **Log de boot** (`bootLog`) :

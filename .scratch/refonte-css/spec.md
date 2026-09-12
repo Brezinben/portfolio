@@ -446,3 +446,72 @@ Ce sont les seuls, je les ai cherchés exhaustivement :
 - /home/benjamin/beta/portfolio/tools/build.ts
 - /home/benjamin/beta/portfolio/CONTEXT.md
 - /home/benjamin/beta/portfolio/tests/browser/sortie.spec.ts
+---
+
+# Ce que la revue a trouvé
+
+Une revue adverse a parcouru la branche et diffé le DOM calculé entre les deux révisions,
+sur sept états d'interface. Elle a produit quinze constats. Tous vérifiés, tous vrais.
+
+## Trois règles visaient plus large que leur cible
+
+| Règle | Ce qu'elle attrapait en plus |
+|---|---|
+| `.tm a[href="texte.html"]` | Le lien du pied de page, qui n'a jamais porté de cadre. Le pied passait de 20 px à 44 px, et les trois volets perdaient 24 px de hauteur. |
+| `.tm [data-pane="main"] > [aria-hidden="true"]` | L'indice « plus bas », qui sortait du flux et couvrait le volet à demi-opacité. Il faussait aussi le recensement de `logRoom()`. |
+| `.tm[data-anim="false"] *` | Les sept lignes du démarrage. |
+
+Les deux premières sont désormais portées par une prise propre, `[data-boot]` et
+`[data-decor]`.
+
+## Ma justification de la coupure d'animation était fausse
+
+J'avais écrit que couper toutes les animations amenait la page là où
+`prefers-reduced-motion` l'amenait déjà. **C'est faux.** Sous mouvement réduit, `app.ts`
+met `BOOT_MS` et `FADE_MS` à zéro : il n'y a pas d'écran de démarrage à figer. Le réglage,
+lui, laisse les minuteries entières — la coupure donnait un écran dessiné, figé trois
+secondes, puis disparu en une image.
+
+La coupure épargne le démarrage.
+
+## Trois effacements de `display` par Alpine, pas un
+
+`x-show` appelle `style.removeProperty("display")` à chaque affichage. J'en avais documenté
+un, le volet de sortie, et affirmé que la géométrie ne bougeait pas. Il y en avait trois :
+
+| Élément | Effet |
+|---|---|
+| `[data-pane="out"]` | `block` → `flex` |
+| `<dl>` de la sortie | `block` → `grid`, son `gap:6px` inerte s'applique, la liste grandit de 36 px |
+| `[data-handle]` | `block` → `flex`, `justify-content:center` s'applique, la poignée passe de gauche au centre |
+
+Les trois sont l'intention d'origine qui reprend effet. Les trois sont mesurés et couverts.
+
+## Deux survols dormaient, et l'un abîmait le contraste
+
+Un style en ligne battait `.tm [data-ctl="opts"]:hover`. La règle vit depuis que le style a
+quitté le balisage, et elle peignait le texte en ambre décoratif : **2,1:1 en thème clair**.
+Elle prend l'ambre textuel, 5,2:1. Le cadre garde l'ambre décoratif, qui n'est pas du texte.
+
+## Le glossaire définissait déjà **Ton**
+
+Ma prémisse au lot 4 était fausse, et le message de commit la répétait. `CONTEXT.md`
+portait l'entrée depuis toujours. Le doublon est retiré, et le seul fait qu'il ajoutait —
+`acc` désigne l'ambre textuel — rejoint l'entrée d'origine.
+
+## Le filet ne couvrait pas ce qu'il devait
+
+Il manquait `animation-delay` et `grid-template-columns`, les deux propriétés que `--at` et
+`--out-key` alimentent : on pouvait les casser sans qu'un instantané bouge. La modale se
+mesurait réglage d'animation éteint, donc son `popIn` n'était jamais vérifié.
+
+**Le filet compte désormais 27 tests.** Il a été pris sur la révision de base, puis
+confronté à la branche : onze écarts, cinq causes, toutes ci-dessus.
+
+## Le reste
+
+`:data-power` n'était lu par personne. `--out-key` se recalculait une fois par ligne, en
+O(N²), pour une valeur unique par section : il vit sur la liste. L'état sélectionné était
+écrit trois fois à l'identique, et les trois boutons de la modale aussi. Deux commentaires
+affirmaient un invariant que la branche détruit. 109 lignes avaient été réindentées par
+accident, dont des métadonnées de `<head>` sans rapport.
