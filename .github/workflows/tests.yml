@@ -1,0 +1,90 @@
+# Deux travaux, et pas un seul : la verification rend la main en une minute, la suite
+# navigateur prend sept minutes. Les separer donne le verdict rapide tout de suite, sans
+# attendre les navigateurs.
+name: tests
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+# Une nouvelle poussee annule la precedente : deux suites navigateur sur la meme branche
+# n'apprennent rien de plus, et occupent un runner pour rien.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verification:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.2
+
+      - run: bun install --frozen-lockfile
+
+      - run: bun run typecheck
+
+      # « artefact-sans-source » lit le dossier construit : sans cette etape il ne trouve
+      # rien et echoue. En local la suite navigateur l'avait deja construit.
+      - run: bun run build
+        env:
+          PORTFOLIO_DIST: dist.test
+
+      - run: bun run test:unit
+
+      - run: bun run format:check
+
+      # « lint » ecrit ses corrections : en integration il doit constater, pas reparer.
+      - run: bun x oxlint --format=github
+
+  navigateur:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.2
+
+      # La construction et le serveur de test passent par « npm run build » : Node reste
+      # necessaire, meme si bun execute le script.
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 26
+
+      - run: bun install --frozen-lockfile
+
+      # Les navigateurs pesent plus que les dependances. La cle porte la version de
+      # Playwright : une montee de version tire une nouvelle archive, pas l'ancienne.
+      - uses: actions/cache@v4
+        id: navigateurs
+        with:
+          key: playwright-${{ runner.os }}-1.63.0
+          path: ~/.cache/ms-playwright
+
+      - if: steps.navigateurs.outputs.cache-hit != 'true'
+        run: bun x playwright install --with-deps chromium
+
+      # Les dependances systeme ne sont pas dans le cache du dossier : elles s'installent
+      # meme quand les navigateurs en reviennent.
+      - if: steps.navigateurs.outputs.cache-hit == 'true'
+        run: bun x playwright install-deps chromium
+
+      # Le plafond de deux workers vient du poste de travail, qui a 7 Go. Le runner en a 16
+      # pour quatre coeurs : il en tient quatre, et la suite passe de neuf minutes a cinq.
+      - run: bun run test:browser
+        env:
+          PORTFOLIO_WORKERS: 4
+
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rapport-playwright
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7

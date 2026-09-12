@@ -123,14 +123,15 @@ test("bd, sleep et ? font partie du vocabulaire", () => {
   assert.ok(hits("?").includes("?"));
 });
 
-// Dix propositions au maximum, et quatorze easter eggs : l'ordre décide de ce qui se
-// découvre. « /slime » porte le plus de branches, et vient donc en premier.
-test("les easter eggs les plus riches entrent dans les dix propositions du slash", () => {
+// Dix propositions au maximum, et « SLASH_ONLY » en porte exactement dix : le menu est
+// plein au ras. Un onzième easter egg en pousserait un dehors, et l'ordre déciderait
+// lequel. « /slime » porte le plus de branches, il vient donc en premier.
+test("les dix easter eggs tiennent dans les dix propositions du slash", () => {
   const shown = hits("/");
 
-  assert.ok(shown.includes("/slime"));
+  assert.equal(shown.length, 10, "le menu du slash est plein");
+  assert.equal(shown[0], "/slime", "le plus riche se découvre en premier");
   assert.ok(shown.includes("/joke"));
-  assert.ok(!shown.includes("/brezinben"), "un alias cède sa place à une commande");
 });
 
 // Le dispatcher réserve la navigation à ces trois verbes. La liste doit proposer des

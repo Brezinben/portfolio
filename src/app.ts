@@ -1,5 +1,6 @@
 import {
   type ContentLine,
+  type Context,
   type Effect,
   type Expression,
   type Line,
@@ -510,6 +511,7 @@ interface State {
   loaded: Set<string>;
   // Qui a ouvert la modale : le bouton de l'en-tete, ou la saisie via la commande.
   optsReturn: HTMLElement | undefined;
+  online: boolean;
   out: boolean;
   pane: string;
   pending: string | undefined;
@@ -609,6 +611,7 @@ document.addEventListener("alpine:init", () => {
       form: "slime",
       becoming: "",
       loaded: new Set(["slime"]),
+      online: true,
       out: true,
       pane: "nav",
       pending: undefined,
@@ -657,6 +660,7 @@ document.addEventListener("alpine:init", () => {
         }, COMPACT_TICK_MS);
         this.startMascot();
         globalThis.addEventListener("popstate", () => this.fromHash());
+        this.watchNetwork();
         globalThis.addEventListener("resize", () => this.setLogHeight(this.logHeight));
         this.load();
       },
@@ -1186,6 +1190,12 @@ document.addEventListener("alpine:init", () => {
           return;
         }
 
+        // Le reseau coupe, la mascotte dort et rien ne la reveille : toute autre feuille
+        // la sortirait de sa boucle. Meme forme de garde que « gone » au-dessus.
+        if (!this.online && state !== "sleep") {
+          return;
+        }
+
         node.className = "slime";
         void node.offsetWidth;
         node.className = `slime slime--${state}`;
@@ -1248,7 +1258,9 @@ document.addEventListener("alpine:init", () => {
           return;
         }
 
-        this.mascotPlay(MASCOT_REST);
+        // Hors reseau, le repos de la mascotte est le sommeil. Sans ce choix, la page chargee
+        // puis coupee avant le premier rendu la laisserait sans feuille du tout.
+        this.mascotPlay(this.online ? MASCOT_REST : "sleep");
       },
 
       // La feuille du train fait la paire avec celle de la chute : l'une emmene la
@@ -1311,7 +1323,9 @@ document.addEventListener("alpine:init", () => {
           return;
         }
 
-        if (this.gone) {
+        // Endormie, elle ne compte pas les clics : sinon l'explosion partirait sans feuille
+        // a jouer, et la mascotte disparaitrait jusqu'au retour du reseau.
+        if (this.gone || !this.online) {
           return;
         }
 
@@ -1352,7 +1366,13 @@ document.addEventListener("alpine:init", () => {
       },
 
       // Ce que la coquille sait de la mascotte, et que l'interpreteur ne peut pas deviner.
-      mascotStanding(): "away" | "busy" | "here" {
+      mascotStanding(): Context["mascot"] {
+        // Le sommeil passe devant l'absence : hors reseau, doze() a deja rappele la mascotte
+        // et coupe le minuteur qui l'aurait ramenee.
+        if (!this.online) {
+          return "asleep";
+        }
+
         if (this.gone) {
           return "away";
         }
@@ -1441,8 +1461,10 @@ document.addEventListener("alpine:init", () => {
         return track ? Math.max(0, track.clientWidth - SPRITE) : 0;
       },
 
+      // Une mascotte endormie ne se promene pas : la balade passe par place(), que la garde
+      // de mascotPlay() n'atteint pas.
       wander() {
-        if (this.dragging || this.gone || !this.anim || this.reduced) {
+        if (this.dragging || this.gone || !this.anim || this.reduced || !this.online) {
           return;
         }
 
@@ -1459,7 +1481,9 @@ document.addEventListener("alpine:init", () => {
       // La mascotte est retenue dans sa piste. On peut l'y trainer d'un bout a l'autre, mais
       // pas l'en sortir : tirer au-dela d'un bord la plaque contre ce bord.
       grab(event: PointerEvent) {
-        if (this.gone) {
+        // Endormie, elle ne se laisse pas prendre : sans ce refus, drag() la deplacerait
+        // encore par place(), et la feuille de sommeil glisserait sur la piste.
+        if (this.gone || !this.online) {
           return;
         }
 
@@ -1619,15 +1643,35 @@ document.addEventListener("alpine:init", () => {
         this.rouse();
       },
 
-      // La veille a la priorite la plus basse : le moindre geste la repousse.
+      // La veille a la priorite la plus basse : le moindre geste la repousse. Le reseau
+      // coupe passe devant : le sommeil tient alors jusqu'a son retour, et aucun geste ne
+      // rearme le minuteur.
       rouse() {
         clearTimeout(this.sleeper);
+
+        if (!this.online) {
+          return;
+        }
 
         if (this.mascotState === "sleep") {
           this.settle();
         }
 
         this.sleeper = setTimeout(() => this.mascotPlay("sleep"), SLEEP_MS);
+      },
+
+      // Une explosion ou un voyage en cours laisserait la mascotte absente, et leur minuteur
+      // la rappellerait en pleine nuit : les deux tombent avec le reseau. Vider l'etat
+      // courant ouvre aussi la garde des transitions, qui refuse tout jusqu'a son terme.
+      doze() {
+        clearTimeout(this.sleeper);
+        clearTimeout(this.settler);
+        clearTimeout(this.reformer);
+        clearTimeout(this.returner);
+        this.dragging = false;
+        this.gone = false;
+        this.mascotState = "";
+        this.mascotPlay("sleep");
       },
 
       // La frappe se voit tant qu'on tape, puis la mascotte revient au repos.
@@ -2111,6 +2155,17 @@ document.addEventListener("alpine:init", () => {
           return;
         }
 
+        // Ouvrir un onglet vers LinkedIn sans reseau laisse une page d'erreur du navigateur,
+        // et le visiteur croit que le portfolio a casse.
+        if (!this.online) {
+          this.refuseOffline(
+            `ouvrir ${effect.kind}`,
+            "« share link » copie l'adresse de cette page, sans réseau.",
+          );
+
+          return;
+        }
+
         globalThis.open(effect.url, "_blank", "noopener");
       },
 
@@ -2183,6 +2238,35 @@ document.addEventListener("alpine:init", () => {
         }
       },
 
+      // L'API onLine ne promet pas l'internet, seulement une interface active. Elle dit
+      // « hors ligne » sans se tromper, et « en ligne » avec optimisme : c'est le sens
+      // utile ici, puisque la page ne sert qu'a refuser une commande vouee a l'echec.
+      watchNetwork() {
+        this.online = globalThis.navigator?.onLine ?? true;
+        globalThis.addEventListener("online", () => {
+          this.online = true;
+          this.rouse();
+        });
+        globalThis.addEventListener("offline", () => {
+          this.online = false;
+          this.doze();
+        });
+
+        if (!this.online) {
+          this.doze();
+        }
+      },
+
+      // Le site entier tient en memoire une fois charge : seules les commandes qui partent
+      // ailleurs cassent. Le refus les nomme, et il nomme ce qui marche encore.
+      refuseOffline(what: string, instead: string) {
+        this.journal = [
+          ...this.journal,
+          { c: "warn", m: "✗", mc: "warn", t: `${what} demande le réseau, et il est coupé.` },
+          { c: "fg2", m: "·", mc: "fg2", t: instead },
+        ];
+      },
+
       // La coquille applique ce que l'interpréteur décrit. Les effets des tickets à
       // venir sont ignorés ici plutôt que simulés.
       apply(effects: Effect[]) {
@@ -2206,7 +2290,14 @@ document.addEventListener("alpine:init", () => {
             this.pending = effect.payload;
             this.input = effect.answer ?? "";
           } else if (effect.type === "send") {
-            this.send(effect.payload);
+            if (this.online) {
+              this.send(effect.payload);
+            } else {
+              this.refuseOffline(
+                "envoyer une proposition",
+                "« mail » copie mon adresse, elle partira au retour du réseau.",
+              );
+            }
           } else if (effect.type === "share") {
             this.shareTo(effect);
           } else if (effect.type === "shareMenu") {
