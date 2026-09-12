@@ -225,7 +225,7 @@ const line = ({
     "share <cible>                     — LinkedIn, GitHub, lien",
     "/propose [-y] <idée>              — suggérer un ajout",
     "/joke · /cowsay                   — le reste",
-    "/pet · /slime · /matrix · shutdown — à vos risques",
+    "/slime · /matrix · shutdown       — à vos risques",
   ],
   KEYBOARD =
     "Clavier : / cible la saisie · j / k changent de section · Tab complète · ↑ ↓ rappellent l'historique.",
@@ -251,17 +251,6 @@ const line = ({
         }),
       ],
     },
-    pet: {
-      egg: "pet",
-      lines: [
-        line({
-          marker: "♥",
-          markerTone: "acc",
-          text: "La mascotte apprécie modérément, mais elle apprécie.",
-        }),
-      ],
-      say: say("♥", "happy"),
-    },
     sudo: {
       egg: "sudo",
       lines: [failed("benjamin n'est pas dans le fichier sudoers. Cet incident sera signalé.")],
@@ -274,12 +263,12 @@ const line = ({
   // doit pas les melanger.
   //
   // L'ordre decide de ce qui se decouvre : taper « / » n'ouvre que dix propositions, et
-  // cette liste en porte onze. Les plus riches d'abord, l'alias en dernier.
+  // cette liste en porte exactement dix. Les plus riches d'abord, l'alias en dernier : un
+  // onzieme egg pousserait donc l'alias hors de vue, et lui seul.
   SLASH_ONLY = new Set([
     "slime",
     "joke",
     "cowsay",
-    "pet",
     "propose",
     "benjamin",
     "matrix",
@@ -292,7 +281,7 @@ const line = ({
     "?": "help",
     aide: "help",
     brezinben: "benjamin",
-    cat: "pet",
+    cat: "slime",
     cls: "clear",
     copy: "email",
     dir: "ls",
@@ -301,7 +290,7 @@ const line = ({
     feedback: "propose",
     ia: "ai",
     idee: "propose",
-    mascotte: "pet",
+    mascotte: "slime",
     nano: "vim",
     partager: "share",
     poweroff: "shutdown",
@@ -479,7 +468,6 @@ const line = ({
       "/cowsay": "une vache dit ce que vous tapez",
       "/joke": "une blague de développeur",
       "/matrix": "réveille-toi, Néo",
-      "/pet": "caresse la mascotte",
       "/propose": "suggérez un ajout à ce portfolio",
       "/slime": "commande la mascotte",
       "/sudo": "non.",

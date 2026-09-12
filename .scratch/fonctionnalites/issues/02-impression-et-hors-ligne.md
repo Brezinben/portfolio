@@ -86,5 +86,9 @@ feuille. Mais `wander()`, `grab()` et `poke()` agissent hors de ce point de pass
 leur propre refus, la mascotte glisserait encore sur sa piste, et le cinquième clic la
 ferait exploser sans feuille à jouer.
 
+`/pet` part avec ce lot. Il faisait doublon avec `/slime`, beaucoup plus complet. Ses deux
+alias, `cat` et `mascotte`, pointent maintenant sur `/slime`. Le menu du slash passe de
+onze entrées à dix, soit exactement ce qu'il affiche.
+
 **Aucun service worker.** Le ticket le déconseille, et il ajouterait un cycle de vie de
 cache à tenir pour un site qui tient déjà en mémoire une fois chargé.
