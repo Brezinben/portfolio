@@ -39,6 +39,32 @@
     "anti-slop/no-widen-then-assert": "error",
     "anti-slop/require-safety-comment-for-type-assertion": "error",
     "@stylistic/line-comment-position": "error",
+    "@stylistic/lines-around-comment": [
+      "error",
+      {
+        "beforeBlockComment": true,
+        "beforeLineComment": false,
+        "afterBlockComment": false,
+        "afterLineComment": false,
+        "allowBlockStart": true,
+        "allowBlockEnd": true,
+        "allowObjectStart": true,
+        "allowObjectEnd": true,
+        "allowArrayStart": true,
+        "allowArrayEnd": true,
+        "allowClassStart": true,
+        "allowClassEnd": true,
+        "allowEnumStart": true,
+        "allowEnumEnd": true,
+        "allowInterfaceStart": true,
+        "allowInterfaceEnd": true,
+        "allowModuleStart": true,
+        "allowModuleEnd": true,
+        "allowTypeStart": true,
+        "allowTypeEnd": true,
+        "ignorePattern": "^\\s*(eslint|oxlint|prettier|oxfmt|@ts-)"
+      }
+    ],
     "@stylistic/padding-line-between-statements": [
       "error",
       {

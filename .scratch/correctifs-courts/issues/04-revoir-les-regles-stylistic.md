@@ -81,3 +81,50 @@ que `--fix` sait poser.
 
 Je ne la tranche pas : c'est une décision de goût, et 56 corrections dans cette PR
 noieraient le retrait des 64.
+
+
+## `lines-around-comment` : mesuré, et il ne peut pas passer entier
+
+Le ticket la laissait à arbitrer, sur la foi de la pièce jointe qui la range en groupe 3 :
+« la seule candidate qui ajoute une vraie décision de lisibilité, 56 corrections que
+`--fix` sait poser ».
+
+**La pièce jointe a compté les erreurs, elle n'a jamais fait l'aller-retour.** Mesuré ici :
+
+| Configuration | Écarts au départ | Après `--fix` **puis** `oxfmt` |
+|---|---|---|
+| `beforeLineComment` + `beforeBlockComment` | 110 | **83** |
+| `beforeLineComment` seul | 110 | **83** |
+| `beforeBlockComment` seul | 0 | 0 |
+
+`oxfmt` retire les lignes vides **à l'intérieur d'une déclaration `const a = …, b = …`**.
+C'est l'idiome dominant de ce code, et c'est là que vivent 83 des 110 écarts. La règle n'a
+aucune option pour exempter une liste de déclarations.
+
+`lines-around-comment` appartient donc au **groupe 4, « contredisent oxfmt »**, pas au
+groupe 3. Activer `beforeLineComment` laisserait la porte rouge en permanence, sur du code
+que le formateur considère fini.
+
+### Ce qui est activé
+
+`beforeBlockComment: true`, plus les douze permissions `allow*Start` / `allow*End`, plus
+un `ignorePattern` pour les directives d'outil.
+
+Zéro correction, et la règle converge avec le formateur. Elle garde une habitude que le
+code tient déjà, comme `line-comment-position`.
+
+### Ce qui est refusé, et pourquoi c'était juste
+
+`afterLineComment` et `afterBlockComment` restent à `false`. Benjamin l'avait dit, et la
+raison est celle-ci : **toute la valeur de cette règle est que le commentaire appartient à
+ce qui le suit.** Une ligne vide après lui le détache de ce qu'il explique, et fait
+exactement le contraire de ce qu'on cherche.
+
+Les douze `allow*Start` et `allow*End` suivent une seule phrase : un commentaire collé à
+une accolade n'a pas besoin de ligne vide, la rupture visuelle est déjà là. Sans
+`allowBlockStart`, la règle exigerait une ligne vide juste après un `{`. Mesuré : cette
+seule permission retire 27 écarts sur 139.
+
+`ignorePattern` couvre `eslint`, `oxlint`, `prettier`, `oxfmt` et `@ts-`. Une directive est
+collée à la ligne qu'elle vise par la sémantique de l'outil : lui demander de l'air serait
+un défaut. Les motifs par défaut de la règle ne connaissent pas `oxlint-disable`.
