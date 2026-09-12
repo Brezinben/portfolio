@@ -22,7 +22,7 @@ const boot = async (page: Page) => {
     return dialog;
   };
 
-test("le bouton options ouvre la modale et le focus y entre", async ({ page }) => {
+test("should open the modal and move the focus into it on the options button", async ({ page }) => {
   await boot(page);
   await opts(page).click();
 
@@ -32,7 +32,7 @@ test("le bouton options ouvre la modale et le focus y entre", async ({ page }) =
   await expect(dialog.locator(":focus")).toHaveCount(1);
 });
 
-test("les huit thèmes sont proposés", async ({ page }) => {
+test("should offer the eight themes", async ({ page }) => {
   await boot(page);
   await openOpts(page);
 
@@ -43,7 +43,7 @@ test("les huit thèmes sont proposés", async ({ page }) => {
   );
 });
 
-test("choisir un thème l'applique immédiatement", async ({ page }) => {
+test("should apply a theme as soon as it is chosen", async ({ page }) => {
   await boot(page);
   await openOpts(page);
   await page.getByRole("button", { name: "noctis" }).click();
@@ -51,7 +51,7 @@ test("choisir un thème l'applique immédiatement", async ({ page }) => {
   await expect(page.locator(".tm")).toHaveAttribute("data-theme", "noctis");
 });
 
-test("échap ferme la modale et rend le focus au bouton", async ({ page }) => {
+test("should close the modal and give the focus back to the button on escape", async ({ page }) => {
   await boot(page);
   await openOpts(page);
   await page.getByRole("dialog").press("Escape");
@@ -62,7 +62,7 @@ test("échap ferme la modale et rend le focus au bouton", async ({ page }) => {
 
 // Les themes sont sur plusieurs lignes : les quatre fleches y naviguent, et sortir par le
 // bas mene au premier reglage.
-test("les quatre flèches naviguent dans la grille des thèmes", async ({ page }) => {
+test("should move through the theme grid with the four arrows", async ({ page }) => {
   await boot(page);
   const dialog = await openOpts(page);
 
@@ -70,7 +70,7 @@ test("les quatre flèches naviguent dans la grille des thèmes", async ({ page }
   await expect(page.locator(".tm")).toHaveAttribute("data-theme", "light");
 
   await dialog.press("ArrowDown");
-  await expect(page.locator(".tm"), "la flèche bas descend d'une ligne").not.toHaveAttribute(
+  await expect(page.locator(".tm"), "the down arrow moves one row down").not.toHaveAttribute(
     "data-theme",
     "light",
   );
@@ -84,7 +84,7 @@ test("les quatre flèches naviguent dans la grille des thèmes", async ({ page }
 
 // Le reglage modifie doit etre celui qui a le focus, quel que soit le chemin pour y
 // arriver : un compteur separe se desynchronisait de la tabulation.
-test("la flèche droite modifie le réglage qui a le focus", async ({ page }) => {
+test("should change the setting that holds the focus on arrow right", async ({ page }) => {
   await boot(page);
   await openOpts(page);
 
@@ -96,14 +96,14 @@ test("la flèche droite modifie le réglage qui a le focus", async ({ page }) =>
   await expect(animations).toHaveAttribute("aria-pressed", "false");
   await expect(
     page.getByRole("button", { name: /output pane/ }),
-    "le voisin ne bouge pas",
+    "the neighbour does not move",
   ).toHaveAttribute("aria-pressed", "true");
 });
 
 // Le depart est le dernier theme, pas le theme actif : compter les pressions depuis le
 // theme actif depend du nombre de colonnes, donc de la largeur de la fenetre. Les
 // pressions en trop tombent alors dans le vide et le test ne peut plus echouer.
-test("depuis la dernière ligne de thèmes, la flèche bas atteint les réglages", async ({ page }) => {
+test("should reach the settings on arrow down from the last theme row", async ({ page }) => {
   await boot(page);
 
   const dialog = await openOpts(page);
@@ -114,7 +114,7 @@ test("depuis la dernière ligne de thèmes, la flèche bas atteint les réglages
   await expect(page.locator("[data-toggle]:focus")).toHaveCount(1);
 });
 
-test("la première visite suit la préférence claire du système", async ({ page }) => {
+test("should follow the light preference of the system on the first visit", async ({ page }) => {
   await page.emulateMedia({ colorScheme: "light" });
   await page.goto("/");
   await expect(page.locator("[data-boot]")).toHaveCount(0, { timeout: 10_000 });
@@ -122,7 +122,7 @@ test("la première visite suit la préférence claire du système", async ({ pag
   await expect(page.locator(".tm")).toHaveAttribute("data-theme", "light");
 });
 
-test("la première visite suit la préférence sombre du système", async ({ page }) => {
+test("should follow the dark preference of the system on the first visit", async ({ page }) => {
   await page.emulateMedia({ colorScheme: "dark" });
   await page.goto("/");
   await expect(page.locator("[data-boot]")).toHaveCount(0, { timeout: 10_000 });
@@ -131,7 +131,7 @@ test("la première visite suit la préférence sombre du système", async ({ pag
 });
 
 // Le choix conserve prime sur la preference du systeme.
-test("un thème déjà choisi ignore la préférence du système", async ({ page }) => {
+test("should ignore the system preference when a theme is already chosen", async ({ page }) => {
   await page.emulateMedia({ colorScheme: "light" });
   await page.addInitScript(() =>
     localStorage.setItem("bd-term-opts", JSON.stringify({ theme: "bordo" })),
@@ -142,7 +142,7 @@ test("un thème déjà choisi ignore la préférence du système", async ({ page
   await expect(page.locator(".tm")).toHaveAttribute("data-theme", "bordo");
 });
 
-test("aucun réglage de taille du texte n'est proposé", async ({ page }) => {
+test("should offer no text size setting", async ({ page }) => {
   await boot(page);
   await openOpts(page);
 
@@ -150,7 +150,7 @@ test("aucun réglage de taille du texte n'est proposé", async ({ page }) => {
 });
 
 // Les réglages sont conservés sur l'appareil, et la lecture filtre sur six clés.
-test("le thème choisi survit à un rechargement", async ({ page }) => {
+test("should keep the chosen theme across a reload", async ({ page }) => {
   await boot(page);
   await openOpts(page);
   await page.getByRole("button", { name: "bordo" }).click();
@@ -162,7 +162,7 @@ test("le thème choisi survit à un rechargement", async ({ page }) => {
   await expect(page.locator(".tm")).toHaveAttribute("data-theme", "bordo");
 });
 
-test("une clé étrangère dans le stockage est ignorée", async ({ page }) => {
+test("should ignore a foreign key in the storage", async ({ page }) => {
   await boot(page);
   await page.evaluate(() =>
     localStorage.setItem("bd-term-opts", JSON.stringify({ section: "piraté", theme: "uva" })),
@@ -174,7 +174,7 @@ test("une clé étrangère dans le stockage est ignorée", async ({ page }) => {
   await expect(page.locator('[data-pane="main"]')).toContainText("bd whoami --verbose");
 });
 
-test("un stockage illisible n'empêche pas le démarrage", async ({ page }) => {
+test("should still boot with an unreadable storage", async ({ page }) => {
   await boot(page);
   await page.evaluate(() => localStorage.setItem("bd-term-opts", "{ pas du json"));
   await page.reload();
@@ -185,7 +185,7 @@ test("un stockage illisible n'empêche pas le démarrage", async ({ page }) => {
 
 // Deux réglages persistés qui ne feraient rien seraient le défaut que la taille du texte
 // avait déjà : ils doivent agir sur la page.
-test("masquer le volet de sortie le retire de la page", async ({ page }) => {
+test("should remove the output pane from the page when it is hidden", async ({ page }) => {
   await boot(page);
   await expect(page.locator('[data-pane="out"]')).toBeVisible();
 
@@ -196,7 +196,7 @@ test("masquer le volet de sortie le retire de la page", async ({ page }) => {
   await expect(page.locator('[data-pane="out"]')).toBeHidden();
 });
 
-test("la tabulation boucle dans la modale", async ({ page }) => {
+test("should loop the tab key inside the modal", async ({ page }) => {
   await boot(page);
   const dialog = await openOpts(page);
 
@@ -206,12 +206,12 @@ test("la tabulation boucle dans la modale", async ({ page }) => {
     Promise.resolve(),
   );
 
-  await expect(dialog.locator(":focus"), "le focus ne doit pas sortir de la modale").toHaveCount(1);
+  await expect(dialog.locator(":focus"), "the focus must not leave the modal").toHaveCount(1);
 });
 
 // Les deux commandes ne rendaient qu'un écho : leur descripteur n'était appliqué nulle
 // part. Rien ne le signalait, puisque rien ne les testait.
-test("la commande theme applique le thème nommé", async ({ page }) => {
+test("should apply the named theme on the theme command", async ({ page }) => {
   await boot(page);
 
   const cli = page.getByLabel("Commande");
@@ -223,7 +223,7 @@ test("la commande theme applique le thème nommé", async ({ page }) => {
   await expect(page.locator("[data-journal]")).toContainText("noctis");
 });
 
-test("la commande options ouvre la modale", async ({ page }) => {
+test("should open the modal on the options command", async ({ page }) => {
   await boot(page);
 
   const cli = page.getByLabel("Commande");
@@ -236,7 +236,9 @@ test("la commande options ouvre la modale", async ({ page }) => {
 
 // La modale a deux ouvrants depuis que la commande existe. Echap doit rendre le focus a
 // celui qui a ouvert, et non au bouton de l'en-tete que le visiteur n'a jamais touche.
-test("échap rend le focus à la saisie quand la commande a ouvert la modale", async ({ page }) => {
+test("should give the focus back to the command line on escape when the command opened the modal", async ({
+  page,
+}) => {
   await boot(page);
 
   const cli = page.getByLabel("Commande");
@@ -254,7 +256,7 @@ test("échap rend le focus à la saisie quand la commande a ouvert la modale", a
 
 // Sous mouvement réduit, la bascule des animations ne peut plus rien changer : la page
 // coupe déjà tout. La laisser active ferait croire le contraire.
-test("le mouvement réduit verrouille la bascule des animations", async ({ page }) => {
+test("should lock the animation toggle under reduced motion", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await boot(page);
   await openOpts(page);
@@ -267,7 +269,7 @@ test("le mouvement réduit verrouille la bascule des animations", async ({ page 
 });
 
 // Le clavier de la modale ne doit pas contourner le verrou que le clic respecte.
-test("la flèche ne bascule pas une option verrouillée", async ({ page }) => {
+test("should not toggle a locked option with the arrow", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await boot(page);
   await openOpts(page);

@@ -9,7 +9,7 @@ const boot = async (page: Page, hash = "") => {
 
 // De gauche à droite : valider une section mène à sa première prise. La stack ouvre sur
 // sa première techno, et non sur la ligne de commande, qui est plus loin dans le volet.
-test("la flèche droite mène à la première prise de la section", async ({ page }) => {
+test("should move to the first inner element of the section on arrow right", async ({ page }) => {
   await boot(page);
   await page
     .getByRole("button", { name: /^stack/ })
@@ -21,7 +21,7 @@ test("la flèche droite mène à la première prise de la section", async ({ pag
 });
 
 // Le contour du focus déborde de quatre pixels, et le résultat défile, donc il rogne.
-test("le contour du focus tient dans le résultat, jusqu'à la dernière colonne", async ({
+test("should keep the focus outline inside the result, down to the last column", async ({
   page,
 }) => {
   await boot(page, "#stack");
@@ -35,10 +35,10 @@ test("le contour du focus tient dans le résultat, jusqu'à la dernière colonne
     );
   });
 
-  expect(debord, "quatre pixels de contour tiennent à droite").toBeLessThanOrEqual(0);
+  expect(debord, "four pixels of outline fit on the right").toBeLessThanOrEqual(0);
 });
 
-test("chaque section a son ancre partageable", async ({ page }) => {
+test("should give every section a shareable anchor", async ({ page }) => {
   await boot(page);
   await page.getByRole("button", { name: /^stack/ }).click();
 
@@ -46,19 +46,19 @@ test("chaque section a son ancre partageable", async ({ page }) => {
   await expect(main(page)).toContainText("bd stack --tree");
 });
 
-test("une ancre ouvre directement sa section", async ({ page }) => {
+test("should open its section directly from an anchor", async ({ page }) => {
   await boot(page, "#formation");
 
   await expect(main(page)).toContainText("bd learn --history");
 });
 
-test("une ancre inconnue retombe sur whoami", async ({ page }) => {
+test("should fall back to whoami on an unknown anchor", async ({ page }) => {
   await boot(page, "#nexistepas");
 
   await expect(main(page)).toContainText("bd whoami --verbose");
 });
 
-test("le bouton retour du navigateur revient à la section précédente", async ({ page }) => {
+test("should go back to the previous section on the browser back button", async ({ page }) => {
   await boot(page);
   await page.getByRole("button", { name: /^stack/ }).click();
   await expect(main(page)).toContainText("bd stack --tree");
@@ -68,7 +68,7 @@ test("le bouton retour du navigateur revient à la section précédente", async 
   await expect(main(page)).toContainText("bd whoami --verbose");
 });
 
-test("les fiches de mission sont navigables et ont leur ancre", async ({ page }) => {
+test("should make every mission reachable and give it an anchor", async ({ page }) => {
   await boot(page);
   await page.getByRole("button", { name: /kereis/i }).click();
 
@@ -76,7 +76,9 @@ test("les fiches de mission sont navigables et ont leur ancre", async ({ page })
 });
 
 // Première visite : la commande se tape. Retour : immédiat, l'effet ne devient pas une attente.
-test("la première visite tape la commande, le retour est immédiat", async ({ page }) => {
+test("should type the command on the first visit and answer at once on return", async ({
+  page,
+}) => {
   await boot(page);
   await page.getByRole("button", { name: /^stack/ }).click();
 
@@ -94,10 +96,10 @@ test("la première visite tape la commande, le retour est immédiat", async ({ p
   await page.getByRole("button", { name: /^stack/ }).click();
   await expect(main(page)).toContainText("bd stack --tree --depth=2");
 
-  expect(Date.now() - again, "une section déjà vue répond plus vite").toBeLessThan(first);
+  expect(Date.now() - again, "a section already seen answers faster").toBeLessThan(first);
 });
 
-test("j et k changent de section", async ({ page }) => {
+test("should change section with j and k", async ({ page }) => {
   await boot(page);
   await page.locator("body").press("j");
 
@@ -108,14 +110,14 @@ test("j et k changent de section", async ({ page }) => {
   await expect(main(page)).toContainText("bd whoami --verbose");
 });
 
-test("les flèches gauche et droite changent de volet", async ({ page }) => {
+test("should change pane with the left and right arrows", async ({ page }) => {
   await boot(page);
   await page.locator("body").press("ArrowRight");
 
   await expect(page.locator('[data-pane="main"] :focus')).toHaveCount(1);
 });
 
-test("la barre oblique cible la saisie", async ({ page }) => {
+test("should focus the command line on the slash key", async ({ page }) => {
   await boot(page);
   await page.locator("body").press("/");
 
@@ -126,7 +128,7 @@ test("la barre oblique cible la saisie", async ({ page }) => {
 // suivant : c'est ce qu'un terminal fait.
 // La frise porte ses propres prises : la flèche droite y mène, comme elle mène à la
 // première techno sur la stack. Une section sans prise mène à la ligne de commande.
-test("la flèche droite valide une section et descend dans le volet central", async ({ page }) => {
+test("should confirm a section and go down into the main pane on arrow right", async ({ page }) => {
   await boot(page);
   await page.locator('[data-ctl="nav"]').first().focus();
   await page.keyboard.press("ArrowDown");
@@ -135,11 +137,11 @@ test("la flèche droite valide une section et descend dans le volet central", as
   await expect(main(page)).toContainText("bd log --graph");
   await expect(
     page.locator('[data-ctl="tl"]').first(),
-    "le focus descend dans le volet central",
+    "the focus goes down into the main pane",
   ).toBeFocused();
 });
 
-test("une section sans prise mène à la ligne de commande", async ({ page }) => {
+test("should lead to the command line for a section without an inner element", async ({ page }) => {
   await boot(page);
   await page.locator('[data-ctl="nav"]').first().focus();
   await page.keyboard.press("ArrowRight");
@@ -147,7 +149,7 @@ test("une section sans prise mène à la ligne de commande", async ({ page }) =>
   await expect(page.getByLabel("Commande")).toBeFocused();
 });
 
-test("les flèches haut et bas parcourent la liste des sections", async ({ page }) => {
+test("should walk the section list with the up and down arrows", async ({ page }) => {
   await boot(page);
   await page.locator('[data-ctl="nav"]').first().focus();
 

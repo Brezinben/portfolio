@@ -12,7 +12,7 @@ const boot = async (page: Page) => {
     await cli.press("Enter");
   };
 
-test("cowsay dessine sa vache dans le journal", async ({ page }) => {
+test("should draw the cow in the journal with cowsay", async ({ page }) => {
   const cli = await boot(page);
 
   await run(cli, "/cowsay bonjour");
@@ -23,7 +23,7 @@ test("cowsay dessine sa vache dans le journal", async ({ page }) => {
 
 // Les espaces multiples de l'art ASCII doivent survivre au rendu : c'est le piege que
 // le drapeau preformaté resout dans le canvas.
-test("l'art ASCII garde ses espaces multiples", async ({ page }) => {
+test("should keep the multiple spaces of the ASCII art", async ({ page }) => {
   const cli = await boot(page);
 
   await run(cli, "/cowsay test");
@@ -36,7 +36,7 @@ test("l'art ASCII garde ses espaces multiples", async ({ page }) => {
   expect(spacing).toMatch(/pre/);
 });
 
-test("les ligatures restent désactivées", async ({ page }) => {
+test("should keep the ligatures off", async ({ page }) => {
   await boot(page);
 
   const settings = await page.locator("body").evaluate((node) => ({
@@ -49,7 +49,7 @@ test("les ligatures restent désactivées", async ({ page }) => {
 
 // La commande n'a plus de drapeau : elle tire un visage au hasard parmi les huit. Le test
 // verifie donc l'appartenance, pas l'identite. La variete est prouvee cote unitaire.
-test("la vache porte un des huit visages", async ({ page }) => {
+test("should give the cow one of the eight faces", async ({ page }) => {
   const cli = await boot(page);
 
   await run(cli, "/cowsay bonjour");
@@ -59,7 +59,7 @@ test("la vache porte un des huit visages", async ({ page }) => {
   );
 });
 
-test("la jauge de contexte monte à chaque commande", async ({ page }) => {
+test("should raise the context gauge on every command", async ({ page }) => {
   const cli = await boot(page),
     filled = () => page.locator("[data-gauge]").textContent(),
     before = await filled();
@@ -74,7 +74,7 @@ test("la jauge de contexte monte à chaque commande", async ({ page }) => {
 
 // La jauge monte de ce que la sortie a imprime : une commande bavarde coute plus qu'un
 // easter egg de deux lignes.
-test("la jauge monte plus vite sur une sortie longue", async ({ page }) => {
+test("should raise the gauge faster on a long output", async ({ page }) => {
   const cli = await boot(page),
     percent = async () => {
       const gauge = (await page.locator("[data-gauge]").textContent()) ?? "";
@@ -92,12 +92,12 @@ test("la jauge monte plus vite sur une sortie longue", async ({ page }) => {
 
   const large = (await percent()) - before;
 
-  expect(large, "help imprime bien plus que sudo").toBeGreaterThan(small);
+  expect(large, "help prints much more than sudo").toBeGreaterThan(small);
 });
 
 // La compaction est une animation, pas un message : la barre d'etat ne se met pas a
 // ecrire pendant que la fenetre se vide.
-test("la compaction s'annonce par une barre, sans mot", async ({ page }) => {
+test("should announce the compaction with a bar and no word", async ({ page }) => {
   const cli = await boot(page),
     bar = page.locator("[data-compacting]");
 
@@ -113,12 +113,12 @@ test("la compaction s'annonce par une barre, sans mot", async ({ page }) => {
 
   const drawn = await bar.textContent();
 
-  expect(drawn, "cases pleines, tête qui tourne, cases vides").toMatch(/^⣿*[⣾⣽⣻⢿⡿⣟⣯⣷]?░*$/u);
+  expect(drawn, "full cells, spinning head, empty cells").toMatch(/^⣿*[⣾⣽⣻⢿⡿⣟⣯⣷]?░*$/u);
 });
 
 // L'animation remplace la jauge pleine, elle ne s'ajoute pas a elle : deux barres cote
 // a cote, l'utilisateur ne sait plus laquelle compte.
-test("pendant la compaction, une seule barre reste à l'écran", async ({ page }) => {
+test("should keep only one bar on screen during the compaction", async ({ page }) => {
   const cli = await boot(page),
     bar = page.locator("[data-compacting]");
 
@@ -132,11 +132,11 @@ test("pendant la compaction, une seule barre reste à l'écran", async ({ page }
 
   const status = (await page.locator("[data-status]").textContent()) ?? "";
 
-  expect(status.trim(), "rien ne s'ajoute après la jauge").toMatch(/ctx \[.{10}\] \d+%$/u);
+  expect(status.trim(), "nothing is added after the gauge").toMatch(/ctx \[.{10}\] \d+%$/u);
 });
 
 // Pleine, la jauge compacte avec un resume ironique, puis repart a zero.
-test("la jauge pleine déclenche une compaction et se vide", async ({ page }) => {
+test("should start a compaction and empty itself when the gauge is full", async ({ page }) => {
   const cli = await boot(page),
     warned = page.locator("[data-journal]", { hasText: "fenêtre de contexte pleine" });
 
@@ -156,12 +156,12 @@ test("la jauge pleine déclenche une compaction et se vide", async ({ page }) =>
   const gauge = (await page.locator("[data-gauge]").textContent()) ?? "",
     filled = gauge.split("█").length - 1;
 
-  expect(filled, "la jauge repart de presque zéro").toBeLessThanOrEqual(1);
+  expect(filled, "the gauge restarts from almost zero").toBeLessThanOrEqual(1);
 });
 
 // Compacter prend du temps chez Claude Code, et ca doit se voir ici aussi : la barre se
 // remplit case par case, elle ne s'affiche pas d'un bloc.
-test("la barre de compaction se remplit case par case sur cinq secondes", async ({ page }) => {
+test("should fill the compaction bar cell by cell over five seconds", async ({ page }) => {
   const cli = await boot(page),
     bar = page.locator("[data-compacting]");
 
@@ -184,12 +184,12 @@ test("la barre de compaction se remplit case par case sur cinq secondes", async 
     timeout: 10_000,
   });
 
-  expect(Date.now() - started, "l'attente se voit").toBeGreaterThan(4000);
+  expect(Date.now() - started, "the wait is visible").toBeGreaterThan(4000);
 });
 
 // Le volet de sortie garde un caractere pour dire l'attente, jamais une barre : la barre
 // de compaction vit dans la barre d'etat, et nulle part ailleurs.
-test("le volet de sortie n'affiche pas de barre de compaction", async ({ page }) => {
+test("should show no compaction bar in the output pane", async ({ page }) => {
   const cli = await boot(page),
     bar = page.locator("[data-compacting]");
 
@@ -206,7 +206,7 @@ test("le volet de sortie n'affiche pas de barre de compaction", async ({ page })
 
 // L'ecran de demarrage prend la forme de la compaction : cases pleines, tete qui tourne,
 // cases vides. Meme taille, meme place, memes durees qu'avant.
-test("la barre du démarrage est dessinée en points", async ({ page }) => {
+test("should draw the boot bar with dots", async ({ page }) => {
   // Le demarrage dure deux secondes au minimum : la barre est a l'ecran sans qu'on ait a
   // retarder quoi que ce soit.
   await page.goto("/");
@@ -220,7 +220,7 @@ test("la barre du démarrage est dessinée en points", async ({ page }) => {
 
 // Un redemarrage annule la compaction : sinon son resume s'ecrit dans un journal qu'on
 // vient de vider, et sa barre s'affiche par-dessus l'ecran de demarrage.
-test("un redémarrage annule la compaction en cours", async ({ page }) => {
+test("should cancel the running compaction on a reboot", async ({ page }) => {
   const cli = await boot(page),
     bar = page.locator("[data-compacting]");
 
@@ -234,13 +234,13 @@ test("un redémarrage annule la compaction en cours", async ({ page }) => {
   await expect(page.locator("[data-boot]")).toHaveCount(0, { timeout: 15_000 });
   await page.waitForTimeout(1500);
 
-  await expect(bar, "plus de barre de compaction").toHaveCount(0);
-  await expect(page.locator("[data-journal]"), "le journal reste vide").not.toContainText(
+  await expect(bar, "no more compaction bar").toHaveCount(0);
+  await expect(page.locator("[data-journal]"), "the journal stays empty").not.toContainText(
     "aime le vélo",
   );
 });
 
-test("shutdown éteint puis rejoue le démarrage", async ({ page }) => {
+test("should shut down then replay the boot with shutdown", async ({ page }) => {
   const cli = await boot(page);
 
   await run(cli, "shutdown");
@@ -253,10 +253,10 @@ test("shutdown éteint puis rejoue le démarrage", async ({ page }) => {
 // Les yeux du mode cupide valent « $$ », qui est un motif de remplacement en JavaScript.
 // Un build qui passe par String.replace avec un remplacement litteral les reduit a « $ ».
 // Ce test s'execute sur l'artefact servi, la ou les tests unitaires lisent la source.
-test("les yeux du mode cupide survivent au build", async ({ request }) => {
+test("should keep the eyes of the greedy mode through the build", async ({ request }) => {
   const page = await request.get("/"),
     servi = await page.text();
 
   // Le minifieur choisit ses guillemets : on cherche la paire de dollars, pas sa mise en forme.
-  expect(servi, "le double dollar ne doit pas être réduit à un seul").toMatch(/eyes:.\$\$./u);
+  expect(servi, "the double dollar must not be reduced to one").toMatch(/eyes:.\$\$./u);
 });

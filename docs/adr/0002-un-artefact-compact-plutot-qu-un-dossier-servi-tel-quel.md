@@ -33,6 +33,11 @@ Les outils sont `rolldown` et `html-minifier-terser`. Un seul `import` existe da
 projet. Il n'y a donc pas de graphe à résoudre. Rolldown ne sert qu'à fusionner
 `interpret.js` dans la page.
 
+> **Périmé :** le code est découpé en modules depuis l'ADR 0007, et le graphe existe.
+> Rolldown le fond comme il fondait le fichier unique, et le premier chargement ne bouge
+> pas d'un octet. Ce qui reste vrai de cet ADR : l'artefact ne contient aucune référence à
+> un fichier TypeScript, et le minifieur renomme les identifiants de portée module.
+
 **Le montage Docker ne bouge pas encore.** Le conteneur continue de servir `production/`.
 Périmé : la bascule a eu lieu. Voir l'ADR 0003.
 Tant que la bascule n'est pas faite, sauvegarder publie toujours, et cet ADR décrit une

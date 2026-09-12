@@ -12,7 +12,7 @@ const boot = async (page: Page) => {
     await cli.press("Enter");
   };
 
-test("share seul liste les cibles déclarées dans le contenu", async ({ page }) => {
+test("should list the targets declared in the content when share runs alone", async ({ page }) => {
   const cli = await boot(page);
 
   await run(cli, "share");
@@ -21,7 +21,7 @@ test("share seul liste les cibles déclarées dans le contenu", async ({ page })
   await expect(page.locator("[data-journal]")).toContainText("github");
 });
 
-test("share vers le lien copie l'adresse", async ({ page, context }) => {
+test("should copy the address on share link", async ({ page, context }) => {
   await context.grantPermissions(["clipboard-read", "clipboard-write"]);
 
   const cli = await boot(page);
@@ -37,7 +37,7 @@ test("share vers le lien copie l'adresse", async ({ page, context }) => {
   expect(await page.evaluate(() => navigator.clipboard.readText())).toContain(here);
 });
 
-test("une cible inconnue le dit sans rien ouvrir", async ({ page }) => {
+test("should say so without opening anything on an unknown target", async ({ page }) => {
   const cli = await boot(page);
 
   await run(cli, "share nexistepas");
@@ -46,7 +46,7 @@ test("une cible inconnue le dit sans rien ouvrir", async ({ page }) => {
 });
 
 // Consentement en deux temps : rien ne part avant un oui.
-test("propose annonce ce qui part et attend la confirmation", async ({ page }) => {
+test("should announce what leaves and wait for the confirmation on propose", async ({ page }) => {
   const cli = await boot(page);
 
   await run(cli, "/propose ajouter une section veille");
@@ -61,7 +61,7 @@ test("propose annonce ce qui part et attend la confirmation", async ({ page }) =
 });
 
 // La reponse attendue est deja ecrite : valider tient en une touche.
-test("propose pré-écrit « oui » dans la saisie", async ({ page }) => {
+test("should prefill the command line with « oui » on propose", async ({ page }) => {
   const cli = await boot(page);
 
   await run(cli, "/propose une idée");
@@ -70,7 +70,7 @@ test("propose pré-écrit « oui » dans la saisie", async ({ page }) => {
 });
 
 // -y vaut consentement : le drapeau a ete tape avec l'idee.
-test("propose -y n'attend aucune confirmation", async ({ page }) => {
+test("should wait for no confirmation on propose -y", async ({ page }) => {
   const cli = await boot(page);
 
   await run(cli, "/propose -y une idée pressée");
@@ -79,10 +79,10 @@ test("propose -y n'attend aucune confirmation", async ({ page }) => {
 
   await expect(journal).toContainText("une idée pressée");
   await expect(journal).not.toContainText("oui ou non");
-  await expect(cli, "la saisie reste libre").toHaveValue("");
+  await expect(cli, "the command line stays free").toHaveValue("");
 });
 
-test("répondre non n'envoie rien", async ({ page }) => {
+test("should send nothing when the answer is « non »", async ({ page }) => {
   const cli = await boot(page);
 
   await run(cli, "/propose une idée");
@@ -91,7 +91,7 @@ test("répondre non n'envoie rien", async ({ page }) => {
   await expect(page.locator("[data-journal]")).toContainText("rien n'a été envoyé");
 });
 
-test("la page ne pose aucun cookie", async ({ page, context }) => {
+test("should set no cookie", async ({ page, context }) => {
   const cli = await boot(page);
 
   await run(cli, "help");
@@ -101,7 +101,7 @@ test("la page ne pose aucun cookie", async ({ page, context }) => {
 });
 
 // Umami bloque ou absent ne doit rien casser : le helper est silencieux.
-test("une mesure d'audience bloquée ne casse pas la page", async ({ page }) => {
+test("should not break the page when the audience measurement is blocked", async ({ page }) => {
   await page.route("**/umami.brezinben.dpdns.org/**", (route) => route.abort());
 
   const cli = await boot(page);

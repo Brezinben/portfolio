@@ -1,4 +1,45 @@
 import {
+  ASK_MS,
+  BOOT_CELLS,
+  BOOT_MS,
+  CHAR_PX,
+  COMPACT_MS,
+  COMPACT_TICK_MS,
+  CONTENT_URL,
+  CTX_BUDGET,
+  CTX_CELLS,
+  CTX_FLOOR,
+  EMPTY,
+  EXEC_MS,
+  FADE_MS,
+  OPTS_KEY,
+  PANES,
+  PANE_GAP_PX,
+  RESULT_MIN_PX,
+  THEMES,
+  TOGGLES,
+  TYPE_CPS,
+  type ToggleKey,
+  VERTICAL,
+} from "./terminal/settings.ts";
+import {
+  AWAY_MS,
+  BOOM_AT,
+  CHAIN,
+  DRAG_STEP,
+  HOLD_MS,
+  MASCOT_REST,
+  MASCOT_STATES,
+  MORPH_HOLD_MS,
+  REFORM_MIN_MS,
+  REFORM_SPREAD_MS,
+  SLEEP_MS,
+  TRANSITIONS,
+  TWITCH_MS,
+  TWITCH_ODDS,
+  TYPE_REST_MS,
+} from "./terminal/mascot/constants.ts";
+import {
   type ContentLine,
   type Context,
   type Effect,
@@ -8,75 +49,16 @@ import {
   type TrackValue,
   candidates,
   commonPrefix,
-  contentLine,
   hintFor,
   interpret,
   safeTone,
 } from "./interpret.ts";
+import { type Section, barParts, printed, section } from "./terminal/format.ts";
+import type { Magics } from "./terminal/shell.ts";
 
-// Le bandeau que la coquille calcule : l'interpreteur ne rend qu'un mot a dessiner, le
-// balisage a besoin d'une geometrie et d'une ombre.
-interface Banner {
-  height: string;
-  label: string;
-  shadow: string;
-  size: string;
-  width: string;
-}
-
-// Ce que la coquille rend au balisage. Trois formes, comme en sortie de l'interpreteur,
-// mais le bandeau y est un objet.
-// « ShapedLine » et « shaped » viennent de « Ligne mise en forme », terme arrete par
-// CONTEXT.md. Le glossaire du projet prime sur une regle qui bannit « shape » partout.
-/* eslint-disable anti-slop/no-shape-in-symbol-names */
-type ShapedLine =
-  | { banner: Banner; text: string; tone: Tone }
-  | { pad: string; tokens: { c: Tone; t: string; w: string }[] }
-  | {
-      letterSpacing: string;
-      marker: string;
-      markerTone: Tone;
-      pad: string;
-      size: string;
-      text: string;
-      tone: Tone;
-      weight: string;
-    };
-/* eslint-enable anti-slop/no-shape-in-symbol-names */
-
-// Tout ce dont on sait mesurer la longueur imprimee : une ligne de journal, une ligne de
-// contenu, ou une ligne deja mise en forme.
-interface Printable {
-  t?: string;
-  text?: string;
-  tokens?: { t: string }[];
-}
-
-// Le volet de sortie d'une section : un titre et des paires cle/valeur colorees.
-interface RawOut {
-  lines?: (number | string)[][];
-  title?: string;
-}
-
-// Une section ou une fiche de mission, telle que content.json l'ecrit.
-interface RawSection {
-  ask?: string;
-  cmd?: string;
-  detail?: string | null;
-  dot?: string;
-  id: string;
-  label: string;
-  lines?: ContentLine[];
-  out?: RawOut;
-  parent?: string;
-  state?: string;
-  sub?: string;
-  suggest?: string;
-  view?: string;
-}
-
-// Une section une fois mise en forme par la coquille : c'est ce que le balisage lit.
-type Section = ReturnType<typeof section>;
+import { dragState } from "./terminal/mascot/drag.ts";
+import { lookup } from "./terminal/lookup.ts";
+import { mascotSlice } from "./terminal/mascot/slice.ts";
 
 // Une mission du volet gauche : sa pastille et son etat.
 interface Mission {
@@ -122,291 +104,11 @@ interface Share {
 
 // Valeurs figées après itération dans le canvas. Ne pas les transformer en réglages :
 // voir design/DECISIONS.md, section 23.
-const BOOT_MS = 2000,
-  FADE_MS = 620,
-  PANES = ["nav", "main", "out"],
-  VERTICAL = new Set(["ArrowDown", "ArrowUp"]),
-  OPTS_KEY = "bd-term-opts",
-  THEMES = [
-    { acc: "#F5B83B", bg: "#242538", edge: "#33344a", id: "dark", label: "ambra" },
-    { acc: "#e6a000", bg: "#fff6f6", edge: "#ded2d2", id: "light", label: "solis" },
-    { acc: "#49e9a6", bg: "#052c33", edge: "#0d4148", id: "noctis", label: "noctis" },
-    { acc: "#49ace9", bg: "#07273b", edge: "#0f3b52", id: "azureus", label: "azureus" },
-    { acc: "#a29bfe", bg: "#211d40", edge: "#332d5c", id: "uva", label: "uva" },
-    { acc: "#e0728c", bg: "#2d1b26", edge: "#452a39", id: "bordo", label: "bordo" },
-    { acc: "#0f7d8c", bg: "#fdf6e7", edge: "#ddd2ba", id: "lux", label: "lux" },
-    { acc: "#00707f", bg: "#f7fbfc", edge: "#cfdde1", id: "hibernus", label: "hibernus" },
-  ],
-  // Les valeurs d'etat restent en anglais : c'est la langue d'un terminal.
-  TOGGLES: { key: ToggleKey; label: string; off: string; on: string }[] = [
-    { key: "anim", label: "animations", off: "off", on: "on" },
-    { key: "out", label: "output pane", off: "off", on: "on" },
-  ],
-  TYPE_CPS = 52,
-  EXEC_MS = 20,
-  // La fenetre de contexte se compte en caracteres imprimes, pas en commandes : une
-  // section longue coute plus qu'un « ok ». Budget et plancher figes apres essai.
-  CTX_BUDGET = 2600,
-  CTX_FLOOR = 60,
-  CTX_CELLS = 10,
-  // Compacter prend du temps, et ca doit se voir. La barre se remplit d'une case toutes
-  // les 520 ms pendant que sa tete tourne a chaque battement : dix cases, cinq secondes.
-  COMPACT_MS = 5200,
-  COMPACT_TICK_MS = 130,
-  // Les huit frames braille du rotateur. Une fois la tete passee, la case se pose pleine :
-  // une case a qui il manque un point donne une barre trouee, pas une barre remplie.
-  SPINNER = ["⣾", "⣽", "⣻", "⢿", "⡿", "⣟", "⣯", "⣷"],
-  FILLED = "⣿",
-  HOLLOW = "░",
-  // Le demarrage dessine sa barre sur vingt-quatre cases, comme le canvas.
-  BOOT_CELLS = 24,
-  // Une seule barre pour toute la page : les cases posees, la tete qui tourne tant qu'il
-  // reste a faire, les cases vides. Rendue en deux morceaux, chacun avec sa couleur.
-  // Sans `tick`, la barre ne progresse pas : elle n'a alors pas de tete.
-  barParts = (done: number, total: number, tick?: number) => {
-    const posees = Math.max(0, Math.min(total, Math.floor(done))),
-      tete = tick === undefined || posees >= total ? "" : SPINNER[tick % SPINNER.length];
-
-    return {
-      filled: FILLED.repeat(posees) + tete,
-      hollow: HOLLOW.repeat(total - posees - (tete?.length ?? 0)),
-    };
-  },
-  // Le journal ne prend jamais la place du resultat : celui-ci garde ce plancher.
-  RESULT_MIN_PX = 120,
-  PANE_GAP_PX = 10,
-  // Largeur approximative d'un caractere de JetBrains Mono a 14 px.
-  CHAR_PX = 8.4,
-  // Le contenu est servi a cote de la page. Le depot est prive : la copie distante
-  // rendait 404 et ne servait plus qu'a retarder le demarrage.
-  CONTENT_URL = "content.json",
-  TONE = {
-    acc: "var(--acc)",
-    fg: "var(--fg)",
-    fg2: "var(--fg2)",
-    ok: "var(--ok)",
-    warn: "var(--warn)",
-  },
-  GLYPHS = {
-    " ": ["  ", "  ", "  ", "  ", "  ", "  ", "  ", "  "],
-    A: [" ██ ", "█  █", "█  █", "████", "█  █", "█  █", "█  █", "    "],
-    B: ["███ ", "█  █", "█  █", "███ ", "█  █", "█  █", "███ ", "    "],
-    D: ["███ ", "█  █", "█  █", "█  █", "█  █", "█  █", "███ ", "    "],
-    E: ["████", "█   ", "█   ", "███ ", "█   ", "█   ", "████", "    "],
-    I: ["████", "  █ ", "  █ ", "  █ ", "  █ ", "  █ ", "████", "    "],
-    J: ["████", "   █", "   █", "   █", "   █", "█  █", " ██ ", "    "],
-    M: ["█  █", "████", "████", "█  █", "█  █", "█  █", "█  █", "    "],
-    N: ["█  █", "██ █", "██ █", "█ ██", "█ ██", "█  █", "█  █", "    "],
-    V: ["█  █", "█  █", "█  █", "█  █", "█  █", " ██ ", "  █ ", "    "],
-  },
-  dots = (word: string) => {
-    const rows = ["", "", "", "", "", "", "", ""];
-
-    for (const character of word.toUpperCase()) {
-      const glyph = lookup(GLYPHS, character) ?? lookup(GLYPHS, " ") ?? [];
-
-      for (let row = 0; row < 8; row += 1) {
-        rows[row] += glyph[row] + (character === " " ? "" : " ");
-      }
-    }
-
-    return rows.slice(0, 7);
-  },
-  // Le bandeau est dessiné en box-shadow, comme la mascotte : aucune image, aucun
-  // caractère. Valeurs figées du canvas : pixel de 5 px, point de 4 px.
-  BANNER_PX = 5,
-  pixels = (rows: string[], colour: string) => {
-    const shadows: string[] = [];
-
-    rows.forEach((row, y) => {
-      [...row].forEach((character, x) => {
-        if (character === "\u2588") {
-          shadows.push(`${x * BANNER_PX}px ${y * BANNER_PX}px 0 ${colour}`);
-        }
-      });
-    });
-
-    return shadows.join(",");
-  },
-  /* eslint-disable anti-slop/no-shape-in-symbol-names -- terme du glossaire, voir ShapedLine */
-  banner = (shaped: { banner: string; text: string }): Banner => {
-    const rows = dots(shaped.banner);
-
-    return {
-      height: `${rows.length * BANNER_PX}px`,
-      label: shaped.text,
-      shadow: pixels(rows, TONE.acc),
-      size: `${BANNER_PX - 1}px`,
-      width: `${Math.max(...rows.map((row) => row.length)) * BANNER_PX}px`,
-    };
-  },
-  rect = (node: Element) => node.getBoundingClientRect(),
-  // Ce qu'une sortie a réellement imprimé, jetons compris.
-  printed = (lines: Printable[]) =>
-    lines.reduce((total: number, entry: Printable) => {
-      const text = entry.tokens
-        ? entry.tokens.map((token) => token.t).join("")
-        : (entry.t ?? entry.text ?? "");
-
-      return total + text.length;
-    }, 0),
-  // Le bandeau change de nature ici : l'interpreteur rend le mot a dessiner, la coquille
-  // rend la geometrie et l'ombre que le balisage ne sait pas calculer.
-  line = (raw: ContentLine): ShapedLine => {
-    const shaped = contentLine(raw);
-
-    if (shaped.banner !== undefined && shaped.text !== undefined && shaped.tone !== undefined) {
-      return {
-        banner: banner({ banner: shaped.banner, text: shaped.text }),
-        text: shaped.text,
-        tone: shaped.tone,
-      };
-    }
-
-    return shaped;
-  },
-  /* eslint-enable anti-slop/no-shape-in-symbol-names */
-  outPane = (out: RawOut | undefined) => ({
-    lines: (out?.lines ?? []).map((row: (number | string)[]) => ({
-      k: row[0],
-      kc: safeTone(String(row[2] ?? ""), "fg2"),
-      v: row[1],
-      vc: safeTone(String(row[3] ?? "")),
-    })),
-    title: out?.title ?? "",
-  }),
-  section = (raw: RawSection) => ({
-    ask: raw.ask ?? "",
-    cmd: raw.cmd ?? "",
-    dot: safeTone(raw.dot, "ok"),
-    id: raw.id,
-    label: raw.label,
-    lines: (raw.lines ?? []).map(line),
-    out: outPane(raw.out),
-    sub: raw.sub ?? "",
-    suggest: raw.suggest ?? "",
-    view: raw.view ?? "pairs",
-  }),
-  // Trente-cinq feuilles de sprites remplacent le dessin en ombres portees. Les durees et
-  // les images vivent dans la feuille de style : le script ne choisit que l'etat.
-  // Neuf etats de vie, six expressions de commande, six activites, onze de manipulation,
-  // trois transitions de forme.
-  MASCOT_STATES = new Set([
-    "evolveCube",
-    "evolvePingouin",
-    "devolve",
-    "idle",
-    "wink",
-    "jump",
-    "type",
-    "load",
-    "sleep",
-    "morph",
-    "boom",
-    "reform",
-    "alert",
-    "happy",
-    "laugh",
-    "sad",
-    "scared",
-    "drop",
-    "goal",
-    "bike",
-    "coffee",
-    "lift",
-    "juggle",
-    "train",
-    "grab",
-    "dragLeft",
-    "dragRight",
-    "splatLeft",
-    "splatRight",
-    "splatFloor",
-    "splatCeiling",
-    "splatCeilingLeft",
-    "splatCeilingRight",
-    "splatFloorLeft",
-    "splatFloorRight",
-  ]),
-  MASCOT_REST = "idle",
-  // La chaine des formes. Chaque appel monte d'un cran, le troisieme referme le cycle. Une
-  // transition se joue depuis la feuille qui la porte : « evolveCube » vit dans celle du
-  // cube, « devolve » dans celle du pingouin. D'ou « sheet », qui n'est pas toujours
-  // « next ».
-  CHAIN = {
-    cube: { next: "pingouin", sheet: "pingouin", state: "evolvePingouin" },
-    pingouin: { next: "slime", sheet: "pingouin", state: "devolve" },
-    slime: { next: "cube", sheet: "cube", state: "evolveCube" },
-  },
-  TRANSITIONS = new Set(["devolve", "evolveCube", "evolvePingouin"]),
-  // Une case affichee fait 64 px, soit la hauteur de la piste.
-  SPRITE = 64,
-  // Sous ce pas la mascotte garderait sa prise plutot que de trembler entre deux feuilles.
-  DRAG_STEP = 2,
-  // Le plaquage se declenche quand le curseur sort de la piste. Or la piste a la hauteur du
-  // sprite : le curseur, pris quelque part dans ces 64 px, en sortirait par le haut ou par
-  // le bas en une trentaine de pixels. Un simple tremblement pendant un glisser horizontal
-  // ferait clignoter le sol et le plafond a la place des feuilles de deplacement. Cette
-  // marge n'existe que sur la verticale : en largeur, la piste est trop longue pour qu'on
-  // en sorte par accident.
-  SPLAT_MARGIN = 24,
-  // Au cinquieme clic le slime explose. Il reprend forme entre cinq et dix secondes plus
-  // tard : le hasard evite que l'attente devienne une horloge.
-  // Combien de temps un etat de passage tient avant de rendre le repos.
-  //
-  // Pour une passe unique, c'est la duree de sa feuille : le minuteur n'est qu'un filet
-  // derriere animationend, qu'une page en arriere-plan peut avaler.
-  //
-  // Pour « laugh », « sad » et « scared », qui bouclent, le minuteur est la SEULE sortie :
-  // une animation infinie n'emet jamais animationend. Deux a trois cycles, puis le repos.
-  // Retirer une de ces trois lignes laisse la mascotte tourner sans fin.
-  //
-  // « boom » n'y figure pas : l'explosion tient jusqu'a ce que le minuteur de reapparition
-  // la releve.
-  HOLD_MS = {
-    alert: 960,
-    bike: 2880,
-    coffee: 1200,
-    devolve: 1440,
-    drop: 1440,
-    evolveCube: 2400,
-    evolvePingouin: 2400,
-    goal: 1440,
-    happy: 1200,
-    juggle: 2880,
-    jump: 1280,
-    laugh: 4320,
-    lift: 1440,
-    morph: 2400,
-    reform: 1600,
-    sad: 5760,
-    scared: 3000,
-    train: 1440,
-    wink: 1680,
-  },
-  // Le quai reste vide le temps qu'on remarque le depart, puis « drop » la ramene.
-  AWAY_MS = 3000,
-  BOOM_AT = 5,
-  REFORM_MIN_MS = 5000,
-  REFORM_SPREAD_MS = 5000,
-  // La frappe rend la main au repos peu apres la derniere touche. Chaque touche relance le
-  // compte a rebours : 400 ms coupaient l'animation au milieu d'une phrase, et la personne
-  // qui tape regarde ses mots, pas la mascotte. La veille attend dix secondes sans geste.
-  // Au repos, une chance sur vingt-cinq toutes les cinq secondes.
-  TYPE_REST_MS = 1400,
-  // La modale retient le regard, et une passe de mue dure deux secondes et demie. La mue
-  // rejoue donc tant que la modale est ouverte, puis court encore ce sursis apres.
-  MORPH_HOLD_MS = 600,
-  // La premiere question paie la mise en route du modele, qui tient rarement en cinq
-  // secondes. L'attente se voit a l'ecran, donc mieux vaut la laisser courir que rendre
-  // une reponse par defaut alors que le modele allait repondre.
-  ASK_MS = 15_000,
-  SLEEP_MS = 10_000,
-  TWITCH_MS = 5000,
-  TWITCH_ODDS = 0.04,
-  EMPTY = { cmd: "", id: "", lines: [], out: { lines: [], title: "" }, suggest: "", view: "pairs" };
 
 // Alpine vient du script vendu a cote de la page : il n'apporte pas ses types.
+
+const rect = (node: Element) => node.getBoundingClientRect();
+
 declare const Alpine: {
   data: (name: string, factory: () => State) => void;
 };
@@ -431,10 +133,6 @@ declare global {
   var umami: Umami | undefined;
 }
 
-// Une cle libre dans une table fermee : la table garde son type, l'appelant recoit
-// undefined quand la cle n'y est pas.
-const lookup = <V>(table: Readonly<Record<string, V>>, key: string): V | undefined => table[key];
-
 // « responseConstraint » fait rendre du JSON : un identifiant en sort entre guillemets. Le
 // comparer tel quel ne trouvait jamais le passage, et la reponse du corpus sortait a chaque
 // fois. Un modele qui ignore la contrainte rend du texte brut, qui reste utilisable.
@@ -454,17 +152,6 @@ const askFailure = (cause: unknown) =>
   cause instanceof DOMException && cause.name === "TimeoutError"
     ? `le modèle local n'a pas répondu en ${ASK_MS / 1000} s.`
     : "le modèle local a refusé de répondre.";
-
-// Alpine pose ses magies sur le composant apres l'avoir construit : elles ne sont pas
-// dans l'objet litteral, mais « this » les voit a l'execution.
-interface Magics {
-  $nextTick: (callback: () => void) => void;
-  $refs: Record<string, HTMLElement | undefined>;
-}
-
-// Les deux seuls reglages qui se basculent. Nommer l'union permet d'indexer l'etat par la
-// cle sans effacer son type.
-type ToggleKey = "anim" | "out";
 
 // Ce que le stockage rend. Rien n'y est garanti : c'est une entree exterieure, et le canvas
 // injectait dans l'etat tout ce qu'il y trouvait.
@@ -579,11 +266,21 @@ interface State {
   typed: string;
 }
 
+// Les tranches deja extraites, en un seul endroit. Le type que « this » voit et l'objet
+// reellement fusionne en derivent tous les deux : en declarer une sans la fusionner ne
+// pouvait etre attrape ni par tsc, ni par le lint, ni par un test unitaire, et cassait la
+// page a la premiere utilisation. Cette liste grossit d'une ligne a chaque extraction.
+//
+// L'etalement est sur ici : une tranche ne porte jamais d'accesseur.
+const slices = () => ({ ...mascotSlice() });
+
+type Slices = ReturnType<typeof slices>;
+
 // ThisType ajoute les magies au type de « this » sans rien changer au code produit :
 // cette fonction est l'identite. L'etat vient de State, le reste du litteral vient de T :
 // sans ce partage, un champ initialise a vide prendrait le type du vide.
 const withMagics = <T>(
-  component: State & T & ThisType<Magics & State & Omit<T, keyof State>>,
+  component: State & T & ThisType<Magics & State & Omit<T, keyof State> & Slices>,
 ): State & Omit<T, keyof State> => component;
 
 document.addEventListener("alpine:init", () => {
@@ -591,9 +288,9 @@ document.addEventListener("alpine:init", () => {
   // navigation, clavier, options, mascotte, commandes. Les trier alphabetiquement
   // disperserait chaque sujet aux quatre coins du fichier pour un gain nul.
   // eslint-disable-next-line sort-keys
-  Alpine.data("terminal", () =>
+  Alpine.data("terminal", () => {
     // eslint-disable-next-line sort-keys
-    withMagics({
+    const component = withMagics({
       THEMES,
       TOGGLES,
       asker: undefined,
@@ -1497,12 +1194,6 @@ document.addEventListener("alpine:init", () => {
         }
       },
 
-      trackWidth() {
-        const { track } = this.$refs;
-
-        return track ? Math.max(0, track.clientWidth - SPRITE) : 0;
-      },
-
       // Une mascotte endormie ne se promene pas : la balade passe par place(), que la garde
       // de mascotPlay() n'atteint pas.
       wander() {
@@ -1568,62 +1259,13 @@ document.addEventListener("alpine:init", () => {
           this.dragged = true;
         }
 
-        const next = this.dragState(event, box, step);
+        const next = dragState(event, box, step);
 
         // Reaffecter la meme feuille remettrait l'animation a sa premiere case : la mascotte
         // paraitrait figee pendant tout le deplacement.
         if (next !== this.mascotState) {
           this.mascotPlay(next);
         }
-      },
-
-      // Le plaquage nait du curseur qui sort de la piste, et non d'une collision entre le
-      // sprite et un bord. Les quatre coins se testent avant les quatre murs : sur une
-      // diagonale les deux lectures sont vraies au meme instant, et un coin place apres un
-      // mur ne serait jamais atteint.
-      dragState(event: PointerEvent, box: DOMRect, step: number) {
-        const above = event.clientY < box.top - SPLAT_MARGIN,
-          below = event.clientY > box.bottom + SPLAT_MARGIN,
-          left = event.clientX < box.left,
-          right = event.clientX > box.right;
-
-        if (above && left) {
-          return "splatCeilingLeft";
-        }
-
-        if (above && right) {
-          return "splatCeilingRight";
-        }
-
-        if (below && left) {
-          return "splatFloorLeft";
-        }
-
-        if (below && right) {
-          return "splatFloorRight";
-        }
-
-        if (above) {
-          return "splatCeiling";
-        }
-
-        if (below) {
-          return "splatFloor";
-        }
-
-        if (left) {
-          return "splatLeft";
-        }
-
-        if (right) {
-          return "splatRight";
-        }
-
-        if (step > DRAG_STEP) {
-          return "dragRight";
-        }
-
-        return step < -DRAG_STEP ? "dragLeft" : "grab";
       },
 
       release() {
@@ -2719,6 +2361,15 @@ document.addEventListener("alpine:init", () => {
           Math.max(0, (this.reduced ? 0 : BOOT_MS) - waited),
         );
       },
-    }),
-  );
+    });
+
+    // Les tranches entrent par leurs descripteurs, jamais par un etalement. Un etalement
+    // appellerait les accesseurs du composant et copierait leur valeur : « reduced » fige a
+    // false laisserait tourner les animations chez qui demande moins de mouvement, sans
+    // casser un seul test. Il ferait aussi perdre a withMagics l'inference de son type.
+    //
+    // Une methode oubliee dans le litteral apres son deplacement perd contre la tranche :
+    // c'est le code neuf qui gagne, pas le residu.
+    return Object.defineProperties(component, Object.getOwnPropertyDescriptors(slices()));
+  });
 });

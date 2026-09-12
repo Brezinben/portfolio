@@ -38,7 +38,7 @@ const boot = async (page: Page) => {
   // Plusieurs pas : un saut unique ne dirait pas le sens du deplacement.
   pousser = (page: Page, x: number, y: number) => page.mouse.move(x, y, { steps: 12 });
 
-test("la mascotte est une feuille de sprites, jouée au repos", async ({ page }) => {
+test("should draw the mascot from a sprite sheet and play the idle state", async ({ page }) => {
   await boot(page);
 
   await expect(mascot(page)).toBeVisible();
@@ -50,15 +50,15 @@ test("la mascotte est une feuille de sprites, jouée au repos", async ({ page })
     lissage: getComputedStyle(node).imageRendering,
   }));
 
-  expect(fond.image, "l'image fusionnée").toMatch(/slime-sheets(?:\.[\da-f]+)?\.png/u);
-  expect(fond.animation, "douze frames").toBe("slime-12");
-  expect(fond.lissage, "aucun lissage sur du pixel art").toBe("pixelated");
-  expect(await bande(page), "le repos ouvre l'image").toBe("0px");
+  expect(fond.image, "the merged image").toMatch(/slime-sheets(?:\.[\da-f]+)?\.png/u);
+  expect(fond.animation, "twelve frames").toBe("slime-12");
+  expect(fond.lissage, "no smoothing on pixel art").toBe("pixelated");
+  expect(await bande(page), "idle opens the image").toBe("0px");
 });
 
 // Les trente-deux etats d'une forme tiennent dans une image : une requete, pas trente-deux.
 // Et une seule forme part au demarrage.
-test("une seule image porte les trente-deux états du slime", async ({ page }) => {
+test("should carry the thirty-two slime states in a single image", async ({ page }) => {
   const asked = watchSheets(page);
 
   await boot(page);
@@ -68,9 +68,7 @@ test("une seule image porte les trente-deux états du slime", async ({ page }) =
 });
 
 // Mouvement reduit : la mascotte disparait, et rien ne part sur le reseau pour elle.
-test("en mouvement réduit, la mascotte disparaît et aucune feuille n'est chargée", async ({
-  page,
-}) => {
+test("should hide the mascot and load no sheet under reduced motion", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
 
   const asked = watchSheets(page);
@@ -79,13 +77,11 @@ test("en mouvement réduit, la mascotte disparaît et aucune feuille n'est charg
   await page.waitForTimeout(600);
 
   await expect(mascot(page)).toHaveCount(0);
-  expect(asked, "aucune feuille demandée").toEqual([]);
-  await expect(page.locator("[data-track]"), "la piste garde sa place").toHaveCount(1);
+  expect(asked, "no sheet requested").toEqual([]);
+  await expect(page.locator("[data-track]"), "the track keeps its place").toHaveCount(1);
 });
 
-test("animations coupées, la mascotte disparaît et aucune feuille n'est chargée", async ({
-  page,
-}) => {
+test("should hide the mascot and load no sheet when animations are off", async ({ page }) => {
   await page.addInitScript(() =>
     localStorage.setItem("bd-term-opts", JSON.stringify({ anim: false })),
   );
@@ -96,11 +92,11 @@ test("animations coupées, la mascotte disparaît et aucune feuille n'est charg�
   await page.waitForTimeout(600);
 
   await expect(mascot(page)).toHaveCount(0);
-  expect(asked, "aucune feuille demandée").toEqual([]);
-  await expect(page.locator("[data-track]"), "la piste garde sa place").toHaveCount(1);
+  expect(asked, "no sheet requested").toEqual([]);
+  await expect(page.locator("[data-track]"), "the track keeps its place").toHaveCount(1);
 });
 
-test("la mascotte est décorative et sort du parcours clavier", async ({ page }) => {
+test("should keep the mascot decorative and out of the keyboard path", async ({ page }) => {
   await boot(page);
 
   await expect(mascot(page)).toHaveAttribute("aria-hidden", "true");
@@ -109,7 +105,7 @@ test("la mascotte est décorative et sort du parcours clavier", async ({ page })
   expect(await mascot(page).getAttribute("tabindex")).toBeNull();
 });
 
-test("un clic sur la mascotte joue le clin d'œil", async ({ page }) => {
+test("should play the wink when the mascot is clicked", async ({ page }) => {
   const asked = watchSheets(page);
 
   await boot(page);
@@ -119,22 +115,24 @@ test("un clic sur la mascotte joue le clin d'œil", async ({ page }) => {
   await mascot(page).click({ force: true });
 
   await expect(mascot(page)).toHaveClass(/slime--wink/u);
-  expect(await bande(page), "le clin d'œil lit une autre bande").not.toBe(repos);
-  expect(asked, "rien ne part : l'image est déjà là").toEqual(["slime-sheets.png"]);
+  expect(await bande(page), "the wink reads another band").not.toBe(repos);
+  expect(asked, "nothing leaves: the image is already there").toEqual(["slime-sheets.png"]);
 });
 
-test("la frappe dans la saisie fait taper la mascotte", async ({ page }) => {
+test("should make the mascot type while the command line is typed", async ({ page }) => {
   const cli = await boot(page);
 
   await cli.pressSequentially("hel");
 
   await expect(mascot(page)).toHaveClass(/slime--type/u);
-  expect(await bande(page), "la frappe lit sa propre bande").not.toBe("0px");
+  expect(await bande(page), "typing reads its own band").not.toBe("0px");
 });
 
 // Les evenements d'animation remontent : sans « .self », la fin de l'animation d'un
 // decor ramenait la mascotte au repos au milieu de sa propre boucle.
-test("une animation de décor ne remet pas la mascotte au repos", async ({ page }) => {
+test("should not send the mascot back to idle when a decoration animation ends", async ({
+  page,
+}) => {
   const cli = await boot(page);
 
   await cli.pressSequentially("he");
@@ -147,12 +145,14 @@ test("une animation de décor ne remet pas la mascotte au repos", async ({ page 
     decor.dispatchEvent(new AnimationEvent("animationend", { bubbles: true }));
   });
 
-  await expect(mascot(page), "la frappe continue").toHaveClass(/slime--type/u);
+  await expect(mascot(page), "typing goes on").toHaveClass(/slime--type/u);
 });
 
 // « load » boucle sans fin : sa seule sortie est le minuteur de la commande. Revenir sur
 // une section deja vue coupe ce minuteur, il faut rendre la main a la main.
-test("revenir sur une section déjà vue sort la mascotte de la réflexion", async ({ page }) => {
+test("should pull the mascot out of thinking when a section already seen opens again", async ({
+  page,
+}) => {
   await boot(page);
 
   const aller = (nom: string) =>
@@ -167,7 +167,7 @@ test("revenir sur une section déjà vue sort la mascotte de la réflexion", asy
   await expect(mascot(page)).not.toHaveClass(/slime--load/u);
 });
 
-test("changer de thème déclenche la mue", async ({ page }) => {
+test("should trigger the morph when the theme changes", async ({ page }) => {
   await boot(page);
   await page.getByRole("button", { name: "options" }).click();
   await page.getByRole("button", { name: "noctis" }).click();
@@ -177,7 +177,7 @@ test("changer de thème déclenche la mue", async ({ page }) => {
 
 // Une passe de mue dure 2,4 s, et le visiteur regarde la modale. Elle rejoue donc tant que
 // la modale reste ouverte : sinon elle finit avant qu'il ne la voie.
-test("la mue rejoue tant que la modale d'options reste ouverte", async ({ page }) => {
+test("should replay the morph while the options modal stays open", async ({ page }) => {
   await boot(page);
   await page.getByRole("button", { name: "options" }).click();
   await page.getByRole("button", { name: "noctis" }).click();
@@ -192,9 +192,9 @@ test("la mue rejoue tant que la modale d'options reste ouverte", async ({ page }
 const FERMETURES = [
   {
     fermer: (page: Page) => page.getByRole("button", { name: "close" }).click(),
-    nom: "le bouton close",
+    nom: "the close button",
   },
-  { fermer: (page: Page) => page.getByRole("dialog").press("Escape"), nom: "la touche Échap" },
+  { fermer: (page: Page) => page.getByRole("dialog").press("Escape"), nom: "the Escape key" },
   // Le voile de la modale ferme au clic ; le coin haut gauche tombe hors de la boîte. On
   // vise le voile et non un point de l'écran : pendant la transition de vue, un clic à
   // l'aveugle atterrit sur la racine et se perd.
@@ -204,12 +204,12 @@ const FERMETURES = [
         .getByRole("dialog")
         .locator("..")
         .click({ position: { x: 5, y: 5 } }),
-    nom: "un clic à l'extérieur",
+    nom: "a click outside",
   },
 ];
 
 for (const { fermer, nom } of FERMETURES) {
-  test(`fermer la modale par ${nom} rend la mascotte au repos`, async ({ page }) => {
+  test(`should return the mascot to idle when ${nom} closes the modal`, async ({ page }) => {
     await boot(page);
     await page.getByRole("button", { name: "options" }).click();
     await page.getByRole("button", { name: "noctis" }).click();
@@ -218,8 +218,8 @@ for (const { fermer, nom } of FERMETURES) {
     await fermer(page);
 
     await expect(page.getByRole("dialog")).toHaveCount(0);
-    await expect(mascot(page), "la mue tient encore").toHaveClass(/slime--morph/u);
-    await expect(mascot(page), "puis elle se pose").toHaveClass(/slime--idle/u, {
+    await expect(mascot(page), "the morph still holds").toHaveClass(/slime--morph/u);
+    await expect(mascot(page), "then the mascot settles").toHaveClass(/slime--idle/u, {
       timeout: 9000,
     });
   });
@@ -227,7 +227,7 @@ for (const { fermer, nom } of FERMETURES) {
 
 // « tu laisses un petit temps histoire qu'il ait fini, et tu mets la bonne couleur » : la
 // mue porte la teinte d'un thème à l'autre, elle ne saute pas au premier instant.
-test("la teinte arrive avec la mue, pas avant elle", async ({ page }) => {
+test("should bring the hue with the morph, not before it", async ({ page }) => {
   await boot(page);
   await page.getByRole("button", { name: "options" }).click();
   await page.getByRole("button", { name: "noctis" }).click();
@@ -235,7 +235,7 @@ test("la teinte arrive avec la mue, pas avant elle", async ({ page }) => {
   const teinte = () => mascot(page).evaluate((node) => getComputedStyle(node).filter),
     depart = await teinte();
 
-  expect(depart, "la teinte part de l'ancien thème").not.toContain("hue-rotate(117deg)");
+  expect(depart, "the hue starts from the old theme").not.toContain("hue-rotate(117deg)");
 
   await expect.poll(teinte, { timeout: 9000 }).toContain("hue-rotate(117deg)");
 });
@@ -243,7 +243,7 @@ test("la teinte arrive avec la mue, pas avant elle", async ({ page }) => {
 // Sans mascotte, changer de theme ne doit rien jouer ni rien telecharger : la promesse
 // « aucune feuille en mouvement reduit » vaut aussi quand le theme change.
 // Trop court, la personne qui tape ne voit jamais l'animation : elle regarde ses mots.
-test("la frappe tient mille quatre cents millisecondes après la dernière touche", async ({
+test("should hold the typing state for one thousand four hundred milliseconds after the last key", async ({
   page,
 }) => {
   const cli = await boot(page);
@@ -252,18 +252,18 @@ test("la frappe tient mille quatre cents millisecondes après la dernière touch
   await expect(mascot(page)).toHaveClass(/slime--type/u);
 
   await page.waitForTimeout(1100);
-  expect(await mascot(page).getAttribute("class"), "elle tape encore à 1100 ms").toBe(
+  expect(await mascot(page).getAttribute("class"), "the mascot still types at 1100 ms").toBe(
     "slime slime--type",
   );
 
   await page.waitForTimeout(600);
-  expect(await mascot(page).getAttribute("class"), "elle a rendu la main après 1400 ms").not.toBe(
+  expect(await mascot(page).getAttribute("class"), "the mascot handed back after 1400 ms").not.toBe(
     "slime slime--type",
   );
 });
 
 // Anti-rebond : tant qu'on tape, le compte à rebours repart de zéro.
-test("chaque touche relance le compte à rebours de la frappe", async ({ page }) => {
+test("should restart the typing countdown on every key", async ({ page }) => {
   const cli = await boot(page);
 
   // Six touches espacées de 600 ms, moins que le délai de retour : seule la relance à
@@ -273,12 +273,10 @@ test("chaque touche relance le compte à rebours de la frappe", async ({ page })
     Promise.resolve(),
   );
 
-  expect(await mascot(page).getAttribute("class"), "la frappe n'a pas été coupée").toBe(
-    "slime slime--type",
-  );
+  expect(await mascot(page).getAttribute("class"), "typing was not cut").toBe("slime slime--type");
 });
 
-test("changer de thème sans mascotte ne charge aucune feuille", async ({ page }) => {
+test("should load no sheet when the theme changes without a mascot", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
 
   const asked = watchSheets(page);
@@ -290,12 +288,12 @@ test("changer de thème sans mascotte ne charge aucune feuille", async ({ page }
 
   await expect(page.locator(".tm")).toHaveAttribute("data-theme", "noctis");
   await expect(mascot(page)).toHaveCount(0);
-  expect(asked, "aucune feuille demandée").toEqual([]);
+  expect(asked, "no sheet requested").toEqual([]);
 });
 
 // Rallumer les animations apres un changement de theme remonte la mascotte : elle doit
 // reprendre son repos, pas rester sur la mue d'un theme deja applique.
-test("rallumer les animations après un changement de thème rend le repos", async ({ page }) => {
+test("should return to idle when animations come back after a theme change", async ({ page }) => {
   await page.addInitScript(() =>
     localStorage.setItem("bd-term-opts", JSON.stringify({ anim: false })),
   );
@@ -311,7 +309,7 @@ test("rallumer les animations après un changement de thème rend le repos", asy
 });
 
 // Les couleurs sont cuites dans les PNG : les themes sombres les font tourner.
-test("les thèmes sombres font tourner la teinte, les clairs non", async ({ page }) => {
+test("should rotate the hue on dark themes and leave light themes alone", async ({ page }) => {
   const filtre = (theme: string) =>
     page.evaluate((chosen) => {
       document.querySelector<HTMLElement>(".tm")!.dataset.theme = chosen;
@@ -321,18 +319,18 @@ test("les thèmes sombres font tourner la teinte, les clairs non", async ({ page
 
   await boot(page);
 
-  expect(await filtre("dark"), "l'ambre des feuilles est déjà celui du thème").toBe("none");
+  expect(await filtre("dark"), "the sheet amber is already the theme amber").toBe("none");
   expect(await filtre("noctis")).toContain("hue-rotate(117deg)");
   expect(await filtre("azureus")).toContain("hue-rotate(163deg)");
   expect(await filtre("uva")).toContain("hue-rotate(205deg)");
   expect(await filtre("bordo")).toContain("hue-rotate(306deg)");
-  expect(await filtre("light"), "palette ambre inchangée").toBe("none");
+  expect(await filtre("light"), "amber palette unchanged").toBe("none");
   expect(await filtre("lux")).toBe("none");
   expect(await filtre("hibernus")).toBe("none");
 });
 
 // La ligne du journal dit « mise en veille » : la mascotte doit dormir, pas cligner.
-test("la commande sleep endort vraiment la mascotte", async ({ page }) => {
+test("should really put the mascot to sleep on the sleep command", async ({ page }) => {
   const cli = await boot(page);
 
   await cli.fill("/sleep");
@@ -344,7 +342,7 @@ test("la commande sleep endort vraiment la mascotte", async ({ page }) => {
 // Trois expressions jouaient « jump » et une quatrieme « wink » : la commande annoncait une
 // emotion et rendait le geste d'a cote. Chacune porte maintenant sa feuille.
 for (const expression of ["alert", "happy", "laugh", "sad", "scared", "sleep"]) {
-  test(`l'expression ${expression} joue sa propre feuille`, async ({ page }) => {
+  test(`should play its own sheet for the ${expression} expression`, async ({ page }) => {
     const cli = await boot(page);
 
     await cli.fill(`/slime ${expression}`);
@@ -356,7 +354,7 @@ for (const expression of ["alert", "happy", "laugh", "sad", "scared", "sleep"]) 
 
 // Une animation infinie n'emet jamais animationend. Sans le minuteur, ces trois-la
 // tourneraient jusqu'a la fin de la visite.
-test("les expressions qui bouclent rendent la main au repos", async ({ page }) => {
+test("should hand looping expressions back to idle", async ({ page }) => {
   const cli = await boot(page);
 
   await cli.fill("/slime scared");
@@ -366,7 +364,7 @@ test("les expressions qui bouclent rendent la main au repos", async ({ page }) =
   await expect(mascot(page)).toHaveClass(/slime--idle/u, { timeout: 6000 });
 });
 
-test("slime kill fait exploser la mascotte, qui revient d'elle-même", async ({ page }) => {
+test("should blow the mascot up on slime kill and bring it back by itself", async ({ page }) => {
   const cli = await boot(page);
 
   await cli.fill("/slime kill");
@@ -377,7 +375,7 @@ test("slime kill fait exploser la mascotte, qui revient d'elle-même", async ({ 
   await expect(mascot(page)).not.toHaveClass(/slime--(?:boom|reform)/u, { timeout: 5000 });
 });
 
-test("une commande fait parler la mascotte", async ({ page }) => {
+test("should make the mascot speak on a command", async ({ page }) => {
   const cli = await boot(page);
 
   await cli.fill("/joke");
@@ -388,7 +386,7 @@ test("une commande fait parler la mascotte", async ({ page }) => {
 
 // La position passe par le style, pas par l'état réactif : la faire transiter par Alpine
 // ferait rerendre la page a chaque image.
-test("la position est écrite directement dans le style", async ({ page }) => {
+test("should write the position straight into the style", async ({ page }) => {
   const cli = await boot(page);
 
   await cli.fill("/slime drop");
@@ -398,7 +396,7 @@ test("la position est écrite directement dans le style", async ({ page }) => {
 });
 
 // Cinq clics font exploser le slime. Il ne repond plus a rien jusqu'a sa reapparition.
-test("cinq clics font exploser la mascotte", async ({ page }) => {
+test("should blow the mascot up after five clicks", async ({ page }) => {
   await boot(page);
 
   await Array.from({ length: 5 }).reduce<Promise<unknown>>(
@@ -409,7 +407,7 @@ test("cinq clics font exploser la mascotte", async ({ page }) => {
   await expect(mascot(page)).toHaveClass(/slime--boom/u);
 });
 
-test("explosée, la mascotte ne répond plus", async ({ page }) => {
+test("should stop answering once the mascot has blown up", async ({ page }) => {
   const cli = await boot(page);
 
   await Array.from({ length: 5 }).reduce<Promise<unknown>>(
@@ -420,17 +418,19 @@ test("explosée, la mascotte ne répond plus", async ({ page }) => {
 
   expect(
     await mascot(page).evaluate((node) => getComputedStyle(node).pointerEvents),
-    "les débris ne se cliquent pas",
+    "the debris cannot be clicked",
   ).toBe("none");
 
   await mascot(page).click({ force: true });
   await cli.pressSequentially("he");
 
-  expect(await mascot(page).getAttribute("class"), "rien ne la déloge").toBe("slime slime--boom");
+  expect(await mascot(page).getAttribute("class"), "nothing dislodges the mascot").toBe(
+    "slime slime--boom",
+  );
 });
 
 // Entre cinq et dix secondes plus tard, elle reprend forme, puis son repos.
-test("la mascotte reprend forme après son explosion", async ({ page }) => {
+test("should reform the mascot after its explosion", async ({ page }) => {
   await boot(page);
 
   await Array.from({ length: 5 }).reduce<Promise<unknown>>(
@@ -445,17 +445,17 @@ test("la mascotte reprend forme après son explosion", async ({ page }) => {
   expect(await mascot(page).evaluate((node) => getComputedStyle(node).pointerEvents)).toBe("auto");
 });
 
-test("plus rien ne parle de couronne", async ({ page }) => {
+test("should no longer mention any crown", async ({ page }) => {
   await boot(page);
 
   const garde = await page.evaluate(() => localStorage.getItem("bd-term-opts"));
 
-  expect(garde ?? "", "la couronne ne se conserve plus").not.toContain("crowned");
+  expect(garde ?? "", "the crown is no longer stored").not.toContain("crowned");
   await expect(mascot(page)).not.toHaveClass(/slime--(?:king|crown)/u);
 });
 
 // Couper les animations depuis la modale retire la mascotte sur-le-champ.
-test("couper les animations retire la mascotte", async ({ page }) => {
+test("should remove the mascot when animations are turned off", async ({ page }) => {
   await boot(page);
   await page.getByRole("button", { name: "options" }).click();
   await page.getByRole("button", { name: /animations/ }).click();
@@ -466,7 +466,7 @@ test("couper les animations retire la mascotte", async ({ page }) => {
 
 // Le bloc de la mascotte doit etre assez grand pour etre clique : c'etait la cause du
 // curseur faux et de la couronne inatteignable.
-test("la mascotte offre une cible cliquable, pas un pixel", async ({ page }) => {
+test("should give the mascot a clickable target, not a pixel", async ({ page }) => {
   await boot(page);
 
   const box = await mascot(page).boundingBox();
@@ -476,7 +476,7 @@ test("la mascotte offre une cible cliquable, pas un pixel", async ({ page }) => 
   expect(await mascot(page).evaluate((node) => getComputedStyle(node).cursor)).toBe("grab");
 });
 
-test("attraper la mascotte joue la prise", async ({ page }) => {
+test("should play the grab when the mascot is caught", async ({ page }) => {
   await boot(page);
   await attraper(page);
 
@@ -487,7 +487,9 @@ test("attraper la mascotte joue la prise", async ({ page }) => {
 
 // Le plaquage naît du curseur qui sort de la piste, et non d'une collision entre le sprite
 // et un bord. La mascotte est retenue, et elle montre qu'on tire dessus en vain.
-test("le curseur hors de la piste plaque la mascotte contre ce bord", async ({ page }) => {
+test("should splat the mascot against the edge the cursor leaves the track by", async ({
+  page,
+}) => {
   await boot(page);
 
   const piste = (await page.locator("[data-track]").boundingBox())!,
@@ -499,16 +501,16 @@ test("le curseur hors de la piste plaque la mascotte contre ce bord", async ({ p
   await attraper(page);
 
   await pousser(page, milieuX, piste.y - dehors);
-  await expect(mascot(page), "au-dessus").toHaveClass(/slime--splatCeiling$/u);
+  await expect(mascot(page), "above").toHaveClass(/slime--splatCeiling$/u);
 
   await pousser(page, milieuX, piste.y + piste.height + dehors);
-  await expect(mascot(page), "en dessous").toHaveClass(/slime--splatFloor$/u);
+  await expect(mascot(page), "below").toHaveClass(/slime--splatFloor$/u);
 
   await pousser(page, piste.x - dehors, milieuY);
-  await expect(mascot(page), "à gauche").toHaveClass(/slime--splatLeft$/u);
+  await expect(mascot(page), "on the left").toHaveClass(/slime--splatLeft$/u);
 
   await pousser(page, piste.x + piste.width + dehors, milieuY);
-  await expect(mascot(page), "à droite").toHaveClass(/slime--splatRight$/u);
+  await expect(mascot(page), "on the right").toHaveClass(/slime--splatRight$/u);
 
   await page.mouse.up();
 });
@@ -516,7 +518,7 @@ test("le curseur hors de la piste plaque la mascotte contre ce bord", async ({ p
 // « steps(12) » finit sa course sur la treizieme case, qui n'existe pas : la bande fait
 // douze cases, et le douzieme pas s'arrete a -768px, hors du dessin. Le plaquage tenait donc
 // du vide, et la mascotte disparaissait sous la main qui la retenait.
-test("un plaquage tenu longtemps garde sa dernière case", async ({ page }) => {
+test("should keep the last frame of a splat that is held long", async ({ page }) => {
   await boot(page);
 
   const piste = (await page.locator("[data-track]").boundingBox())!;
@@ -530,14 +532,14 @@ test("un plaquage tenu longtemps garde sa dernière case", async ({ page }) => {
 
   const arret = await mascot(page).evaluate((node) => getComputedStyle(node).backgroundPositionX);
 
-  expect(arret, "la douzième case, pas la treizième").toBe("-704px");
+  expect(arret, "the twelfth frame, not the thirteenth").toBe("-704px");
 
   await page.mouse.up();
 });
 
 // Curseur en diagonale, les deux lectures sont vraies au meme instant. Sans les quatre
 // coins, la mascotte jouait un mur alors qu'elle est collee aux deux.
-test("le curseur en diagonale plaque la mascotte dans le coin", async ({ page }) => {
+test("should splat the mascot into the corner when the cursor goes diagonal", async ({ page }) => {
   await boot(page);
 
   const piste = (await page.locator("[data-track]").boundingBox())!,
@@ -550,16 +552,16 @@ test("le curseur en diagonale plaque la mascotte dans le coin", async ({ page })
   await attraper(page);
 
   await pousser(page, gauche, haut);
-  await expect(mascot(page), "haut-gauche").toHaveClass(/slime--splatCeilingLeft/u);
+  await expect(mascot(page), "top left").toHaveClass(/slime--splatCeilingLeft/u);
 
   await pousser(page, droite, haut);
-  await expect(mascot(page), "haut-droit").toHaveClass(/slime--splatCeilingRight/u);
+  await expect(mascot(page), "top right").toHaveClass(/slime--splatCeilingRight/u);
 
   await pousser(page, gauche, bas);
-  await expect(mascot(page), "bas-gauche").toHaveClass(/slime--splatFloorLeft/u);
+  await expect(mascot(page), "bottom left").toHaveClass(/slime--splatFloorLeft/u);
 
   await pousser(page, droite, bas);
-  await expect(mascot(page), "bas-droit").toHaveClass(/slime--splatFloorRight/u);
+  await expect(mascot(page), "bottom right").toHaveClass(/slime--splatFloorRight/u);
 
   await page.mouse.up();
 });
@@ -567,7 +569,7 @@ test("le curseur en diagonale plaque la mascotte dans le coin", async ({ page })
 // La piste a exactement la hauteur du sprite : le curseur en sortirait par le haut ou par
 // le bas en une trentaine de pixels. Sans marge, un tremblement pendant un glisser
 // horizontal ferait clignoter le sol et le plafond.
-test("un tremblement vertical ne plaque pas la mascotte", async ({ page }) => {
+test("should not splat the mascot on a vertical shake", async ({ page }) => {
   await boot(page);
 
   const piste = (await page.locator("[data-track]").boundingBox())!,
@@ -583,7 +585,7 @@ test("un tremblement vertical ne plaque pas la mascotte", async ({ page }) => {
 });
 
 // « Il peut pas sortir de la boîte » : tirer loin dehors ne fait jamais franchir un bord.
-test("la mascotte ne sort jamais de sa piste", async ({ page }) => {
+test("should never let the mascot leave its track", async ({ page }) => {
   await boot(page);
 
   const piste = (await page.locator("[data-track]").boundingBox())!;
@@ -594,22 +596,22 @@ test("la mascotte ne sort jamais de sa piste", async ({ page }) => {
 
   const box = (await mascot(page).boundingBox())!;
 
-  expect(Math.round(box.x), "elle reste après le bord gauche").toBeGreaterThanOrEqual(
+  expect(Math.round(box.x), "the mascot stays past the left edge").toBeGreaterThanOrEqual(
     Math.round(piste.x),
   );
-  expect(Math.round(box.x + box.width), "et avant le bord droit").toBeLessThanOrEqual(
+  expect(Math.round(box.x + box.width), "and before the right edge").toBeLessThanOrEqual(
     Math.round(piste.x + piste.width),
   );
   // La piste porte une bordure basse d'un pixel, et sa boîte la compte : on tolère ce pixel
   // plutôt que d'exiger une égalité que la mise en page ne promet pas.
-  expect(Math.abs(box.y - piste.y), "et dans la bande de la piste").toBeLessThanOrEqual(1);
+  expect(Math.abs(box.y - piste.y), "and inside the track band").toBeLessThanOrEqual(1);
 
   await page.mouse.up();
 });
 
 // On la traîne pour la forcer d'un côté : elle n'a pas de vol de retour, elle reste posée
 // là où on la lâche.
-test("relâchée, la mascotte reste où on l'a posée", async ({ page }) => {
+test("should leave the mascot where it is released", async ({ page }) => {
   await boot(page);
 
   const piste = (await page.locator("[data-track]").boundingBox())!;
@@ -618,16 +620,16 @@ test("relâchée, la mascotte reste où on l'a posée", async ({ page }) => {
   await pousser(page, piste.x - 200, piste.y + 32);
   await page.mouse.up();
 
-  await expect(mascot(page), "elle sursaute au lâcher").toHaveClass(/slime--jump/u);
+  await expect(mascot(page), "the mascot jumps on release").toHaveClass(/slime--jump/u);
 
   const box = (await mascot(page).boundingBox())!;
 
-  expect(Math.round(box.x), "collée au bord gauche de sa piste").toBe(Math.round(piste.x));
+  expect(Math.round(box.x), "stuck to the left edge of its track").toBe(Math.round(piste.x));
 });
 
 // L'écran de démarrage garde sa fiction : la mascotte tire sa feuille d'attente derrière
 // lui, comme avant qu'elle ne devienne fixe.
-test("l'écran de démarrage couvre encore la mascotte", async ({ page }) => {
+test("should still cover the mascot with the boot screen", async ({ page }) => {
   await page.goto("/");
   await expect(page.locator("[data-boot]")).toBeVisible();
 
@@ -639,12 +641,12 @@ test("l'écran de démarrage couvre encore la mascotte", async ({ page }) => {
       : false;
   });
 
-  expect(couverte, "le démarrage reste devant").toBe(true);
+  expect(couverte, "the boot screen stays in front").toBe(true);
 });
 
 // Elle est décorative et flotte au-dessus de la page : au repos elle ne doit voler aucun
 // clic. Sa place de repos est la piste, qui est vide.
-test("au repos, la mascotte ne couvre aucun contrôle", async ({ page }) => {
+test("should cover no inner element while the mascot is idle", async ({ page }) => {
   await boot(page);
 
   const derriere = await page.evaluate(() => {
@@ -660,24 +662,24 @@ test("au repos, la mascotte ne couvre aucun contrôle", async ({ page }) => {
     return behind?.closest("button, a[href], input, [tabindex='0']")?.tagName ?? "rien";
   });
 
-  expect(derriere, "rien de cliquable derrière elle").toBe("rien");
+  expect(derriere, "nothing clickable behind the mascot").toBe("rien");
 });
 
-test("redimensionner la fenêtre ramène la mascotte dans sa piste", async ({ page }) => {
+test("should bring the mascot back into its track when the window is resized", async ({ page }) => {
   await boot(page);
   await page.setViewportSize({ height: 620, width: 820 });
 
   const piste = (await page.locator("[data-track]").boundingBox())!,
     box = (await mascot(page).boundingBox())!;
 
-  expect(box.x + box.width, "elle tient dans la piste rétrécie").toBeLessThanOrEqual(
+  expect(box.x + box.width, "the mascot fits in the shrunk track").toBeLessThanOrEqual(
     Math.round(piste.x + piste.width),
   );
 });
 
 // Traîner n'est pas cliquer. Un clic naît toujours après le relâchement du pointeur :
 // sans garde, cinq glissers faisaient exploser la mascotte comme cinq clics.
-test("traîner la mascotte ne compte pas pour un clic", async ({ page }) => {
+test("should not count a mascot drag as a click", async ({ page }) => {
   await boot(page);
 
   await Array.from({ length: 5 }).reduce<Promise<unknown>>(
@@ -690,7 +692,7 @@ test("traîner la mascotte ne compte pas pour un clic", async ({ page }) => {
     Promise.resolve(),
   );
 
-  await expect(mascot(page), "cinq glissers n'explosent pas").not.toHaveClass(/slime--boom/u);
+  await expect(mascot(page), "five drags do not explode").not.toHaveClass(/slime--boom/u);
 
   // Le clic franc, lui, doit toujours répondre.
   await mascot(page).click({ force: true });
@@ -699,7 +701,7 @@ test("traîner la mascotte ne compte pas pour un clic", async ({ page }) => {
 });
 
 // Une activite demande un accessoire. « bike » boucle : le minuteur est sa seule sortie.
-test("slime activity joue l'activité, puis rend la main", async ({ page }) => {
+test("should play the activity on slime activity, then hand back", async ({ page }) => {
   const cli = await boot(page);
 
   await cli.fill("/slime activity bike");
@@ -711,24 +713,24 @@ test("slime activity joue l'activité, puis rend la main", async ({ page }) => {
 
 // Le train est la seule feuille qui finit sans mascotte. Un decor vide sans retour serait
 // un piege : « drop » la ramene.
-test("le train emmène la mascotte, puis la chute la ramène", async ({ page }) => {
+test("should take the mascot away on the train, then drop it back", async ({ page }) => {
   const cli = await boot(page);
 
   await cli.fill("/slime activity train");
   await cli.press("Enter");
   await expect(mascot(page)).toHaveClass(/slime--train/u);
 
-  await expect(mascot(page), "le quai reste vide").toHaveAttribute("data-gone", "true", {
+  await expect(mascot(page), "the platform stays empty").toHaveAttribute("data-gone", "true", {
     timeout: 4000,
   });
-  await expect(mascot(page), "elle revient en tombant").toHaveClass(/slime--drop/u, {
+  await expect(mascot(page), "the mascot comes back falling").toHaveClass(/slime--drop/u, {
     timeout: 6000,
   });
   await expect(mascot(page)).toHaveClass(/slime--idle/u, { timeout: 4000 });
 });
 
 // Une trouvaille vaut une celebration, sauf quand la commande dit deja une expression.
-test("un easter egg sans expression déclenche le but", async ({ page }) => {
+test("should trigger the goal on an easter egg without expression", async ({ page }) => {
   const cli = await boot(page);
 
   await cli.fill("/coffee");
@@ -737,7 +739,7 @@ test("un easter egg sans expression déclenche le but", async ({ page }) => {
   await expect(mascot(page)).toHaveClass(/slime--goal/u);
 });
 
-test("un easter egg qui dit son expression garde son expression", async ({ page }) => {
+test("should keep the expression of an easter egg that names one", async ({ page }) => {
   const cli = await boot(page);
 
   await cli.fill("/joke");
@@ -749,7 +751,7 @@ test("un easter egg qui dit son expression garde son expression", async ({ page 
 
 // Lire l'aide d'une commande n'est pas une trouvaille. Le but se jouait sur l'usage, parce
 // que la coquille n'y voyait qu'un easter egg qui ne bouge pas la mascotte.
-test("lister l'usage de slime ne déclenche pas le but", async ({ page }) => {
+test("should not trigger the goal when the slime usage is listed", async ({ page }) => {
   const cli = await boot(page);
 
   await cli.fill("/slime");
@@ -761,7 +763,9 @@ test("lister l'usage de slime ne déclenche pas le but", async ({ page }) => {
 
 // Le redemarrage remettait le journal a zero mais laissait la mascotte absente, avec le
 // minuteur de l'ancienne session arme.
-test("redémarrer ramène la mascotte partie en explosant", async ({ page }) => {
+test("should bring back a mascot that left by exploding when the page reboots", async ({
+  page,
+}) => {
   const cli = await boot(page);
 
   await cli.fill("/slime kill");
@@ -778,7 +782,7 @@ test("redémarrer ramène la mascotte partie en explosant", async ({ page }) => 
 
 // Absente, la mascotte ne peut rien faire : le journal doit le dire au lieu d'annoncer un
 // geste que la coquille avale.
-test("le slime absent refuse la commande au lieu de mentir", async ({ page }) => {
+test("should refuse the command instead of lying while the slime is gone", async ({ page }) => {
   const cli = await boot(page);
 
   await cli.fill("/slime kill");
@@ -793,7 +797,7 @@ test("le slime absent refuse la commande au lieu de mentir", async ({ page }) =>
 
 // La chaine des formes : slime -> cube -> pingouin -> slime. Chaque appel monte d'un cran, le
 // troisieme referme le cycle.
-test("evolve fait monter la mascotte d'un cran dans la chaîne", async ({ page }) => {
+test("should move the mascot one step up the chain on evolve", async ({ page }) => {
   const cli = await boot(page);
 
   await cli.fill("/slime evolve");
@@ -803,10 +807,10 @@ test("evolve fait monter la mascotte d'un cran dans la chaîne", async ({ page }
   await expect(mascot(page)).toHaveAttribute("data-form", "cube");
   // La bande, et pas seulement la classe : une regle de forme trop specifique ecrasait le
   // decalage vertical, et toutes les bandes retombaient sur la premiere.
-  expect(await bande(page), "la transition ouvre sa propre bande").toBe("-2048px");
+  expect(await bande(page), "the transition opens its own band").toBe("-2048px");
 
   await expect(mascot(page)).toHaveClass(/slime--idle\b/u, { timeout: 6000 });
-  expect(await bande(page), "le repos du cube ouvre la premiere bande").toBe("0px");
+  expect(await bande(page), "the cube idle opens the first band").toBe("0px");
 
   await cli.fill("/slime evolve");
   await cli.press("Enter");
@@ -824,7 +828,7 @@ test("evolve fait monter la mascotte d'un cran dans la chaîne", async ({ page }
 });
 
 // La feuille d'une forme ne part qu'a la demande, et une seule fois.
-test("la feuille du cube ne part qu'à la commande, et une seule fois", async ({ page }) => {
+test("should request the cube sheet only on the command, and only once", async ({ page }) => {
   const asked = watchSheets(page),
     cli = await boot(page);
 
@@ -847,7 +851,7 @@ test("la feuille du cube ne part qu'à la commande, et une seule fois", async ({
 
 // Une transformation tient ses 2,4 s : la frappe, une section ou un clic la couperaient au
 // milieu. C'est le seul etat qui bloque sans faire disparaitre la mascotte.
-test("rien ne coupe une transformation en cours", async ({ page }) => {
+test("should let nothing interrupt a transformation in progress", async ({ page }) => {
   const cli = await boot(page);
 
   await cli.fill("/slime evolve");
@@ -863,7 +867,7 @@ test("rien ne coupe une transformation en cours", async ({ page }) => {
 
 // Le journal ne doit pas annoncer un geste que la coquille avale, ni dire que la mascotte
 // est absente alors qu'elle est la, en train de changer.
-test("pendant la transformation, la commande est refusée sans mentir", async ({ page }) => {
+test("should refuse the command without lying during the transformation", async ({ page }) => {
   const cli = await boot(page);
 
   await cli.fill("/slime evolve");
@@ -878,7 +882,7 @@ test("pendant la transformation, la commande est refusée sans mentir", async ({
 });
 
 // L'evolution est un easter egg : la retrouver fait partie du jeu.
-test("l'évolution ne survit pas à un rechargement", async ({ page }) => {
+test("should not keep the evolution across a reload", async ({ page }) => {
   const cli = await boot(page);
 
   await cli.fill("/slime evolve");
@@ -891,7 +895,7 @@ test("l'évolution ne survit pas à un rechargement", async ({ page }) => {
 });
 
 // Une forme evoluee doit jouer ses etats comme le slime : meme bande, meme feuille.
-test("le cube joue ses états sur les bonnes bandes", async ({ page }) => {
+test("should play the cube states on the right bands", async ({ page }) => {
   const cli = await boot(page);
 
   await cli.fill("/slime evolve");
@@ -902,7 +906,7 @@ test("le cube joue ses états sur les bonnes bandes", async ({ page }) => {
   await cli.press("Enter");
 
   await expect(mascot(page)).toHaveClass(/slime--sleep\b/u);
-  expect(await bande(page), "la veille n'ouvre pas la bande du repos").not.toBe("0px");
+  expect(await bande(page), "sleep does not open the idle band").not.toBe("0px");
 
   const feuille = await mascot(page).evaluate((node) => getComputedStyle(node).backgroundImage);
 

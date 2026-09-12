@@ -1,7 +1,7 @@
 import { COW_HEAD_MODES, cowsay, interpret } from "../../src/interpret.ts";
 import type { Context } from "../../src/interpret.ts";
 import assert from "node:assert/strict";
-import { test } from "node:test";
+import { it } from "node:test";
 
 const CONTEXT: Context = {
     columns: 40,
@@ -24,7 +24,7 @@ const CONTEXT: Context = {
       lines.findIndex((row: string) => row.includes("^__^")),
     );
 
-test("une phrase courte tient dans une bulle à chevrons", () => {
+it("should fit a short sentence in an angle bracket bubble", () => {
   const lines = cowsay("Moo", { columns: 40 });
 
   assert.equal(lines[1], "< Moo >");
@@ -34,29 +34,29 @@ test("une phrase courte tient dans une bulle à chevrons", () => {
 
 // La bulle change de forme selon le nombre de lignes : c'est le comportement de
 // l'original, et il ne doit pas se perdre au portage.
-test("une phrase longue passe aux barres obliques", () => {
+it("should switch a long sentence to slash borders", () => {
   const lines = body(
     cowsay("un texte assez long pour forcer plusieurs lignes ici", { columns: 30 }),
   );
 
-  assert.ok(lines.length > 3, "plusieurs lignes de bulle");
-  assert.ok(lines[1]?.startsWith("/"), "la première ligne ouvre avec une barre");
-  assert.ok(lines.at(-2)?.startsWith("\\"), "la dernière ferme avec l'autre");
-  assert.ok(lines[2]?.startsWith("|"), "les lignes du milieu sont droites");
+  assert.ok(lines.length > 3, "several bubble lines");
+  assert.ok(lines[1]?.startsWith("/"), "the first line opens with a slash");
+  assert.ok(lines.at(-2)?.startsWith("\\"), "the last line closes with the other slash");
+  assert.ok(lines[2]?.startsWith("|"), "the middle lines are straight");
 });
 
-test("le retour à la ligne suit la largeur demandée", () => {
+it("should wrap the text at the requested width", () => {
   const large = body(
       cowsay("un texte assez long pour forcer plusieurs lignes ici", { columns: 80 }),
     ),
     narrow = body(cowsay("un texte assez long pour forcer plusieurs lignes ici", { columns: 24 }));
 
-  assert.ok(narrow.length > large.length, "moins de colonnes, plus de lignes");
+  assert.ok(narrow.length > large.length, "fewer columns, more lines");
 });
 
 // La commande ne prend plus de drapeau : elle tire un visage au hasard a chaque appel. Les
 // huit restent donc atteignables par l'API, et c'est le repartiteur qui choisit.
-test("les huit modes de tête changent les yeux", () => {
+it("should give each of the eight head modes its own eyes", () => {
   const eyes = new Set(
     COW_HEAD_MODES.map((mode) =>
       cowsay("x", { mode }).find((row) => row.includes(String.raw`)\_______`)),
@@ -64,22 +64,22 @@ test("les huit modes de tête changent les yeux", () => {
   );
 
   assert.equal(COW_HEAD_MODES.length, 8);
-  assert.equal(eyes.size, 8, "chaque mode a ses yeux");
+  assert.equal(eyes.size, 8, "each mode has its own eyes");
 });
 
-test("les modes mort et défoncé sortent la langue", () => {
+it("should stick the tongue out in the dead and the stoned modes", () => {
   for (const mode of ["-d", "-s"]) {
     const tongue = cowsay("x", { mode }).find((row) => row.includes("||----w |"));
 
-    assert.match(tongue ?? "", /U/u, `le mode ${mode} sort la langue`);
+    assert.match(tongue ?? "", /U/u, `mode ${mode} sticks the tongue out`);
   }
 });
 
-test("sans texte, la vache dit quelque chose quand même", () => {
+it("should make the cow say something even without text", () => {
   assert.ok(cowsay("", {}).some((row) => row.includes("Moo.")));
 });
 
-test("un mot plus long que la largeur ne boucle pas", () => {
+it("should not loop on a word longer than the width", () => {
   const lines = cowsay("anticonstitutionnellement", { columns: 10 });
 
   assert.ok(lines.length > 5);
@@ -88,7 +88,7 @@ test("un mot plus long que la largeur ne boucle pas", () => {
 
 // Les drapeaux ont disparu de la commande : « cowsay -d » ecrit « -d », il ne l'interprete
 // plus. Le visage se tire au hasard, donc le test verifie l'appartenance, pas l'identite.
-test("la commande tire un visage parmi les huit", () => {
+it("should draw a face at random among the eight", () => {
   const yeux = new Set(
       Array.from({ length: 60 }, () => {
         const rendu = interpret("/cowsay bonjour", CONTEXT)
@@ -106,8 +106,8 @@ test("la commande tire un visage parmi les huit", () => {
       }),
     );
 
-  assert.ok(yeux.size > 1, "soixante appels doivent sortir plusieurs visages");
+  assert.ok(yeux.size > 1, "sixty calls must produce several faces");
   for (const oeil of yeux) {
-    assert.ok(connus.has(oeil), `visage inconnu : ${oeil}`);
+    assert.ok(connus.has(oeil), `unknown face: ${oeil}`);
   }
 });
