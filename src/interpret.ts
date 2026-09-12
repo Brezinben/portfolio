@@ -4,6 +4,7 @@
 // minuteur. Il rend les lignes à afficher et des descripteurs d'effets que la coquille
 // applique. C'est ce qui permet de couvrir les commandes sans navigateur.
 
+import { ACTIVITIES, OFFERED, slime } from "./interpret/mascot.ts";
 import {
   ALIASES,
   ASK,
@@ -14,8 +15,10 @@ import {
   helpLines,
   vocabulary,
 } from "./interpret/vocabulary.ts";
+import { COW_MODES, cowsay } from "./interpret/cowsay.ts";
 import type { CompletionContext, Context, Entry } from "./interpret/context.ts";
-import { type Effect, type Expression, type Outcome, say, track } from "./interpret/effects.ts";
+import { EGGS, type Egg } from "./interpret/eggs.ts";
+import { type Effect, type Outcome, say, track } from "./interpret/effects.ts";
 import {
   type Line,
   MAX_SUGGESTIONS,
@@ -40,6 +43,7 @@ export {
   type TrackValue,
 } from "./interpret/effects.ts";
 export { type CompletionContext, type Context, type Entry } from "./interpret/context.ts";
+export { COW_HEAD_MODES, cowsay } from "./interpret/cowsay.ts";
 export { MAX_SUGGESTIONS, type Line } from "./interpret/lines.ts";
 export { TONES, type Tone, safeTone } from "./interpret/tone.ts";
 export {
@@ -53,176 +57,29 @@ export {
 const YES = /^(?<yes>o|oui|y|yes|ok)$/iu,
   NO = /^(?<no>n|non|no|annuler|cancel)$/iu;
 
-// Un easter egg : son nom pour la mesure, ses lignes, et ce qu'il fait dire.
-export interface Egg {
-  egg: string;
-  lines: Line[];
-  say?: Effect;
-}
+const answerPending = (input: string, pending: string): Outcome => {
+  if (YES.test(input)) {
+    return { effects: [{ payload: pending, type: "send" }], lines: [echoed(input)] };
+  }
 
-export interface Told {
-  effects: Effect[];
-  lines: Line[];
-}
-
-const EXPRESSIONS: Record<Expression, string> = {
-    alert: "surpris",
-    happy: "content",
-    idle: "neutre",
-    laugh: "hilare",
-    sad: "triste",
-    scared: "apeuré",
-    sleep: "endormi",
-  },
-  // Deux listes, et elles disent deux choses différentes. « EXPRESSIONS » nomme toutes les
-  // expressions, « idle » compris, parce que « say » s'en sert pour ramener la mascotte au
-  // repos. « OFFERED » est ce que la commande propose, et « idle » n'y est pas : il
-  // n'aurait rien montré, la mascotte y est déjà. Ne les refusionnez pas.
-  OFFERED: Expression[] = ["alert", "happy", "laugh", "sad", "scared", "sleep"],
-  // Une activité demande un accessoire, là où une expression se lit sur le visage. Le glossaire
-  // les sépare, et la commande aussi : « slime activity <nom> ».
-  ACTIVITIES = ["bike", "coffee", "goal", "juggle", "lift", "train"],
-  EGGS = {
-    benjamin: {
-      egg: "nom",
-      lines: [
-        info(
-          "Vélo de course, code propre, et une conviction : un service doit marcher pour tout le monde.",
-        ),
-        muted("Si vous lisez ceci, vous avez tapé mon nom dans un terminal. On devrait se parler."),
-        line({ marker: "›", markerTone: "acc", text: "benjamin.david1@hotmail.fr", tone: "acc" }),
+  if (NO.test(input)) {
+    return {
+      effects: [
+        track("proposition_refusee", {}),
+        say("comme vous voulez", "idle"),
+        { patch: { pending: undefined }, type: "state" },
       ],
-      say: say("salut", "happy"),
-    },
-    coffee: {
-      egg: "coffee",
-      lines: [
-        line({
-          marker: "418",
-          markerTone: "warn",
-          text: "I'm a teapot. Le café se fait hors du navigateur.",
-        }),
-      ],
-    },
-    sudo: {
-      egg: "sudo",
-      lines: [failed("benjamin n'est pas dans le fichier sudoers. Cet incident sera signalé.")],
-      say: say("non.", "scared"),
-    },
-    vim: { egg: "vim", lines: [info("Piège classique. :q! ne fonctionne pas ici non plus.")] },
-  },
-  answerPending = (input: string, pending: string): Outcome => {
-    if (YES.test(input)) {
-      return { effects: [{ payload: pending, type: "send" }], lines: [echoed(input)] };
-    }
+      lines: [echoed(input), muted("annulé, rien n'a été envoyé.")],
+    };
+  }
 
-    if (NO.test(input)) {
-      return {
-        effects: [
-          track("proposition_refusee", {}),
-          say("comme vous voulez", "idle"),
-          { patch: { pending: undefined }, type: "state" },
-        ],
-        lines: [echoed(input), muted("annulé, rien n'a été envoyé.")],
-      };
-    }
+  return { effects: [], lines: [muted("répondez « oui » ou « non » — Échap annule.")] };
+};
 
-    return { effects: [], lines: [muted("répondez « oui » ou « non » — Échap annule.")] };
-  },
-  isExpression = (value: string): value is Expression =>
-    OFFERED.some((expression) => expression === value),
-  emoted = (expression: Expression): Told => ({
-    effects: [{ expression, type: "emote" }, say(EXPRESSIONS[expression], expression)],
-    lines: [done(`le slime est ${EXPRESSIONS[expression]}.`)],
-  }),
-  absent: Told = {
-    effects: [{ type: "usage" }],
-    lines: [failed("le slime n'est pas la : attendez qu'il revienne.")],
-  },
-  changing: Told = {
-    effects: [{ type: "usage" }],
-    lines: [failed("la mascotte change de forme : laissez-la finir.")],
-  },
-  dozing: Told = {
-    effects: [{ type: "usage" }],
-    lines: [
-      failed("la mascotte dort tant que le réseau est coupé."),
-      muted("elle se réveille d'elle-même au retour du réseau."),
-    ],
-  },
-  // Quatre etats possibles, un seul a la fois : la coquille dit lequel plutot que de passer
-  // trois booleens dont la plupart des combinaisons n'existent pas.
-  slime = (argument: string, name: string, mascot: Context["mascot"]): Told => {
-    // Annoncer « le slime explose » pendant qu'il est deja parti fait mentir le journal :
-    // la coquille avale le geste, la ligne reste. Endormie, elle avale tout de meme.
-    if (mascot === "asleep") {
-      return dozing;
-    }
-
-    if (mascot === "away") {
-      return absent;
-    }
-
-    if (mascot === "busy") {
-      return changing;
-    }
-
-    if (argument === "evolve") {
-      return {
-        effects: [{ type: "evolve" }],
-        lines: [done("la mascotte change de forme.")],
-      };
-    }
-
-    if (argument === "drop") {
-      return { effects: [{ type: "drop" }], lines: [done("le slime tombe et s'écrase.")] };
-    }
-
-    if (argument === "kill") {
-      return { effects: [{ type: "blowUp" }], lines: [done("le slime explose.")] };
-    }
-
-    if (argument === "activity") {
-      if (!ACTIVITIES.includes(name)) {
-        return {
-          effects: [{ type: "usage" }],
-          lines: [offer("/slime activity <nom>", ACTIVITIES)],
-        };
-      }
-
-      return {
-        effects: [{ name, type: "activity" }],
-        lines: [done(`le slime s'y met : ${name}.`)],
-      };
-    }
-
-    if (argument === "expression") {
-      return isExpression(name)
-        ? emoted(name)
-        : { effects: [{ type: "usage" }], lines: [offer("/slime expression <nom>", OFFERED)] };
-    }
-
-    // « /slime happy » reste un raccourci : il marche, mais l'aide annonce le chemin long,
-    // symetrique de « /slime activity <nom> ».
-    if (!isExpression(argument)) {
-      return {
-        effects: [{ type: "usage" }],
-        lines: [
-          offer("/slime expression <nom>", OFFERED),
-          offer("/slime activity <nom>", ACTIVITIES),
-          info("/slime evolve — lui fait changer de forme"),
-          info("/slime drop — le fait tomber du plafond"),
-          info("/slime kill — le fait exploser, il revient de lui-même"),
-        ],
-      };
-    }
-
-    return emoted(argument);
-  },
-  // Le vocabulaire dépend du chemin déjà tapé, et pas seulement du premier mot : « slime »
-  // propose ses sous-commandes, « slime expression » les expressions, « slime activity » les
-  // activités. Proposer le vocabulaire entier après l'un ou l'autre ferait du bruit.
-  argumentsFor = (path: string, context: CompletionContext): string[] | undefined => {
+// Le vocabulaire dépend du chemin déjà tapé, et pas seulement du premier mot : « slime »
+// propose ses sous-commandes, « slime expression » les expressions, « slime activity » les
+// activités. Proposer le vocabulaire entier après l'un ou l'autre ferait du bruit.
+const argumentsFor = (path: string, context: CompletionContext): string[] | undefined => {
     const ids = [...context.sections, ...context.details].map((entry) => entry.id),
       // Quatre sous-commandes claires valent mieux que dix mots melanges : les expressions
       // vivent un niveau plus bas, derriere « expression ».
@@ -511,91 +368,6 @@ export const commonPrefix = (entries: string[]): string => {
     return prefix.slice(0, index);
   });
 };
-
-// Cowsay, conforme a l'original : la bulle change de forme selon le nombre de lignes,
-// et le retour a la ligne suit la largeur du volet.
-const FACES_COW = {
-    "-b": { eyes: "==", tongue: "  " },
-    "-d": { eyes: "xx", tongue: "U " },
-    "-g": { eyes: "$$", tongue: "  " },
-    "-p": { eyes: "@@", tongue: "  " },
-    "-s": { eyes: "**", tongue: "U " },
-    "-t": { eyes: "--", tongue: "  " },
-    "-w": { eyes: "OO", tongue: "  " },
-    "-y": { eyes: "..", tongue: "  " },
-  },
-  COW_MODES = Object.keys(FACES_COW),
-  wrap = (text: string, columns: number): string[] => {
-    const lines = [];
-    let current = "";
-
-    for (const word of text.split(" ")) {
-      if (current === "") {
-        current = word;
-      } else if (`${current} ${word}`.length <= columns) {
-        current += ` ${word}`;
-      } else {
-        lines.push(current);
-        current = word;
-      }
-    }
-
-    if (current !== "") {
-      lines.push(current);
-    }
-
-    return lines.length === 0 ? [""] : lines;
-  },
-  EDGES = { first: ["/", "\\"], last: ["\\", "/"], middle: ["|", "|"] },
-  edgeFor = (index: number, count: number) => {
-    if (index === 0) {
-      return EDGES.first;
-    }
-
-    if (index === count - 1) {
-      return EDGES.last;
-    }
-
-    return EDGES.middle;
-  },
-  bubble = (lines: string[]): string[] => {
-    const width = Math.max(...lines.map((entry) => entry.length)),
-      top = ` ${"_".repeat(width + 2)}`,
-      bottom = ` ${"-".repeat(width + 2)}`;
-
-    if (lines.length === 1) {
-      return [top, `< ${lines[0]} >`, bottom];
-    }
-
-    return [
-      top,
-      ...lines.map((entry, index) => {
-        const [left, right] = edgeFor(index, lines.length);
-
-        return `${left} ${entry.padEnd(width)} ${right}`;
-      }),
-      bottom,
-    ];
-  };
-
-export const cowsay = (
-  text: string,
-  { columns = 40, mode = "" }: { columns?: number; mode?: string } = {},
-): string[] => {
-  const face = lookup(FACES_COW, mode) ?? { eyes: "oo", tongue: "  " },
-    body = wrap(text.trim() === "" ? "Moo." : text.trim(), Math.max(8, columns - 6));
-
-  return [
-    ...bubble(body),
-    String.raw`        \   ^__^`,
-    `         \\  (${face.eyes})\\_______`,
-    "            (__)\\       )\\/\\",
-    `             ${face.tongue} ||----w |`,
-    "                ||     ||",
-  ];
-};
-
-export const COW_HEAD_MODES = COW_MODES;
 
 // Consentement en deux temps : la commande dit ce qui part, ou, et ce qui ne part pas.
 // Rien n'est envoye avant un oui.
