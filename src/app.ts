@@ -13,6 +13,7 @@ import {
   interpret,
   safeTone,
 } from "./interpret.ts";
+import { type MascotApi, mascotSlice } from "./terminal/mascot/slice.ts";
 
 // Le bandeau que la coquille calcule : l'interpreteur ne rend qu'un mot a dessiner, le
 // balisage a besoin d'une geometrie et d'une ombre.
@@ -339,8 +340,6 @@ const BOOT_MS = 2000,
     slime: { next: "cube", sheet: "cube", state: "evolveCube" },
   },
   TRANSITIONS = new Set(["devolve", "evolveCube", "evolvePingouin"]),
-  // Une case affichee fait 64 px, soit la hauteur de la piste.
-  SPRITE = 64,
   // Sous ce pas la mascotte garderait sa prise plutot que de trembler entre deux feuilles.
   DRAG_STEP = 2,
   // Le plaquage se declenche quand le curseur sort de la piste. Or la piste a la hauteur du
@@ -579,11 +578,16 @@ interface State {
   typed: string;
 }
 
+// Ce que les tranches deja extraites ajoutent au composant. « this » doit les voir depuis
+// ce qui reste ici : la liste grossit d'un nom a chaque extraction, et disparait avec
+// withMagics quand il ne restera plus rien a composer dans ce fichier.
+type Slices = MascotApi;
+
 // ThisType ajoute les magies au type de « this » sans rien changer au code produit :
 // cette fonction est l'identite. L'etat vient de State, le reste du litteral vient de T :
 // sans ce partage, un champ initialise a vide prendrait le type du vide.
 const withMagics = <T>(
-  component: State & T & ThisType<Magics & State & Omit<T, keyof State>>,
+  component: State & T & ThisType<Magics & State & Omit<T, keyof State> & Slices>,
 ): State & Omit<T, keyof State> => component;
 
 document.addEventListener("alpine:init", () => {
@@ -591,9 +595,9 @@ document.addEventListener("alpine:init", () => {
   // navigation, clavier, options, mascotte, commandes. Les trier alphabetiquement
   // disperserait chaque sujet aux quatre coins du fichier pour un gain nul.
   // eslint-disable-next-line sort-keys
-  Alpine.data("terminal", () =>
+  Alpine.data("terminal", () => {
     // eslint-disable-next-line sort-keys
-    withMagics({
+    const component = withMagics({
       THEMES,
       TOGGLES,
       asker: undefined,
@@ -1495,12 +1499,6 @@ document.addEventListener("alpine:init", () => {
         if (distance < 60) {
           this.mascotPlay("wink");
         }
-      },
-
-      trackWidth() {
-        const { track } = this.$refs;
-
-        return track ? Math.max(0, track.clientWidth - SPRITE) : 0;
       },
 
       // Une mascotte endormie ne se promene pas : la balade passe par place(), que la garde
@@ -2719,6 +2717,15 @@ document.addEventListener("alpine:init", () => {
           Math.max(0, (this.reduced ? 0 : BOOT_MS) - waited),
         );
       },
-    }),
-  );
+    });
+
+    // Les tranches entrent par leurs descripteurs, jamais par un etalement. Un etalement
+    // appellerait les accesseurs du composant et copierait leur valeur : « reduced » fige a
+    // false laisserait tourner les animations chez qui demande moins de mouvement, sans
+    // casser un seul test. Il ferait aussi perdre a withMagics l'inference de son type.
+    //
+    // Une methode oubliee dans le litteral apres son deplacement perd contre la tranche :
+    // c'est le code neuf qui gagne, pas le residu.
+    return Object.defineProperties(component, Object.getOwnPropertyDescriptors(mascotSlice()));
+  });
 });
