@@ -213,9 +213,16 @@ a:hover {
   overflow: hidden;
 }
 
+/* Le titre porte les deux parties et rien d'autre : chacune a sa taille. */
+h1 {
+  margin: 0;
+  font: inherit;
+}
+
 /* Le code est le sujet de la page : sur un telephone il prend la largeur, pas un plancher
    de 40 px qui le laissait plus petit que sur un ecran deux fois plus large. */
 .code {
+  display: block;
   font-size: clamp(72px, 20vw, 112px);
   line-height: 1;
   font-weight: 700;
@@ -224,6 +231,7 @@ a:hover {
 }
 
 .sub {
+  display: block;
   font-size: clamp(17px, 4.5vw, 21px);
 }
 
@@ -363,6 +371,14 @@ a:hover {
 
 [data-ctl="nav"] strong {
   color: var(--acc-text);
+}
+
+/* La sortie mise en avant porte un fond teinté. L'ambre textuel et le gris secondaire y
+   tombent sous 4,5:1 sur cinq des huit thèmes — mesuré par le scan axe de la page. Sur
+   cette ligne, l'accent est dit par la barre et par le fond, pas par la couleur du texte. */
+[data-ctl="nav"][data-primary] strong,
+[data-ctl="nav"][data-primary] small {
+  color: var(--fg);
 }
 
 [data-ctl="nav"] small {

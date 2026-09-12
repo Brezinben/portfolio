@@ -906,3 +906,34 @@ Deux conséquences :
 **Et la transition disparaît.** `[data-ctl="nav"]` la portait dans la maquette.
 `src/index.html` n'en porte plus sur ces entrées depuis la refonte CSS, qui avait laissé la
 question ouverte entre `nav` et `tl`. La page 404 suit la réponse du dépôt.
+
+**Le script sort du balisage, lui aussi.** Il était en ligne dans `src/404.html` : donc hors
+de `tsc`, hors d'oxlint, hors d'oxfmt, et servi tel quel — `minifyJS` est éteint, et le
+commentaire de `MINIFY` affirmait à tort que Rolldown couvrait « le seul script en ligne du
+projet ». `src/404.ts` passe désormais par Rolldown en format `iife`, et la construction
+injecte le bundle minifié à la place de sa balise.
+
+Le format `iife` plutôt qu'`esm` : un module est toujours différé, et le thème doit être posé
+avant le premier rendu. Un seul fichier, donc, bloquant et en tête, qui attend le DOM pour le
+reste.
+
+Trois défauts sont tombés en le typant :
+
+- `decodeURI` lève sur un échappement mal formé — l'adresse la plus probable sur cette page.
+  La levée emportait tout le reste du script : la bulle, le clic sur la mascotte, les flèches.
+- Un thème inconnu dans `bd-term-opts` se posait tel quel sur `data-theme`. Il ne
+  correspondait à aucun bloc, et la page perdait ses couleurs. Il est validé contre `THEMES`,
+  importé de `src/terminal/settings.ts` pour ne pas recopier la liste.
+- Les flèches parcouraient la mascotte même retirée, et `focus()` sur un élément non rendu ne
+  fait rien : sous `anim: false`, chaque pression visait le même vide et la page avalait la
+  frappe. La course ne retient que les contrôles rendus.
+
+**Et deux défauts d'accessibilité, trouvés en ajoutant la page au scan axe.** Elle y
+échappait : aucune boucle ne l'atteignait, puisque le site ne la sert sur aucune adresse
+connue. La page n'avait aucun titre de niveau un. Et la sortie mise en avant porte un fond
+teinté, où l'ambre textuel et le gris secondaire tombent sous 4,5:1 sur cinq des huit
+thèmes : sur cette ligne, l'accent est désormais dit par la barre et par le fond, pas par la
+couleur du texte.
+
+Le scan attend les animations qui finissent. Lancé pendant le fondu d'entrée, il lit des
+couleurs à mi-opacité et rapporte treize écarts qui n'existent pas.

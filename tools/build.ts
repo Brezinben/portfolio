@@ -47,6 +47,7 @@ const ROOT = fileURLToPath(new URL("../", import.meta.url)),
   PAGES = ["404.html", "index.html", "texte.html"],
   MODULE_TAG = '<script type="module" src="app.ts"></script>',
   STYLE_TAG = '<link rel="stylesheet" href="404.css">',
+  SCRIPT_TAG = '<script src="404.ts"></script>',
   // Une case de mascotte fait 32 px natifs et s'affiche à x2. Voir l'ADR 0004.
   FRAME = 32,
   SCALE = 2,
@@ -79,7 +80,7 @@ const ROOT = fileURLToPath(new URL("../", import.meta.url)),
       /(?<head>\.slime\[data-form="pingouin"\] \{\n)(?<indent>[^\S\n]*)background-position: 0 0\n/u,
     slime: /(?<head>)(?<indent>[^\S\n]*)background-position: 0 0;\n/u,
   },
-  // MinifyJS reste absent. Rolldown a déjà minifié le seul script en ligne du projet.
+  // MinifyJS reste absent. Rolldown a déjà minifié les deux scripts en ligne du projet.
   // RemoveAttributeQuotes et removeOptionalTags rendent le balisage déroutant pour 0,3 Ko.
   MINIFY = { collapseWhitespace: true, minifyCSS: true, removeComments: true },
   // Le code d'erreur de Node ne figure pas dans le type Error : on le retrecit plutot que
@@ -96,16 +97,18 @@ const ROOT = fileURLToPath(new URL("../", import.meta.url)),
     error instanceof Error && "code" in error && typeof error.code === "string"
       ? error.code
       : undefined,
-  bundle = async () => {
+  // La page d'accueil charge un module ; la page d'erreur pose son thème avant le premier
+  // rendu, donc son script est bloquant et ne peut pas être un module. D'où les deux formats.
+  bundle = async (entry: string, format: "esm" | "iife") => {
     const result = await build({
-        input: join(SOURCE, "app.ts"),
-        output: { format: "esm", minify: true },
+        input: join(SOURCE, entry),
+        output: { format, minify: true },
         write: false,
       }),
       [chunk] = result.output;
 
     if (!chunk) {
-      throw new Error("Rolldown n'a rien produit pour app.ts");
+      throw new Error(`Rolldown n'a rien produit pour ${entry}`);
     }
 
     return chunk.code;
@@ -345,9 +348,14 @@ const unfilter = (filter: number, value: number, around: Around) => {
   foldPage = (text: string, plan: SheetPlan, dirs: string[]) => {
     let seen = 0;
 
-    // L'adresse de l'image fusionnée reprend la forme de celles qu'elle remplace : une page
-    // servie sur une adresse quelconque écrit des chemins absolus, et les garde.
-    const root = LEADING_SLASH.test(text.match(SHEET_URL)?.[0] ?? "") ? "/" : "",
+    // Le balayage est plus large que le pliage : il prend toute adresse de feuille, la regle
+    // exige en plus les deux lignes dans l'ordre. Comparer les deux comptes rattrape la regle
+    // qu'un reformatage a defaite. Sans ce garde-fou, l'adresse survivrait dans l'artefact
+    // alors que le dossier qu'elle vise en a ete retire.
+    const declared = text.match(SHEET_URL) ?? [],
+      // L'adresse de l'image fusionnée reprend la forme de celles qu'elle remplace : une page
+      // servie sur une adresse quelconque écrit des chemins absolus, et les garde.
+      root = LEADING_SLASH.test(declared[0] ?? "") ? "/" : "",
       folded = text.replace(SHEET_RULE, (_rule, indent: string, file: string) => {
         const band = plan.bands.get(file.replace(LEADING_SLASH, ""));
 
@@ -359,6 +367,10 @@ const unfilter = (filter: number, value: number, around: Around) => {
 
         return `${indent}background-position-y: ${-(band * BAND)}px;\n`;
       });
+
+    if (seen !== declared.length) {
+      throw new Error(`${declared.length} feuilles déclarées, mais ${seen} règles pliées`);
+    }
 
     if (seen === 0) {
       throw new Error("aucune règle d'état de mascotte à plier");
@@ -398,26 +410,32 @@ const unfilter = (filter: number, value: number, around: Around) => {
         plan,
         FORMS.map(({ dir }) => dir),
       ),
-      bundled = await bundle(),
+      bundled = await bundle("app.ts", "esm"),
       // Une fonction de remplacement, car un remplacement littéral interprète les motifs en
       // dollar. Le code source porte « $$ » dans les yeux de cowsay.
       replaced = folded.replace(MODULE_TAG, () => `<script type="module">${bundled}</script>`);
 
     await writeFile(join(staging, "index.html"), await minify(replaced, MINIFY));
   },
-  // La page d'erreur garde sa feuille a part dans src/, pour qu'elle s'edite et se relise.
-  // L'artefact la remet en ligne : une adresse inconnue ne doit pas coûter une requete
-  // bloquante de plus. MINIFY porte deja minifyCSS, qui s'applique au bloc injecte.
+  // La page d'erreur garde sa feuille et son script a part dans src/, pour qu'ils s'editent,
+  // se relisent et passent sous les memes outils que le reste. L'artefact les remet en ligne :
+  // une adresse inconnue ne doit pas couter deux requetes bloquantes de plus.
   build404 = async (staging: string, plan: SheetPlan) => {
     const page = await readFile(join(SOURCE, "404.html"), "utf8"),
       sheet = await readFile(join(SOURCE, "404.css"), "utf8");
 
-    if (!page.includes(STYLE_TAG)) {
-      throw new Error(`404.html ne porte plus ${STYLE_TAG}`);
+    for (const tag of [STYLE_TAG, SCRIPT_TAG]) {
+      if (!page.includes(tag)) {
+        throw new Error(`404.html ne porte plus ${tag}`);
+      }
     }
 
     const folded = foldPage(sheet, plan, ["slime"]),
-      inlined = page.replace(STYLE_TAG, () => `<style>${folded}</style>`);
+      bundled = await bundle("404.ts", "iife"),
+      // Deux fonctions de remplacement : un littéral interpréterait les motifs en dollar.
+      inlined = page
+        .replace(STYLE_TAG, () => `<style>${folded}</style>`)
+        .replace(SCRIPT_TAG, () => `<script>${bundled}</script>`);
 
     await writeFile(join(staging, "404.html"), await minify(inlined, MINIFY));
   },

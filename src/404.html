@@ -10,12 +10,9 @@
   <link rel="icon" href="/assets/icons/favicon.svg" type="image/svg+xml">
   <link rel="icon" href="/assets/icons/favicon-32.png" sizes="32x32">
   <link rel="preload" href="/assets/fonts/jetbrains-mono.woff2" as="font" type="font/woff2" crossorigin>
-  <!-- Le thème vit dans bd-term-opts, comme sur les deux autres pages. Un seul script, en
-       tête, qui pose data-theme et data-anim sur la racine : servie sur une adresse
-       inconnue, cette page ne charge ni content.json ni app.ts. -->
-  <script>try { const o = JSON.parse(localStorage["bd-term-opts"] || "{}"); if (o.theme) document.documentElement.dataset.theme = o.theme; if (o.anim === false) document.documentElement.dataset.anim = "false" } catch { }</script>
-  <!-- La construction remplace ce lien par la feuille en ligne. Servi tel quel depuis src/,
-       le fichier se dessine quand même. -->
+  <!-- Seul script de la page, et il est bloquant : le thème doit être posé avant le
+       premier rendu. La construction le remplace par son bundle minifié. -->
+  <script src="404.ts"></script>
   <link rel="stylesheet" href="404.css">
 </head>
 
@@ -25,10 +22,10 @@
       <p class="zone__head"><span>erreur</span><span data-tone="warn">exit 404</span></p>
 
       <div class="zone__body">
-        <div>
-          <p class="code">4<span class="zero">0</span>4</p>
-          <p class="sub">route introuvable</p>
-        </div>
+        <h1>
+          <span class="code">4<span class="zero">0</span>4</span>
+          <span class="sub">route introuvable</span>
+        </h1>
 
         <div>
           <p class="zone__line"><span data-tone="acc" aria-hidden="true">›</span><span>cd <span
@@ -62,60 +59,6 @@
     <span>~/404 <span data-tone="acc">main</span></span>
   </footer>
 
-  <script>
-    const BUBBLES = ["le slime cherche encore", "il fouille, sans résultat", "cette route n'a jamais existé"];
-    const pick = () => BUBBLES[Math.floor(Math.random() * BUBBLES.length)];
-
-    let path = decodeURI(location.pathname);
-    if (path === "/" || !path) path = "/route-inconnue";
-    if (path.length > 52) path = path.slice(0, 51) + "…";
-    document.querySelector("[data-path]").textContent = path;
-
-    const bubble = document.querySelector("[data-bubble]");
-    const slime = document.querySelector("[data-slime]");
-    bubble.textContent = pick();
-
-    let back;
-    slime.addEventListener("click", () => {
-      clearTimeout(back);
-      slime.classList.replace("slime--alert", "slime--happy");
-      bubble.textContent = "ça va mieux";
-      back = setTimeout(() => {
-        slime.classList.replace("slime--happy", "slime--alert");
-        bubble.textContent = pick();
-      }, 1400);
-    });
-
-    // Une seule sortie est mise en avant, et elle suit le pointeur comme le clavier : au
-    // repos c'est le retour à l'accueil, et passer à la suivante retire la marque à la
-    // précédente. C'est la sélection d'une liste, pas une décoration sur la première ligne.
-    const exits = [...document.querySelectorAll("[data-ctl='nav']")];
-
-    for (const exit of exits) {
-      const highlight = () => {
-        for (const other of exits) other.toggleAttribute("data-primary", other === exit);
-      };
-
-      exit.addEventListener("pointerenter", highlight);
-      exit.addEventListener("focus", highlight);
-    }
-
-    // Les flèches parcourent les contrôles du volet, comme sur la version terminal. Elles
-    // s'arrêtent aux deux bouts plutôt que de boucler, et la première pression prend le
-    // contrôle le plus proche du sens demandé.
-    const controls = [...document.querySelectorAll("[data-slime], [data-ctl]")];
-
-    document.addEventListener("keydown", (event) => {
-      const step = { ArrowDown: 1, ArrowUp: -1 }[event.key];
-      if (step === undefined) return;
-
-      event.preventDefault();
-
-      const at = controls.indexOf(document.activeElement);
-      const next = at === -1 ? (step > 0 ? 0 : controls.length - 1) : at + step;
-      controls[Math.max(0, Math.min(controls.length - 1, next))].focus();
-    });
-  </script>
 </body>
 
 </html>

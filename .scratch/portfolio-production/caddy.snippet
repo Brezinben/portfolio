@@ -10,17 +10,17 @@
 #    Par :
 #        path / *.html *.js *.json *.txt *.xml
 
-# 2. Rendre un corps aux erreurs. Caddy rend aujourd'hui un 404 vide, sans content-type.
-#    Le statut est deja correct : l'audit se trompe en annoncant un 403. Seul le corps
-#    manque. Un corps en texte brut suffit et ne cree aucun fichier a maintenir.
-#    A inserer dans le bloc, apres file_server.
+# 2. Rendre la page d'erreur du site. Le statut est deja correct ; file_server le conserve
+#    quand il tourne dans handle_errors, donc aucune sous-directive « status » n'est utile.
+#    A inserer dans le bloc, avant le handle_errors sans code, qui reste en place et garde
+#    le texte brut pour les autres erreurs.
+#
+#    Applique le 2026-09-13 sur /opt/docker/caddy/Caddyfile et sur la copie versionnee.
+#    Caddy tourne encore sur l'ancienne configuration : il attend « bun run build » puis
+#    « docker restart caddy », dans cet ordre — sans 404.html dans dist/, la reecriture
+#    rendrait un corps vide.
 
-handle_errors {
-	header Content-Type "text/plain; charset=utf-8"
-	respond "{err.status_code} {err.status_text}
-
-Cette adresse n'existe pas sur ce site.
-Le site publie deux pages : / et /texte.html
-Voir https://me.brezinben.dpdns.org/llms.txt
-" {err.status_code}
+handle_errors 404 {
+	rewrite /404.html
+	file_server
 }

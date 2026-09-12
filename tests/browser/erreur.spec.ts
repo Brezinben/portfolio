@@ -15,6 +15,8 @@ const UNKNOWN = "/une/route/qui-n-existe-pas",
       bar: getComputedStyle(node).borderLeftColor,
       fill: getComputedStyle(node).backgroundColor,
     })),
+  focusedText = (page: Page) =>
+    page.evaluate(() => document.activeElement?.textContent?.trim() ?? ""),
   setOptions = (page: Page, opts: string) =>
     page.addInitScript((value) => localStorage.setItem("bd-term-opts", value), opts);
 
@@ -124,19 +126,17 @@ test("should move the highlight to the exit the visitor reaches", async ({ page 
 test("should move focus with the up and down arrows", async ({ page }) => {
   await page.goto(UNKNOWN);
 
-  const focused = () => page.evaluate(() => document.activeElement?.textContent?.trim() ?? "");
-
   await page.keyboard.press("ArrowDown");
   await expect(mascot(page)).toBeFocused();
 
   await page.keyboard.press("ArrowDown");
-  expect(await focused(), "the first exit").toContain("cd ~");
+  expect(await focusedText(page), "the first exit").toContain("cd ~");
 
   await page.keyboard.press("ArrowDown");
-  expect(await focused(), "the second exit").toContain("texte.html");
+  expect(await focusedText(page), "the second exit").toContain("texte.html");
 
   await page.keyboard.press("ArrowUp");
-  expect(await focused(), "and back up").toContain("cd ~");
+  expect(await focusedText(page), "and back up").toContain("cd ~");
 
   // Comme moveInPane, la course s'arrête au bout : elle ne boucle pas.
   await page.keyboard.press("ArrowUp");
@@ -154,6 +154,45 @@ test("should cheer the mascot up on a click, then bring it back", async ({ page 
   expect(await band(page), "the happy band").toBe("-640px");
 
   await expect(mascot(page)).toHaveClass(/slime--alert/u, { timeout: 4000 });
+});
+
+// Sans mouvement, la piste de la mascotte est retirée. Elle restait pourtant en tête de la
+// course des flèches, et « focus » sur un élément non rendu ne fait rien : chaque pression
+// visait le même vide, et la page avalait la frappe sans bouger.
+test("should move focus with the arrows when the mascot is hidden", async ({ page }) => {
+  await setOptions(page, JSON.stringify({ anim: false }));
+  await page.goto(UNKNOWN);
+
+  await page.keyboard.press("ArrowDown");
+  expect(await focusedText(page), "the first exit, the mascot being gone").toContain("cd ~");
+
+  await page.keyboard.press("ArrowDown");
+  expect(await focusedText(page), "and the course goes on").toContain("texte.html");
+});
+
+// Une adresse que personne n'a écrite à la main arrive ici plus souvent qu'ailleurs.
+// « decodeURI » y lève, et la levée emportait tout le reste du script : la bulle, le clic
+// sur la mascotte et les flèches.
+test("should stay alive on a malformed path", async ({ page }) => {
+  const answer = await page.goto("/%E0%A4%A");
+
+  expect(answer?.status(), "the status the server answered").toBe(404);
+  await expect(page.locator("[data-path]"), "the path shows as it came").toHaveText("/%E0%A4%A");
+
+  await mascot(page).click();
+  await expect(mascot(page), "and the page still answers").toHaveClass(/slime--happy/u);
+});
+
+// Un thème inconnu ne correspond à aucun bloc : la page perdrait ses couleurs.
+test("should fall back to a known theme when the stored one is unknown", async ({ page }) => {
+  await setOptions(page, JSON.stringify({ theme: "chartreuse" }));
+  await page.goto(UNKNOWN);
+
+  await expect(page.locator("html")).toHaveAttribute("data-theme", /^(?:dark|light)$/u);
+  expect(
+    await page.evaluate(() => getComputedStyle(document.body).backgroundColor),
+    "an unknown theme must not leave the page without colours",
+  ).not.toBe("rgba(0, 0, 0, 0)");
 });
 
 test("should load no mascot sheet when animations are off", async ({ page }) => {
@@ -175,13 +214,22 @@ test("should load no mascot sheet when animations are off", async ({ page }) => 
   expect(asked, "no sheet requested").toEqual([]);
 });
 
-// Le style vit dans src/404.css, que la construction remet en ligne. Un attribut « style »
-// battrait toute règle de la feuille, sans erreur et sans trace.
+// Un attribut « style » battrait toute règle de la feuille, sans erreur et sans trace.
 test("should carry no inline style attribute", async ({ page }) => {
   await page.goto(UNKNOWN);
 
   await expect(page.locator("[style]")).toHaveCount(0);
-  await expect(page.locator('link[rel="stylesheet"]'), "the sheet is inlined").toHaveCount(0);
+});
+
+// Le style vit dans src/404.css et le script dans src/404.ts, pour qu'ils passent sous les
+// mêmes outils que le reste. La construction les remet en ligne : une adresse inconnue ne
+// doit pas coûter deux requêtes bloquantes de plus.
+test("should inline the sheet and the script, and fetch neither", async ({ page }) => {
+  await page.goto(UNKNOWN);
+
+  await expect(page.locator('link[rel="stylesheet"]')).toHaveCount(0);
+  await expect(page.locator("script[src]")).toHaveCount(0);
+  await expect(page.locator("script"), "one script, written in place").toHaveCount(1);
 });
 
 test("should link back to the home page and to the text version", async ({ page }) => {
