@@ -6,19 +6,32 @@ import { test } from "node:test";
 const CONTEXT: Context = {
     columns: 60,
     current: { cmd: "bd whoami --verbose", id: "whoami" },
-    details: [{ id: "m-kereis", label: "Kereis" }],
+    details: [
+      {
+        ask: "Chez Kereis depuis 2026 : preuves de concept IA, serveurs MCP.",
+        id: "m-kereis",
+        label: "Kereis",
+      },
+    ],
     feedback: {},
     jokeIndex: 0,
     jokes: ["une blague", "une autre"],
     mascot: "here",
+    model: false,
     sections: [
-      { id: "whoami", label: "whoami" },
-      { id: "stack", label: "stack" },
+      {
+        ask: "Benjamin David, développeur IA et full stack à Nantes.",
+        id: "whoami",
+        label: "whoami",
+      },
+      { ask: "Vue, React, NestJS, PostgreSQL, accessibilité RGAA.", id: "stack", label: "stack" },
     ],
     share: {},
     shareTargets: [],
     themes: ["dark", "light", "noctis"],
   },
+  // Le meme contexte, avec un modele local disponible : la recherche lui laisse choisir.
+  AVEC_MODELE: Context = { ...CONTEXT, model: true },
   texts = (result: Outcome) => result.lines.map((line) => line.t),
   // Ce qu'une commande met dans le resultat, la ou le journal ne recoit que l'echo.
   resultTexts = (result: Outcome) => (result.result ?? []).map((line) => line.t ?? ""),
@@ -300,8 +313,8 @@ test("chaque alias se comporte comme sa commande", () => {
     ["/emacs", "/vim"],
     ["exit", "shutdown"],
     ["/feedback", "/propose"],
-    ["ia", "ai"],
     ["/idee", "/propose"],
+    ["ask✨ où", "ask où"],
     ["/mascotte", "/slime"],
     ["/nano", "/vim"],
     ["partager", "share"],
@@ -331,8 +344,6 @@ test("chaque alias se comporte comme sa commande", () => {
 // rendent, et le ticket qui les finira doit savoir lequel il reprend.
 test("les commandes déléguées rendent chacune son descripteur", () => {
   const expected: [string, Effect["type"]][] = [
-    ["ai", "probeAI"],
-    ["ask", "ask"],
     ["email", "email"],
     ["options", "options"],
     ["send-mail", "sendMail"],
@@ -343,8 +354,67 @@ test("les commandes déléguées rendent chacune son descripteur", () => {
   }
 });
 
-test("ask transporte la question dans son descripteur", () => {
-  assert.equal(effectOf(interpret("ask qui es-tu", CONTEXT), "ask")?.query, "qui es-tu");
+test("ask répond avec le passage du corpus, jamais avec un texte produit", () => {
+  const result = interpret("ask accessibilité RGAA", CONTEXT);
+
+  assert.ok(texts(result).includes("stack"), "ask doit nommer la source de sa réponse");
+  assert.ok(
+    texts(result).some((t) => t.includes("accessibilité RGAA")),
+    "la réponse est le texte du corpus",
+  );
+});
+
+// Sans modele, la reponse part telle quelle : aucun descripteur, personne pour le lire.
+test("sans modèle, ask répond seul et ne décrit aucun candidat", () => {
+  const result = interpret("ask nantes développeur", CONTEXT);
+
+  assert.equal(effectOf(result, "ask"), undefined);
+  assert.ok(texts(result).some((t) => t.includes("Nantes")));
+});
+
+// Le modele voit tous les passages, pas seulement ceux qui partagent un mot avec la
+// question. Ne lui donner que les trouvailles lexicales le reduirait a les reclasser.
+test("avec un modèle, ask lui soumet tous les passages", () => {
+  const descripteur = effectOf(interpret("ask nantes développeur", AVEC_MODELE), "ask");
+
+  assert.equal(descripteur?.query, "nantes développeur");
+  assert.deepEqual(descripteur?.candidates, ["whoami", "stack", "m-kereis"]);
+});
+
+// La reponse attend le modele, mais elle voyage avec le descripteur : elle sort si le
+// modele echoue, et la coquille n'a pas a la reconstruire.
+test("avec un modèle, la réponse du corpus attend dans le descripteur", () => {
+  const result = interpret("ask nantes développeur", AVEC_MODELE),
+    descripteur = effectOf(result, "ask");
+
+  assert.deepEqual(texts(result), ["ask nantes développeur"], "rien ne s'affiche encore");
+  assert.ok(
+    (descripteur?.lexical ?? []).some((entry) => entry.t.includes("Nantes")),
+    "la réponse lexicale est en réserve",
+  );
+});
+
+// Le recouvrement de mots ne trouve rien des que la question est tournee autrement. C'est
+// le cas ou un modele sert le plus : il doit etre consulte, pas court-circuite.
+test("sans trouvaille lexicale, le modèle est quand même consulté", () => {
+  const descripteur = effectOf(interpret("ask zzzzz", AVEC_MODELE), "ask");
+
+  assert.deepEqual(descripteur?.candidates, ["whoami", "stack", "m-kereis"]);
+  assert.ok(
+    (descripteur?.lexical ?? []).some((entry) => entry.t.includes("rien ne répond")),
+    "le refus reste en réserve, si le modèle ne trouve pas non plus",
+  );
+});
+
+test("sans modèle, ask sans réponse le dit et ne propose aucun candidat", () => {
+  const result = interpret("ask zzzzz", CONTEXT);
+
+  assert.ok(texts(result).some((t) => t.includes("rien ne répond")));
+  assert.equal(effectOf(result, "ask"), undefined);
+});
+
+test("ask sans question rappelle comment l'employer", () => {
+  assert.ok(texts(interpret("ask", CONTEXT)).some((t) => t.startsWith("ask —")));
 });
 
 // Les deux modes partagent une branche. Sans ce test, corriger le texte de l'un

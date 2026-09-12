@@ -4,10 +4,13 @@ import { test } from "node:test";
 
 const CONTEXT = {
     details: [{ id: "m-kereis" }, { id: "m-run" }],
+    model: false,
     sections: [{ id: "whoami" }, { id: "stack" }],
     shareTargets: ["linkedin", "github", "link"],
     themes: ["dark", "light", "noctis"],
   },
+  // Le meme contexte, avec un modele local disponible : la recherche y porte l'etincelle.
+  AVEC_MODELE = { ...CONTEXT, model: true },
   hits = (value: string) => candidates(value, CONTEXT).hits;
 
 // Le vocabulaire ne propose que ce que le dispatcher accepte : les easter eggs portent
@@ -146,10 +149,24 @@ test("theme propose ses thèmes au second mot", () => {
   assert.deepEqual(candidates("theme ", CONTEXT).hits, ["dark", "light", "noctis"]);
 });
 
-// Les proposer ferait taper une commande qui ne rend rien.
-test("ai et ask sortent du vocabulaire tant qu'ils ne rendent rien", () => {
-  assert.ok(!hits("a").includes("ai"));
-  assert.ok(!hits("a").includes("ask"));
+// La recherche porte deux noms, et l'étincelle dit lequel : celui qui passe par un modèle
+// local. Les proposer tous les deux ferait croire à deux recherches différentes.
+test("la recherche ne s'offre que sous le nom qui correspond au modèle", () => {
+  const sans = candidates("a", CONTEXT).hits,
+    avec = candidates("a", AVEC_MODELE).hits;
+
+  assert.ok(sans.includes("ask"), "sans modèle, le nom simple");
+  assert.ok(!sans.includes("ask✨"), "sans modèle, pas d'étincelle");
+
+  assert.ok(avec.includes("ask✨"), "avec un modèle, l'étincelle");
+  assert.ok(!avec.includes("ask"), "avec un modèle, pas le nom simple");
+});
+
+// Les deux noms se décrivent différemment : c'est la seule chose qui dit au visiteur ce que
+// l'étincelle change.
+test("chaque nom de la recherche porte sa propre description", () => {
+  assert.equal(hintFor("", "ask"), "cherche dans le texte du site");
+  assert.equal(hintFor("", "ask✨"), "un modèle local choisit la réponse");
 });
 
 // La liste ne montre que des noms. « goal » ou « bd » ne s'apprennent pas d'un nom :

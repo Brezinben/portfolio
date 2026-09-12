@@ -1657,6 +1657,18 @@
                 x-text="entry.t"></span>
             </p>
           </template>
+          <!-- Quand un modele choisit la reponse, rien ne s'affiche avant qu'il ait choisi.
+               Sans cette ligne, la commande paraitrait sans effet. Meme caractere et meme
+               pulsation que « execution… », pour que les deux attentes se lisent pareil. -->
+          <template x-if="thinking">
+            <p data-thinking
+              style="display:grid;grid-template-columns:18px minmax(0,1fr);gap:8px;align-items:baseline;line-height:1.5">
+              <span aria-hidden="true" data-tone="acc"
+                style="animation:dotPulse 1s ease-in-out infinite">▚</span>
+              <span data-tone="fg2"
+                style="animation:dotPulse 1.2s ease-in-out infinite">le modèle réfléchit…</span>
+            </p>
+          </template>
         </div>
 
         <template x-if="more.journal">

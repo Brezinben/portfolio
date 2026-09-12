@@ -11,6 +11,7 @@ const CONTEXT: Context = {
     jokeIndex: 0,
     jokes: [],
     mascot: "here",
+    model: false,
     sections: [],
     share: {},
     shareTargets: [],

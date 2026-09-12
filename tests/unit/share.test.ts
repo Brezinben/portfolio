@@ -30,6 +30,7 @@ const SHARE = {
     jokeIndex: 0,
     jokes: [],
     mascot: "here" as const,
+    model: false,
     sections: [{ id: "whoami", label: "whoami" }],
     share: SHARE,
     shareTargets: [],
