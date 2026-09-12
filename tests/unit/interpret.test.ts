@@ -17,6 +17,7 @@ const CONTEXT: Context = {
     jokeIndex: 0,
     jokes: ["une blague", "une autre"],
     mascot: "here",
+    model: false,
     sections: [
       {
         ask: "Benjamin David, développeur IA et full stack à Nantes.",

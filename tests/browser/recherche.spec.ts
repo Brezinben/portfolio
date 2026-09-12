@@ -91,9 +91,9 @@ test("ask sans question rappelle comment l'employer", async ({ page }) => {
   await expect(page.locator("[data-journal]")).toContainText("posez une question");
 });
 
-// Le modele choisit un identifiant dans une liste fermee. Ce qui s'affiche reste le texte
-// du corpus : il ne parle jamais a la place de Benjamin.
-test("un modèle local ajoute sa piste, sans effacer la réponse lexicale", async ({ page }) => {
+// Le modele choisit un identifiant dans une liste fermee, et c'est son choix qui repond.
+// Ce qui s'affiche reste le texte du corpus : il ne parle jamais a la place de Benjamin.
+test("le modèle répond en premier, et le corpus fournit le texte", async ({ page }) => {
   await poserModele(page, "contact");
 
   const cli = await boot(page);
@@ -103,21 +103,23 @@ test("un modèle local ajoute sa piste, sans effacer la réponse lexicale", asyn
 
   const journal = page.locator("[data-journal]");
 
-  await expect(journal).toContainText("le modèle local lit plutôt");
   await expect(journal, "le passage affiché vient du corpus").toContainText("48 heures");
+  await expect(journal, "une seule réponse, pas deux").not.toContainText("whoami");
 });
 
 // Un modele qui repond n'importe quoi ne doit rien pouvoir afficher : l'identifiant est
 // cherche dans le corpus, et un inconnu ne designe rien.
-test("un modèle qui invente un identifiant n'affiche rien", async ({ page }) => {
+test("un modèle qui invente un identifiant laisse répondre le corpus", async ({ page }) => {
   await poserModele(page, "une-section-qui-n-existe-pas");
 
   const cli = await boot(page);
 
   await cli.fill("ask où travailles-tu à Nantes");
   await cli.press("Enter");
-  await expect(page.locator("[data-journal]")).toContainText("Nantes");
-  await expect(page.locator("[data-journal]")).not.toContainText("le modèle local lit plutôt");
+  await expect(
+    page.locator("[data-journal]"),
+    "la réponse du corpus reprend la main",
+  ).toContainText("Nantes");
 });
 
 test("ai dit honnêtement qu'aucun modèle n'est là", async ({ page }) => {
@@ -155,7 +157,10 @@ test("ai interroge le modèle et donne son temps de réponse", async ({ page }) 
   await cli.fill("ai");
   await cli.press("Enter");
 
-  await expect(page.locator("[data-journal]")).toContainText(/un modèle local répond en \d+ ms/u);
+  const journal = page.locator("[data-journal]");
+
+  await expect(journal).toContainText(/un modèle local répond en \d+ ms/u);
+  await expect(journal, "ce que le modèle dit s'affiche").toContainText("« whoami »");
 });
 
 // Un modele installe qui ne repond pas n'est pas un modele qui repond. La commande a
@@ -202,9 +207,9 @@ test("une seconde question coupe le choix du modèle sur la première", async ({
 
   await expect(journal).toContainText("RGAA");
   await expect(
-    journal.locator("text=le modèle local lit plutôt"),
-    "un seul choix de modèle, celui de la question en cours",
-  ).toHaveCount(1);
+    journal.locator("text=48 heures"),
+    "une seule réponse de modèle, celle de la question en cours",
+  ).toHaveCount(0);
 });
 
 // Une commande qu'on doit deja connaitre pour la taper n'existe pas pour le visiteur.
@@ -233,6 +238,30 @@ test("l'attente du modèle se voit, puis disparaît", async ({ page }) => {
   await expect(attente).toBeVisible();
   await expect(attente).toContainText("le modèle réfléchit");
 
-  await expect(page.locator("[data-journal]")).toContainText("le modèle local lit plutôt");
+  await expect(page.locator("[data-journal]")).toContainText("48 heures");
   await expect(attente, "l'attente s'efface avec la réponse").toHaveCount(0);
+});
+
+// Le modele repond en premier, donc son silence laisserait la question sans reponse. Celle
+// du corpus attend pour ce cas precis, et elle doit sortir.
+test("un modèle muet laisse la réponse du corpus sortir", async ({ page }) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(globalThis, "LanguageModel", {
+      configurable: true,
+      value: {
+        availability: () => Promise.resolve("available"),
+        create: () => Promise.reject(new Error("muet")),
+      },
+    });
+  });
+
+  const cli = await boot(page);
+
+  await cli.fill("ask accessibilité RGAA");
+  await cli.press("Enter");
+
+  const journal = page.locator("[data-journal]");
+
+  await expect(journal).toContainText("RGAA");
+  await expect(page.locator("[data-thinking]"), "l'attente s'efface aussi").toHaveCount(0);
 });

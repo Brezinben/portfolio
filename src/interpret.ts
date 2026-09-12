@@ -42,7 +42,9 @@ export interface Token {
 // applique. Cette union est le contrat entre les deux seams.
 export type Effect =
   | { type: "activity"; name: string }
-  | { candidates: string[]; query: string; type: "ask" }
+  // « lexical » n'est rempli que si un modele doit choisir avant d'afficher. La coquille
+  // le garde sous la main : il sort si le modele echoue ou depasse son delai.
+  | { candidates: string[]; query: string; type: "ask"; lexical?: Line[] }
   | { type: "blowUp" }
   | { type: "clear" }
   | { type: "cv" }
@@ -150,6 +152,9 @@ export interface Context extends CompletionContext {
   // presente mais indisponible. « asleep » : le reseau est coupe, elle dort jusqu'a son
   // retour. La coquille sait, l'interpreteur ne devine pas.
   mascot: "asleep" | "away" | "busy" | "here";
+  // Un modele local installe et disponible. La coquille l'apprend d'un appel asynchrone au
+  // demarrage, que l'interpreteur ne peut pas faire : il est pur et synchrone.
+  model: boolean;
   details: Entry[];
   sections: Entry[];
   current: { cmd?: string; id?: string; label?: string };
@@ -676,7 +681,7 @@ export const search = (query: string, entries: Entry[]) => {
 // La reponse est toujours le texte du corpus, jamais un texte produit. Un modele, quand il
 // y en a un, ne fait que choisir parmi ces passages : il ne parle pas a la place de
 // Benjamin.
-const answer = (query: string, entries: Entry[]) => {
+const answer = (query: string, entries: Entry[], model: boolean) => {
   if (query.trim() === "") {
     return {
       effects: [],
@@ -697,19 +702,26 @@ const answer = (query: string, entries: Entry[]) => {
     };
   }
 
-  const autres = trouves.slice(1, 4).map((hit) => hit.entry.label);
-
-  return {
-    effects: [
-      track("ask", { query }),
-      { candidates: trouves.map((hit) => hit.entry.id), query, type: "ask" } satisfies Effect,
-    ],
-    lines: [
+  const autres = trouves.slice(1, 4).map((hit) => hit.entry.label),
+    lexical = [
       done(meilleur.entry.label),
       line({ text: meilleur.entry.ask ?? "" }),
       ...(autres.length > 0 ? [muted(`voir aussi : ${autres.join(" · ")}`)] : []),
-    ],
+    ];
+
+  const demande: Extract<Effect, { type: "ask" }> = {
+    candidates: trouves.map((hit) => hit.entry.id),
+    query,
+    type: "ask",
   };
+
+  // Sans modele, la reponse part tout de suite. Avec un modele, elle attend son choix :
+  // deux reponses de suite pour une seule question se liraient comme une hesitation.
+  if (model) {
+    demande.lexical = lexical;
+  }
+
+  return { effects: [track("ask", { query }), demande], lines: model ? [] : lexical };
 };
 
 export const commonPrefix = (entries: string[]): string => {
@@ -1124,7 +1136,7 @@ export const interpret = (raw: string, context: Context): Outcome => {
   }
 
   if (command === "ask") {
-    const trouve = answer(rest, sections);
+    const trouve = answer(rest, sections, context.model);
 
     return out(trouve.lines, trouve.effects);
   }
