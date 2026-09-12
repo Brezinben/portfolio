@@ -202,8 +202,10 @@ lui.
 _Avoid_: version simple, version accessible, fallback.
 
 **Source** (`src/`) :
-Le dossier que l'on édite. Il reste servable tel quel par un serveur statique, sans étape
-de construction. S'appelait `production/` jusqu'au renommage.
+Le dossier que l'on édite. Il porte du TypeScript et des modules : il n'est plus servable
+tel quel, et l'ADR 0005 a retiré cette contrainte, devenue vestigiale. Ce qui reste vrai,
+c'est que l'artefact n'en contient aucune référence. S'appelait `production/` jusqu'au
+renommage.
 _Avoid_: production, app, sources.
 
 **Artefact compact** (`dist/`) :
