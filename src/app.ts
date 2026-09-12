@@ -422,12 +422,21 @@ interface Umami {
 // lui faire choisir une reponse dans une liste fermee.
 interface LanguageModelSession {
   destroy: () => void;
-  prompt: (input: string, options?: { responseConstraint?: object }) => Promise<string>;
+  prompt: (
+    input: string,
+    options?: { responseConstraint?: object; signal?: AbortSignal },
+  ) => Promise<string>;
 }
 
 interface LanguageModelApi {
   availability: () => Promise<"available" | "downloadable" | "downloading" | "unavailable">;
-  create: () => Promise<LanguageModelSession>;
+  // « expectedInputs » porte la langue, pas « expectedInputLanguages ». « topK » et
+  // « temperature » n'existent que dans les extensions Chrome, et « samplingMode » n'est
+  // ouvert au web qu'en essai d'origine : aucun des trois n'a sa place ici.
+  create: (options?: {
+    expectedInputs?: { languages: string[]; type: string }[];
+    signal?: AbortSignal;
+  }) => Promise<LanguageModelSession>;
 }
 
 declare global {
@@ -474,6 +483,7 @@ type Beat = ReturnType<typeof setInterval>;
 // Ce que la page tient en memoire. Les minuteurs en font partie : les declarer les rend
 // visibles, et dit d'un coup d'oeil ce que la page a en vol.
 interface State {
+  asker: AbortController | undefined;
   bubbleTimer: Delay | undefined;
   compactor: Delay | undefined;
   latency: Delay | undefined;
@@ -579,6 +589,7 @@ document.addEventListener("alpine:init", () => {
     withMagics({
       THEMES,
       TOGGLES,
+      asker: undefined,
       bubbleTimer: undefined,
       compactor: undefined,
       latency: undefined,
@@ -2271,17 +2282,30 @@ document.addEventListener("alpine:init", () => {
           return;
         }
 
+        // Deux « ask » de suite courent l'un contre l'autre. Sans cette coupure, le choix
+        // de la premiere question arrive apres la reponse de la seconde, et s'ecrit dessous.
+        this.asker?.abort();
+
+        const asker = new AbortController();
+
+        this.asker = asker;
+
         try {
           if ((await globalThis.LanguageModel.availability()) !== "available") {
             return;
           }
 
-          const session = await globalThis.LanguageModel.create();
+          const session = await globalThis.LanguageModel.create({
+            // La question et les passages sont en francais. Le declarer laisse le navigateur
+            // refuser tout de suite plutot que de repondre depuis un modele d'une autre langue.
+            expectedInputs: [{ languages: ["fr"], type: "text" }],
+            signal: asker.signal,
+          });
 
           try {
             const choix = await session.prompt(
               `Question : « ${query} ». Parmi ces sujets, lequel y répond le mieux ? ${pistes.join(", ")}`,
-              { responseConstraint: { enum: pistes, type: "string" } },
+              { responseConstraint: { enum: pistes, type: "string" }, signal: asker.signal },
             );
 
             this.applyAskChoice(query, choix.trim());

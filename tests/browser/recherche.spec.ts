@@ -29,7 +29,34 @@ const boot = async (page: Page) => {
             }),
         },
       });
-    }, choix);
+    }, choix),
+  // Un modele qui ne repond qu'a l'abandon : il laisse voir laquelle des deux questions
+  // est coupee, ce qu'un modele instantane cacherait.
+  poserModeleLent = (page: Page) =>
+    page.addInitScript(() => {
+      Object.defineProperty(globalThis, "LanguageModel", {
+        configurable: true,
+        value: {
+          availability: () => Promise.resolve("available"),
+          create: () =>
+            Promise.resolve({
+              destroy: () => undefined,
+              prompt: (_input: string, options?: { signal?: AbortSignal }) => {
+                const { promise, reject, resolve } = Promise.withResolvers<string>();
+
+                options?.signal?.addEventListener("abort", () => {
+                  reject(new Error("coupé"));
+                });
+                setTimeout(() => {
+                  resolve("contact");
+                }, 300);
+
+                return promise;
+              },
+            }),
+        },
+      });
+    });
 
 test("ask répond avec le texte du portfolio, sans modèle et sans réseau", async ({ page }) => {
   await retirerModele(page);
@@ -127,4 +154,25 @@ test("ai reconnaît un modèle présent", async ({ page }) => {
   await cli.press("Enter");
 
   await expect(page.locator("[data-journal]")).toContainText("un modèle local répond");
+});
+
+// Deux « ask » de suite : le choix de la premiere question ne doit pas s'ecrire sous la
+// reponse de la seconde. La coupure passe par le signal donne au modele.
+test("une seconde question coupe le choix du modèle sur la première", async ({ page }) => {
+  await poserModeleLent(page);
+
+  const cli = await boot(page);
+
+  await cli.fill("ask où travailles-tu à Nantes");
+  await cli.press("Enter");
+  await cli.fill("ask accessibilité RGAA");
+  await cli.press("Enter");
+
+  const journal = page.locator("[data-journal]");
+
+  await expect(journal).toContainText("RGAA");
+  await expect(
+    journal.locator("text=le modèle local lit plutôt"),
+    "un seul choix de modèle, celui de la question en cours",
+  ).toHaveCount(1);
 });
