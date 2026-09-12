@@ -166,6 +166,21 @@ l'interpréteur de commandes, testé sans navigateur, et la page servie, testée
 navigateur réel. Terme technique conservé en anglais, employé tel quel dans les documents.
 _Avoid_: couture, point de test, interface de test.
 
+**Libellé de test** (`test label`) :
+La phrase qui nomme un test. Elle s'écrit **en anglais** et **commence par `should`**,
+alors que le reste des documents parle français : un libellé décrit un comportement
+attendu, pas un écran, et il se lit dans la sortie d'un outil. Il dit ce que le code
+doit faire, jamais comment il s'y prend.
+
+    it("should keep the bar width, head included", …)
+    test("should put the mascot to sleep while the network is cut", …)
+
+Les tests unitaires emploient `it`, tenu par `jest/consistent-test-it`. Les tests
+navigateur gardent `test` : `@playwright/test` n'exporte pas `it`. Les messages
+d'assertion passent aussi en anglais, mais sans `should` — ce sont des explications
+d'échec, pas des noms.
+_Avoid_: nom de test, description, titre.
+
 ### Les artefacts
 
 **Version terminal** (`index.html`) :
