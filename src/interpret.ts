@@ -4,6 +4,16 @@
 // minuteur. Il rend les lignes à afficher et des descripteurs d'effets que la coquille
 // applique. C'est ce qui permet de couvrir les commandes sans navigateur.
 
+import {
+  ALIASES,
+  ASK,
+  ASK_MODEL,
+  KEYBOARD,
+  NAVIGATORS,
+  SLASH_ONLY,
+  helpLines,
+  vocabulary,
+} from "./interpret/vocabulary.ts";
 import { type Share, shareTarget } from "./interpret/share.ts";
 import { type Tone, safeTone } from "./interpret/tone.ts";
 import { lookup } from "./interpret/lookup.ts";
@@ -209,32 +219,6 @@ const line = ({
   // Une activité demande un accessoire, là où une expression se lit sur le visage. Le glossaire
   // les sépare, et la commande aussi : « slime activity <nom> ».
   ACTIVITIES = ["bike", "coffee", "goal", "juggle", "lift", "train"],
-  // La recherche porte deux noms, jamais les deux a la fois. Sans modele elle repond par
-  // recouvrement de mots ; avec un modele, c'est lui qui choisit le passage, et l'etincelle
-  // le dit. Une commande « ai » separee obligeait a demander si le modele etait la : le nom
-  // de la commande le montre maintenant.
-  ASK = "ask",
-  ASK_MODEL = "ask✨",
-  // L'etincelle occupe deux colonnes dans une police a chasse fixe. Sans ce comptage, la
-  // ligne d'aide qui la porte decalerait son tiret d'une colonne.
-  displayWidth = (text: string) => text.length + (text.includes("✨") ? 1 : 0),
-  askLine = (model: boolean) => {
-    const shown = `${model ? ASK_MODEL : ASK} <question>`;
-
-    return `${shown}${" ".repeat(Math.max(1, 34 - displayWidth(shown)))}— chercher dans le site`;
-  },
-  helpLines = (model: boolean) => [
-    "ls · cd <section> · bd <section>  — naviguer",
-    askLine(model),
-    "theme <nom> · clear · options     — affichage",
-    "cv · email · send-mail            — CV et contact",
-    "share <cible>                     — LinkedIn, GitHub, lien",
-    "/propose [-y] <idée>              — suggérer un ajout",
-    "/joke · /cowsay                   — le reste",
-    "/slime · /matrix · shutdown       — à vos risques",
-  ],
-  KEYBOARD =
-    "Clavier : / cible la saisie · j / k changent de section · Tab complète · ↑ ↓ rappellent l'historique.",
   EGGS = {
     benjamin: {
       egg: "nom",
@@ -263,48 +247,6 @@ const line = ({
       say: say("non.", "scared"),
     },
     vim: { egg: "vim", lines: [info("Piège classique. :q! ne fonctionne pas ici non plus.")] },
-  },
-  // Les easter eggs ne repondent qu'au prefixe slash. Une vraie commande de terminal et un
-  // raccourci du portfolio sont deux choses differentes, et taper « joke » sans slash ne
-  // doit pas les melanger.
-  //
-  // L'ordre decide de ce qui se decouvre : taper « / » n'ouvre que dix propositions, et
-  // cette liste en porte exactement dix. Les plus riches d'abord, l'alias en dernier : un
-  // onzieme egg pousserait donc l'alias hors de vue, et lui seul.
-  SLASH_ONLY = new Set([
-    "slime",
-    "joke",
-    "cowsay",
-    "propose",
-    "benjamin",
-    "matrix",
-    "sudo",
-    "vim",
-    "coffee",
-    "brezinben",
-  ]),
-  ALIASES = {
-    "?": "help",
-    aide: "help",
-    [ASK_MODEL]: ASK,
-    brezinben: "benjamin",
-    cat: "slime",
-    cls: "clear",
-    copy: "email",
-    dir: "ls",
-    emacs: "vim",
-    exit: "shutdown",
-    feedback: "propose",
-    idee: "propose",
-    mascotte: "slime",
-    nano: "vim",
-    partager: "share",
-    poweroff: "shutdown",
-    restart: "reboot",
-    resume: "cv",
-    sendmail: "send-mail",
-    set: "options",
-    write: "send-mail",
   },
   answerPending = (input: string, pending: string): Outcome => {
     if (YES.test(input)) {
@@ -414,38 +356,6 @@ const line = ({
 
     return emoted(argument);
   },
-  // Trois verbes naviguent vers leur argument, et eux seuls. Sans ce filtre, n'importe quel
-  // mot suivi d'un identifiant de section y menait : « share contact » partait naviguer au
-  // lieu de partager, et « /sudo stack » n'affichait jamais son texte.
-  NAVIGATORS = new Set(["bd", "cd", "open"]),
-  // Le vocabulaire ne propose que des commandes vivantes, et les easter eggs avec leur
-  // slash : sinon l'autocompletion propose ce que le dispatcher refuse.
-  PLAIN = [
-    "?",
-    "aide",
-    "bd",
-    "cd",
-    "clear",
-    "cls",
-    "cv",
-    "dir",
-    "email",
-    "help",
-    "ls",
-    "open",
-    "options",
-    "reboot",
-    "resume",
-    "send-mail",
-    "share",
-    "shutdown",
-    "sleep",
-    "theme",
-  ],
-  VERBS = [...PLAIN, ...[...SLASH_ONLY].map((egg) => `/${egg}`)],
-  // Les deux noms de la recherche ne s'offrent jamais ensemble : le vocabulaire ne porte
-  // que celui qui correspond a l'etat du modele.
-  vocabulary = (model: boolean) => [model ? ASK_MODEL : ASK, ...VERBS],
   // Le vocabulaire dépend du chemin déjà tapé, et pas seulement du premier mot : « slime »
   // propose ses sous-commandes, « slime expression » les expressions, « slime activity » les
   // activités. Proposer le vocabulaire entier après l'un ou l'autre ferait du bruit.
