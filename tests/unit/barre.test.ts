@@ -1,5 +1,5 @@
-import assert from "node:assert/strict";
 import { FILLED, HOLLOW, SPINNER, barParts } from "../../src/terminal/format.ts";
+import assert from "node:assert/strict";
 import { test } from "node:test";
 
 // La barre fait toujours la largeur demandee : la tete mange une case vide, elle ne
