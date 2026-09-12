@@ -10,14 +10,14 @@ const ALPINE = /src="(?<url>vendor\/alpine[^"]*\.js)"/u,
       html = await page.text(),
       url = html.match(pattern)?.groups?.url;
 
-    expect(url, `la page ne référence aucun actif qui corresponde à ${pattern}`).toBeDefined();
+    expect(url, `the page references no asset that matches ${pattern}`).toBeDefined();
 
     return `/${url}`;
   };
 
 // Alpine et la police sont figés dans src/. Un CDN remettrait la requête tierce
 // que le portage existe précisément pour supprimer.
-test("Alpine est servi depuis src/ et non depuis un CDN", async ({ request }) => {
+test("should serve Alpine from src/ and not from a CDN", async ({ request }) => {
   const response = await request.get(await referenced(request, ALPINE));
 
   expect(response.status()).toBe(200);
@@ -25,7 +25,7 @@ test("Alpine est servi depuis src/ et non depuis un CDN", async ({ request }) =>
   expect(response.headers()["content-encoding"]).toBe("gzip");
 });
 
-test("la police est servie depuis src/", async ({ request }) => {
+test("should serve the font from src/", async ({ request }) => {
   const response = await request.get(await referenced(request, POLICE));
 
   expect(response.status()).toBe(200);
@@ -33,7 +33,7 @@ test("la police est servie depuis src/", async ({ request }) => {
 });
 
 // Woff2 est déjà compressé : le recompresser coûterait du temps pour rien.
-test("la police n'est pas recompressée", async ({ request }) => {
+test("should not recompress the font", async ({ request }) => {
   const response = await request.get(await referenced(request, POLICE), {
     headers: { "accept-encoding": "gzip" },
   });
@@ -70,7 +70,7 @@ const SITE = "https://me.brezinben.dpdns.org/",
     // Un relevé qui ne reconnaît plus rien rendrait ce test vert sans rien vérifier.
     expect(
       adresses.filter((url) => EMPREINTE.test(url)),
-      `${page} ne déclare aucun actif empreinté : le relevé ne reconnaît plus la page`,
+      `${page} declares no fingerprinted asset: the scan no longer recognizes the page`,
     ).not.toEqual([]);
 
     const responses = await Promise.all(
@@ -87,7 +87,7 @@ const SITE = "https://me.brezinben.dpdns.org/",
 // Une adresse qui pointe dans le vide ne casse rien de visible : la page se charge, et
 // l'actif manque en silence. Ce test suit les adresses de la page construite plutôt qu'une
 // liste de noms, qu'un renommage a déjà rendue fausse deux fois.
-test("toute adresse déclarée par les pages est servie", async ({ request }) => {
+test("should serve every address the pages declare", async ({ request }) => {
   const absentes = await Promise.all(PAGES.map((page) => missing(request, page)));
 
   expect(absentes.flat()).toEqual([]);

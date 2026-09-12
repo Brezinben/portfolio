@@ -5,7 +5,7 @@ const booted = (page: Page) =>
   expect(page.locator("[data-boot]")).toHaveCount(0, { timeout: 15_000 });
 
 // Le depot est prive : le contenu est servi a cote de la page, et nulle part ailleurs.
-test("le contenu est chargé par une URL relative, à côté de la page", async ({ page }) => {
+test("should load the content from a relative URL next to the page", async ({ page }) => {
   const asked: string[] = [];
 
   page.on("request", (request) => {
@@ -21,7 +21,7 @@ test("le contenu est chargé par une URL relative, à côté de la page", async 
   expect(asked[0]).toBe(`${new URL(page.url()).origin}/content.json`);
 });
 
-test("le contenu servi remplit la page", async ({ page }) => {
+test("should fill the page with the served content", async ({ page }) => {
   await page.goto("/");
   await booted(page);
 
@@ -30,7 +30,7 @@ test("le contenu servi remplit la page", async ({ page }) => {
 });
 
 // Sans contenu, la page ne se rabat sur rien : elle panique et propose la version texte.
-test("un contenu en échec mène à la panique", async ({ page }) => {
+test("should panic when the content fails", async ({ page }) => {
   await page.route("**/content.json", (route) => route.fulfill({ status: 500 }));
   await page.goto("/");
 
@@ -42,7 +42,7 @@ test("un contenu en échec mène à la panique", async ({ page }) => {
   ).toBeVisible();
 });
 
-test("un JSON illisible mène à la panique", async ({ page }) => {
+test("should panic when the JSON is unreadable", async ({ page }) => {
   await page.route("**/content.json", (route) =>
     route.fulfill({ body: "{ pas du json", contentType: "application/json" }),
   );

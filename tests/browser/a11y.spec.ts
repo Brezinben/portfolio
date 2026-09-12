@@ -19,7 +19,7 @@ const THEMES = ["dark", "light", "noctis", "azureus", "uva", "bordo", "lux", "hi
   scan = (page: Page) => new AxeBuilder({ page }).analyze();
 
 for (const theme of THEMES) {
-  test(`aucune violation d'accessibilité sur le thème ${theme}`, async ({ page }) => {
+  test(`should report no accessibility violation on the ${theme} theme`, async ({ page }) => {
     await withTheme(page, theme);
 
     const { violations } = await scan(page);
@@ -31,7 +31,7 @@ for (const theme of THEMES) {
 // La version texte reprend les huit thèmes de la version terminal. Elle les porte sur du
 // texte de lecture, pas sur une interface : le contraste s'y mesure séparément.
 for (const theme of THEMES) {
-  test(`aucune violation d'accessibilité sur la version texte, thème ${theme}`, async ({
+  test(`should report no accessibility violation on the text version with the ${theme} theme`, async ({
     page,
   }) => {
     await page.addInitScript((chosen) => {
@@ -45,7 +45,7 @@ for (const theme of THEMES) {
   });
 }
 
-test("le mouvement réduit coupe les animations", async ({ page }) => {
+test("should stop every animation when reduced motion is on", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await boot(page);
 
@@ -59,7 +59,7 @@ test("le mouvement réduit coupe les animations", async ({ page }) => {
   expect(animated).toBe(0);
 });
 
-test("toutes les cibles interactives font au moins 44 px", async ({ page }) => {
+test("should give every interactive target at least 44 pixels", async ({ page }) => {
   await boot(page);
 
   const small = await page.evaluate(() =>
@@ -79,7 +79,7 @@ test("toutes les cibles interactives font au moins 44 px", async ({ page }) => {
   expect(small).toEqual([]);
 });
 
-test("toute l'interface est atteignable au clavier", async ({ page }) => {
+test("should keep the whole interface reachable by keyboard", async ({ page }) => {
   await boot(page);
 
   const reachable = await page.evaluate(
@@ -94,7 +94,9 @@ test("toute l'interface est atteignable au clavier", async ({ page }) => {
 
 // L'ambre du theme clair est trop pale pour du texte : le decoratif garde sa teinte,
 // le texte prend une variante plus sombre.
-test("le thème clair distingue l'ambre décoratif de l'ambre textuel", async ({ page }) => {
+test("should separate the decorative amber from the text amber on the light theme", async ({
+  page,
+}) => {
   await withTheme(page, "light");
 
   const { decorative, text } = await page.evaluate(() => {
@@ -106,13 +108,13 @@ test("le thème clair distingue l'ambre décoratif de l'ambre textuel", async ({
     };
   });
 
-  expect(decorative, "la teinte décorative ne change pas").toBe("#e6a000");
+  expect(decorative, "the decorative hue does not change").toBe("#e6a000");
   expect(text).not.toBe(decorative);
 });
 
 // Noctis n'a qu'un vert : l'accent et le succes portaient la meme teinte, et la cle
 // d'une paire JSON ne se distinguait plus de sa valeur.
-test("le thème noctis distingue la clé de la valeur", async ({ page }) => {
+test("should separate the key from the value on the noctis theme", async ({ page }) => {
   await withTheme(page, "noctis");
 
   const { key, value } = await page.evaluate(() => {
@@ -130,7 +132,7 @@ test("le thème noctis distingue la clé de la valeur", async ({ page }) => {
 // Aucune API ne signale un lecteur d'écran, et le détecter reviendrait à détecter un
 // handicap. La page propose donc, elle ne devine pas : le premier élément focalisable
 // annonce la version texte, et la personne choisit.
-test("le premier élément focalisable mène à la version texte", async ({ page }) => {
+test("should lead to the text version from the first focusable element", async ({ page }) => {
   await boot(page);
   await page.keyboard.press("Tab");
 
@@ -143,7 +145,7 @@ test("le premier élément focalisable mène à la version texte", async ({ page
   // pas : un élément posé à left:-9999px reste visible au sens de Playwright.
   const dedans = await skip.evaluate((node) => node.getBoundingClientRect().left >= 0);
 
-  expect(dedans, "le lien doit entrer dans la fenêtre quand il reçoit le focus").toBe(true);
+  expect(dedans, "the link must enter the window when it receives the focus").toBe(true);
 
   const dehors = await skip.evaluate((node) => {
     node.blur();
@@ -151,12 +153,12 @@ test("le premier élément focalisable mène à la version texte", async ({ page
     return node.getBoundingClientRect().right < 0;
   });
 
-  expect(dehors, "le lien doit rester hors écran sans focus").toBe(true);
+  expect(dehors, "the link must stay off screen without focus").toBe(true);
 });
 
 // Le lien doit survivre à un échec du script : c'est le repli de la page, pas une de ses
 // fonctions. Il vit donc hors du composant Alpine et ne porte aucune variable de thème.
-test("la version texte reste atteignable sans script", async ({ browser }) => {
+test("should keep the text version reachable without script", async ({ browser }) => {
   const context = await browser.newContext({ javaScriptEnabled: false }),
     page = await context.newPage();
 

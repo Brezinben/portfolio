@@ -21,7 +21,7 @@ const fill = async (cli: Locator) => {
   };
 
 // L'experience terminale tient a une hauteur fixe : la page ne doit jamais grandir.
-test("la page ne dépasse jamais la hauteur de la fenêtre", async ({ page }) => {
+test("should never grow the page past the window height", async ({ page }) => {
   const cli = await boot(page);
 
   await Array.from({ length: 12 }).reduce<Promise<unknown>>(
@@ -31,12 +31,12 @@ test("la page ne dépasse jamais la hauteur de la fenêtre", async ({ page }) =>
 
   const overflow = await page.evaluate(() => document.body.scrollHeight - window.innerHeight);
 
-  expect(overflow, "aucun débordement vertical").toBeLessThanOrEqual(1);
+  expect(overflow, "no vertical overflow").toBeLessThanOrEqual(1);
 });
 
 // Sur deux colonnes le journal tient dans 119 px, et la reponse de help en fait sept fois
 // plus. Le resultat a la place, il la prend : le journal ne garde que l'echo.
-test("la réponse de help se lit en entier dans le résultat", async ({ page }) => {
+test("should show the whole help answer in the result", async ({ page }) => {
   const cli = await boot(page);
 
   await cli.fill("help");
@@ -53,14 +53,14 @@ test("la réponse de help se lit en entier dans le résultat", async ({ page }) 
     scroll: node.scrollHeight,
   }));
 
-  expect(shown.scroll, "rien ne reste caché sous le pli du résultat").toBeLessThanOrEqual(
+  expect(shown.scroll, "nothing stays hidden below the fold of the result").toBeLessThanOrEqual(
     shown.client + 1,
   );
 });
 
 // La sortie appartient à la section ouverte. Une réponse qui prend le résultat vidait le
 // volet de droite, et le visiteur perdait le contexte de la section qu'il lisait.
-test("une commande qui prend le résultat ne vide pas la sortie", async ({ page }) => {
+test("should keep the output filled when a command takes the result", async ({ page }) => {
   const cli = await boot(page);
 
   await cli.fill("help");
@@ -79,10 +79,10 @@ test("une commande qui prend le résultat ne vide pas la sortie", async ({ page 
     }),
   );
 
-  expect(chevauche, "aucune clé ne passe sous sa valeur").toBe(false);
+  expect(chevauche, "no key slips under its value").toBe(false);
 });
 
-test("la barre d'état nomme la commande qui occupe le résultat", async ({ page }) => {
+test("should name in the status bar the command that holds the result", async ({ page }) => {
   const cli = await boot(page);
 
   await cli.fill("help");
@@ -92,7 +92,7 @@ test("la barre d'état nomme la commande qui occupe le résultat", async ({ page
 });
 
 // Le resultat appartient a la derniere demande : ouvrir une section le reprend.
-test("ouvrir une section reprend le résultat à la commande", async ({ page }) => {
+test("should take the result back from the command when a section opens", async ({ page }) => {
   const cli = await boot(page);
 
   await cli.fill("help");
@@ -103,7 +103,7 @@ test("ouvrir une section reprend le résultat à la commande", async ({ page }) 
   await expect(page.locator('[data-pane="main"]')).toContainText("~/stack");
 });
 
-test("le contenu reste collé en haut de son volet", async ({ page }) => {
+test("should keep the content at the top of its pane", async ({ page }) => {
   await boot(page);
 
   const align = await page
@@ -113,7 +113,7 @@ test("le contenu reste collé en haut de son volet", async ({ page }) => {
   expect(align).toBe("start");
 });
 
-test("sous 900 px les trois volets s'empilent", async ({ page }) => {
+test("should stack the three panes below 900 px", async ({ page }) => {
   await page.setViewportSize({ height: 800, width: 700 });
   await boot(page);
 
@@ -124,7 +124,7 @@ test("sous 900 px les trois volets s'empilent", async ({ page }) => {
   expect(direction).toBe("column");
 });
 
-test("au-delà de 2400 px la mise en page se centre", async ({ page }) => {
+test("should centre the layout beyond 2400 px", async ({ page }) => {
   await page.setViewportSize({ height: 900, width: 3200 });
   await boot(page);
 
@@ -133,19 +133,19 @@ test("au-delà de 2400 px la mise en page se centre", async ({ page }) => {
   expect(width).toBeLessThanOrEqual(2400);
 });
 
-test("les barres de défilement sont masquées", async ({ page }) => {
+test("should hide the scrollbars", async ({ page }) => {
   await boot(page);
 
   const width = await page
     .locator("[data-journal]")
     .evaluate((node: HTMLElement) => node.offsetWidth - node.clientWidth);
 
-  expect(width, "aucune gouttière de barre de défilement").toBe(0);
+  expect(width, "no scrollbar gutter").toBe(0);
 });
 
 // La barre masquee est remplacee par un indicateur : sinon rien ne dit qu'il reste
 // du contenu plus bas.
-test("un indicateur signale qu'il reste du contenu", async ({ page }) => {
+test("should show an indicator while content remains below", async ({ page }) => {
   const cli = await boot(page);
 
   await Array.from({ length: 6 }).reduce<Promise<unknown>>(
@@ -159,7 +159,7 @@ test("un indicateur signale qu'il reste du contenu", async ({ page }) => {
 
 // Les libelles de mission tenaient sur une ligne avec leur etat, et trois se coupaient.
 // Le nom prend sa ligne, l'etat passe dessous, comme les sections juste au-dessus.
-test("aucun libellé du volet gauche n'est coupé", async ({ page }) => {
+test("should never cut a label of the left pane", async ({ page }) => {
   // Sous 1150 px le volet gauche touche son plancher : c'est la que « numérique
   // responsable » se coupait. Il passe desormais a la ligne.
   await page.setViewportSize({ height: 900, width: 1024 });
@@ -171,12 +171,12 @@ test("aucun libellé du volet gauche n'est coupé", async ({ page }) => {
       .map((node) => node.textContent.trim()),
   );
 
-  expect(cut, "rien ne se coupe dans le volet gauche").toEqual([]);
+  expect(cut, "nothing is cut in the left pane").toEqual([]);
 });
 
 // Les trois volets ont des bases fixes : le contenu d'une section ne decide plus de leur
 // largeur. Une base tiree du contenu faisait sauter la mise en page a chaque changement.
-test("la largeur des volets ne bouge pas d'une section à l'autre", async ({ page }) => {
+test("should keep the pane widths from one section to the next", async ({ page }) => {
   await boot(page);
 
   const widths = () =>
@@ -204,7 +204,7 @@ test("la largeur des volets ne bouge pas d'une section à l'autre", async ({ pag
 
 // Un seul rayon pilote les coins des zones : la valeur se teste dans le navigateur en
 // changeant une variable, pas en chassant six déclarations.
-test("un seul rayon pilote les coins arrondis des zones", async ({ page }) => {
+test("should drive the rounded corners of every zone with a single radius", async ({ page }) => {
   await boot(page);
   await page.locator("[data-ctl='opts']").click();
   await expect(page.locator("[data-opts]")).toBeVisible();
@@ -220,7 +220,7 @@ test("un seul rayon pilote les coins arrondis des zones", async ({ page }) => {
       ].map((cible) => getComputedStyle(document.querySelector<HTMLElement>(cible)!).borderRadius),
     );
 
-  expect(await rayons(), "les cinq zones visibles portent le rayon").toEqual(
+  expect(await rayons(), "the five visible zones carry the radius").toEqual(
     Array.from({ length: 5 }, () => "5px"),
   );
 
@@ -228,14 +228,14 @@ test("un seul rayon pilote les coins arrondis des zones", async ({ page }) => {
     document.querySelector<HTMLElement>(".tm")!.style.setProperty("--radius", "0px"),
   );
 
-  expect(await rayons(), "la variable les mène toutes").toEqual(
+  expect(await rayons(), "the variable drives them all").toEqual(
     Array.from({ length: 5 }, () => "0px"),
   );
 });
 
 // Le cadre de démarrage est la sixième zone. Il meurt avec le boot : son rayon ne se lit
 // que pendant.
-test("le cadre de démarrage porte le rayon", async ({ page }) => {
+test("should give the boot zone the radius too", async ({ page }) => {
   await page.goto("/");
 
   const cadre = page.locator("[data-boot] > div"),
@@ -243,19 +243,19 @@ test("le cadre de démarrage porte le rayon", async ({ page }) => {
 
   await expect(cadre).toBeVisible();
 
-  expect(await rayon(), "la zone porte le rayon").toBe("5px");
+  expect(await rayon(), "the zone carries the radius").toBe("5px");
 
   await page.evaluate(() =>
     document.querySelector<HTMLElement>(".tm")!.style.setProperty("--radius", "0px"),
   );
 
-  expect(await rayon(), "la variable la mène aussi").toBe("0px");
+  expect(await rayon(), "the variable drives it too").toBe("0px");
 });
 
 // L'invariant de CONTEXT.md : focalisable ⇒ élément intérieur ⇒ carré. Un outline suit le
 // rayon de l'élément qu'il entoure, et un rayon sur un contrôle se voit d'abord à l'état
 // sélectionné, où la frise reste carrée et la section ne l'était plus.
-test("aucun élément focalisable n'a de coin arrondi", async ({ page }) => {
+test("should keep every focusable element square", async ({ page }) => {
   await boot(page);
   // La modale porte quatre des six contrôles corrigés : sans elle le parcours les rate.
   await page.locator("[data-ctl='opts']").click();
@@ -268,10 +268,10 @@ test("aucun élément focalisable n'a de coin arrondi", async ({ page }) => {
       .map((node) => `${node.tagName.toLowerCase()}[${node.dataset.ctl ?? "?"}]`),
   );
 
-  expect(arrondis, "focalisable ⇒ intérieur ⇒ carré").toEqual([]);
+  expect(arrondis, "focusable ⇒ inner ⇒ square").toEqual([]);
 });
 
-test("le journal se redimensionne au clavier et sa hauteur est conservée", async ({ page }) => {
+test("should resize the log with the keyboard and keep its height", async ({ page }) => {
   const cli = await boot(page);
 
   await fill(cli);
@@ -290,13 +290,13 @@ test("le journal se redimensionne au clavier et sa hauteur est conservée", asyn
   await page.reload();
   await expect(page.locator("[data-boot]")).toHaveCount(0, { timeout: 10_000 });
 
-  expect(await height(), "la hauteur survit au rechargement").toBe(after);
+  expect(await height(), "the height survives a reload").toBe(after);
 });
 
 // Une hauteur de journal reglee sur une autre fenetre survit dans le stockage. Trop
 // haute, elle ecrasait le resultat a zero et faisait deborder le volet central : la
 // reponse de « contact » arrivait coupee.
-test("un journal trop haut rend sa place au résultat au changement de section", async ({
+test("should give the result its room back when a too tall log meets a new section", async ({
   page,
 }) => {
   await page.addInitScript(() =>
@@ -317,11 +317,11 @@ test("un journal trop haut rend sa place au résultat au changement de section",
     };
   });
 
-  expect(sizes.result, "le résultat garde sa place").toBeGreaterThanOrEqual(120);
-  expect(sizes.overflow, "le volet central tient dans son cadre").toBeLessThanOrEqual(1);
+  expect(sizes.result, "the result keeps its room").toBeGreaterThanOrEqual(120);
+  expect(sizes.overflow, "the main pane fits in its frame").toBeLessThanOrEqual(1);
 });
 
-test("le journal ne descend jamais sous 44 px", async ({ page }) => {
+test("should never shrink the log below 44 px", async ({ page }) => {
   const cli = await boot(page);
 
   await fill(cli);

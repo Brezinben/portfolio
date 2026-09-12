@@ -10,7 +10,7 @@ const boot = async (page: Page) => {
 
 // Il n'y a pas de PDF à servir. La version texte porte le parcours complet, et elle
 // s'ouvre à côté : le terminal reste derrière, avec son journal.
-test("cv ouvre la version texte dans un nouvel onglet", async ({ page, context }) => {
+test("should open the text version in a new tab with cv", async ({ page, context }) => {
   const cli = await boot(page),
     ouvert = context.waitForEvent("page");
 
@@ -23,7 +23,7 @@ test("cv ouvre la version texte dans un nouvel onglet", async ({ page, context }
   await expect(page.locator("[data-journal]")).toContainText("version texte");
 });
 
-test("taper une commande affiche son résultat dans le journal", async ({ page }) => {
+test("should show the result of a typed command in the journal", async ({ page }) => {
   const cli = await boot(page);
 
   await cli.fill("/sudo");
@@ -31,10 +31,10 @@ test("taper une commande affiche son résultat dans le journal", async ({ page }
 
   await expect(page.locator("[data-journal]")).toContainText("sudoers");
   await expect(page.locator("[data-journal]")).toContainText("/sudo");
-  await expect(cli, "la saisie se vide après exécution").toHaveValue("");
+  await expect(cli, "the input clears after the run").toHaveValue("");
 });
 
-test("une commande inconnue le dit sans casser la page", async ({ page }) => {
+test("should say that a command is unknown without breaking the page", async ({ page }) => {
   const cli = await boot(page);
 
   await cli.fill("xyzzy");
@@ -44,7 +44,7 @@ test("une commande inconnue le dit sans casser la page", async ({ page }) => {
   await expect(page.locator('[data-pane="main"]')).toContainText("bd whoami --verbose");
 });
 
-test("cd change de section et le volet de sortie suit", async ({ page }) => {
+test("should change the section with cd and make the output pane follow", async ({ page }) => {
   const cli = await boot(page);
 
   await cli.fill("cd contact");
@@ -54,7 +54,7 @@ test("cd change de section et le volet de sortie suit", async ({ page }) => {
   await expect(page.locator("[data-journal]")).toContainText("section « contact » chargée");
 });
 
-test("clear vide le journal", async ({ page }) => {
+test("should empty the journal with clear", async ({ page }) => {
   const cli = await boot(page);
 
   await cli.fill("/sudo");
@@ -69,19 +69,17 @@ test("clear vide le journal", async ({ page }) => {
 
 // Tant que rien n'a été tapé, la flèche haut rappelle la commande de la section. Dès
 // qu'une commande existe, c'est elle qui remonte en premier, comme dans un terminal.
-test("la flèche haut rappelle la dernière commande tapée", async ({ page }) => {
+test("should recall the last typed command with the up arrow", async ({ page }) => {
   const cli = await boot(page);
 
   await cli.press("ArrowUp");
-  await expect(cli, "sans historique, la commande de la section").toHaveValue(
-    "bd whoami --verbose",
-  );
+  await expect(cli, "without history, the section command").toHaveValue("bd whoami --verbose");
 
   await cli.fill("/sudo");
   await cli.press("Enter");
 
   await cli.press("ArrowUp");
-  await expect(cli, "la commande tapée passe devant").toHaveValue("/sudo");
+  await expect(cli, "the typed command comes first").toHaveValue("/sudo");
 
   await cli.press("ArrowUp");
   await expect(cli).toHaveValue("bd whoami --verbose");
@@ -90,7 +88,7 @@ test("la flèche haut rappelle la dernière commande tapée", async ({ page }) =
   await expect(cli).toHaveValue("/sudo");
 });
 
-test("échap vide la saisie", async ({ page }) => {
+test("should clear the input on escape", async ({ page }) => {
   const cli = await boot(page);
 
   await cli.fill("quelque chose");
@@ -100,7 +98,7 @@ test("échap vide la saisie", async ({ page }) => {
 });
 
 // Les commandes ne s'empilent pas : retaper celle de la section la rejoue.
-test("retaper la commande de la section ne l'empile pas", async ({ page }) => {
+test("should not stack the section command when it is typed again", async ({ page }) => {
   const cli = await boot(page);
 
   await cli.fill("/sudo");
@@ -113,7 +111,7 @@ test("retaper la commande de la section ne l'empile pas", async ({ page }) => {
 
 // L'effet « replay » vidait seulement le journal : la commande ne se rejouait pas, alors
 // que c'est ce que son nom et son commentaire annonçaient.
-test("retaper la commande de la section la rejoue", async ({ page }) => {
+test("should replay the section command when it is typed again", async ({ page }) => {
   const cli = await boot(page);
 
   await cli.fill("bd whoami --verbose");

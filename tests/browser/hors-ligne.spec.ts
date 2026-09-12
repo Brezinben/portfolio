@@ -12,7 +12,9 @@ const boot = async (page: Page) => {
   couper = (page: Page) => page.context().setOffline(true),
   mascot = (page: Page) => page.locator("[data-mascot]");
 
-test("la barre d'état annonce la coupure, et l'oublie au retour", async ({ page }) => {
+test("should announce the network cut in the status bar, then forget it on return", async ({
+  page,
+}) => {
   await boot(page);
 
   const marqueur = page.locator("[data-offline]");
@@ -27,7 +29,7 @@ test("la barre d'état annonce la coupure, et l'oublie au retour", async ({ page
   await expect(marqueur).toHaveCount(0);
 });
 
-test("partager vers LinkedIn sans réseau le dit, et propose ce qui marche", async ({ page }) => {
+test("should refuse to share to LinkedIn offline and name what still works", async ({ page }) => {
   const cli = await boot(page);
 
   await couper(page);
@@ -37,11 +39,11 @@ test("partager vers LinkedIn sans réseau le dit, et propose ce qui marche", asy
   const journal = page.locator("[data-journal]");
 
   await expect(journal).toContainText("demande le réseau");
-  await expect(journal, "le refus nomme ce qui marche encore").toContainText("share link");
+  await expect(journal, "the refusal names what still works").toContainText("share link");
 });
 
 // Copier ne sort pas de la page : la coupure ne doit rien y changer.
-test("partager le lien marche toujours sans réseau", async ({ page, context }) => {
+test("should still share the link without network", async ({ page, context }) => {
   await context.grantPermissions(["clipboard-read", "clipboard-write"]);
 
   const cli = await boot(page);
@@ -57,7 +59,7 @@ test("partager le lien marche toujours sans réseau", async ({ page, context }) 
   expect(await page.evaluate(() => navigator.clipboard.readText())).toContain(ici);
 });
 
-test("la mascotte dort tant que le réseau est coupé", async ({ page }) => {
+test("should put the mascot to sleep while the network is cut", async ({ page }) => {
   await boot(page);
   await expect(mascot(page)).toHaveClass(/slime--idle/u);
 
@@ -69,13 +71,13 @@ test("la mascotte dort tant que le réseau est coupé", async ({ page }) => {
 
   await page.mouse.move(200, 200);
   await page.keyboard.press("a");
-  await expect(mascot(page), "aucun geste ne la réveille").toHaveClass(/slime--sleep/u);
+  await expect(mascot(page), "no gesture wakes the mascot up").toHaveClass(/slime--sleep/u);
 
   await page.context().setOffline(false);
   await expect(mascot(page)).toHaveClass(/slime--idle/u);
 });
 
-test("commander la mascotte sans réseau dit qu'elle dort", async ({ page }) => {
+test("should answer that the mascot sleeps when a command reaches it offline", async ({ page }) => {
   const cli = await boot(page);
 
   await couper(page);
@@ -83,14 +85,14 @@ test("commander la mascotte sans réseau dit qu'elle dort", async ({ page }) => 
   await cli.press("Enter");
 
   await expect(page.locator("[data-journal]")).toContainText("dort tant que le réseau est coupé");
-  await expect(mascot(page), "le journal ne ment pas : elle dort toujours").toHaveClass(
+  await expect(mascot(page), "the log does not lie: the mascot still sleeps").toHaveClass(
     /slime--sleep/u,
   );
 });
 
 // Le sommeil est total : la souris ne la réveille pas non plus. Sans ces deux refus, un
 // clic la ferait exploser sans feuille à jouer, et un glisser promènerait un dormeur.
-test("endormie, la mascotte ne répond ni au clic ni au glisser", async ({ page }) => {
+test("should ignore clicks and drags while the mascot sleeps", async ({ page }) => {
   await boot(page);
   await couper(page);
   await expect(mascot(page)).toHaveClass(/slime--sleep/u);
@@ -102,7 +104,9 @@ test("endormie, la mascotte ne répond ni au clic ni au glisser", async ({ page 
     Promise.resolve(),
   );
 
-  await expect(mascot(page), "cinq clics ne la font plus exploser").toHaveClass(/slime--sleep/u);
+  await expect(mascot(page), "five clicks no longer blow the mascot up").toHaveClass(
+    /slime--sleep/u,
+  );
 
   await page.mouse.move(avant.x + 32, avant.y + 32);
   await page.mouse.down();
@@ -110,10 +114,10 @@ test("endormie, la mascotte ne répond ni au clic ni au glisser", async ({ page 
   await page.mouse.up();
 
   await expect(mascot(page)).toHaveClass(/slime--sleep/u);
-  expect((await mascot(page).boundingBox())!.x, "elle n'a pas bougé").toBe(avant.x);
+  expect((await mascot(page).boundingBox())!.x, "the mascot has not moved").toBe(avant.x);
 });
 
-test("proposer sans réseau le dit plutôt que d'échouer en silence", async ({ page }) => {
+test("should say that propose needs the network instead of failing silently", async ({ page }) => {
   const cli = await boot(page);
 
   await couper(page);

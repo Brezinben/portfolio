@@ -51,7 +51,7 @@ const SCRIPT = ["java", "script:"].join(""),
 
 // Un ton venu du contenu est interpole dans un attribut style. Sans liste blanche, il
 // ferme la declaration et fait sortir une requete vers un serveur tiers.
-test("un ton hostile dans le contenu ne fait sortir aucune requête", async ({ page }) => {
+test("should send no request out when the content carries a hostile tone", async ({ page }) => {
   const leaked: string[] = [];
 
   page.on("request", (request) => {
@@ -64,12 +64,12 @@ test("un ton hostile dans le contenu ne fait sortir aucune requête", async ({ p
   await boot(page);
   await page.waitForTimeout(1500);
 
-  expect(leaked, "le contenu ne doit pas pouvoir appeler un serveur tiers").toEqual([]);
+  expect(leaked, "the content must not be able to call a third-party server").toEqual([]);
   await expect(page.locator("[data-result]")).toContainText("charge utile");
 });
 
 // Une cible declaree dans le contenu ne doit pas pouvoir executer de script.
-test("une cible de partage en javascript: n'est jamais ouverte", async ({ page }) => {
+test("should never open a share target that carries a script URL", async ({ page }) => {
   await serve(page, HOSTILE);
   await boot(page);
   await page.evaluate(() => {
@@ -99,7 +99,7 @@ test("une cible de partage en javascript: n'est jamais ouverte", async ({ page }
 });
 
 // Une sequence pourcent invalide ne doit pas tuer la commande.
-test("une URL mal encodée ne lève aucune exception", async ({ page }) => {
+test("should raise no exception on a badly encoded URL", async ({ page }) => {
   const errors: string[] = [];
 
   page.on("pageerror", (error) => errors.push(error.message));

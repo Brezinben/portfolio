@@ -12,22 +12,22 @@ const TELEPHONE = { hasTouch: true, isMobile: true, viewport: { height: 640, wid
 // Un style inline bat une feuille de style. La requête de média ne peut donc pas écraser
 // les bases de la maquette : elle pose des jetons, et ces tests prouvent que les deux
 // colonnes lisent bien la valeur qui leur revient.
-test.describe("au doigt", () => {
+test.describe("on touch", () => {
   test.use(TELEPHONE);
 
-  test("la colonne empilée défile au lieu de compresser les volets", async ({ page }) => {
+  test("should scroll the stacked column instead of squeezing the panes", async ({ page }) => {
     await boot(page);
 
     const panes = await page
       .locator("[data-panes]")
       .evaluate((node) => ({ client: node.clientHeight, scroll: node.scrollHeight }));
 
-    expect(panes.scroll, "les volets débordent, et la colonne les fait défiler").toBeGreaterThan(
+    expect(panes.scroll, "the panes overflow, and the column scrolls them").toBeGreaterThan(
       panes.client + 1,
     );
   });
 
-  test("le volet central arrive en tête de la colonne empilée", async ({ page }) => {
+  test("should put the main pane first in the stacked column", async ({ page }) => {
     await boot(page);
 
     const tops = await page.evaluate(() =>
@@ -40,7 +40,7 @@ test.describe("au doigt", () => {
     expect(tops[1]).toBeLessThan(tops[2] ?? 0);
   });
 
-  test("le volet central prend la plus grande part", async ({ page }) => {
+  test("should give the main pane the largest share", async ({ page }) => {
     await boot(page);
 
     const inner = await page.evaluate(() => window.innerHeight);
@@ -48,7 +48,7 @@ test.describe("au doigt", () => {
     expect(await height(page, '[data-pane="main"]')).toBeGreaterThanOrEqual(inner * 0.62);
   });
 
-  test("le volet gauche et le volet de sortie gardent leur part", async ({ page }) => {
+  test("should keep the share of the left pane and of the output pane", async ({ page }) => {
     await boot(page);
 
     const inner = await page.evaluate(() => window.innerHeight);
@@ -59,7 +59,7 @@ test.describe("au doigt", () => {
 
   // Le volet central peut être haut et le résultat rester écrasé : la piste, la saisie et
   // la barre d'état prennent leur part avant lui.
-  test("le résultat garde une place utile", async ({ page }) => {
+  test("should keep a useful room for the result", async ({ page }) => {
     await boot(page, "/#stack");
 
     expect(await height(page, "[data-result]")).toBeGreaterThanOrEqual(120);
@@ -67,7 +67,7 @@ test.describe("au doigt", () => {
 
   // Le journal tenait dans 120 px : une réponse de 490 px n'en montrait que trois lignes.
   // « aide » réclame maintenant le résultat, et c'est là que la réponse doit tenir entière.
-  test("le résultat montre toute la réponse d'une commande", async ({ page }) => {
+  test("should show the whole answer of a command in the result", async ({ page }) => {
     await boot(page);
     const cli = page.getByLabel("Commande");
 
@@ -83,7 +83,7 @@ test.describe("au doigt", () => {
       scroll: node.scrollHeight,
     }));
 
-    expect(shown.scroll, "rien ne reste caché sous le pli du résultat").toBeLessThanOrEqual(
+    expect(shown.scroll, "nothing stays hidden below the fold of the result").toBeLessThanOrEqual(
       shown.client + 1,
     );
   });
@@ -94,7 +94,7 @@ test.describe("au doigt", () => {
     ["section", /impact/],
     ["mission", /kereis/],
   ] as const) {
-    test(`toucher une ${quoi} amène le résultat à l'écran`, async ({ page }) => {
+    test(`should bring the result on screen when a ${quoi} is touched`, async ({ page }) => {
       await boot(page);
       await page.getByRole("button", { name: nom }).first().click();
 
@@ -103,7 +103,7 @@ test.describe("au doigt", () => {
   }
 
   // Le journal garde l'echo, et il reste des commandes qui n'ecrivent que la.
-  test("le journal montre toute la réponse d'une commande introuvable", async ({ page }) => {
+  test("should show the whole answer of an unknown command in the log", async ({ page }) => {
     await boot(page);
     const cli = page.getByLabel("Commande");
 
@@ -119,26 +119,26 @@ test.describe("au doigt", () => {
       scroll: node.scrollHeight,
     }));
 
-    expect(shown.scroll, "rien ne reste caché sous le pli du journal").toBeLessThanOrEqual(
+    expect(shown.scroll, "nothing stays hidden below the fold of the log").toBeLessThanOrEqual(
       shown.client + 1,
     );
   });
 
-  test("la page ne dépasse jamais la hauteur de la fenêtre", async ({ page }) => {
+  test("should never grow the page past the window height", async ({ page }) => {
     await boot(page);
 
     const overflow = await page.evaluate(() => document.body.scrollHeight - window.innerHeight);
 
-    expect(overflow, "le débordement va dans la colonne, jamais dans la page").toBeLessThanOrEqual(
+    expect(overflow, "the overflow goes into the column, never into the page").toBeLessThanOrEqual(
       1,
     );
   });
 });
 
-test.describe("au bureau", () => {
+test.describe("on desktop", () => {
   test.use({ viewport: { height: 900, width: 1440 } });
 
-  test("les volets gardent les bases de la maquette", async ({ page }) => {
+  test("should keep the pane bases of the design", async ({ page }) => {
     await boot(page);
 
     const bases = await Promise.all(
@@ -154,7 +154,7 @@ test.describe("au bureau", () => {
     expect(bases).toEqual(["0 1 244.8px 0px", "3 1 360px 0px", "1.3 1 230px 0px"]);
   });
 
-  test("le journal garde son plafond", async ({ page }) => {
+  test("should keep the log under its ceiling", async ({ page }) => {
     await boot(page);
     const cli = page.getByLabel("Commande");
 
@@ -164,7 +164,7 @@ test.describe("au bureau", () => {
     expect(await height(page, "[data-journal]")).toBeLessThanOrEqual(120);
   });
 
-  test("les volets restent côte à côte", async ({ page }) => {
+  test("should keep the panes side by side", async ({ page }) => {
     await boot(page);
 
     const direction = await page
