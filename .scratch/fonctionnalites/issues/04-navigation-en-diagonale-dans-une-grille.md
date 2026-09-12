@@ -1,6 +1,6 @@
 # La navigation en flèches part en diagonale dans une grille
 
-Status: ready-for-agent
+Status: resolved
 Type: task
 
 ## Le problème, en une phrase
@@ -41,3 +41,19 @@ Poser la largeur, compter les colonnes obtenues, puis vérifier la descente.
 Un test qui pose une fenêtre où la dernière ligne d'une famille est plus courte que les
 précédentes, place le curseur dans une colonne au-delà de cette longueur, presse `↓`, et
 vérifie que la colonne n'a pas changé.
+
+## Réponse
+
+Fait. `gridMove` cherche d'abord une cellule dans la colonne du curseur, parmi **toutes**
+les lignes atteignables, et non plus seulement la ligne d'à côté. Le repli sur la cellule
+la plus proche ne sert plus que si la colonne est vide jusqu'au bout.
+
+Le diagnostic du ticket était incomplet. `gridMove` faisait déjà de la navigation par
+géométrie : il lisait la position réelle des cellules, pas un pas fixe. Son défaut était
+plus étroit — **il visait la ligne suivante, puis cherchait la meilleure colonne dedans.**
+L'ordre était inversé.
+
+Mesuré avant la correction : le curseur passait de 498 px à 301 px.
+
+Deux tests dans `tests/browser/grille.spec.ts`. Le second garde le cas ordinaire, pour que
+la correction ne se paye pas d'une régression.

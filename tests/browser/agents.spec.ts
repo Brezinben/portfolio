@@ -13,9 +13,7 @@ test("robots.txt est servi et désigne le sitemap", async ({ request }) => {
   const response = await request.get("/robots.txt");
 
   expect(response.status()).toBe(200);
-  expect(await response.text()).toContain(
-    "Sitemap: https://me.brezinben.dpdns.org/sitemap.xml",
-  );
+  expect(await response.text()).toContain("Sitemap: https://me.brezinben.dpdns.org/sitemap.xml");
 });
 
 test("llms.txt est servi en texte brut", async ({ request }) => {

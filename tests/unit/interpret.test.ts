@@ -158,13 +158,6 @@ test("vim, nano et emacs tombent dans le même piège", () => {
   }
 });
 
-test("pet caresse la mascotte", () => {
-  const result = interpret("/pet", CONTEXT);
-
-  assert.equal(result.lines[1]?.m, "♥");
-  assert.ok(result.effects.some((effect) => effect.type === "say"));
-});
-
 test("sleep endort la mascotte", () => {
   const result = interpret("sleep", CONTEXT);
 
@@ -310,7 +303,7 @@ test("chaque alias se comporte comme sa commande", () => {
     ["?", "help"],
     ["aide", "help"],
     ["/brezinben", "/benjamin"],
-    ["/cat", "/pet"],
+    ["/cat", "/slime"],
     ["cls", "clear"],
     ["copy", "email"],
     ["dir", "ls"],
@@ -319,7 +312,7 @@ test("chaque alias se comporte comme sa commande", () => {
     ["/feedback", "/propose"],
     ["ia", "ai"],
     ["/idee", "/propose"],
-    ["/mascotte", "/pet"],
+    ["/mascotte", "/slime"],
     ["/nano", "/vim"],
     ["partager", "share"],
     ["poweroff", "shutdown"],
@@ -410,7 +403,7 @@ test("l'aide n'annonce jamais un easter egg sans son slash", () => {
     // La bulle de la mascotte est un texte d'aide de plus : elle nomme une commande.
     body = [...resultTexts(result), effectOf(result, "say")?.text ?? ""].join(" ");
 
-  for (const egg of ["cowsay", "joke", "matrix", "pet", "propose", "slime"]) {
+  for (const egg of ["cowsay", "joke", "matrix", "propose", "slime"]) {
     assert.ok(body.includes(`/${egg}`), `help doit écrire /${egg}`);
     assert.doesNotMatch(body, new RegExp(`(?<!/)\\b${egg}\\b`, "u"), `${egg} sans slash`);
   }
@@ -621,6 +614,30 @@ test("slime evolve demande le changement de forme", () => {
 
   assert.ok(effectOf(result, "evolve"), "l'effet manque");
   assert.match(texts(result)[1] ?? "", /change de forme/u);
+});
+
+// Endormie n'est ni absente ni occupee : la mascotte est la, et elle le reste. Le refus
+// nomme la cause et la sortie, comme les autres refus du mode hors ligne.
+test("sans réseau, la mascotte dort et la commande est refusée", () => {
+  const asleep = { ...CONTEXT, mascot: "asleep" } as const;
+
+  for (const command of [
+    "/slime kill",
+    "/slime drop",
+    "/slime evolve",
+    "/slime expression happy",
+    "/slime activity bike",
+  ]) {
+    const result = interpret(command, asleep);
+
+    assert.match(texts(result)[1] ?? "", /dort tant que le réseau est coupé/u, command);
+    assert.match(texts(result)[2] ?? "", /retour du réseau/u, command);
+    assert.ok(effectOf(result, "usage"), command);
+
+    for (const swallowed of ["blowUp", "drop", "evolve", "emote", "activity"] as const) {
+      assert.equal(effectOf(result, swallowed), undefined, `${command} / ${swallowed}`);
+    }
+  }
 });
 
 // Occupee n'est pas absente : la mascotte est la, elle finit sa transformation. Le journal

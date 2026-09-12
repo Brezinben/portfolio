@@ -64,7 +64,8 @@ _Avoid_: parcours, chronologie, historique.
 
 **Ton** (`tone`) :
 La couleur de sens portée par une ligne ou un jeton. Cinq valeurs : `acc`, `fg`, `fg2`,
-`ok`, `warn`. Toute valeur inconnue retombe sur `fg`.
+`ok`, `warn`. Toute valeur inconnue retombe sur `fg`. Un ton colore du texte : `acc` y
+désigne l'ambre textuel, jamais l'ambre décoratif qui habille un glyphe.
 _Avoid_: couleur, teinte, style.
 
 **Log de boot** (`bootLog`) :
@@ -101,7 +102,8 @@ _Avoid_: page d'erreur, écran 404.
 **Mascotte** (`mascot`) :
 Le slime. Il se déplace librement sur toute la fenêtre, et se plaque contre ses bords.
 Décorative : un lecteur d'écran ne l'annonce jamais. Elle disparaît quand le visiteur demande
-moins de mouvement.
+moins de mouvement. Le réseau coupé, elle dort : elle ne se déplace plus et ne répond plus,
+ni à une commande, ni à la souris, jusqu'au retour du réseau.
 _Avoid_: slime, avatar, personnage.
 
 **Forme** (`form`) :
