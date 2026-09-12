@@ -1,6 +1,6 @@
 # Lot 2 — les états de sélection deviennent des règles ARIA
 
-Status: ready-for-agent
+Status: resolved
 Type: task
 Blocked by: 01
 
@@ -47,3 +47,23 @@ avec lui, pas en silence.
 ## Vérification
 
 `bun run test:browser` vert, instantané compris.
+
+## Réponse
+
+Fait. Huit liaisons retirées, les 18 instantanés passent sans être réécrits.
+
+La question laissée ouverte est close, et elle n'avait plus lieu d'être : **ni
+`[data-ctl="nav"]` ni `[data-ctl="tl"]` ne portent aujourd'hui de `transition` ou de règle
+`:hover`.** Le plan citait un état du fichier antérieur au lot 1. Rien à aligner.
+
+Deux écarts avec le plan, tous deux imposés par le piège qu'il décrivait lui-même :
+
+1. **La déclaration entière descend dans la feuille**, pas seulement la part qui dépend de
+   l'état. Laisser `border-left: 2px solid transparent` en ligne aurait fait taire la
+   règle d'état.
+2. **Le guide de la frise a perdu son style en ligne.** Il portait
+   `style="color:var(--fg2)"`, qui battait la règle `[aria-selected="true"] [data-guide]`.
+   Le défaut est passé en règle lui aussi.
+
+Un nom nouveau : `data-toggle-value`, sur le libellé d'état d'une bascule. Il suit le
+vocabulaire de crochets existant. **À verser au glossaire si le lot 5 le confirme.**

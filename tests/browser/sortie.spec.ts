@@ -143,7 +143,7 @@ test("la sortie contact est colorée par type", async ({ page }) => {
   await open(page, "#contact");
 
   const colours = await page
-    .locator('[data-pane="main"] [data-result] span[style*="color"]')
+    .locator('[data-pane="main"] [data-result] span[data-tone]')
     .evaluateAll((nodes) => nodes.map((node) => getComputedStyle(node).color));
 
   expect(
