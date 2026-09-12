@@ -218,3 +218,21 @@ test("ask se decouvre par la completion et par l'aide", async ({ page }) => {
   await cli.press("Enter");
   await expect(page.locator("[data-result]")).toContainText("ask <question>");
 });
+
+// La reponse lexicale est deja affichee quand le modele commence. Sans marque d'attente,
+// la commande parait finie, et la piste qui arrive ensuite surprend.
+test("l'attente du modèle se voit, puis disparaît", async ({ page }) => {
+  await poserModeleLent(page);
+
+  const cli = await boot(page);
+  const attente = page.locator("[data-thinking]");
+
+  await cli.fill("ask où travailles-tu à Nantes");
+  await cli.press("Enter");
+
+  await expect(attente).toBeVisible();
+  await expect(attente).toContainText("le modèle réfléchit");
+
+  await expect(page.locator("[data-journal]")).toContainText("le modèle local lit plutôt");
+  await expect(attente, "l'attente s'efface avec la réponse").toHaveCount(0);
+});

@@ -555,6 +555,8 @@ interface State {
   recallAt: number;
   resizing: { height: number; y: number } | undefined;
   running: boolean;
+  // Le modele cherche pendant que la reponse lexicale est deja a l'ecran.
+  thinking: boolean;
   section: string;
   wantResult: boolean;
   sections: Section[];
@@ -657,6 +659,7 @@ document.addEventListener("alpine:init", () => {
       recallAt: -1,
       resizing: undefined,
       running: false,
+      thinking: false,
       section: "whoami",
       wantResult: false,
       sections: [],
@@ -2299,6 +2302,8 @@ document.addEventListener("alpine:init", () => {
             return;
           }
 
+          this.thinking = true;
+
           const session = await globalThis.LanguageModel.create({
             // La question et les passages sont en francais. Le declarer laisse le navigateur
             // refuser tout de suite plutot que de repondre depuis un modele d'une autre langue.
@@ -2319,6 +2324,11 @@ document.addEventListener("alpine:init", () => {
         } catch {
           // Un modele indisponible, refuse ou interrompu laisse la reponse lexicale, qui est
           // deja affichee. Ce n'est pas une panne de la recherche.
+        } finally {
+          // La question coupee n'eteint pas l'attente de celle qui l'a remplacee.
+          if (this.asker === asker) {
+            this.thinking = false;
+          }
         }
       },
 
@@ -2401,6 +2411,8 @@ document.addEventListener("alpine:init", () => {
 
         const debut = performance.now();
 
+        this.thinking = true;
+
         try {
           const session = await globalThis.LanguageModel.create({
             expectedInputs: [{ languages: ["fr"], type: "text" }],
@@ -2417,6 +2429,8 @@ document.addEventListener("alpine:init", () => {
           }
         } catch {
           return undefined;
+        } finally {
+          this.thinking = false;
         }
 
         return Math.round(performance.now() - debut);
