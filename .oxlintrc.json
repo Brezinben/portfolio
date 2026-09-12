@@ -151,6 +151,12 @@
   ],
   "overrides": [
     {
+      "files": ["src/terminal/shell.ts"],
+      "rules": {
+        "import/consistent-type-specifier-style": ["error", "prefer-top-level"]
+      }
+    },
+    {
       "files": ["tests/**", "tools/**", "playwright.config.js"],
       "env": {
         "node": true

@@ -33,9 +33,6 @@ const ROOT = fileURLToPath(new URL("../", import.meta.url)),
   KEPT_VERSIONS = 3,
   CONTENT = "content.json",
   TRANSFORMED = new Set([CONTENT, "index.html", "texte.html"]),
-  // Les dossiers qui ne portent que des modules TypeScript. Le bundle les absorbe : les
-  // copier ne publierait que des dossiers vides.
-  SOURCE_ONLY = new Set(["interpret", "terminal"]),
   // Ces noms sont des contrats avec l'extérieur : iOS demande /apple-touch-icon.png sans
   // balise, la page charge content.json par une URL relative, et les robots lisent llms.txt.
   FIXED_NAMES = new Set([
@@ -502,6 +499,25 @@ const unfilter = (filter: number, value: number, around: Around) => {
     );
   };
 
+// Un dossier vide n'a rien a faire dans l'artefact. L'elagage remonte des feuilles vers la
+// racine : un dossier qui ne contenait que des dossiers vides se vide a son tour.
+const pruneEmpty = async (directory: string): Promise<boolean> => {
+  const entries = await readdir(directory, { withFileTypes: true }),
+    kept = await Promise.all(
+      entries.map(async (entry) =>
+        entry.isDirectory() ? await pruneEmpty(join(directory, entry.name)) : true,
+      ),
+    );
+
+  if (kept.some(Boolean)) {
+    return true;
+  }
+
+  await rm(directory, { recursive: true });
+
+  return false;
+};
+
 await takeLock();
 
 try {
@@ -511,19 +527,17 @@ try {
   await cp(SOURCE, version, {
     // Une regle plutot qu'une liste de noms : le bundle absorbe les modules, et un
     // renommage ne doit pas republier la source en silence.
-    //
-    // Le filtre s'applique aussi aux dossiers, et un dossier n'a pas d'extension : sans le
-    // second test, un dossier qui ne contient que du TypeScript est cree dans l'artefact
-    // puis vide de tous ses enfants. Il y est publie vide, et aucun test ne le voit.
-    filter: (from: string) =>
-      extname(from) !== ".ts" &&
-      !TRANSFORMED.has(relative(SOURCE, from)) &&
-      !SOURCE_ONLY.has(relative(SOURCE, from)),
+    filter: (from: string) => extname(from) !== ".ts" && !TRANSFORMED.has(relative(SOURCE, from)),
     // Sans ça, chaque construction date à neuf des fichiers identiques. Leur ETag change,
     // et la revalidation « no-cache » du serveur ne rend jamais de 304.
     preserveTimestamps: true,
     recursive: true,
   });
+  // Le filtre s'applique aussi aux dossiers, et un dossier n'a pas d'extension : celui qui
+  // ne porte que des modules est cree, puis vide de tous ses enfants, et publie vide. On
+  // elague apres coup plutot que de nommer ces dossiers : un dossier qui porterait un actif
+  // a cote de ses modules doit rester, et une liste de noms l'aurait supprime entier.
+  await pruneEmpty(version);
   await buildIndex(version);
   await buildTexte(version);
   await buildContent(version);

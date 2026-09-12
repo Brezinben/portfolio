@@ -13,7 +13,8 @@ import {
   interpret,
   safeTone,
 } from "./interpret.ts";
-import { type MascotApi, mascotSlice } from "./terminal/mascot/slice.ts";
+import type { Magics } from "./terminal/shell.ts";
+import { mascotSlice } from "./terminal/mascot/slice.ts";
 
 // Le bandeau que la coquille calcule : l'interpreteur ne rend qu'un mot a dessiner, le
 // balisage a besoin d'une geometrie et d'une ombre.
@@ -454,13 +455,6 @@ const askFailure = (cause: unknown) =>
     ? `le modèle local n'a pas répondu en ${ASK_MS / 1000} s.`
     : "le modèle local a refusé de répondre.";
 
-// Alpine pose ses magies sur le composant apres l'avoir construit : elles ne sont pas
-// dans l'objet litteral, mais « this » les voit a l'execution.
-interface Magics {
-  $nextTick: (callback: () => void) => void;
-  $refs: Record<string, HTMLElement | undefined>;
-}
-
 // Les deux seuls reglages qui se basculent. Nommer l'union permet d'indexer l'etat par la
 // cle sans effacer son type.
 type ToggleKey = "anim" | "out";
@@ -578,10 +572,15 @@ interface State {
   typed: string;
 }
 
-// Ce que les tranches deja extraites ajoutent au composant. « this » doit les voir depuis
-// ce qui reste ici : la liste grossit d'un nom a chaque extraction, et disparait avec
-// withMagics quand il ne restera plus rien a composer dans ce fichier.
-type Slices = MascotApi;
+// Les tranches deja extraites, en un seul endroit. Le type que « this » voit et l'objet
+// reellement fusionne en derivent tous les deux : en declarer une sans la fusionner ne
+// pouvait etre attrape ni par tsc, ni par le lint, ni par un test unitaire, et cassait la
+// page a la premiere utilisation. Cette liste grossit d'une ligne a chaque extraction.
+//
+// L'etalement est sur ici : une tranche ne porte jamais d'accesseur.
+const slices = () => ({ ...mascotSlice() });
+
+type Slices = ReturnType<typeof slices>;
 
 // ThisType ajoute les magies au type de « this » sans rien changer au code produit :
 // cette fonction est l'identite. L'etat vient de State, le reste du litteral vient de T :
@@ -2726,6 +2725,6 @@ document.addEventListener("alpine:init", () => {
     //
     // Une methode oubliee dans le litteral apres son deplacement perd contre la tranche :
     // c'est le code neuf qui gagne, pas le residu.
-    return Object.defineProperties(component, Object.getOwnPropertyDescriptors(mascotSlice()));
+    return Object.defineProperties(component, Object.getOwnPropertyDescriptors(slices()));
   });
 });
