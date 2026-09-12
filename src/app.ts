@@ -740,6 +740,26 @@ document.addEventListener("alpine:init", () => {
           return true;
         }
 
+        // La colonne prime sur la ligne. Une derniere ligne plus courte que les autres n'a
+        // pas de cellule dans la colonne du curseur : viser la ligne d'a cote le faisait
+        // glisser tout a gauche, et les frappes suivantes partaient d'ailleurs. Le curseur
+        // saute donc cette ligne et descend jusqu'a retrouver sa colonne.
+        const inColumn = beyond.filter((cell) => Math.abs(rect(cell).left - from.left) < 1);
+
+        if (inColumn.length > 0) {
+          inColumn
+            .reduce((best, cell) =>
+              Math.abs(rect(cell).top - from.top) < Math.abs(rect(best).top - from.top)
+                ? cell
+                : best,
+            )
+            .focus();
+
+          return true;
+        }
+
+        // Plus rien dans cette colonne : le curseur prend la cellule la plus proche de la
+        // premiere ligne atteignable, plutot que de rester sur place.
         const tops = beyond.map((cell) => rect(cell).top),
           edge = key === "ArrowDown" ? Math.min(...tops) : Math.max(...tops),
           row = beyond.filter((cell) => Math.abs(rect(cell).top - edge) < 1);
