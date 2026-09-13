@@ -1,13 +1,19 @@
 # Externaliser la feuille de style
 
-Status: needs-info
+Status: ready-for-agent
 Type: task
 Blocked by: 06
 
 Le bloc `<style>` fait 940 lignes dans `src/index.html`. Il n'est formaté par rien :
 `.oxfmtrc.json` exclut `src/**/*.html`, et `oxfmt` ne connaît pas le CSS de toute façon.
 
-## Ce qui est à décider avant d'agir
+## La décision, prise sur la page 404
+
+Benjamin a tranché : **la source sort, l'artefact remet en ligne.** C'est la lecture 1
+ci-dessous. `src/404.css` en est le premier cas : `tools/build.ts` le plie, puis le
+remplace dans `src/404.html` à la place de son `<link>`. `index.html` reste à faire.
+
+## Ce qui était à décider avant d'agir
 
 Benjamin a écrit : « lors du bundle, il est réinjecté en inline dans le HTML ». C'est
 exact — `tools/build.ts:80` applique `minifyCSS` au bloc en place. Mais **cet inline est
@@ -22,11 +28,17 @@ Deux lectures s'opposent :
 2. **Sortir la source et la servir séparément.** On perd une requête au premier rendu, on
    gagne un cache séparé entre les déploiements.
 
-## Le formatage n'est pas résolu par l'externalisation
+## Le formatage, lui, est résolu par l'externalisation
 
-`oxfmt` ne formate pas le CSS. Un fichier `.css` reste aussi mal formaté qu'un bloc
-`<style>`, sauf à ajouter un formateur CSS au dépôt. C'est une décision distincte, à
-prendre séparément.
+Cette section disait le contraire, et elle avait tort. `oxfmt` formate le CSS : sorti en
+`src/404.css`, le style a pris les point-virgules de fin, les couleurs en minuscules et les
+zéros de tête (`.14` devient `0.14`). Seul `src/**/*.html` lui échappe, par `ignorePatterns`.
+
+Conséquence pour `index.html` : sortir son bloc `<style>` le fera reformater d'un coup. Le
+diff sera large, et il ne changera aucun rendu. Le prendre dans un commit à part.
+
+Conséquence déjà payée : `tests/unit/agents.test.ts` compare les couleurs sans la casse,
+puisque les trois pages ne sont plus formatées de la même façon.
 
 ## Contraintes si on procède
 

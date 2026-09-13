@@ -14,6 +14,7 @@ const SOURCE = new URL("../../src/", import.meta.url),
   llms = read("llms.txt"),
   llmsFull = read("llms-full.txt"),
   texte = read("texte.html"),
+  errorSheet = read("404.css"),
   locs = [...sitemap.matchAll(/<loc>(?<url>[^<]+)<\/loc>/gu)].map((found) => found.groups?.url);
 
 it("should keep the sitemap balanced and declare the expected namespace", () => {
@@ -109,12 +110,16 @@ it("should give the same contact in llms.txt and in the text version", () => {
   assert.ok(texte.includes(contact), "texte.html does not give the expected contact");
 });
 
-// La version texte recopie les huit thèmes de la version terminal, pour ne pas tirer une
-// feuille de style de plus sur la page de repli. Ce test paie la duplication : une couleur
-// qui change d'un côté doit changer de l'autre.
+// La version texte et la page d'erreur recopient les huit thèmes de la version terminal :
+// ni l'une ni l'autre ne charge le point d'entrée, donc aucune ne peut lire la table. Ce
+// test paie la duplication : une couleur qui change d'un côté doit changer des deux autres.
 const CLES = ["--bg", "--panel", "--edge", "--fg", "--fg2", "--acc"],
   // Un thème peut s'écrire en plusieurs blocs : index.html surcharge « light » plus bas dans
   // la feuille. Les blocs de même nom se fondent, sinon le dernier efface le premier.
+  //
+  // La casse tombe : oxfmt formate 404.css et y écrit les couleurs en minuscules, là où les
+  // deux pages HTML lui échappent. Une couleur CSS ne distingue pas la casse ; ce test
+  // surveille une dérive de valeur, pas de graphie.
   themes = (html: string, prefixe: string) => {
     const releve: Record<string, Record<string, string>> = {};
 
@@ -129,30 +134,39 @@ const CLES = ["--bg", "--panel", "--edge", "--fg", "--fg2", "--acc"],
       releve[nom] ??= {};
 
       for (const regle of regles) {
-        releve[nom][regle.groups?.cle ?? ""] = regle.groups?.valeur?.trim() ?? "";
+        releve[nom][regle.groups?.cle ?? ""] = (regle.groups?.valeur?.trim() ?? "").toLowerCase();
       }
     }
 
     return releve;
   };
 
-it("should copy the terminal version colors into the eight themes of the text version", () => {
+it("should copy the terminal version colors into the eight themes of the other pages", () => {
   const source = themes(read("index.html"), String.raw`\.tm`),
-    copie = themes(texte, ":root"),
     noms = Object.keys(source);
 
   assert.equal(noms.length, 8, "index.html no longer declares eight themes");
-  assert.deepEqual(Object.keys(copie), noms, "texte.html does not declare the same themes");
 
-  for (const nom of noms) {
-    for (const cle of CLES) {
-      assert.equal(copie[nom]?.[cle], source[nom]?.[cle], `${nom}: ${cle} has drifted`);
+  for (const [page, copy] of [
+    ["texte.html", themes(texte, ":root")],
+    ["404.css", themes(errorSheet, ":root")],
+  ] as const) {
+    assert.deepEqual(Object.keys(copy), noms, `${page} does not declare the same themes`);
+
+    for (const theme of noms) {
+      for (const key of CLES) {
+        assert.equal(
+          copy[theme]?.[key],
+          source[theme]?.[key],
+          `${page} ${theme}: ${key} has drifted`,
+        );
+      }
     }
-  }
 
-  // L'ambre décoratif du thème clair ne passe pas le contraste sur du texte. Les deux pages
-  // doivent porter la même variante sombre.
-  assert.equal(copie["light"]?.["--acc-text"], "#8f5f00");
+    // L'ambre décoratif du thème clair ne passe pas le contraste sur du texte. Les trois
+    // pages doivent porter la même variante sombre.
+    assert.equal(copy["light"]?.["--acc-text"], "#8f5f00", `${page}: the light amber has drifted`);
+  }
 });
 
 // Le contenu de la version texte est écrit en dur. content.json reste la source de vérité :

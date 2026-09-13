@@ -1,0 +1,514 @@
+/* Police variable auto-hébergée : un seul fichier couvre 400 et 700. Les ligatures sont
+   retirées ici et dans la police, sans quoi les traits de l'art ASCII se recomposent. */
+@font-face {
+  font-family: "JetBrains Mono";
+  src: url("/assets/fonts/jetbrains-mono.woff2") format("woff2");
+  font-weight: 400 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Les huit palettes sont recopiées de src/index.html. Une page servie sur une adresse
+   inconnue ne charge ni content.json ni app.ts : elle ne peut pas tirer sa feuille de la
+   version terminal. Un test unitaire compare les deux tables. */
+:root {
+  --radius: 5px;
+  --acc-text: var(--acc);
+  --hue: 0deg;
+}
+
+:root[data-theme="dark"] {
+  --bg: #1c1d2b;
+  --panel: #242538;
+  --edge: #33344a;
+  --fg: #fff6f6;
+  --fg2: #9b9db8;
+  --acc: #f5b83b;
+  --acc-soft: rgba(245, 184, 59, 0.14);
+  --warn: #e2914c;
+}
+
+/* L'ambre décoratif du thème clair donne 2,1:1 : correct pour un trait, pas pour du texte. */
+:root[data-theme="light"] {
+  --bg: #f3ecec;
+  --panel: #fff6f6;
+  --edge: #ded2d2;
+  --fg: #242538;
+  --fg2: #5a5a70;
+  --acc: #e6a000;
+  --acc-soft: rgba(245, 184, 59, 0.22);
+  --acc-text: #8f5f00;
+  --warn: #a05a12;
+}
+
+:root[data-theme="noctis"] {
+  --bg: #04252a;
+  --panel: #052c33;
+  --edge: #0d4148;
+  --fg: #d3e5e8;
+  --fg2: #7ea0a6;
+  --acc: #49e9a6;
+  --acc-soft: rgba(73, 233, 166, 0.14);
+  --warn: #e4b781;
+  --hue: 117deg;
+}
+
+:root[data-theme="azureus"] {
+  --bg: #061f2c;
+  --panel: #07273b;
+  --edge: #0f3b52;
+  --fg: #cfdce4;
+  --fg2: #7d9bb0;
+  --acc: #49ace9;
+  --acc-soft: rgba(73, 172, 233, 0.16);
+  --warn: #e4b781;
+  --hue: 163deg;
+}
+
+:root[data-theme="uva"] {
+  --bg: #191634;
+  --panel: #211d40;
+  --edge: #332d5c;
+  --fg: #ded9f2;
+  --fg2: #9490bd;
+  --acc: #a29bfe;
+  --acc-soft: rgba(162, 155, 254, 0.18);
+  --warn: #e4a06a;
+  --hue: 205deg;
+}
+
+:root[data-theme="bordo"] {
+  --bg: #23151d;
+  --panel: #2d1b26;
+  --edge: #452a39;
+  --fg: #ecd9e2;
+  --fg2: #a8869a;
+  --acc: #e0728c;
+  --acc-soft: rgba(224, 114, 140, 0.18);
+  --warn: #e0a35c;
+  --hue: 306deg;
+}
+
+:root[data-theme="lux"] {
+  --bg: #f2ecdd;
+  --panel: #fdf6e7;
+  --edge: #ddd2ba;
+  --fg: #004d57;
+  --fg2: #4a5952;
+  --acc: #0c6d7a;
+  --acc-soft: rgba(15, 125, 140, 0.14);
+  --warn: #9a6218;
+}
+
+:root[data-theme="hibernus"] {
+  --bg: #eaf1f3;
+  --panel: #f7fbfc;
+  --edge: #cfdde1;
+  --fg: #004d57;
+  --fg2: #475e66;
+  --acc: #00707f;
+  --acc-soft: rgba(0, 112, 127, 0.13);
+  --warn: #9a6218;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  height: 100dvh;
+  max-height: 100dvh;
+  overflow: hidden;
+  padding: 14px clamp(12px, 2.5vw, 26px);
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-variant-ligatures: none;
+  font-feature-settings:
+    "liga" 0,
+    "calt" 0;
+  font-size: clamp(14px, 3.8vw, 16px);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Le terminal n'a pas de prose : une marge par défaut y creuserait un blanc. */
+p {
+  margin: 0;
+}
+
+a {
+  color: var(--acc-text);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+}
+
+a:hover {
+  color: var(--acc-text);
+  border-bottom-color: var(--acc-text);
+}
+
+::selection {
+  background: var(--acc-soft);
+  color: var(--fg);
+}
+
+[data-panes] {
+  flex: 1;
+  min-height: 0;
+  max-width: 2400px;
+  width: 100%;
+  display: flex;
+  gap: 10px;
+  align-items: stretch;
+  overflow: hidden;
+  animation: revealUp 0.62s cubic-bezier(0.2, 0.7, 0.3, 1) both;
+}
+
+/* Une zone est un conteneur encadré : les trois mêmes déclarations que sur l'accueil.
+   Elle garde le rayon, et elle ne prend jamais le focus. */
+.zone {
+  border: 1px solid var(--edge);
+  border-radius: var(--radius);
+  background: var(--panel);
+}
+
+.zone__head {
+  margin: 0;
+  padding: 9px 12px;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: var(--fg2);
+  border-bottom: 1px solid var(--edge);
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.zone__body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  align-content: center;
+  display: grid;
+  gap: 14px;
+  padding: 14px;
+}
+
+/* Un seul volet, qui prend toute la place. Les jetons --pane-flex et --pane-min de la
+   version terminal décrivent trois colonnes qui s'empilent sous 900 px : ici ils n'ont
+   rien à arbitrer, et « flex: none » dimensionnait le volet sur sa plus longue ligne. */
+[data-pane="main"] {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Le titre porte les deux parties et rien d'autre : chacune a sa taille. */
+h1 {
+  margin: 0;
+  font: inherit;
+}
+
+/* Le code est le sujet de la page : sur un telephone il prend la largeur, pas un plancher
+   de 40 px qui le laissait plus petit que sur un ecran deux fois plus large. */
+.code {
+  display: block;
+  font-size: clamp(72px, 20vw, 112px);
+  line-height: 1;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  color: var(--acc-text);
+}
+
+.sub {
+  display: block;
+  font-size: clamp(17px, 4.5vw, 21px);
+}
+
+/* Salto du zéro, toutes les cinq secondes. */
+.zero {
+  display: inline-block;
+  animation: flip 5s cubic-bezier(0.45, 0, 0.3, 1) infinite;
+}
+
+/* Une ligne du relevé : un marqueur de 18 px, puis le texte. Les trois lignes sont les
+   seules filles de leur conteneur, qui n'a donc pas besoin d'un nom. */
+.zone__line {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr);
+  gap: 8px;
+  align-items: baseline;
+  animation: lineIn 0.24s ease both;
+}
+
+.zone__line:nth-child(2) {
+  animation-delay: 0.1s;
+}
+
+.zone__line:nth-child(3) {
+  animation-delay: 0.18s;
+}
+
+[data-tone="acc"] {
+  color: var(--acc-text);
+}
+
+[data-tone="fg2"] {
+  color: var(--fg2);
+  text-wrap: pretty;
+}
+
+[data-tone="warn"] {
+  color: var(--warn);
+}
+
+[data-path] {
+  overflow-wrap: anywhere;
+}
+
+.caret {
+  color: var(--acc-text);
+  animation: caret 1s steps(1) infinite;
+}
+
+[data-track] {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  border-bottom: 1px solid var(--edge);
+}
+
+[data-bubble] {
+  min-width: 0;
+  margin-bottom: 14px;
+  padding: 6px 12px;
+  border: 1px solid var(--edge);
+  background: var(--bg);
+  font-size: 0.9em;
+}
+
+/* Mascotte : feuilles de 32 px par case, affichées à ×2, soit 64 px. Les couleurs sont
+   cuites dans les PNG, et « hue-rotate » les accorde aux quatre thèmes qui en demandent.
+   Ce filtre repeint tout ce que l'élément dessine, contour de focus compris : le sprite
+   vit donc sur un pseudo-élément, et le bouton garde son contour d'origine. */
+.slime {
+  position: relative;
+  width: 64px;
+  height: 64px;
+  flex: none;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+
+/* La construction pose ici l'image fusionnée et sa taille, à la place de
+   « background-position: 0 0 ». Cette déclaration doit rester la première du fichier : le
+   garde-fou du build n'est pas ancré sur « .slime ». */
+.slime::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-repeat: no-repeat;
+  background-position: 0 0;
+  image-rendering: pixelated;
+  filter: hue-rotate(var(--hue));
+}
+
+.slime:focus-visible {
+  outline: 2px solid var(--acc);
+  outline-offset: 2px;
+}
+
+/* Une entrée de liste se dessine en creux : aucun cadre, aucun fond, et une barre d'accent
+   à gauche qui n'apparaît qu'une fois sélectionnée. Elle prend le focus, donc elle reste
+   carrée. */
+[data-ctl="nav"] {
+  min-height: 44px;
+  display: grid;
+  grid-template-columns: 18px 1fr;
+  gap: 8px;
+  align-items: center;
+  padding: 5px 8px;
+  border-left: 2px solid transparent;
+  color: var(--fg);
+  font-size: 1em;
+}
+
+/* Une seule sortie est mise en avant à la fois, et le script la déplace sous le pointeur
+   comme sous le clavier. Le fond et la barre ne se lisent donc que sur « data-primary » :
+   une règle « :hover » en peindrait une seconde dès que la souris quitterait la sortie
+   qui porte le focus. « border-bottom-color » désarme le soulignement que « a:hover »
+   pose sur tout lien. */
+[data-ctl="nav"][data-primary] {
+  color: var(--fg);
+  border-left-color: var(--acc);
+  border-bottom-color: transparent;
+  background: var(--acc-soft);
+}
+
+/* Le contour dit le focus, que la mise en avant ne distingue pas du survol. */
+[data-ctl="nav"]:focus-visible {
+  outline: 2px solid var(--acc);
+  outline-offset: -2px;
+}
+
+[data-ctl="nav"] span {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+}
+
+[data-ctl="nav"] strong {
+  color: var(--acc-text);
+}
+
+/* La sortie mise en avant porte un fond teinté. L'ambre textuel et le gris secondaire y
+   tombent sous 4,5:1 sur cinq des huit thèmes — mesuré par le scan axe de la page. Sur
+   cette ligne, l'accent est dit par la barre et par le fond, pas par la couleur du texte. */
+[data-ctl="nav"][data-primary] strong,
+[data-ctl="nav"][data-primary] small {
+  color: var(--fg);
+}
+
+[data-ctl="nav"] small {
+  font-size: 0.85em;
+  color: var(--fg2);
+}
+
+nav {
+  display: grid;
+  gap: 1px;
+}
+
+footer {
+  flex: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 20px;
+  padding: 0 4px;
+  font-size: 12px;
+  color: var(--fg2);
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+@keyframes lineIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes revealUp {
+  0% {
+    opacity: 0;
+    transform: translateY(14px) scale(0.985);
+  }
+
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes caret {
+  0%,
+  49% {
+    opacity: 1;
+  }
+
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes flip {
+  0% {
+    transform: rotateX(0);
+  }
+
+  14%,
+  100% {
+    transform: rotateX(-360deg);
+  }
+}
+
+/* Le repos joue ses seize cases en 1,6 s, puis tient la derniere pendant dix secondes.
+   Un « steps » sur toute la piste etalerait les cases sur onze secondes ; le pas vit donc
+   dans la premiere borne, et « step-end » tient la pose sur la seconde. « jump-none »
+   repartit seize valeurs de la premiere case a la derniere incluse : sans lui, la course
+   finirait sur une dix-septieme case qui n'existe pas. */
+@keyframes slime-16-pause {
+  0% {
+    background-position-x: 0;
+    animation-timing-function: steps(16, jump-none);
+  }
+
+  13.79% {
+    background-position-x: -960px;
+    animation-timing-function: step-end;
+  }
+
+  100% {
+    background-position-x: -960px;
+  }
+}
+
+@keyframes slime-20 {
+  to {
+    background-position-x: -1280px;
+  }
+}
+
+/* La mascotte n'existe que si le mouvement est accepté : aucune feuille n'est chargée
+   sinon, ni sous mouvement réduit, ni quand le réglage d'animation est éteint. */
+@media (prefers-reduced-motion: no-preference) {
+  :root:not([data-anim="false"]) .slime--alert::before {
+    background-image: url("/assets/sprites/slime/slime-alert.png");
+    background-size: 1024px 64px;
+    animation: slime-16-pause 11.6s infinite;
+  }
+
+  :root:not([data-anim="false"]) .slime--happy::before {
+    background-image: url("/assets/sprites/slime/slime-happy.png");
+    background-size: 1280px 64px;
+    animation: slime-20 1.2s steps(20) 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  [data-track] {
+    display: none;
+  }
+}
+
+:root[data-anim="false"] * {
+  animation: none !important;
+}
+
+:root[data-anim="false"] [data-track] {
+  display: none;
+}
