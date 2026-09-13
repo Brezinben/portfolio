@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="dark" data-anim="true">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>404 — route introuvable · Benjamin David</title>
+  <meta name="description" content="Cette adresse n'existe pas sur le portfolio de Benjamin David.">
+  <meta name="robots" content="noindex">
+  <link rel="icon" href="/assets/icons/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="/assets/icons/favicon-32.png" sizes="32x32">
+  <link rel="preload" href="/assets/fonts/jetbrains-mono.woff2" as="font" type="font/woff2" crossorigin>
+  <!-- Seul script de la page, et il est bloquant : le thème doit être posé avant le
+       premier rendu. La construction le remplace par son bundle minifié. -->
+  <script src="404.ts"></script>
+  <link rel="stylesheet" href="404.css">
+</head>
+
+<body>
+  <main data-panes>
+    <section class="zone" data-pane="main" aria-label="Erreur">
+      <p class="zone__head"><span>erreur</span><span data-tone="warn">exit 404</span></p>
+
+      <div class="zone__body">
+        <h1>
+          <span class="code">4<span class="zero">0</span>4</span>
+          <span class="sub">route introuvable</span>
+        </h1>
+
+        <div>
+          <p class="zone__line"><span data-tone="acc" aria-hidden="true">›</span><span>cd <span
+                data-path>/route-inconnue</span><span class="caret" aria-hidden="true">_</span></span></p>
+          <p class="zone__line"><span data-tone="warn" aria-hidden="true">×</span><span>cd: aucun fichier ni dossier de
+              ce nom.</span></p>
+          <p class="zone__line"><span data-tone="fg2" aria-hidden="true">·</span><span data-tone="fg2">Depuis l'accueil,
+              <span data-tone="acc">ls</span> liste les sections et <span data-tone="acc">help</span> donne les
+              commandes.</span></p>
+        </div>
+
+        <div data-track>
+          <button type="button" class="slime slime--alert" data-slime aria-label="Caresser le slime"></button>
+          <p data-bubble>le slime cherche encore</p>
+        </div>
+
+        <nav aria-label="Sorties">
+          <a data-ctl="nav" data-primary href="/"><span data-tone="acc"
+              aria-hidden="true">›</span><span><strong>cd ~</strong><small>revenir à l'accueil du
+                portfolio</small></span></a>
+          <a data-ctl="nav" href="/texte.html"><span data-tone="fg2" aria-hidden="true">·</span><span>texte.html<small>la
+                version texte, sans terminal</small></span></a>
+          <a data-ctl="nav" href="mailto:benjamin.david1@hotmail.fr"><span data-tone="fg2"
+              aria-hidden="true">·</span><span>send-mail<small>signaler un lien mort</small></span></a>
+        </nav>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <span>~/404 <span data-tone="acc">main</span></span>
+  </footer>
+
+</body>
+
+</html>

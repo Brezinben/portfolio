@@ -11,6 +11,7 @@ const ROOT = resolve(
   ),
   OK = 200,
   NOT_FOUND = 404,
+  ERROR_PAGE = "404.html",
   TYPES = {
     ".css": "text/css; charset=utf-8",
     ".html": "text/html; charset=utf-8",
@@ -51,11 +52,13 @@ const ROOT = resolve(
     request,
     response,
     size,
+    status,
     target,
   }: {
     request: IncomingMessage;
     response: ServerResponse;
     size: number;
+    status: number;
     target: string;
   }) => {
     const type = lookup(TYPES, extname(target)) ?? "application/octet-stream",
@@ -69,7 +72,7 @@ const ROOT = resolve(
       COMPRESSIBLE.has(extname(target)) &&
       /\bgzip\b/.test(request.headers["accept-encoding"] ?? "")
     ) {
-      response.writeHead(OK, {
+      response.writeHead(status, {
         "content-encoding": "gzip",
         "content-type": type,
         vary: "accept-encoding",
@@ -79,34 +82,53 @@ const ROOT = resolve(
       return;
     }
 
-    response.writeHead(OK, { "content-length": size, "content-type": type });
+    response.writeHead(status, { "content-length": size, "content-type": type });
     stream.pipe(response);
   },
-  server = createServer(async (request, response) => {
-    // Node ne garantit pas l'URL sur une requete mal formee : sans chemin, rien a servir.
-    const target = request.url === undefined ? undefined : resolveTarget(request.url);
-
-    if (!target) {
-      notFound(response);
-
-      return;
-    }
-
+  // Un seul point d'envoi pour les deux passes : l'adresse demandee, puis la page
+  // d'erreur. Il rend faux quand le fichier n'est pas la, sans rien ecrire.
+  serve = async ({
+    request,
+    response,
+    status,
+    target,
+  }: {
+    request: IncomingMessage;
+    response: ServerResponse;
+    status: number;
+    target: string;
+  }) => {
     let info = undefined;
 
     try {
       info = await stat(target);
     } catch {
-      notFound(response);
+      return false;
+    }
 
+    if (!info.isFile()) {
+      return false;
+    }
+
+    send({ request, response, size: info.size, status, target });
+
+    return true;
+  },
+  server = createServer(async (request, response) => {
+    // Node ne garantit pas l'URL sur une requete mal formee : sans chemin, rien a servir.
+    const target = request.url === undefined ? undefined : resolveTarget(request.url);
+
+    if (target !== undefined && (await serve({ request, response, status: OK, target }))) {
       return;
     }
 
-    if (info.isFile()) {
-      send({ request, response, size: info.size, target });
-    } else {
-      notFound(response);
+    // Caddy rend la page d'erreur du site sur toute adresse inconnue, et file_server y
+    // conserve le statut. Sans cette seconde passe, aucun test n'atteindrait cette page.
+    if (await serve({ request, response, status: NOT_FOUND, target: join(ROOT, ERROR_PAGE) })) {
+      return;
     }
+
+    notFound(response);
   });
 
 server.listen(Number(process.argv[2] ?? 4173), "127.0.0.1");

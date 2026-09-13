@@ -16,11 +16,42 @@ const THEMES = ["dark", "light", "noctis", "azureus", "uva", "bordo", "lux", "hi
   // Sans les regles de bonne pratique, le scan laissait passer une page sans « main » et
   // sans titre de niveau un. Elles ne sont pas des echecs WCAG, mais la section impact
   // annonce « structure semantique » : le scan doit tenir la promesse, pas la contourner.
-  scan = (page: Page) => new AxeBuilder({ page }).analyze();
+  scan = (page: Page) => new AxeBuilder({ page }).analyze(),
+  // Le scan mesure la couleur telle qu'elle est peinte. Lancé pendant le fondu d'entrée, il
+  // lit des valeurs à mi-opacité et rapporte des écarts qui n'existent pas. On attend donc
+  // les animations qui finissent ; le curseur et la mascotte, eux, ne finissent jamais.
+  settled = (page: Page) =>
+    page.evaluate(() =>
+      Promise.all(
+        document
+          .getAnimations()
+          .filter((animation) => animation.effect?.getComputedTiming().iterations !== Infinity)
+          .map((animation) => animation.finished),
+      ),
+    );
 
 for (const theme of THEMES) {
   test(`should report no accessibility violation on the ${theme} theme`, async ({ page }) => {
     await withTheme(page, theme);
+
+    const { violations } = await scan(page);
+
+    expect(violations.map((entry) => `${entry.id}: ${entry.nodes.length}`)).toEqual([]);
+  });
+}
+
+// La page d'erreur porte les huit thèmes elle aussi, et une sortie mise en avant dont le
+// fond teinte le texte. Elle échappait au scan : le portail ne la sert sur aucune adresse
+// connue, donc aucune boucle ne l'atteignait.
+for (const theme of THEMES) {
+  test(`should report no accessibility violation on the error page with the ${theme} theme`, async ({
+    page,
+  }) => {
+    await page.addInitScript((chosen) => {
+      localStorage.setItem("bd-term-opts", JSON.stringify({ theme: chosen }));
+    }, theme);
+    await page.goto("/une/route/qui-n-existe-pas");
+    await settled(page);
 
     const { violations } = await scan(page);
 

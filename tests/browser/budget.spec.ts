@@ -3,6 +3,7 @@ import { readFile, readdir } from "node:fs/promises";
 
 const BUDGET_KO = 150,
   TEXTE_KO = 60,
+  ERROR_KO = 50,
   // Un plafond par forme, sur la source : il borne ce que la fusion aura a digerer et
   // signale une feuille qui grossit. Le slime est le seul qui parte au premier chargement.
   SPRITES_KO = { cube: 112, pingouin: 132, slime: 80 },
@@ -171,5 +172,39 @@ test("should keep the text version inside its weight budget", async ({ page }) =
   expect(totalKo, `detail: ${JSON.stringify(measured.détail)}`).toBeLessThanOrEqual(TEXTE_KO);
 
   // La page de repli ne sort vers aucun hôte tiers, mesure d'audience comprise.
+  expect(measured.tiers).toBe(0);
+});
+
+// La page d'erreur est servie sur toute adresse inconnue : c'est la page que l'on paie le
+// plus souvent sans l'avoir voulu. Elle tire la police et la feuille de la mascotte, toutes
+// deux deja en cache depuis le reste du site. Ce plafond garde la mesure a froid.
+test("should keep the error page inside its weight budget", async ({ page }) => {
+  await page.goto("/une/route/qui-n-existe-pas");
+  await page.evaluate(() => document.fonts.ready);
+
+  const measured = await page.evaluate(() => {
+      // SAFETY: la specification garantit PerformanceNavigationTiming pour l'entree
+      // « navigation » et PerformanceResourceTiming pour « resource ».
+      const [navigation] = performance.getEntriesByType(
+          "navigation",
+        ) as PerformanceNavigationTiming[],
+        resources = performance.getEntriesByType("resource") as PerformanceResourceTiming[];
+
+      return {
+        detail: resources.map((entry) => ({
+          ko: Math.round(entry.transferSize / 102.4) / 10,
+          url: entry.name.replace(location.origin, ""),
+        })),
+        tiers: resources.filter((entry) => new URL(entry.name).origin !== location.origin).length,
+        total:
+          (navigation?.transferSize ?? 0) +
+          resources.reduce((sum, entry) => sum + entry.transferSize, 0),
+      };
+    }),
+    totalKo = Math.round(measured.total / 102.4) / 10;
+
+  expect(totalKo, `detail: ${JSON.stringify(measured.detail)}`).toBeLessThanOrEqual(ERROR_KO);
+
+  // Ni contenu, ni point d'entree, ni mesure d'audience : la page se suffit.
   expect(measured.tiers).toBe(0);
 });
