@@ -1,24 +1,29 @@
 import { expect, test } from "@playwright/test";
 import type { Page } from "@playwright/test";
 
-const UNKNOWN = "/une/route/qui-n-existe-pas",
-  HOME = /cd ~/u,
-  PLAIN = /texte\.html/u,
-  mascot = (page: Page) => page.getByRole("button", { name: "Caresser le slime" }),
-  // Le sprite vit sur un pseudo-élément : le bouton, lui, ne porte aucun fond.
-  band = (page: Page) =>
-    mascot(page).evaluate((node) => getComputedStyle(node, "::before").backgroundPositionY),
-  exit = (page: Page, name: RegExp) => page.getByRole("link", { name }),
-  // Ce que la mise en avant dessine : le fond de la ligne, et sa barre d'accent.
-  paint = (page: Page, name: RegExp) =>
-    exit(page, name).evaluate((node) => ({
-      bar: getComputedStyle(node).borderLeftColor,
-      fill: getComputedStyle(node).backgroundColor,
-    })),
-  focusedText = (page: Page) =>
-    page.evaluate(() => document.activeElement?.textContent?.trim() ?? ""),
-  setOptions = (page: Page, opts: string) =>
-    page.addInitScript((value) => localStorage.setItem("bd-term-opts", value), opts);
+const UNKNOWN = "/une/route/qui-n-existe-pas";
+const HOME = /cd ~/u;
+const PLAIN = /texte\.html/u;
+const mascot = (page: Page) => page.getByRole("button", { name: "Caresser le slime" });
+
+// Le sprite vit sur un pseudo-élément : le bouton, lui, ne porte aucun fond.
+const band = (page: Page) =>
+  mascot(page).evaluate((node) => getComputedStyle(node, "::before").backgroundPositionY);
+
+const exit = (page: Page, name: RegExp) => page.getByRole("link", { name });
+
+// Ce que la mise en avant dessine : le fond de la ligne, et sa barre d'accent.
+const paint = (page: Page, name: RegExp) =>
+  exit(page, name).evaluate((node) => ({
+    bar: getComputedStyle(node).borderLeftColor,
+    fill: getComputedStyle(node).backgroundColor,
+  }));
+
+const focusedText = (page: Page) =>
+  page.evaluate(() => document.activeElement?.textContent?.trim() ?? "");
+
+const setOptions = (page: Page, opts: string) =>
+  page.addInitScript((value) => localStorage.setItem("bd-term-opts", value), opts);
 
 // Caddy renvoie toute adresse inconnue vers cette page, et file_server y conserve le
 // statut. Un corps sans le statut mentirait aux robots comme aux moteurs.
