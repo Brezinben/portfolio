@@ -1,6 +1,7 @@
 import { eslintCompatPlugin } from "@oxlint/plugins";
 
 import { maxLinesPerCommentBlockRule } from "./rules/max-lines-per-comment-block.ts";
+import { noBooleanFlagParameterRule } from "./rules/no-boolean-flag-parameter.ts";
 import { noChainedTypeAssertionsRule } from "./rules/no-chained-type-assertions.ts";
 import { noConditionalEmptyObjectSpreadRule } from "./rules/no-conditional-empty-object-spread.ts";
 import { noKnownValueWideningRule } from "./rules/no-known-value-widening.ts";
@@ -22,6 +23,7 @@ const antiSlopPlugin = eslintCompatPlugin({
 	meta: { name: "anti-slop" },
 	rules: {
 		"max-lines-per-comment-block": maxLinesPerCommentBlockRule,
+		"no-boolean-flag-parameter": noBooleanFlagParameterRule,
 		"no-chained-type-assertions": noChainedTypeAssertionsRule,
 		"no-conditional-empty-object-spread": noConditionalEmptyObjectSpreadRule,
 		"no-known-value-widening": noKnownValueWideningRule,
