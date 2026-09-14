@@ -14,11 +14,9 @@ const boot = async (page: Page) => {
 
     return page.getByLabel("Commande");
   },
-  // Le modele local n'existe que dans Chrome, derriere un contexte securise. Le faux modele
-  // pose le contrat que la page attend, et rien de plus : il ne prouve pas l'API, il prouve
-  // que la page s'en sert comme annonce.
-  // Le Chromium de Playwright porte l'API, et annonce un modele telechargeable mais absent.
-  // C'est aussi le cas majoritaire chez les visiteurs : l'API existe, le modele n'est pas la.
+  // Le modele local n'existe que dans Chrome, derriere un contexte securise. Le faux
+  // modele pose le contrat attendu, rien de plus : il prouve l'usage, pas l'API.
+  // Le Chromium de Playwright annonce un modele telechargeable mais absent, comme la majorite des visiteurs.
   retirerModele = (page: Page) =>
     page.addInitScript(() => {
       Reflect.deleteProperty(globalThis, "LanguageModel");

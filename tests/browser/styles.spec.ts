@@ -61,9 +61,8 @@ const THEMES = ["dark", "light", "noctis"],
     "white-space",
   ],
   // Un theme se pose avant le demarrage : l'appliquer apres laisserait une transition en
-  // cours au moment de la mesure.
-  // La section ouverte vient de l'ancre, jamais du stockage : « restore » ne lit que
-  // quatre cles, et « section » n'en fait pas partie.
+  // cours au moment de la mesure. La section ouverte vient de l'ancre, jamais du stockage :
+  // « restore » ne lit que quatre cles, et « section » n'en fait pas partie.
   boot = async (page: Page, theme: string, section = "") => {
     await page.addInitScript(
       (saved: string) => globalThis.localStorage.setItem("bd-term-opts", saved),

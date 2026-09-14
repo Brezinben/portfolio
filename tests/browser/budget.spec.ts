@@ -17,11 +17,9 @@ const BUDGET_KO = 150,
     "https://umami.brezinben.dpdns.org/script.js",
   ]);
 
-// Le budget est un test, pas un commentaire. Il se mesure sur ce qui traverse réellement
-// le réseau, compression comprise, et non sur la taille des fichiers sur le disque.
-//
-// Le contenu entre dans le budget depuis que la page ne le charge plus depuis GitHub. Il
-// part avec l'artefact et il pèse sur le premier chargement, donc il compte.
+// Le budget est un test, pas un commentaire : il se mesure sur ce qui traverse
+// réellement le réseau, compression comprise, jamais sur la taille des fichiers sur
+// disque. Le contenu compte aussi : il pèse sur le premier chargement depuis que la page ne le charge plus depuis GitHub.
 test("should keep the first load inside the weight budget", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByRole("img", { name: "Benjamin" })).toBeVisible({ timeout: 10_000 });

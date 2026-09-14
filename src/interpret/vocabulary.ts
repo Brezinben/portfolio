@@ -33,13 +33,9 @@ export const helpLines = (model: boolean) => [
 export const KEYBOARD =
   "Clavier : / cible la saisie · j / k changent de section · Tab complète · ↑ ↓ rappellent l'historique.";
 
-// Les easter eggs ne repondent qu'au prefixe slash. Une vraie commande de terminal et un
-// raccourci du portfolio sont deux choses differentes, et taper « joke » sans slash ne
-// doit pas les melanger.
-//
-// L'ordre decide de ce qui se decouvre : taper « / » n'ouvre que dix propositions, et
-// cette liste en porte exactement dix. Les plus riches d'abord, l'alias en dernier : un
-// onzieme egg pousserait donc l'alias hors de vue, et lui seul.
+// Les easter eggs ne repondent qu'au prefixe slash, pour ne pas melanger une vraie
+// commande et un raccourci du portfolio. L'ordre compte aussi : taper « / » n'ouvre que
+// dix propositions, exactement la taille de cette liste ; un onzieme egg pousserait l'alias hors de vue.
 export const SLASH_ONLY = new Set([
   "slime",
   "joke",

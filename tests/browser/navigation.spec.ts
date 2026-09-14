@@ -124,10 +124,9 @@ test("should focus the command line on the slash key", async ({ page }) => {
   await expect(page.getByLabel("Commande")).toBeFocused();
 });
 
-// Dans une liste a une colonne, la fleche droite valide et descend vers le volet
-// suivant : c'est ce qu'un terminal fait.
-// La frise porte ses propres prises : la flèche droite y mène, comme elle mène à la
-// première techno sur la stack. Une section sans prise mène à la ligne de commande.
+// Dans une liste a une colonne, la fleche droite valide et descend vers le volet suivant.
+// La frise fait exception : elle mène à la première techno sur la stack. Une section
+// sans prise mène à la ligne de commande.
 test("should confirm a section and go down into the main pane on arrow right", async ({ page }) => {
   await boot(page);
   await page.locator('[data-ctl="nav"]').first().focus();

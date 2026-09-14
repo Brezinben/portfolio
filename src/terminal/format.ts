@@ -14,10 +14,8 @@ export interface Banner {
   width: string;
 }
 
-// Ce que la coquille rend au balisage. Trois formes, comme en sortie de l'interpreteur,
-// mais le bandeau y est un objet.
-// « ShapedLine » et « shaped » viennent de « Ligne mise en forme », terme arrete par
-// CONTEXT.md. Le glossaire du projet prime sur une regle qui bannit « shape » partout.
+// Ce que la coquille rend au balisage : trois formes, comme en sortie de l'interpreteur, mais
+// le bandeau y est un objet. « ShapedLine » et « shaped » viennent du glossaire (CONTEXT.md), qui prime sur la regle bannissant « shape ».
 /* eslint-disable anti-slop/no-shape-in-symbol-names */
 export type ShapedLine =
   | { banner: Banner; text: string; tone: Tone }
