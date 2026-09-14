@@ -6,6 +6,7 @@ import {
   functionParameterBindingName,
   functionParameterTypeAnnotation,
 } from "../shared/function-parameters.ts";
+
 type ParameterOwner =
   | ESTree.ArrowFunctionExpression
   | ESTree.Function
@@ -26,17 +27,6 @@ function isTypePredicateSubject(owner: ParameterOwner, parameterName: string): b
 
 /** Disallow unknown inputs except explicitly named error-cause enrichment. */
 export const noUnknownParametersRule = defineRule({
-  meta: {
-    type: "problem",
-    docs: {
-      description:
-        "Disallow explicitly unknown function parameters except `cause` and type-predicate subjects; decode unknown input at its I/O boundary instead.",
-    },
-    messages: {
-      unknownParameter:
-        "Parameter `{{parameter}}` leaves input unparsed. Accept a named domain type; run the expected schema or parser at the I/O boundary before calling this function.",
-    },
-  },
   createOnce(context) {
     const checkParameters = (node: ParameterOwner) => {
       for (const parameter of node.params) {
@@ -65,5 +55,16 @@ export const noUnknownParametersRule = defineRule({
       TSFunctionType: checkParameters,
       TSMethodSignature: checkParameters,
     };
+  },
+  meta: {
+    docs: {
+      description:
+        "Disallow explicitly unknown function parameters except `cause` and type-predicate subjects; decode unknown input at its I/O boundary instead.",
+    },
+    messages: {
+      unknownParameter:
+        "Parameter `{{parameter}}` leaves input unparsed. Accept a named domain type; run the expected schema or parser at the I/O boundary before calling this function.",
+    },
+    type: "problem",
   },
 });
