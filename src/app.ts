@@ -649,6 +649,7 @@ document.addEventListener("alpine:init", () => {
       // La fiche suit le focus des la premiere techno atteinte. Rien ne s'affiche
       // tant qu'aucune n'a le focus, donc aucun texte d'invite au depart.
       followTech(name: string) {
+        this.track("techno", { nom: name, via: "interface" });
         this.tech = name;
       },
 
@@ -666,6 +667,7 @@ document.addEventListener("alpine:init", () => {
         const target = this.timeline[index]?.detail;
 
         if (target) {
+          this.track("mission", { nom: target, via: "interface" });
           this.goSection(target);
         }
       },
@@ -789,7 +791,18 @@ document.addEventListener("alpine:init", () => {
       },
 
       logUp() {
+        const before = this.resizing?.height;
+
         this.resizing = undefined;
+
+        if (before !== undefined && before !== this.logHeight) {
+          this.track(
+            this.logHeight > before ? "redimensionnement_agrandi" : "redimensionnement_reduit",
+            {
+              px: this.logHeight,
+            },
+          );
+        }
       },
 
       // L'indicateur remplace la barre de défilement, masquée pour l'esthétique
@@ -824,6 +837,7 @@ document.addEventListener("alpine:init", () => {
 
         this.compacting = true;
         this.compactTick = 0;
+        this.track("contexte_plein", {});
 
         if (this.anim && !this.reduced) {
           this.spinner = setInterval(() => {
@@ -844,6 +858,7 @@ document.addEventListener("alpine:init", () => {
           clearInterval(this.spinner);
           this.compacting = false;
           this.used = 0;
+          this.track("contexte_libere", {});
           this.journal = [
             ...this.journal,
             {
@@ -1119,15 +1134,22 @@ document.addEventListener("alpine:init", () => {
         this.form = step.sheet;
         this.mascotState = "";
         this.mascotPlay(step.state);
+
+        if (step.state === "devolve") {
+          this.track("slime_boucle", {});
+        } else {
+          this.track("slime_forme", { forme: step.sheet });
+        }
       },
 
-      blowUp() {
+      blowUp(via: "commande" | "interface" = "interface") {
         // Deja absente, une seconde explosion repousserait son retour sans rien montrer.
         // Le clic passait par poke(), qui garde deja ; la commande arrive ici en direct.
         if (this.gone) {
           return;
         }
 
+        this.track("slime_boom", { via });
         this.clicks = 0;
         this.gone = true;
         this.mascotPlay("boom");
@@ -1262,7 +1284,8 @@ document.addEventListener("alpine:init", () => {
         this.mascotPlay("jump");
       },
 
-      finishBoot() {
+      finishBoot(skipped = false) {
+        this.track(skipped ? "boot_saute" : "boot", {});
         clearTimeout(this.booter);
         clearInterval(this.ticker);
         this.power = "fade";
@@ -1283,7 +1306,7 @@ document.addEventListener("alpine:init", () => {
           return false;
         }
 
-        this.finishBoot();
+        this.finishBoot(true);
 
         return true;
       },
@@ -1384,10 +1407,13 @@ document.addEventListener("alpine:init", () => {
         }
 
         this[key] = !this[key];
+        this.track("option", { cle: key, valeur: this[key] });
         this.persist();
       },
 
       setTheme(id: string, event?: MouseEvent) {
+        this.track("theme", { nom: id, via: event ? "interface" : "commande" });
+
         // Le choix se fait depuis la modale, donc la mue tient jusqu'a sa fermeture. Le
         // marquer ici et non dans apply() : startViewTransition differe le rappel, et une
         // fermeture rapide passerait devant lui.
@@ -1598,7 +1624,8 @@ document.addEventListener("alpine:init", () => {
         }
       },
 
-      openOpts() {
+      openOpts(via: "commande" | "interface" = "interface") {
+        this.track("options_ouvertes", { via });
         this.optsReturn =
           document.activeElement instanceof HTMLElement ? document.activeElement : undefined;
         this.optsOpen = true;
@@ -1625,12 +1652,18 @@ document.addEventListener("alpine:init", () => {
       fromHash() {
         const id = globalThis.location.hash.slice(1);
 
-        this.goSection(this.all.some((entry) => entry.id === id) ? id : "whoami", false);
+        this.goSection(this.all.some((entry) => entry.id === id) ? id : "whoami", { push: false });
       },
 
-      goSection(id: string, push = true) {
+      goSection(id: string, options: { push?: boolean; via?: "commande" | "interface" } = {}) {
+        const { push = true, via = "interface" } = options;
+
         if (!this.all.some((entry) => entry.id === id)) {
           return;
+        }
+
+        if (push) {
+          this.track("section", { id, via });
         }
 
         // La navigation reprend le resultat : une reponse de commande n'y survit pas.
@@ -2101,11 +2134,11 @@ document.addEventListener("alpine:init", () => {
           } else if (effect.type === "drop") {
             this.drop();
           } else if (effect.type === "blowUp") {
-            this.blowUp();
+            this.blowUp("commande");
           } else if (effect.type === "activity") {
             this.mascotPlay(effect.name);
           } else if (effect.type === "navigate") {
-            this.goSection(effect.id);
+            this.goSection(effect.id, { via: "commande" });
           } else if (effect.type === "clear") {
             this.journal = [];
           } else if (effect.type === "replay") {
@@ -2122,7 +2155,7 @@ document.addEventListener("alpine:init", () => {
           } else if (effect.type === "evolve") {
             void this.evolve();
           } else if (effect.type === "options") {
-            this.openOpts();
+            this.openOpts("commande");
           }
         }
 
