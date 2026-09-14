@@ -12,6 +12,9 @@
     "browser": true,
     "es2024": true,
   },
+  "options": {
+    "typeAware": true,
+  },
   "globals": {
     "Alpine": "readonly",
     "umami": "readonly",
@@ -24,6 +27,7 @@
   },
   "rules": {
     "anti-slop/max-lines-per-comment-block": "error",
+    "anti-slop/no-boolean-flag-parameter": "error",
     "anti-slop/no-chained-type-assertions": "error",
     "anti-slop/no-conditional-empty-object-spread": "error",
     "anti-slop/no-known-value-widening": "error",

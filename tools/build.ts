@@ -132,8 +132,8 @@ const ROOT = fileURLToPath(new URL("../", import.meta.url)),
   },
   // Un voisin hors de l'image vaut zéro. La spécification PNG le demande pour la première
   // ligne et pour la première colonne.
-  neighbour = (pixels: Buffer, offset: number, inside: boolean) => {
-    if (!inside) {
+  neighbour = (pixels: Buffer, offset: number, options: { inside: boolean }) => {
+    if (!options.inside) {
       return 0;
     }
 
@@ -207,9 +207,9 @@ const unfilter = (filter: number, value: number, around: Around) => {
 
       for (let index = 0; index < stride; index += 1) {
         const back = index - BYTES_PER_PIXEL,
-          left = neighbour(pixels, target + back, back >= 0),
-          above = neighbour(pixels, previous + index, row > 0),
-          corner = neighbour(pixels, previous + back, back >= 0 && row > 0),
+          left = neighbour(pixels, target + back, { inside: back >= 0 }),
+          above = neighbour(pixels, previous + index, { inside: row > 0 }),
+          corner = neighbour(pixels, previous + back, { inside: back >= 0 && row > 0 }),
           value = raw.readUInt8(line + 1 + index),
           restored = unfilter(filter, value, { above, corner, left });
 

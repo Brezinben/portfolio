@@ -27,7 +27,9 @@ function configuredSafetyMarkers(option: unknown): readonly string[] {
     return DEFAULT_SAFETY_MARKERS;
   }
   const configured = option.markers;
-  if (!Array.isArray(configured)) return DEFAULT_SAFETY_MARKERS;
+  if (!Array.isArray(configured)) {
+    return DEFAULT_SAFETY_MARKERS;
+  }
   const markers = configured.flatMap((marker) =>
     typeof marker === "string" && marker.trim().length > 0 ? [marker.trim()] : [],
   );
@@ -38,10 +40,7 @@ function markerPattern(markers: readonly string[]): RegExp {
   const alternation = markers
     .map((marker) => marker.replaceAll(/[.*+?^${}()|[\]\\]/gu, String.raw`\$&`))
     .join("|");
-  return new RegExp(
-    String.raw`(?:^|[^\p{L}\p{N}_])(?:${alternation})\s*:\s*\S`,
-    "u",
-  );
+  return new RegExp(String.raw`(?:^|[^\p{L}\p{N}_])(?:${alternation})\s*:\s*\S`, "u");
 }
 
 function hasSafetyJustificationBefore(
@@ -52,19 +51,15 @@ function hasSafetyJustificationBefore(
 ): boolean {
   return sourceCode
     .getCommentsBefore(owner)
-    .some(
-      (comment) => comment.end <= assertion.start && pattern.test(comment.value),
-    );
+    .some((comment) => comment.end <= assertion.start && pattern.test(comment.value));
 }
 
-function hasSafetyComment(
-  sourceCode: SourceCode,
-  node: TypeAssertion,
-  pattern: RegExp,
-): boolean {
+function hasSafetyComment(sourceCode: SourceCode, node: TypeAssertion, pattern: RegExp): boolean {
   let current: ESTree.Node = node;
   while (true) {
-    if (hasSafetyJustificationBefore(sourceCode, current, node, pattern)) return true;
+    if (hasSafetyJustificationBefore(sourceCode, current, node, pattern)) {
+      return true;
+    }
     if (commentOwnerKinds.has(current.type)) {
       const exportDeclaration = current.parent;
       return (
@@ -73,15 +68,39 @@ function hasSafetyComment(
         hasSafetyJustificationBefore(sourceCode, exportDeclaration, node, pattern)
       );
     }
-    if (current.parent.type === "Program") return false;
+    if (current.parent.type === "Program") {
+      return false;
+    }
     current = current.parent;
   }
 }
 
 /** Require every non-const type assertion to state the invariant TypeScript cannot express. */
 export const requireSafetyCommentForTypeAssertionRule = defineRule({
+  createOnce(context) {
+    const patterns = new Map<string, RegExp>();
+
+    const checkAssertion = (node: TypeAssertion) => {
+      if (isConstAssertion(node)) return;
+      const markers = configuredSafetyMarkers(context.options?.[0]);
+      const patternKey = markers.join("\u0000");
+      const pattern = patterns.get(patternKey) ?? markerPattern(markers);
+      patterns.set(patternKey, pattern);
+      if (hasSafetyComment(context.sourceCode, node, pattern)) return;
+      context.report({
+        node,
+        messageId: "missingSafetyComment",
+        data: { marker: markers[0] ?? DEFAULT_SAFETY_MARKERS[0] },
+      });
+    };
+
+    return {
+      TSAsExpression: checkAssertion,
+      TSTypeAssertion: checkAssertion,
+    };
+  },
   meta: {
-    type: "problem",
+    defaultOptions: [{ markers: ["SAFETY"] }],
     docs: {
       description:
         "Require a nearby SAFETY comment for every TypeScript type assertion except const assertions.",
@@ -104,28 +123,6 @@ export const requireSafetyCommentForTypeAssertionRule = defineRule({
         additionalProperties: false,
       },
     ],
-    defaultOptions: [{ markers: ["SAFETY"] }],
-  },
-  createOnce(context) {
-    const patterns = new Map<string, RegExp>();
-
-    const checkAssertion = (node: TypeAssertion) => {
-      if (isConstAssertion(node)) return;
-      const markers = configuredSafetyMarkers(context.options?.[0]);
-      const patternKey = markers.join("\u0000");
-      const pattern = patterns.get(patternKey) ?? markerPattern(markers);
-      patterns.set(patternKey, pattern);
-      if (hasSafetyComment(context.sourceCode, node, pattern)) return;
-      context.report({
-        node,
-        messageId: "missingSafetyComment",
-        data: { marker: markers[0] ?? DEFAULT_SAFETY_MARKERS[0] },
-      });
-    };
-
-    return {
-      TSAsExpression: checkAssertion,
-      TSTypeAssertion: checkAssertion,
-    };
+    type: "problem",
   },
 });

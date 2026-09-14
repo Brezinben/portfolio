@@ -16,7 +16,6 @@ Domaine cible : `https://me.brezinben.dpdns.org/`
 | `.scratch/` | Spec et tickets. |
 
 `CONTEXT.md` est le glossaire du projet et fait foi sur le vocabulaire.
-`DECISIONS.md` est le journal de conception : il dit **pourquoi** le code est ainsi.
 
 ## Mise en route
 

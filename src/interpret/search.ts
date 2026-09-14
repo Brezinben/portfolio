@@ -105,7 +105,8 @@ const search = (query: string, entries: Entry[]) => {
 // La reponse est toujours le texte du corpus, jamais un texte produit. Un modele, quand il
 // y en a un, ne fait que choisir parmi ces passages : il ne parle pas a la place de
 // Benjamin.
-export const answer = (query: string, entries: Entry[], model: boolean) => {
+export const answer = (query: string, entries: Entry[], options: { model: boolean }) => {
+  const { model } = options;
   const shown = model ? ASK_MODEL : ASK;
 
   if (query.trim() === "") {
