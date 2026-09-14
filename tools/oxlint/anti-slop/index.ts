@@ -1,6 +1,7 @@
 import { eslintCompatPlugin } from "@oxlint/plugins";
 
 import { maxLinesPerCommentBlockRule } from "./rules/max-lines-per-comment-block.ts";
+import { noBooleanFlagParameterRule } from "./rules/no-boolean-flag-parameter.ts";
 import { noChainedTypeAssertionsRule } from "./rules/no-chained-type-assertions.ts";
 import { noConditionalEmptyObjectSpreadRule } from "./rules/no-conditional-empty-object-spread.ts";
 import { noKnownValueWideningRule } from "./rules/no-known-value-widening.ts";
@@ -19,25 +20,26 @@ import { requireSafetyCommentForTypeAssertionRule } from "./rules/require-safety
 
 /** Generic Oxlint rules that reject low-evidence and low-signal implementation patterns. */
 const antiSlopPlugin = eslintCompatPlugin({
-	meta: { name: "anti-slop" },
-	rules: {
-		"max-lines-per-comment-block": maxLinesPerCommentBlockRule,
-		"no-chained-type-assertions": noChainedTypeAssertionsRule,
-		"no-conditional-empty-object-spread": noConditionalEmptyObjectSpreadRule,
-		"no-known-value-widening": noKnownValueWideningRule,
-		"no-module-mocking": noModuleMockingRule,
-		"no-object-parameters": noObjectParametersRule,
-		"no-reflect-apply": noReflectApplyRule,
-		"no-reflect-get": noReflectGetRule,
-		"no-runtime-typeof": noRuntimeTypeofRule,
-		"no-unsafe-dictionary-type": noUnsafeDictionaryTypeRule,
-		"no-shape-in-symbol-names": noForbiddenTermInSymbolNamesRule,
-		"no-unknown-parameters": noUnknownParametersRule,
-		"no-unknown-returns": noUnknownReturnsRule,
-		"no-unknown-type-aliases": noUnknownTypeAliasesRule,
-		"no-widen-then-assert": noWidenThenAssertRule,
-		"require-safety-comment-for-type-assertion": requireSafetyCommentForTypeAssertionRule,
-	},
+  meta: { name: "anti-slop" },
+  rules: {
+    "max-lines-per-comment-block": maxLinesPerCommentBlockRule,
+    "no-boolean-flag-parameter": noBooleanFlagParameterRule,
+    "no-chained-type-assertions": noChainedTypeAssertionsRule,
+    "no-conditional-empty-object-spread": noConditionalEmptyObjectSpreadRule,
+    "no-known-value-widening": noKnownValueWideningRule,
+    "no-module-mocking": noModuleMockingRule,
+    "no-object-parameters": noObjectParametersRule,
+    "no-reflect-apply": noReflectApplyRule,
+    "no-reflect-get": noReflectGetRule,
+    "no-runtime-typeof": noRuntimeTypeofRule,
+    "no-unsafe-dictionary-type": noUnsafeDictionaryTypeRule,
+    "no-shape-in-symbol-names": noForbiddenTermInSymbolNamesRule,
+    "no-unknown-parameters": noUnknownParametersRule,
+    "no-unknown-returns": noUnknownReturnsRule,
+    "no-unknown-type-aliases": noUnknownTypeAliasesRule,
+    "no-widen-then-assert": noWidenThenAssertRule,
+    "require-safety-comment-for-type-assertion": requireSafetyCommentForTypeAssertionRule,
+  },
 });
 
 export default antiSlopPlugin;

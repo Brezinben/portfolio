@@ -11,14 +11,18 @@ function resolveVariable(
   let scope: Scope | null = sourceCode.getScope(identifier);
   while (scope !== null) {
     const variable = scope.set.get(identifier.name);
-    if (variable !== undefined) return variable;
+    if (variable !== undefined) {
+      return variable;
+    }
     scope = scope.upper;
   }
   return null;
 }
 
 function importedName(node: ESTree.Node): string | null {
-  if (node.type !== "ImportSpecifier") return null;
+  if (node.type !== "ImportSpecifier") {
+    return null;
+  }
   return node.imported.type === "Identifier" ? node.imported.name : node.imported.value;
 }
 
@@ -26,7 +30,9 @@ function isTestFrameworkObject(
   sourceCode: SourceCode,
   expression: ESTree.Expression,
 ): expression is ESTree.IdentifierReference {
-  if (expression.type !== "Identifier") return false;
+  if (expression.type !== "Identifier") {
+    return false;
+  }
   if (
     (expression.name === "vi" || expression.name === "jest") &&
     sourceCode.isGlobalReference(expression)
@@ -44,14 +50,20 @@ function isTestFrameworkObject(
     }
     const source = definition.parent.source.value;
     const name = importedName(definition.node);
-    return (source === "vitest" && name === "vi") || (source === "@jest/globals" && name === "jest");
+    return (
+      (source === "vitest" && name === "vi") || (source === "@jest/globals" && name === "jest")
+    );
   });
 }
 
 function moduleMockCall(sourceCode: SourceCode, callee: ESTree.Expression): boolean {
-  if (!("property" in callee) || !("object" in callee) || !("computed" in callee)) return false;
-  if (!isTestFrameworkObject(sourceCode, callee.object)) return false;
-  const property = callee.property;
+  if (!("property" in callee) || !("object" in callee) || !("computed" in callee)) {
+    return false;
+  }
+  if (!isTestFrameworkObject(sourceCode, callee.object)) {
+    return false;
+  }
+  const { property } = callee;
   const method = callee.computed
     ? property.type === "Literal" &&
       (property.value === "doMock" ||
@@ -67,17 +79,6 @@ function moduleMockCall(sourceCode: SourceCode, callee: ESTree.Expression): bool
 
 /** Ban test framework module mocking in favor of real dependency seams. */
 export const noModuleMockingRule = defineRule({
-  meta: {
-    type: "problem",
-    docs: {
-      description:
-        "Disallow Vitest and Jest module mocking; tests must replace dependencies through real interfaces.",
-    },
-    messages: {
-      moduleMock:
-        "Replace module mocking with dependency injection through a real interface, service layer, or faithful test implementation.",
-    },
-  },
   createOnce(context) {
     return {
       CallExpression(node) {
@@ -87,5 +88,16 @@ export const noModuleMockingRule = defineRule({
         }
       },
     };
+  },
+  meta: {
+    docs: {
+      description:
+        "Disallow Vitest and Jest module mocking; tests must replace dependencies through real interfaces.",
+    },
+    messages: {
+      moduleMock:
+        "Replace module mocking with dependency injection through a real interface, service layer, or faithful test implementation.",
+    },
+    type: "problem",
   },
 });

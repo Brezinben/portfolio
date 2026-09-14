@@ -24,7 +24,7 @@ _Avoid_: base, noyau, socle technique.
 
 **Valeur figée** (`frozenValue`) :
 Durée ou seuil arrêté après itération. `settings.ts` porte celles du terminal,
-`mascot/constants.ts` celles de la mascotte. Voir `design/DECISIONS.md`, section 23.
+`mascot/constants.ts` celles de la mascotte.
 _Avoid_: constante, paramètre, réglage.
 
 ## Deux règles dont la violation ne se voit pas au typecheck

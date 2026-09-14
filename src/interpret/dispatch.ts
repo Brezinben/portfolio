@@ -230,7 +230,7 @@ export const interpret = (raw: string, context: Context): Outcome => {
   }
 
   if (command === "ask") {
-    const trouve = answer(rest, sections, context.model);
+    const trouve = answer(rest, sections, { model: context.model });
 
     return out(trouve.lines, trouve.effects);
   }

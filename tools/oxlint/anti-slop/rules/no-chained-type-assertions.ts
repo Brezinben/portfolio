@@ -26,7 +26,7 @@ function isConstAssertion(node: TypeAssertionExpression): boolean {
 
 function isOutermostAssertionInChain(node: TypeAssertionExpression): boolean {
   let current: ESTree.Expression = node;
-  let parent = node.parent;
+  let { parent } = node;
 
   while (parent.type === "ParenthesizedExpression" && parent.expression === current) {
     current = parent;
@@ -52,17 +52,6 @@ function isForbiddenAssertionChain(node: TypeAssertionExpression): boolean {
 
 /** Disallow nested TypeScript type assertions, while permitting chains made only of const assertions. */
 export const noChainedTypeAssertionsRule = defineRule({
-  meta: {
-    type: "problem",
-    docs: {
-      description:
-        "Disallow chained TypeScript as and angle-bracket assertions, including parenthesized chains.",
-    },
-    messages: {
-      chained:
-        "This assertion chain discards type evidence. Keep the original precise type, or parse untrusted input at its boundary before narrowing it.",
-    },
-  },
   createOnce(context) {
     const checkTypeAssertion = (node: TypeAssertionExpression) => {
       if (!isOutermostAssertionInChain(node) || !isForbiddenAssertionChain(node)) return;
@@ -73,5 +62,16 @@ export const noChainedTypeAssertionsRule = defineRule({
       TSAsExpression: checkTypeAssertion,
       TSTypeAssertion: checkTypeAssertion,
     };
+  },
+  meta: {
+    docs: {
+      description:
+        "Disallow chained TypeScript as and angle-bracket assertions, including parenthesized chains.",
+    },
+    messages: {
+      chained:
+        "This assertion chain discards type evidence. Keep the original precise type, or parse untrusted input at its boundary before narrowing it.",
+    },
+    type: "problem",
   },
 });
