@@ -165,6 +165,11 @@ type Delay = ReturnType<typeof setTimeout>;
 
 type Beat = ReturnType<typeof setInterval>;
 
+// D'où vient une action mesurée : un clic ou une touche dans l'interface, ou une commande
+// tapée dans le terminal. Type partagé pour que les deux ne divergent jamais entre les
+// événements qui la distinguent.
+type TrackSource = "commande" | "interface";
+
 // Ce que la page tient en memoire. Les minuteurs en font partie : les declarer les rend
 // visibles, et dit d'un coup d'oeil ce que la page a en vol.
 interface State {
@@ -1142,7 +1147,7 @@ document.addEventListener("alpine:init", () => {
         }
       },
 
-      blowUp(via: "commande" | "interface" = "interface") {
+      blowUp(via: TrackSource = "interface") {
         // Deja absente, une seconde explosion repousserait son retour sans rien montrer.
         // Le clic passait par poke(), qui garde deja ; la commande arrive ici en direct.
         if (this.gone) {
@@ -1411,8 +1416,10 @@ document.addEventListener("alpine:init", () => {
         this.persist();
       },
 
-      setTheme(id: string, event?: MouseEvent) {
-        this.track("theme", { nom: id, via: event ? "interface" : "commande" });
+      setTheme(id: string, options: { event?: MouseEvent; via?: TrackSource } = {}) {
+        const { event, via = "interface" } = options;
+
+        this.track("theme", { nom: id, via });
 
         // Le choix se fait depuis la modale, donc la mue tient jusqu'a sa fermeture. Le
         // marquer ici et non dans apply() : startViewTransition differe le rappel, et une
@@ -1624,7 +1631,7 @@ document.addEventListener("alpine:init", () => {
         }
       },
 
-      openOpts(via: "commande" | "interface" = "interface") {
+      openOpts(via: TrackSource = "interface") {
         this.track("options_ouvertes", { via });
         this.optsReturn =
           document.activeElement instanceof HTMLElement ? document.activeElement : undefined;
@@ -1655,7 +1662,7 @@ document.addEventListener("alpine:init", () => {
         this.goSection(this.all.some((entry) => entry.id === id) ? id : "whoami", { push: false });
       },
 
-      goSection(id: string, options: { push?: boolean; via?: "commande" | "interface" } = {}) {
+      goSection(id: string, options: { push?: boolean; via?: TrackSource } = {}) {
         const { push = true, via = "interface" } = options;
 
         if (!this.all.some((entry) => entry.id === id)) {
@@ -2151,7 +2158,7 @@ document.addEventListener("alpine:init", () => {
           } else if (effect.type === "power") {
             this.powerDown(effect.mode);
           } else if (effect.type === "theme") {
-            this.setTheme(effect.name);
+            this.setTheme(effect.name, { via: "commande" });
           } else if (effect.type === "evolve") {
             void this.evolve();
           } else if (effect.type === "options") {
