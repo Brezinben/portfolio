@@ -119,15 +119,9 @@ interface Umami {
   track?: (name: string, data?: Record<string, TrackValue>) => void;
 }
 
-// L'API Prompt du navigateur, proposee par le W3C et disponible dans Chrome seulement.
-// MDN la donne « limited availability » : elle n'est pas Baseline, et elle exige un
-// contexte securise. « absent » est donc le cas majoritaire, pas le cas d'erreur.
-//
-// Les types viennent de « @types/dom-chromium-ai ». Ils declarent « LanguageModel » comme
-// toujours present, a la facon du reste du DOM : d'ou le « in globalThis » plutot qu'une
-// comparaison a undefined, qui ne compilerait pas. « topK » et « temperature » n'existent
-// que dans les extensions Chrome, et « samplingMode » n'est ouvert au web qu'en essai
-// d'origine : aucun des trois n'a sa place ici.
+// L'API Prompt du navigateur, proposee par le W3C, n'existe que dans Chrome et derriere un contexte securise : « absent » est donc le cas majoritaire, pas une erreur.
+// Les types de « @types/dom-chromium-ai » declarent « LanguageModel » toujours present, d'ou le « in globalThis » plutot qu'une comparaison a undefined.
+// « topK », « temperature » et « samplingMode » restent hors du contrat : chrome-only ou en essai d'origine.
 declare global {
   // eslint-disable-next-line no-var, vars-on-top
   var umami: Umami | undefined;
@@ -136,7 +130,6 @@ declare global {
 // « responseConstraint » fait rendre du JSON : un identifiant en sort entre guillemets. Le
 // comparer tel quel ne trouvait jamais le passage, et la reponse du corpus sortait a chaque
 // fois. Un modele qui ignore la contrainte rend du texte brut, qui reste utilisable.
-//
 // Un identifiant du corpus n'a ni guillemet ni echappement : retirer la paire suffit, et
 // evite de decoder du JSON pour en tirer une chaine. L'identifiant est de toute facon
 // cherche dans le corpus, ou un inconnu ne designe rien.
@@ -285,8 +278,7 @@ const withMagics = <T>(
 
 document.addEventListener("alpine:init", () => {
   // Les proprietes sont triees, les methodes suivent un ordre de lecture : chargement,
-  // navigation, clavier, options, mascotte, commandes. Les trier alphabetiquement
-  // disperserait chaque sujet aux quatre coins du fichier pour un gain nul.
+  // navigation, clavier, options, mascotte, commandes, jamais alphabetique pour ne pas disperser chaque sujet.
   // eslint-disable-next-line sort-keys
   Alpine.data("terminal", () => {
     // eslint-disable-next-line sort-keys
@@ -457,10 +449,9 @@ document.addEventListener("alpine:init", () => {
         }
       },
 
-      // Une grille se parcourt aux quatre fleches. La stack en compte une par domaine :
-      // un pas fixe, deduit de la premiere ligne, changeait de colonne des qu'une ligne
-      // etait incomplete ou qu'on passait au domaine suivant. Les lignes se lisent donc
-      // sur la position reelle des cellules.
+      // Une grille se parcourt aux quatre fleches. La stack en compte une par domaine : un pas
+      // fixe, deduit de la premiere ligne, changeait de colonne des qu'une ligne etait incomplete
+      // ou qu'on passait au domaine suivant. Les lignes se lisent donc sur la position reelle des cellules.
       gridMove(selector: string, key: string) {
         const cells = [...document.querySelectorAll<HTMLElement>(selector)],
           at =
@@ -483,10 +474,9 @@ document.addEventListener("alpine:init", () => {
           return true;
         }
 
-        // La colonne prime sur la ligne. Une derniere ligne plus courte que les autres n'a
-        // pas de cellule dans la colonne du curseur : viser la ligne d'a cote le faisait
-        // glisser tout a gauche, et les frappes suivantes partaient d'ailleurs. Le curseur
-        // saute donc cette ligne et descend jusqu'a retrouver sa colonne.
+        // La colonne prime sur la ligne. Une derniere ligne plus courte n'a pas de cellule dans la
+        // colonne du curseur : viser la ligne d'a cote le faisait glisser tout a gauche, et les
+        // frappes suivantes partaient d'ailleurs. Le curseur saute donc cette ligne pour retrouver sa colonne.
         const inColumn = beyond.filter((cell) => Math.abs(rect(cell).left - from.left) < 1);
 
         if (inColumn.length > 0) {
@@ -612,11 +602,9 @@ document.addEventListener("alpine:init", () => {
           this.listMove('[data-ctl="nav"]', event.key, (at) => {
             const items = [...document.querySelectorAll<HTMLElement>('[data-ctl="nav"]')];
 
-            // De gauche a droite : valider une section amene a sa premiere prise. La stack
-            // ouvre sur sa premiere techno, la frise sur sa premiere entree. Une section
-            // sans prise dans le resultat mene a la ligne de commande.
-            // L'intention se pose avant le clic : une section deja vue s'affiche sans
-            // frappe, et la prise se ferait avant que l'intention soit connue.
+            // De gauche a droite : valider une section amene a sa premiere prise (stack, frise), ou a
+            // la ligne de commande si elle n'en a pas. L'intention se pose avant le clic : une section
+            // deja vue s'affiche sans frappe, et la prise se ferait avant que l'intention soit connue.
             this.wantResult = true;
             items[at]?.click();
           }) ||
@@ -738,10 +726,9 @@ document.addEventListener("alpine:init", () => {
         return printed(entry.lines);
       },
 
-      // Le journal se redimensionne au glisser, entre 44 px et la place disponible, et
-      // sa hauteur est conservée sur l'appareil.
-      // logH vaut 0 tant que rien n'a ete regle : la hauteur effective doit donc
-      // toujours passer par ce getter, sinon un reglage part de zero.
+      // Le journal se redimensionne au glisser, entre 44 px et la place disponible, et sa
+      // hauteur est conservée sur l'appareil. « logH » vaut 0 tant que rien n'a ete regle : la
+      // hauteur effective doit donc toujours passer par ce getter, sinon un reglage part de zero.
       get logHeight() {
         return this.logH || 120;
       },
@@ -953,10 +940,9 @@ document.addEventListener("alpine:init", () => {
         }
       },
 
-      // Une passe unique rend la main au repos. Les boucles, elles, ne finissent jamais.
-      // « load » boucle sans fin : couper le minuteur de la commande sans rendre la main y
-      // laisserait la mascotte pour toujours. Passer par settle() rendait aussi la main sur
-      // les autres etats, et coupait le voyage en train avant son terme.
+      // Une passe unique rend la main au repos ; les boucles, elles, ne finissent jamais. « load »
+      // boucle sans fin : couper son minuteur sans rendre la main y laisserait la mascotte pour
+      // toujours. Passer par settle() rendait aussi la main sur les autres etats, coupant le voyage en train avant son terme.
       stopLoading() {
         if (this.mascotState === "load") {
           this.settle();
@@ -1079,10 +1065,9 @@ document.addEventListener("alpine:init", () => {
         this.mascotPlay("wink");
       },
 
-      // Le compte repart de zero : le slime peut exploser autant de fois qu'on veut.
-      // La feuille d'une forme ne part qu'a la demande : le cube et le pingouin pesent chacun
-      // plus que le slime, et presque personne ne tapera la commande. L'adresse empreintee
-      // est posee par la construction sur la piste, qui la reecrit comme tout chemin d'actif.
+      // Le compte repart de zero : le slime peut exploser autant de fois qu'on veut. La feuille
+      // d'une forme ne part qu'a la demande, car le cube et le pingouin pesent plus que le slime.
+      // L'adresse empruntee est posee par la construction sur la piste, qui la reecrit comme tout chemin d'actif.
       async loadForm(form: string) {
         if (this.loaded.has(form)) {
           return;
@@ -1766,10 +1751,9 @@ document.addEventListener("alpine:init", () => {
           return;
         }
 
-        // Une question en vol n'a plus rien a dire des que la commande suivante part. Sans
-        // cette coupure ici, seule une seconde question l'arretait : « clear » vidait le
-        // journal et la reponse d'avant y tombait toute seule, et une question sans
-        // trouvaille laissait la precedente repondre par-dessus son refus.
+        // Une question en vol n'a plus rien a dire des que la commande suivante part. Sans cette
+        // coupure, seule une seconde question l'arretait : « clear » vidait le journal, et une
+        // question sans trouvaille laissait la precedente repondre par-dessus son refus.
         this.asker?.abort();
         this.asker = undefined;
         this.thinking = false;
@@ -1931,15 +1915,9 @@ document.addEventListener("alpine:init", () => {
         }
       },
 
-      // Le modele local ne produit jamais de texte : il choisit un identifiant dans une
-      // liste fermee, et la page affiche le passage que cet identifiant designe. Une
-      // recherche par recouvrement de mots rate « comment tu bosses » face a un passage qui
-      // parle de methode sans reprendre le mot ; un modele, lui, le voit. Le laisser
-      // repondre a la place de Benjamin, en revanche, n'apporterait rien qu'une invention
-      // possible sur son propre parcours.
-      //
-      // « lexical » n'arrive que si l'interpreteur a retenu sa reponse pour laisser le
-      // modele choisir. Elle sort telle quelle des qu'il echoue, refuse ou tarde trop.
+      // Le modele local choisit un identifiant dans une liste fermee, jamais du texte libre :
+      // cela evite d'inventer sur le parcours de Benjamin, et rattrape les recherches par
+      // mots qui ratent un passage reformule. « lexical » n'arrive que si l'interpreteur a garde sa reponse pour laisser le modele choisir ; elle sort telle quelle des qu'il echoue, refuse ou tarde.
       async answerWithModel(query: string, candidateIds: string[], lexical?: Line[]) {
         if (lexical === undefined || !("LanguageModel" in globalThis)) {
           return;
@@ -1974,13 +1952,9 @@ document.addEventListener("alpine:init", () => {
             session.destroy();
           }
         } catch (error) {
-          // Le modele muet, refuse ou trop lent ne doit pas laisser la question sans
-          // reponse : celle du corpus attendait pour ce cas. Une question remplacee par une
-          // autre, elle, n'a plus rien a dire.
-          //
-          // Son echec se dit, il ne se confond pas avec la reponse. « rien ne repond dans ce
-          // portfolio » et « le modele a lache » se lisaient pareil, et menaient a chercher
-          // le defaut du mauvais cote.
+          // Le modele muet, refuse ou trop lent ne doit pas laisser la question sans reponse :
+          // celle du corpus la remplace, sauf si une autre question a deja pris sa place. Son
+          // echec se dit aussi : « rien ne repond » et « le modele a lache » se lisaient pareil, et menaient a chercher le defaut du mauvais cote.
           if (!answered && this.asker === asker) {
             this.journal = [
               ...this.journal,
@@ -2080,10 +2054,9 @@ document.addEventListener("alpine:init", () => {
       // La coquille applique ce que l'interpréteur décrit. Les effets des tickets à
       // venir sont ignorés ici plutôt que simulés.
       apply(effects: Effect[]) {
-        // Trouver un easter egg vaut une celebration. Mais plusieurs d'entre eux disent
-        // deja une expression, et le but jouerait une fraction de seconde avant de se faire
-        // ecraser : il ne se joue que si rien d'autre ne bouge la mascotte, et apres la
-        // boucle, pour ne pas dependre de l'ordre des effets.
+        // Trouver un easter egg vaut une celebration, mais plusieurs disent deja une
+        // expression : le but ne se joue que si rien d'autre ne bouge la mascotte, sinon il
+        // s'ecraserait aussitot. Il se joue apres la boucle, pour ne pas dependre de l'ordre des effets.
         const found = effects.some(
             (effect) => effect.type === "track" && effect.event === "easter_egg",
           ),
@@ -2363,13 +2336,9 @@ document.addEventListener("alpine:init", () => {
       },
     });
 
-    // Les tranches entrent par leurs descripteurs, jamais par un etalement. Un etalement
-    // appellerait les accesseurs du composant et copierait leur valeur : « reduced » fige a
-    // false laisserait tourner les animations chez qui demande moins de mouvement, sans
-    // casser un seul test. Il ferait aussi perdre a withMagics l'inference de son type.
-    //
-    // Une methode oubliee dans le litteral apres son deplacement perd contre la tranche :
-    // c'est le code neuf qui gagne, pas le residu.
+    // Les tranches entrent par leurs descripteurs, jamais par un etalement, qui appellerait
+    // les accesseurs et figerait leur valeur ; « reduced » a false laisserait tourner les
+    // animations chez qui demande moins de mouvement. Une methode oubliee dans le litteral perd contre la tranche : c'est le code neuf qui gagne.
     return Object.defineProperties(component, Object.getOwnPropertyDescriptors(slices()));
   });
 });

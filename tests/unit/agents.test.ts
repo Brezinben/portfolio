@@ -114,12 +114,9 @@ it("should give the same contact in llms.txt and in the text version", () => {
 // ni l'une ni l'autre ne charge le point d'entrée, donc aucune ne peut lire la table. Ce
 // test paie la duplication : une couleur qui change d'un côté doit changer des deux autres.
 const CLES = ["--bg", "--panel", "--edge", "--fg", "--fg2", "--acc"],
-  // Un thème peut s'écrire en plusieurs blocs : index.html surcharge « light » plus bas dans
-  // la feuille. Les blocs de même nom se fondent, sinon le dernier efface le premier.
-  //
-  // La casse tombe : oxfmt formate 404.css et y écrit les couleurs en minuscules, là où les
-  // deux pages HTML lui échappent. Une couleur CSS ne distingue pas la casse ; ce test
-  // surveille une dérive de valeur, pas de graphie.
+  // Un thème peut s'écrire en plusieurs blocs, qui se fondent sous le même nom sinon le
+  // dernier efface le premier. La casse tombe aussi : oxfmt écrit 404.css en minuscules, là où
+  // les pages HTML lui échappent ; ce test surveille une dérive de valeur, pas de graphie.
   themes = (html: string, prefixe: string) => {
     const releve: Record<string, Record<string, string>> = {};
 

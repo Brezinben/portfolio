@@ -62,10 +62,9 @@ const ROOT = fileURLToPath(new URL("../", import.meta.url)),
   ],
   sheetsOf = (dir: string) => `assets/sprites/${dir}-sheets.png`,
   dirOf = (file: string) => file.replace(LEADING_SLASH, "").split("/")[2] ?? "",
-  // Le CSS de src/ nomme une feuille par état, dans l'ordre des bandes attendues. La
+  // Le CSS de src/ nomme une feuille par état, dans l'ordre des bandes attendues ; la
   // construction empile les feuilles dans cet ordre, puis remplace chaque paire par le
-  // décalage de sa bande. La liste des feuilles et l'ordre des bandes sortent du même
-  // balayage : ils ne peuvent pas diverger.
+  // décalage de sa bande. Les deux sortent du même balayage : ils ne peuvent pas diverger.
   SHEET_RULE =
     /(?<indent>[^\S\n]*)background-image: url\("(?<file>\/?assets\/sprites\/[a-z]+\/[^"]+\.png)"\);\n[^\S\n]*background-size: \d+px \d+px;\n/gu,
   SHEET_URL = /\/?assets\/sprites\/[a-z]+\/[^"]+\.png/gu,
@@ -83,14 +82,8 @@ const ROOT = fileURLToPath(new URL("../", import.meta.url)),
   // MinifyJS reste absent. Rolldown a déjà minifié les deux scripts en ligne du projet.
   // RemoveAttributeQuotes et removeOptionalTags rendent le balisage déroutant pour 0,3 Ko.
   MINIFY = { collapseWhitespace: true, minifyCSS: true, removeComments: true },
-  // Le code d'erreur de Node ne figure pas dans le type Error : on le retrecit plutot que
-  // de l'affirmer.
-  //
-  // Les deux regles desactivees ici demandent de parser l'entree a sa frontiere et de
-  // brancher sur une valeur de domaine. Il n'y a pas de frontiere : TypeScript impose
-  // « unknown » sur la liaison d'un catch, et c'est precisement ce rétrécissement-la qui
-  // etablit le contrat. Une valeur de domaine exigerait de faire confiance a la forme de
-  // l'erreur avant de l'avoir verifiee, donc d'ecrire moins sur que ce code.
+  // Le code d'erreur de Node n'est pas dans le type Error : on le retrecit plutot que de
+  // l'affirmer. TypeScript impose « unknown » sur un catch ; deviner une forme avant de la verifier ecrirait moins sur que ce code.
   // oxlint-disable-next-line anti-slop/no-unknown-parameters
   errorCode = (error: unknown): string | undefined =>
     // oxlint-disable-next-line anti-slop/no-runtime-typeof
@@ -289,13 +282,9 @@ const unfilter = (filter: number, value: number, around: Around) => {
 
     return { bytes: writeSheets(width, height, pixels), height, width };
   },
-  // Une seule requête au lieu d'une par état, et trois fois moins d'octets : un seul flux
-  // deflate exploite la ressemblance entre les feuilles. src/ garde un fichier par état,
-  // lisible un par un ; seul l'artefact les fusionne.
-  //
-  // Le plan sort d'un seul balayage de index.html : la liste des feuilles et l'ordre des
-  // bandes en viennent ensemble, donc ils ne peuvent pas diverger. Une deuxième page ne
-  // recompte rien, elle lit ce plan.
+  // Une seule requête au lieu d'une par état : un seul flux deflate exploite la ressemblance
+  // entre les feuilles, que src/ garde separees pour rester lisibles une par une. Le plan
+  // sort d'un seul balayage de index.html, donc feuilles et bandes ne peuvent pas diverger.
   planSheets = async (staging: string) => {
     const page = await readFile(join(SOURCE, "index.html"), "utf8"),
       declared = page.match(SHEET_URL) ?? [],
@@ -349,9 +338,8 @@ const unfilter = (filter: number, value: number, around: Around) => {
     let seen = 0;
 
     // Le balayage est plus large que le pliage : il prend toute adresse de feuille, la regle
-    // exige en plus les deux lignes dans l'ordre. Comparer les deux comptes rattrape la regle
-    // qu'un reformatage a defaite. Sans ce garde-fou, l'adresse survivrait dans l'artefact
-    // alors que le dossier qu'elle vise en a ete retire.
+    // exige en plus les deux lignes dans l'ordre. Sans ce garde-fou, une regle defaite par un
+    // reformatage laisserait survivre une adresse dont le dossier a ete retire.
     const declared = text.match(SHEET_URL) ?? [],
       // L'adresse de l'image fusionnée reprend la forme de celles qu'elle remplace : une page
       // servie sur une adresse quelconque écrit des chemins absolus, et les garde.
@@ -607,12 +595,9 @@ try {
 
   await mkdir(version, { recursive: true });
   await cp(SOURCE, version, {
-    // Une regle plutot qu'une liste de noms : le bundle absorbe les modules, et un
-    // renommage ne doit pas republier la source en silence.
-    //
-    // Les CONTEXT.md sont de la documentation de depot, pas des actifs : les publier
-    // exposerait la carte des modules, et leur presence empecherait l'elagage de retirer
-    // le dossier qui ne porte qu'eux.
+    // Une regle plutot qu'une liste de noms : le bundle absorbe les modules, et un renommage
+    // ne doit pas republier la source en silence. Les CONTEXT.md sont de la documentation de
+    // depot, pas des actifs : les publier exposerait la carte des modules, et empecherait l'elagage.
     filter: (from: string) =>
       extname(from) !== ".ts" &&
       basename(from) !== "CONTEXT.md" &&
@@ -622,13 +607,9 @@ try {
     preserveTimestamps: true,
     recursive: true,
   });
-  // Le filtre s'applique aussi aux dossiers, et un dossier n'a pas d'extension : celui qui
-  // ne porte que des modules est cree, puis vide de tous ses enfants, et publie vide. On
-  // elague apres coup plutot que de nommer ces dossiers : un dossier qui porterait un actif
-  // a cote de ses modules doit rester, et une liste de noms l'aurait supprime entier.
-  //
-  // L'elagage part des enfants, jamais de la racine : celle-ci doit survivre meme vide,
-  // sinon l'ecriture de index.html qui suit echouerait sur un dossier disparu.
+  // Le filtre s'applique aussi aux dossiers, sans extension pour trancher : on elague apres
+  // coup plutot que de les nommer, car un dossier qui porterait un actif a cote de ses
+  // modules doit rester. L'elagage part des enfants, jamais de la racine, qui doit survivre meme vide pour l'ecriture de index.html qui suit.
   await pruneChildren(version);
 
   const plan = await planSheets(version);
