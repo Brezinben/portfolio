@@ -73,8 +73,7 @@ test("should never open a share target that carries a script URL", async ({ page
   await serve(page, HOSTILE);
   await boot(page);
   await page.evaluate(() => {
-    // La page note ce qu'on a tente d'ouvrir : le test lit ce temoin ensuite. Le faux
-    // n'ouvre rien et ne rend rien : c'est tout ce que le test observe.
+    // La page note ce qu'on a tente d'ouvrir : le faux n'ouvre et ne rend rien, c'est tout ce que le test observe.
     // SAFETY: « opened » est pose par ces deux lignes seules ; aucun autre code de la
     // page ne porte ce nom.
     const temoin = globalThis as typeof globalThis & { opened?: string };

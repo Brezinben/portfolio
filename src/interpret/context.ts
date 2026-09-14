@@ -32,11 +32,9 @@ export interface CompletionContext {
 // pas un cas a traiter ici.
 export interface Context extends CompletionContext {
   columns: number;
-  // La mascotte est absente pendant son explosion et pendant son voyage en train. Sans
-  // cette information, l'interpreteur annonce des gestes que la coquille ne joue pas.
-  // « away » : explosee ou partie en train. « busy » : en train de changer de forme, donc
-  // presente mais indisponible. « asleep » : le reseau est coupe, elle dort jusqu'a son
-  // retour. La coquille sait, l'interpreteur ne devine pas.
+  // La mascotte est absente pendant son explosion et son voyage en train ; sans cette
+  // information, l'interpreteur annoncerait des gestes que la coquille ne joue pas.
+  // « away » : explosee ou en train. « busy » : change de forme. « asleep » : reseau coupe.
   mascot: "asleep" | "away" | "busy" | "here";
   details: Entry[];
   sections: Entry[];

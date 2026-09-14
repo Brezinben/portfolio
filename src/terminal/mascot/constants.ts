@@ -5,8 +5,6 @@
 export const SPRITE = 64;
 // Trente-cinq feuilles de sprites remplacent le dessin en ombres portees. Les durees et
 // les images vivent dans la feuille de style : le script ne choisit que l'etat.
-// Neuf etats de vie, six expressions de commande, six activites, onze de manipulation,
-// trois transitions de forme.
 export const MASCOT_STATES = new Set([
   "evolveCube",
   "evolvePingouin",
@@ -45,10 +43,9 @@ export const MASCOT_STATES = new Set([
   "splatFloorRight",
 ]);
 export const MASCOT_REST = "idle";
-// La chaine des formes. Chaque appel monte d'un cran, le troisieme referme le cycle. Une
-// transition se joue depuis la feuille qui la porte : « evolveCube » vit dans celle du
-// cube, « devolve » dans celle du pingouin. D'ou « sheet », qui n'est pas toujours
-// « next ».
+// La chaine des formes. Une transition se joue depuis la feuille qui la porte :
+// « evolveCube » vit dans celle du cube, « devolve » dans celle du pingouin. D'ou
+// « sheet », qui n'est pas toujours « next ».
 export const CHAIN = {
   cube: { next: "pingouin", sheet: "pingouin", state: "evolvePingouin" },
   pingouin: { next: "slime", sheet: "pingouin", state: "devolve" },
@@ -57,26 +54,13 @@ export const CHAIN = {
 export const TRANSITIONS = new Set(["devolve", "evolveCube", "evolvePingouin"]);
 // Sous ce pas la mascotte garderait sa prise plutot que de trembler entre deux feuilles.
 export const DRAG_STEP = 2;
-// Le plaquage se declenche quand le curseur sort de la piste. Or la piste a la hauteur du
-// sprite : le curseur, pris quelque part dans ces 64 px, en sortirait par le haut ou par
-// le bas en une trentaine de pixels. Un simple tremblement pendant un glisser horizontal
-// ferait clignoter le sol et le plafond a la place des feuilles de deplacement. Cette
-// marge n'existe que sur la verticale : en largeur, la piste est trop longue pour qu'on
-// en sorte par accident.
+// Le plaquage se declenche quand le curseur sort de la piste, haute comme le sprite. Sans
+// marge, un tremblement vertical ferait clignoter le sol et le plafond a la place des
+// feuilles de deplacement. La largeur, elle, est trop longue pour sortir par accident.
 export const SPLAT_MARGIN = 24;
-// Au cinquieme clic le slime explose. Il reprend forme entre cinq et dix secondes plus
-// tard : le hasard evite que l'attente devienne une horloge.
-// Combien de temps un etat de passage tient avant de rendre le repos.
-//
-// Pour une passe unique, c'est la duree de sa feuille : le minuteur n'est qu'un filet
-// derriere animationend, qu'une page en arriere-plan peut avaler.
-//
-// Pour « laugh », « sad » et « scared », qui bouclent, le minuteur est la SEULE sortie :
-// une animation infinie n'emet jamais animationend. Deux a trois cycles, puis le repos.
-// Retirer une de ces trois lignes laisse la mascotte tourner sans fin.
-//
-// « boom » n'y figure pas : l'explosion tient jusqu'a ce que le minuteur de reapparition
-// la releve.
+// Combien de temps un etat de passage tient avant le repos. Un filet derriere
+// animationend pour une passe unique ; la SEULE sortie pour « laugh », « sad » et
+// « scared », qui bouclent sans jamais l'emettre. « boom » attend son minuteur de reapparition.
 export const HOLD_MS = {
   alert: 960,
   bike: 2880,
@@ -105,8 +89,7 @@ export const REFORM_MIN_MS = 5000;
 export const REFORM_SPREAD_MS = 5000;
 // La frappe rend la main au repos peu apres la derniere touche. Chaque touche relance le
 // compte a rebours : 400 ms coupaient l'animation au milieu d'une phrase, et la personne
-// qui tape regarde ses mots, pas la mascotte. La veille attend dix secondes sans geste.
-// Au repos, une chance sur vingt-cinq toutes les cinq secondes.
+// qui tape regarde ses mots, pas la mascotte.
 export const TYPE_REST_MS = 1400;
 // La modale retient le regard, et une passe de mue dure deux secondes et demie. La mue
 // rejoue donc tant que la modale est ouverte, puis court encore ce sursis apres.

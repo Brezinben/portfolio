@@ -22,9 +22,8 @@ export const EXPRESSIONS: Record<Expression, string> = {
   sleep: "endormi",
 };
 // Deux listes, et elles disent deux choses différentes. « EXPRESSIONS » nomme toutes les
-// expressions, « idle » compris, parce que « say » s'en sert pour ramener la mascotte au
-// repos. « OFFERED » est ce que la commande propose, et « idle » n'y est pas : il
-// n'aurait rien montré, la mascotte y est déjà. Ne les refusionnez pas.
+// expressions, « idle » compris, car « say » s'en sert pour ramener la mascotte au repos.
+// « OFFERED » est ce que la commande propose, et « idle » n'y est pas : elle y est déjà.
 export const OFFERED: Expression[] = ["alert", "happy", "laugh", "sad", "scared", "sleep"];
 // Une activité demande un accessoire, là où une expression se lit sur le visage. Le glossaire
 // les sépare, et la commande aussi : « slime activity <nom> ».

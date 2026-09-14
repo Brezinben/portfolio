@@ -5,24 +5,25 @@
     "@stylistic/eslint-plugin",
     {
       "name": "anti-slop",
-      "specifier": "./tools/oxlint/anti-slop/index.ts"
-    }
+      "specifier": "./tools/oxlint/anti-slop/index.ts",
+    },
   ],
   "env": {
     "browser": true,
-    "es2024": true
+    "es2024": true,
   },
   "globals": {
     "Alpine": "readonly",
-    "umami": "readonly"
+    "umami": "readonly",
   },
   "categories": {
     "correctness": "error",
     "perf": "error",
     "style": "error",
-    "suspicious": "error"
+    "suspicious": "error",
   },
   "rules": {
+    "anti-slop/max-lines-per-comment-block": "error",
     "anti-slop/no-chained-type-assertions": "error",
     "anti-slop/no-conditional-empty-object-spread": "error",
     "anti-slop/no-known-value-widening": "error",
@@ -62,71 +63,71 @@
         "allowModuleEnd": true,
         "allowTypeStart": true,
         "allowTypeEnd": true,
-        "ignorePattern": "^\\s*(eslint|oxlint|prettier|oxfmt|@ts-)"
-      }
+        "ignorePattern": "^\\s*(eslint|oxlint|prettier|oxfmt|@ts-)",
+      },
     ],
     "@stylistic/padding-line-between-statements": [
       "error",
       {
         "blankLine": "always",
         "prev": "*",
-        "next": "if"
+        "next": "if",
       },
       {
         "blankLine": "always",
         "prev": "*",
-        "next": "return"
+        "next": "return",
       },
       {
         "blankLine": "always",
         "prev": "*",
-        "next": ["class", "function"]
+        "next": ["class", "function"],
       },
       {
         "blankLine": "always",
         "prev": ["class", "function"],
-        "next": "*"
+        "next": "*",
       },
       {
         "blankLine": "always",
         "prev": "*",
-        "next": "break"
+        "next": "break",
       },
       {
         "blankLine": "always",
         "prev": "*",
-        "next": "throw"
+        "next": "throw",
       },
       {
         "blankLine": "always",
         "prev": ["const", "let", "var"],
-        "next": "*"
+        "next": "*",
       },
       {
         "blankLine": "any",
         "prev": ["const", "let", "var"],
-        "next": ["const", "let", "var"]
+        "next": ["const", "let", "var"],
       },
       {
         "blankLine": "never",
         "prev": "singleline-const",
-        "next": "singleline-const"
-      }
+        "next": "singleline-const",
+      },
     ],
     "@stylistic/spaced-comment": [
       "error",
       "always",
       {
         "markers": ["/"],
-        "exceptions": ["-", "+", "*"]
-      }
+        "exceptions": ["-", "+", "*"],
+      },
     ],
     "capitalized-comments": [
       "warn",
       "always",
       {
-        "ignoreConsecutiveComments": true
-      }
+        "ignoreConsecutiveComments": true,
+      },
     ],
     "eqeqeq": "error",
     "import/no-nodejs-modules": "error",
@@ -142,7 +143,7 @@
     "jest/prefer-each": "off",
     "jest/require-hook": "off",
     "import/consistent-type-specifier-style": "off",
-    "max-statements": "off"
+    "max-statements": "off",
   },
   "ignorePatterns": [
     ".agents/**",
@@ -155,35 +156,35 @@
     "src/vendor/**",
     "docs/mascotte/**",
     "test-results/**",
-    "tools/oxlint/anti-slop/**"
+    "tools/oxlint/anti-slop/**",
   ],
   "overrides": [
     {
       "files": ["tests/unit/**"],
       "rules": {
-        "jest/consistent-test-it": ["error", { "fn": "it" }]
-      }
+        "jest/consistent-test-it": ["error", { "fn": "it" }],
+      },
     },
     {
       "files": ["src/terminal/shell.ts"],
       "rules": {
-        "import/consistent-type-specifier-style": ["error", "prefer-top-level"]
-      }
+        "import/consistent-type-specifier-style": ["error", "prefer-top-level"],
+      },
     },
     {
       "files": ["tests/**", "tools/**", "playwright.config.js"],
       "env": {
-        "node": true
+        "node": true,
       },
       "rules": {
-        "import/no-nodejs-modules": "off"
-      }
+        "import/no-nodejs-modules": "off",
+      },
     },
     {
       "files": ["tests/**"],
       "rules": {
-        "eslint/no-duplicate-imports": "off"
-      }
-    }
-  ]
+        "eslint/no-duplicate-imports": "off",
+      },
+    },
+  ],
 }
