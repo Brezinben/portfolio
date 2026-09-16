@@ -122,13 +122,18 @@ const SEMITONES = 12;
 // par temps, donc trente.
 export const QUARTER_SEC = 30;
 
+// Le pas du generateur, 0x6d2b79f5, ecrit en decimal : oxfmt veut les chiffres
+// hexadecimaux en minuscules et oxlint en majuscules, donc chacun defait l'autre. La
+// signature PNG de « tools/build.ts » contourne le meme desaccord.
+const MULBERRY_STEP = 1_831_565_813;
+
 // Un generateur deterministe en quatre lignes, suffisant ici — on tire des notes, pas des
 // cles. « Math.random » n'accepte pas de seed, donc un morceau ne se retrouverait jamais.
 export const rng = (seed: number) => {
   let state = seed >>> 0;
 
   return () => {
-    state = (state + 0x6D_2B_79_F5) >>> 0;
+    state = (state + MULBERRY_STEP) >>> 0;
 
     let mixed = state;
 
