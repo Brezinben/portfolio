@@ -148,6 +148,10 @@
     "jest/require-hook": "off",
     "import/consistent-type-specifier-style": "off",
     "max-statements": "off",
+    // Cette regle veut les chiffres hexadecimaux en majuscules, oxfmt les veut en
+    // minuscules. Chacun defaisait le travail de l'autre, et la verification tombait selon
+    // l'outil lance en dernier. Le formateur tranche, donc la regle se tait.
+    "unicorn/number-literal-case": "off",
   },
   "ignorePatterns": [
     ".agents/**",
