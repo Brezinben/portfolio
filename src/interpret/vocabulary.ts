@@ -47,6 +47,7 @@ export const SLASH_ONLY = new Set([
   "vim",
   "coffee",
   "brezinben",
+  "radio",
 ]);
 
 export const ALIASES = {

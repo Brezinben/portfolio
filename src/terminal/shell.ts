@@ -7,7 +7,9 @@
 // 2. Ce fichier n'importe que des types, en forme longue « import type » : le
 //    specificateur en ligne creerait un cycle d'execution invisible ailleurs, que tient la regle dediee de .oxlintrc.jsonc.
 
+import type { RadioApi, RadioState } from "./radio/slice.ts";
 import type { MascotApi } from "./mascot/slice.ts";
+import type { TrackValue } from "../interpret.ts";
 
 // Alpine pose ses magies sur le composant apres l'avoir construit : elles ne sont pas dans
 // le litteral, mais « this » les voit a l'execution.
@@ -16,10 +18,19 @@ export interface Magics {
   $refs: Record<string, HTMLElement | undefined>;
 }
 
+// Ce que toute tranche peut lire de l'etat, en plus du sien. « reduced » est un accesseur
+// vivant : le copier le figerait a « false » chez qui demande moins de mouvement, sans
+// casser un seul test.
+export interface Shared {
+  anim: boolean;
+  out: boolean;
+  reduced: boolean;
+  track(event: string, props?: Record<string, TrackValue>): void;
+}
+
 // Ce que le composant est une fois les tranches reunies. Le contrat s'ecrit a la main :
 // deduire « this » du type des tranches tourne en rond, et TypeScript rend « any ».
-// Elle ne porte pas encore l'etat : « trackWidth » ne lit que « $refs ».
-export interface Terminal extends MascotApi {}
+export interface Terminal extends MascotApi, RadioApi, RadioState, Shared {}
 
 // Ce que « this » voit dans une methode : le composant entier, plus les magies.
 export type Shell = Magics & Terminal;

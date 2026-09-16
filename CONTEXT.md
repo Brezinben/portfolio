@@ -151,6 +151,25 @@ par état, un dossier par forme sous `src/assets/sprites/`. La construction les 
 image par forme ; seule celle du slime part au premier chargement.
 _Avoid_: spritesheet, planche, atlas.
 
+**Radio** (`radio`) :
+Le lecteur que `/radio` installe dans le volet de sortie. Il ne lit aucun fichier et ne
+reçoit aucun flux : le morceau se fabrique dans le navigateur. Aucun son ne part avant un
+geste du visiteur, et quitter la commande ferme le contexte audio.
+_Avoid_: lecteur, player, musique.
+
+**Graine** (`seed`) :
+Le nombre de treize chiffres qui décide d'un morceau. Même graine, même morceau, à la note
+près. C'est un **format**, pas un détail : l'ordre des tirages qui la lit ne change jamais
+en son milieu, et `SEED_VERSION` en marque la version. Elle s'affiche groupée par trois,
+et elle se saisit : c'est ce qui rend une écoute partageable.
+_Avoid_: seed, clé, identifiant, nombre.
+
+**Silhouette** (`silhouette`) :
+Les hauteurs de repos du spectre, tirées de la graine. C'est l'image qu'on voit sans son,
+et celle qui reste quand le visiteur demande moins de mouvement. Le gel est une image fixe
+lisible, jamais une disparition.
+_Avoid_: forme, shape, profil.
+
 **Jauge de contexte** (`contextGauge`) :
 Jauge de la barre d'état qui monte à chaque commande, et se vide avec une compaction
 ironique quand elle est pleine.

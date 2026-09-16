@@ -54,6 +54,7 @@ import {
   interpret,
   safeTone,
 } from "./interpret.ts";
+import type { RadioApi, RadioState } from "./terminal/radio/slice.ts";
 import { type Section, barParts, printed, section } from "./terminal/format.ts";
 import type { Magics } from "./terminal/shell.ts";
 
@@ -173,8 +174,8 @@ type Beat = ReturnType<typeof setInterval>;
 type TrackSource = "commande" | "interface";
 
 // Ce que la page tient en memoire. Les minuteurs en font partie : les declarer les rend
-// visibles, et dit d'un coup d'oeil ce que la page a en vol.
-interface State {
+// visibles. « RadioState » vient de la tranche qui l'emploie, pour ne pas deriver.
+interface State extends RadioState {
   asker: AbortController | undefined;
   bubbleTimer: Delay | undefined;
   compactor: Delay | undefined;
@@ -240,6 +241,9 @@ interface State {
   pending: string | undefined;
   power: string;
   profileEmail: string;
+  // La tranche de la radio arrive par import dynamique : ce drapeau dit si elle a rejoint
+  // le composant, et « radioOn » ne peut valoir vrai qu'apres.
+  radioLoaded: boolean;
   recallAt: number;
   resizing: { height: number; y: number } | undefined;
   running: boolean;
@@ -275,7 +279,9 @@ interface State {
 // L'etalement est sur ici : une tranche ne porte jamais d'accesseur.
 const slices = () => ({ ...mascotSlice() });
 
-type Slices = ReturnType<typeof slices>;
+// « RadioApi » n'est pas dans « slices » : sa tranche arrive par import dynamique, une fois
+// la commande tapee. Elle rejoint le composant a ce moment, mais « this » la voit des ici.
+type Slices = RadioApi & ReturnType<typeof slices>;
 
 // ThisType ajoute les magies au type de « this » sans rien changer au code produit :
 // cette fonction est l'identite. L'etat vient de State, le reste du litteral vient de T :
@@ -354,6 +360,21 @@ document.addEventListener("alpine:init", () => {
       pending: undefined,
       power: "boot",
       profileEmail: "",
+      radioAudio: "muet",
+      radioBars: [],
+      radioClock: "0:00",
+      radioEngine: undefined,
+      radioFrame: undefined,
+      radioLoaded: false,
+      radioOn: false,
+      radioParams: undefined,
+      radioPeaks: [],
+      radioRows: [],
+      radioSeconds: 0,
+      radioSeeds: 0,
+      radioSeedText: "",
+      radioTicker: undefined,
+      radioTyping: false,
       recallAt: -1,
       resizing: undefined,
       running: false,
@@ -889,9 +910,31 @@ document.addEventListener("alpine:init", () => {
         this.compactTick = 0;
       },
 
+      // La radio n'est chargee qu'apres la commande : « radioOn » ne peut valoir vrai que si
+      // sa tranche est en place, donc ce test protege aussi l'appel.
+      radioStop() {
+        if (this.radioOn) {
+          this.radioClose();
+        }
+      },
+
+      // Le code de la radio ne part pas au premier chargement : peu de visiteurs taperont la
+      // commande. Sa tranche arrive ici, une fois, et rejoint le composant.
+      async radioBoot() {
+        if (!this.radioLoaded) {
+          const { radioSlice } = await import("./terminal/radio/slice.ts");
+
+          Object.assign(this, radioSlice());
+          this.radioLoaded = true;
+        }
+
+        this.radioOpen();
+      },
+
       // Extinction facon CRT, puis la sequence de boot complete.
       powerDown(mode: string) {
         this.stopCompacting();
+        this.radioStop();
         this.power = "off";
         setTimeout(
           () => {
@@ -1679,6 +1722,9 @@ document.addEventListener("alpine:init", () => {
 
         // La navigation reprend le resultat : une reponse de commande n'y survit pas.
         this.commandResult = undefined;
+        // Le volet de sortie appartient a la section ouverte. La radio le quitte donc, et
+        // son contexte audio se ferme plutot que de continuer a tourner sans volet.
+        this.radioStop();
         this.section = id;
 
         if (push && globalThis.location.hash !== `#${id}`) {
@@ -2167,6 +2213,8 @@ document.addEventListener("alpine:init", () => {
             void this.evolve();
           } else if (effect.type === "options") {
             this.openOpts("commande");
+          } else if (effect.type === "radio") {
+            void this.radioBoot();
           }
         }
 

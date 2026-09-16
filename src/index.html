@@ -1442,6 +1442,254 @@
        cherche : il passe en tête et prend la plus grande part. L'ordre du document ne
        bouge pas, donc le parcours clavier non plus. Le journal perd son plafond : la
        colonne défile déjà, donc une réponse longue n'a plus à tenir dans 120 px. */
+    /* La radio. Aucune couleur en dur : les deux teintes des barres sortent de « --acc »
+       par color-mix, donc les huit thèmes suivent. La page est bornée à 100dvh sans
+       défilement, et le contrat vertical d'ici en découle : la bande de spectre est le
+       seul enfant qui cède de la hauteur, tout le reste est « flex: none ». Testée en
+       « flex: 1 1 auto », la bande mangeait tout le volet sur grand écran ; elle se
+       comprime donc, elle ne grandit pas. Vérifier à 540 px de hauteur de fenêtre :
+       c'est là que la barre d'action et la ligne de raccourcis se faisaient rogner. */
+    .tm .radio {
+      flex: 1 1 auto;
+      min-height: 0;
+      display: flex;
+      flex-direction: column
+    }
+
+    .tm .radio__viz {
+      position: relative;
+      flex: 0 1 auto;
+      height: clamp(84px, 19vh, 148px);
+      min-height: 24px;
+      background: var(--acc-soft);
+      border-bottom: 1px solid var(--edge);
+      overflow: hidden
+    }
+
+    .tm .radio__bars {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: flex-end;
+      gap: 3px;
+      padding: 10px 8px 0
+    }
+
+    .tm .radio__bars span {
+      position: relative;
+      flex: 1;
+      min-width: 3px;
+      height: 100%
+    }
+
+    /* Repère de crête : il retombe plus lentement que la barre, comme sur un vu-mètre. */
+    .tm .radio__bars i {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: var(--peak, 40%);
+      height: 3px;
+      background: var(--fg2)
+    }
+
+    /* Habillage « pointe » : corps fondu vers le fond, tête claire fondue vers l'encre. Le
+       niveau se lit sans lire la hauteur. Trois autres habillages ont été essayés et
+       écartés : accent uni, dégradé vertical, dégradé par colonne. */
+    .tm .radio__bars u {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 2px;
+      height: var(--bar, 30%);
+      border-radius: 1px;
+      text-decoration: none;
+      background: linear-gradient(to top,
+          color-mix(in oklab, var(--acc) 52%, var(--bg)) 0 60%,
+          var(--acc) 60% 85%,
+          color-mix(in oklab, var(--acc) 58%, var(--fg)) 85%)
+    }
+
+    /* Sans son, les barres bougent quand même : une graine se regarde avant de s'écouter.
+       L'analyseur reprend la main dès que le son part. */
+    .tm[data-anim="true"] .radio[data-audio="muet"] u {
+      transform-origin: 50% 100%;
+      animation: radioEq 1.1s cubic-bezier(.36, .66, .4, 1) infinite alternate
+    }
+
+    .tm[data-anim="true"] .radio[data-audio="muet"] span:nth-child(3n) u {
+      animation-duration: .82s
+    }
+
+    .tm[data-anim="true"] .radio[data-audio="muet"] span:nth-child(3n+1) u {
+      animation-duration: 1.32s;
+      animation-delay: -.4s
+    }
+
+    @keyframes radioEq {
+      from {
+        transform: scaleY(.34)
+      }
+
+      to {
+        transform: scaleY(1.06)
+      }
+    }
+
+    .tm .radio__seed {
+      flex: none;
+      display: grid;
+      gap: 3px;
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--edge)
+    }
+
+    .tm .radio__label {
+      margin: 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 10px;
+      font-size: 11px;
+      letter-spacing: .12em;
+      color: var(--fg2)
+    }
+
+    .tm .radio__label span:last-child {
+      letter-spacing: 0;
+      font-variant-numeric: tabular-nums
+    }
+
+    .tm .radio__number {
+      margin: 0;
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      min-width: 0
+    }
+
+    .tm .radio__number span {
+      flex: none;
+      color: var(--acc)
+    }
+
+    /* La graine est un champ, pas un texte : une écoute se partage par un nombre, donc ce
+       nombre doit pouvoir se recoller. Pas de cadre, un seul filet sous les chiffres. */
+    .tm .radio__number input {
+      flex: 1;
+      min-width: 0;
+      padding: 0 0 2px;
+      border: 0;
+      border-bottom: 1px solid var(--edge);
+      background: transparent;
+      color: var(--fg);
+      font: inherit;
+      font-size: 17px;
+      font-weight: 700;
+      line-height: 1.2;
+      font-variant-numeric: tabular-nums
+    }
+
+    .tm .radio__number input:focus {
+      outline: none;
+      border-bottom-color: var(--acc)
+    }
+
+    .tm .radio__params {
+      flex: none;
+      display: grid;
+      align-content: start;
+      padding: 8px 12px 0
+    }
+
+    .tm .radio__params p {
+      margin: 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 10px;
+      min-width: 0;
+      font-size: 12px;
+      line-height: 1.5;
+      color: var(--fg2)
+    }
+
+    .tm .radio__params b {
+      font-weight: 400;
+      color: var(--fg);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap
+    }
+
+    .tm .radio__ctl {
+      flex: none;
+      margin-top: auto;
+      display: flex;
+      gap: 1px;
+      padding: 8px 12px 10px
+    }
+
+    /* 44 px et non 40 : le scan d'accessibilité refuse toute cible interactive plus
+       courte, et ces deux boutons sont les seuls contrôles du volet. */
+    .tm .radio__ctl button {
+      min-height: 44px;
+      border: 1px solid var(--edge);
+      border-radius: 0;
+      background: transparent;
+      color: var(--fg);
+      font-family: inherit;
+      font-size: 13px;
+      cursor: pointer
+    }
+
+    .tm .radio__ctl button:first-child {
+      flex: 1;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      padding: 0 10px;
+      border-left: 2px solid var(--acc);
+      background: var(--acc-soft)
+    }
+
+    .tm .radio__ctl button:last-child {
+      flex: none;
+      width: 44px
+    }
+
+    .tm .radio__ctl button:hover {
+      border-color: var(--acc);
+      color: var(--acc-text)
+    }
+
+    .tm .radio__ctl button:focus-visible {
+      outline: 2px solid var(--acc);
+      outline-offset: 2px
+    }
+
+    .tm .radio__key {
+      font-size: 11px;
+      color: var(--fg2)
+    }
+
+    .tm .radio__foot {
+      flex: none;
+      margin: 0;
+      padding: 6px 12px;
+      border-top: 1px solid var(--edge);
+      font-size: 11px;
+      color: var(--fg2);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis
+    }
+
+    .tm .radio__foot b {
+      font-weight: 400;
+      color: var(--acc-text)
+    }
+
     @media (max-width: 900px) {
       .tm {
         --panes-overflow: hidden auto;
@@ -1775,12 +2023,52 @@
            page identique d'une section a l'autre. -->
       <aside class="zone" data-pane="out" aria-label="Sortie" x-show="out">
         <p class="zone__head">
-          <span x-text="open.out.title"></span><span :style="`color:var(--${running ? 'warn' : 'ok'})`"><span
+          <span x-text="radioOn ? 'radio' : open.out.title"></span><span
+            :style="`color:var(--${running && !radioOn ? 'warn' : 'ok'})`"><span
               data-outdot aria-hidden="true"
             :style="`animation:dotPulse 1.2s ease-in-out infinite`">●</span> <span
-              x-text="outStatus"></span></span>
+              x-text="radioOn ? radioAudio : outStatus"></span></span>
         </p>
-        <div tabindex="0" role="region" aria-label="Contenu de la sortie">
+        <!-- Les raccourcis sont posés sur le volet, pas sur la fenêtre : la coquille garde
+             le focus sur la ligne de commande, où « espace » et « r » se tapent
+             légitimement. Le visiteur atteint le volet par la flèche droite. -->
+        <template x-if="radioOn">
+          <div class="radio" :data-audio="radioAudio" @keydown="radioKey($event)">
+            <div class="radio__viz">
+              <div class="radio__bars" aria-hidden="true">
+                <template x-for="bar in radioBars" :key="bar">
+                  <span data-radio-bar><i></i><u></u></span>
+                </template>
+              </div>
+            </div>
+            <div class="radio__seed">
+              <p class="radio__label"><span>graine</span><span x-text="radioClock"></span></p>
+              <p class="radio__number"><span aria-hidden="true"
+                  x-text="radioAudio === 'on' ? '‖' : '▶'"></span><input type="text"
+                  inputmode="numeric" autocomplete="off" spellcheck="false"
+                  aria-label="Graine — saisissez un nombre puis entrée pour le charger"
+                  x-model="radioSeedText" @focus="radioTyping = true"
+                  @blur="radioLoad(radioSeedText)"
+                  @keydown.enter.prevent="radioLoad(radioSeedText); $event.target.blur()"
+                  @keydown.escape.prevent="radioLoad(''); $event.target.blur()"></p>
+            </div>
+            <div class="radio__params">
+              <template x-for="row in radioRows" :key="row.label">
+                <p><span x-text="row.label"></span><b x-text="row.value"></b></p>
+              </template>
+            </div>
+            <div class="radio__ctl">
+              <button type="button" @click="radioReseed(undefined)"><span>nouvelle
+                  graine</span><span class="radio__key">r</span></button>
+              <button type="button" @click="radioToggle()"
+                :aria-label="radioAudio === 'on' ? 'Pause — touche espace' : 'Lecture — touche espace'"
+                x-text="radioAudio === 'on' ? '‖' : '▶'"></button>
+            </div>
+            <p class="radio__foot"><b>espace</b> lit ou met en pause · <b>r</b> tire une
+              graine · <b>q</b> quitte</p>
+          </div>
+        </template>
+        <div tabindex="0" role="region" aria-label="Contenu de la sortie" x-show="!radioOn">
           <template x-if="running">
             <p data-waiting
               data-tone="fg2">

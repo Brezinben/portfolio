@@ -45,6 +45,9 @@ const ROOT = fileURLToPath(new URL("../", import.meta.url)),
   ]),
   STAMPED_EXTENSIONS = new Set([".css", ".js", ".pdf", ".png", ".svg", ".woff2"]),
   PAGES = ["404.html", "index.html", "texte.html"],
+  // Le chunk de la radio. Il porte l'empreinte comme tout actif, et « rewritePages » réécrit
+  // son nom dans le bundle en ligne, qui fait partie du texte de la page.
+  RADIO_CHUNK = "radio.js",
   MODULE_TAG = '<script type="module" src="app.ts"></script>',
   STYLE_TAG = '<link rel="stylesheet" href="404.css">',
   SCRIPT_TAG = '<script src="404.ts"></script>',
@@ -90,21 +93,42 @@ const ROOT = fileURLToPath(new URL("../", import.meta.url)),
     error instanceof Error && "code" in error && typeof error.code === "string"
       ? error.code
       : undefined,
-  // La page d'accueil charge un module ; la page d'erreur pose son thème avant le premier
-  // rendu, donc son script est bloquant et ne peut pas être un module. D'où les deux formats.
+  // Deux formats : la page d'erreur pose son thème avant le premier rendu, donc son script
+  // est bloquant. L'entrée part en ligne dans la page, un chunk d'import dynamique devient
+  // un fichier. Ne garder que le premier chunk les jetait en silence. Voir l'ADR 0008.
   bundle = async (entry: string, format: "esm" | "iife") => {
     const result = await build({
         input: join(SOURCE, entry),
-        output: { format, minify: true },
+        output: { chunkFileNames: RADIO_CHUNK, format, minify: true },
         write: false,
       }),
-      [chunk] = result.output;
+      chunks = result.output.filter((part) => part.type === "chunk"),
+      main = chunks.find((part) => part.isEntry),
+      lazy = chunks.filter((part) => !part.isEntry);
 
-    if (!chunk) {
+    if (!main) {
       throw new Error(`Rolldown n'a rien produit pour ${entry}`);
     }
 
-    return chunk.code;
+    // Un seul import dynamique dans le projet, donc un seul nom de chunk à donner. Le jour
+    // où un second apparaît, ce nom doit se dériver au lieu d'être écrit.
+    if (lazy.length > 1) {
+      throw new Error(`${entry} produit ${lazy.length} chunks, et ${RADIO_CHUNK} n'en nomme qu'un`);
+    }
+
+    // L'entrée est mise en ligne dans la page : elle n'a pas d'URL, donc rien ne peut
+    // l'importer. Un chunk paresseux doit être autonome. Une seule valeur partagée avec le
+    // paquet principal suffit à écrire cet import, et la page casse alors en production.
+    const borrowed = lazy.flatMap((part) => part.imports);
+
+    if (borrowed.length > 0) {
+      throw new Error(`Le chunk paresseux de ${entry} importe ${borrowed.join(", ")}`);
+    }
+
+    return {
+      code: main.code,
+      lazy: lazy.map((part) => ({ code: part.code, file: part.fileName })),
+    };
   },
   // Les feuilles sont en 8 bits RGBA, non entrelacées : le cas le plus simple du
   // format. Les lire et les réécrire à la main coûte moins qu'une dépendance de plus.
@@ -401,8 +425,13 @@ const unfilter = (filter: number, value: number, around: Around) => {
       bundled = await bundle("app.ts", "esm"),
       // Une fonction de remplacement, car un remplacement littéral interprète les motifs en
       // dollar. Le code source porte « $$ » dans les yeux de cowsay.
-      replaced = folded.replace(MODULE_TAG, () => `<script type="module">${bundled}</script>`);
+      replaced = folded.replace(MODULE_TAG, () => `<script type="module">${bundled.code}</script>`);
 
+    // Le chunk paresseux s'écrit à la racine, comme la page : un spécificateur relatif dans
+    // un module en ligne se résout contre l'adresse du document, pas contre un fichier.
+    await Promise.all(
+      bundled.lazy.map(async (part) => writeFile(join(staging, part.file), part.code)),
+    );
     await writeFile(join(staging, "index.html"), await minify(replaced, MINIFY));
   },
   // La page d'erreur garde sa feuille et son script a part dans src/, pour qu'ils s'editent,
@@ -423,7 +452,13 @@ const unfilter = (filter: number, value: number, around: Around) => {
       // Deux fonctions de remplacement : un littéral interpréterait les motifs en dollar.
       inlined = page
         .replace(STYLE_TAG, () => `<style>${folded}</style>`)
-        .replace(SCRIPT_TAG, () => `<script>${bundled}</script>`);
+        .replace(SCRIPT_TAG, () => `<script>${bundled.code}</script>`);
+
+    // La page d'erreur est servie sur une adresse quelconque : un spécificateur relatif n'y
+    // résoudrait pas. Elle ne doit donc porter aucun import dynamique.
+    if (bundled.lazy.length > 0) {
+      throw new Error("404.ts porte un import dynamique, que la page ne peut pas résoudre");
+    }
 
     await writeFile(join(staging, "404.html"), await minify(inlined, MINIFY));
   },

@@ -5,4 +5,4 @@ Ce qu'il reste à faire
 - Il faut externaliser le CSS du HTML car déjà il était mal formaté, donc ça veut dire qu'il est mal géré et également du coup, bah lors du bundle, il est réinjecté en en inline dans dans le HTML.
 - Également le la couleur du focus sur la sur l'onglet de sortie des commandes, elle n'est pas de la bonne couleur.
 - Mettre la règle sur les commentaires de antislop
-- Implémenter le /radio avec des animations plus grosses
+- Décider si la graine de /radio voyage dans l'URL, avec la commande share
