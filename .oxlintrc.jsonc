@@ -148,6 +148,7 @@
     "jest/require-hook": "off",
     "import/consistent-type-specifier-style": "off",
     "max-statements": "off",
+    "unicorn/number-literal-case": "off",
   },
   "ignorePatterns": [
     ".agents/**",

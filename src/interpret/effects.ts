@@ -26,6 +26,7 @@ export type Effect =
   | { type: "options" }
   | { type: "pending"; answer?: string; payload: string }
   | { type: "power"; mode: string }
+  | { type: "radio" }
   | { type: "replay" }
   | { type: "say"; expression: Expression; text: string }
   | { type: "send"; payload: string }

@@ -50,8 +50,12 @@ c'est la liste des noms qui exigent le slash. Ce placement supprime l'arête
 `completion → eggs`.
 
 **`MAX_SUGGESTIONS` vit dans `lines`, jamais dans `completion`.** Deux lecteurs le
-partagent, `offer` et `candidates`. Le remonter dans la complétion forcerait l'arête
-inverse, et ce serait le seul cycle possible du découpage.
+partagent, `offer` et la coquille, qui en fait la taille de sa fenêtre de propositions. Le
+descendre dans la complétion forcerait l'arête inverse, seul cycle possible du découpage.
+
+**`candidates` ne tronque pas sa liste.** Elle rend tout ce qui correspond, et la coquille
+n'en montre que dix. Tronquer ici faisait mentir `commonPrefix` : la tabulation complétait
+au-delà du préfixe réel dès que la onzième proposition existait.
 
 **Il n'y a pas de `types.ts` central.** `verbatimModuleSyntax` efface les `import type` :
 ils ne produisent aucune arête d'exécution, donc un hub n'achèterait rien et coûterait un

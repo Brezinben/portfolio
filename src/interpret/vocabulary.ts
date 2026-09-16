@@ -34,8 +34,8 @@ export const KEYBOARD =
   "Clavier : / cible la saisie · j / k changent de section · Tab complète · ↑ ↓ rappellent l'historique.";
 
 // Les easter eggs ne repondent qu'au prefixe slash, pour ne pas melanger une vraie
-// commande et un raccourci du portfolio. L'ordre compte aussi : taper « / » n'ouvre que
-// dix propositions, exactement la taille de cette liste ; un onzieme egg pousserait l'alias hors de vue.
+// commande et un raccourci du portfolio. L'ordre d'ecriture ne decide de rien : le
+// vocabulaire se trie, et la fenetre de la completion glisse au-dela de dix propositions.
 export const SLASH_ONLY = new Set([
   "slime",
   "joke",
@@ -47,6 +47,7 @@ export const SLASH_ONLY = new Set([
   "vim",
   "coffee",
   "brezinben",
+  "radio",
 ]);
 
 export const ALIASES = {
@@ -104,5 +105,6 @@ const PLAIN = [
 const VERBS = [...PLAIN, ...[...SLASH_ONLY].map((egg) => `/${egg}`)];
 
 // Les deux noms de la recherche ne s'offrent jamais ensemble : le vocabulaire ne porte
-// que celui qui correspond a l'etat du modele.
-export const vocabulary = (model: boolean) => [model ? ASK_MODEL : ASK, ...VERBS];
+// que celui qui correspond a l'etat du modele. Le tri decide de ce que la fenetre montre
+// en premier, la ou la liste depasse desormais dix noms.
+export const vocabulary = (model: boolean) => [model ? ASK_MODEL : ASK, ...VERBS].toSorted();

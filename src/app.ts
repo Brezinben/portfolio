@@ -45,6 +45,7 @@ import {
   type Effect,
   type Expression,
   type Line,
+  MAX_SUGGESTIONS,
   type Tone,
   type TrackValue,
   candidates,
@@ -53,12 +54,14 @@ import {
   interpret,
   safeTone,
 } from "./interpret.ts";
+import type { RadioApi, RadioState } from "./terminal/radio/slice.ts";
 import { type Section, barParts, printed, section } from "./terminal/format.ts";
 import type { Magics } from "./terminal/shell.ts";
 
 import { dragState } from "./terminal/mascot/drag.ts";
 import { lookup } from "./terminal/lookup.ts";
 import { mascotSlice } from "./terminal/mascot/slice.ts";
+import { windowTop } from "./terminal/suggest.ts";
 
 // Une mission du volet gauche : sa pastille et son etat.
 interface Mission {
@@ -171,8 +174,8 @@ type Beat = ReturnType<typeof setInterval>;
 type TrackSource = "commande" | "interface";
 
 // Ce que la page tient en memoire. Les minuteurs en font partie : les declarer les rend
-// visibles, et dit d'un coup d'oeil ce que la page a en vol.
-interface State {
+// visibles. « RadioState » vient de la tranche qui l'emploie, pour ne pas deriver.
+interface State extends RadioState {
   asker: AbortController | undefined;
   bubbleTimer: Delay | undefined;
   compactor: Delay | undefined;
@@ -238,6 +241,12 @@ interface State {
   pending: string | undefined;
   power: string;
   profileEmail: string;
+  // La tranche de la radio arrive par import dynamique : ce drapeau dit si elle a rejoint
+  // le composant, et « radioOn » ne peut valoir vrai qu'apres.
+  radioLoaded: boolean;
+  // La commande a ete tapee et la radio n'a pas encore ete quittee. Le chunk arrive apres
+  // un aller-retour reseau : partir entre-temps ne doit pas la faire s'ouvrir quand meme.
+  radioWanted: boolean;
   recallAt: number;
   resizing: { height: number; y: number } | undefined;
   running: boolean;
@@ -252,10 +261,15 @@ interface State {
   stack: Brick[];
   sugg: string[];
   suggAt: number;
+  // La liste vient d'etre calculee par une frappe, et non deplacee par une fleche. Seule
+  // une liste fraiche s'anime : voir surgir chaque entree revelee par la fenetre qui glisse
+  // transformerait un deplacement en clignotement.
+  suggFresh: boolean;
   suggFrag: string;
   suggHead: string;
   suggOpen: boolean;
   suggSlash: boolean;
+  suggTop: number;
   tech: string;
   techNotes: Record<string, TechNote>;
   theme: string;
@@ -272,7 +286,9 @@ interface State {
 // L'etalement est sur ici : une tranche ne porte jamais d'accesseur.
 const slices = () => ({ ...mascotSlice() });
 
-type Slices = ReturnType<typeof slices>;
+// « RadioApi » n'est pas dans « slices » : sa tranche arrive par import dynamique, une fois
+// la commande tapee. Elle rejoint le composant a ce moment, mais « this » la voit des ici.
+type Slices = RadioApi & ReturnType<typeof slices>;
 
 // ThisType ajoute les magies au type de « this » sans rien changer au code produit :
 // cette fonction est l'identite. L'etat vient de State, le reste du litteral vient de T :
@@ -351,6 +367,24 @@ document.addEventListener("alpine:init", () => {
       pending: undefined,
       power: "boot",
       profileEmail: "",
+      radioAudio: "muet",
+      radioBars: [],
+      radioClock: "0:00",
+      radioEngine: undefined,
+      radioFrame: undefined,
+      radioLoaded: false,
+      radioOn: false,
+      radioWanted: false,
+      radioParams: undefined,
+      radioPeaks: [],
+      radioRows: [],
+      radioSeconds: 0,
+      radioSeeds: 0,
+      radioSeedText: "",
+      radioSizer: undefined,
+      radioSlept: false,
+      radioTicker: undefined,
+      radioTyping: false,
       recallAt: -1,
       resizing: undefined,
       running: false,
@@ -365,9 +399,11 @@ document.addEventListener("alpine:init", () => {
       sugg: [],
       suggAt: 0,
       suggFrag: "",
+      suggFresh: false,
       suggHead: "",
       suggOpen: false,
       suggSlash: false,
+      suggTop: 0,
       tech: "",
       techNotes: {},
       theme: "dark",
@@ -575,11 +611,14 @@ document.addEventListener("alpine:init", () => {
           return;
         }
 
-        // Dans la saisie, les flèches déplacent le curseur dans le texte. Elles ne
-        // rendent la main aux volets que si le champ est vide.
-        if (event.target === this.$refs["cli"]) {
+        // Toute saisie garde ses touches : « j », « k » et « / » s'y tapent, et les flèches
+        // y déplacent le curseur. Seule la ligne de commande vide rend la main aux volets.
+        // Sans cette garde, le champ de seed devenait impossible à corriger.
+        if (event.target instanceof HTMLInputElement) {
           const leaving =
-            this.input === "" && (event.key === "ArrowLeft" || event.key === "ArrowRight");
+            event.target === this.$refs["cli"] &&
+            this.input === "" &&
+            (event.key === "ArrowLeft" || event.key === "ArrowRight");
 
           if (!leaving) {
             return;
@@ -885,9 +924,38 @@ document.addEventListener("alpine:init", () => {
         this.compactTick = 0;
       },
 
+      // La radio n'est chargee qu'apres la commande : « radioOn » ne peut valoir vrai que si
+      // sa tranche est en place, donc ce test protege aussi l'appel.
+      radioStop() {
+        this.radioWanted = false;
+
+        if (this.radioOn) {
+          this.radioClose();
+        }
+      },
+
+      // Le code de la radio ne part pas au premier chargement : peu de visiteurs taperont la
+      // commande. Sa tranche arrive ici, une fois, et rejoint le composant. Le visiteur peut
+      // partir pendant ce telechargement : la radio ne s'ouvre alors plus.
+      async radioBoot() {
+        this.radioWanted = true;
+
+        if (!this.radioLoaded) {
+          const { radioSlice } = await import("./terminal/radio/slice.ts");
+
+          Object.assign(this, radioSlice());
+          this.radioLoaded = true;
+        }
+
+        if (this.radioWanted) {
+          this.radioOpen();
+        }
+      },
+
       // Extinction facon CRT, puis la sequence de boot complete.
       powerDown(mode: string) {
         this.stopCompacting();
+        this.radioStop();
         this.power = "off";
         setTimeout(
           () => {
@@ -914,6 +982,45 @@ document.addEventListener("alpine:init", () => {
 
       get outStatus() {
         return this.running ? "waiting" : "live";
+      },
+
+      // Ce que le volet de sortie annonce. La radio qui joue reprend « live », le mot que
+      // la sortie emploie deja : un seul mot pour un seul etat.
+      get outLabel() {
+        if (!this.radioOn) {
+          return this.outStatus;
+        }
+
+        return this.radioAudio === "on" ? "live" : this.radioAudio;
+      },
+
+      // Le glyphe des deux commandes de lecture. Trois etats, trois signes : le son coupe
+      // ne se devinerait pas sous un « ▶ » alors que la musique tourne.
+      get radioGlyph() {
+        if (this.radioAudio === "muet") {
+          return "⊘";
+        }
+
+        return this.radioAudio === "on" ? "‖" : "▶";
+      },
+
+      // Ce que la commande fera au prochain appui, pour un lecteur d'ecran.
+      get radioAction() {
+        if (this.radioAudio === "muet") {
+          return "Rendre le son — touche m";
+        }
+
+        return this.radioAudio === "on" ? "Pause — touche espace" : "Lecture — touche espace";
+      },
+
+      // Le point suit ce que la sortie fait vraiment. Une radio en pause n'est pas en
+      // ordre, elle attend : elle prend donc le meme ton qu'une commande en vol.
+      get outTone() {
+        if (this.radioOn) {
+          return this.radioAudio === "on" ? "ok" : "warn";
+        }
+
+        return this.running ? "warn" : "ok";
       },
 
       // Reappliquer une classe ne redemarre pas son animation : il faut la retirer, forcer
@@ -1414,6 +1521,18 @@ document.addEventListener("alpine:init", () => {
         this[key] = !this[key];
         this.track("option", { cle: key, valeur: this[key] });
         this.persist();
+
+        // La boucle de rendu de la radio s'arrete quand l'animation se coupe. Rien ne la
+        // rallumerait sans cet appel : le depot ne porte aucun observateur de reglage.
+        if (key === "anim" && this.radioOn) {
+          this.radioDraw();
+        }
+
+        // Le volet de sortie est la seule surface de la radio, et « /radio » le rallume pour
+        // cette raison. L'eteindre la laisserait jouer sans rien pour l'arreter.
+        if (key === "out" && !this.out) {
+          this.radioStop();
+        }
       },
 
       setTheme(id: string, options: { event?: MouseEvent; via?: TrackSource } = {}) {
@@ -1675,6 +1794,9 @@ document.addEventListener("alpine:init", () => {
 
         // La navigation reprend le resultat : une reponse de commande n'y survit pas.
         this.commandResult = undefined;
+        // Le volet de sortie appartient a la section ouverte. La radio le quitte donc, et
+        // son contexte audio se ferme plutot que de continuer a tourner sans volet.
+        this.radioStop();
         this.section = id;
 
         if (push && globalThis.location.hash !== `#${id}`) {
@@ -2163,6 +2285,8 @@ document.addEventListener("alpine:init", () => {
             void this.evolve();
           } else if (effect.type === "options") {
             this.openOpts("commande");
+          } else if (effect.type === "radio") {
+            void this.radioBoot();
           }
         }
 
@@ -2185,6 +2309,8 @@ document.addEventListener("alpine:init", () => {
         this.suggHead = result.head;
         this.suggSlash = result.slash;
         this.suggAt = 0;
+        this.suggTop = 0;
+        this.suggFresh = true;
         this.suggOpen = result.hits.length > 0 && this.input !== "";
       },
 
@@ -2194,12 +2320,20 @@ document.addEventListener("alpine:init", () => {
         return hintFor(this.suggHead, this.sugg[this.suggAt] ?? "");
       },
 
+      // Dix propositions a l'ecran, sur une liste qui peut etre plus longue. La fenetre
+      // glisse sous la selection au lieu de couper la liste : une proposition tapable
+      // reste atteignable a la fleche.
+      get suggWindow() {
+        return this.sugg.slice(this.suggTop, this.suggTop + MAX_SUGGESTIONS);
+      },
+
       // La fermeture reste déterministe : la liste se vide, sans compteur de génération
       // qui pourrait annuler le vidage au lieu de le protéger.
       closeSugg() {
         this.suggOpen = false;
         this.sugg = [];
         this.suggAt = 0;
+        this.suggTop = 0;
       },
 
       rebuild(word: string) {
@@ -2269,6 +2403,8 @@ document.addEventListener("alpine:init", () => {
       up() {
         if (this.suggOpen) {
           this.suggAt = (this.suggAt - 1 + this.sugg.length) % this.sugg.length;
+          this.suggTop = windowTop(this.suggTop, this.suggAt, MAX_SUGGESTIONS);
+          this.suggFresh = false;
         } else {
           this.recall(-1);
         }
@@ -2277,6 +2413,8 @@ document.addEventListener("alpine:init", () => {
       down() {
         if (this.suggOpen) {
           this.suggAt = (this.suggAt + 1) % this.sugg.length;
+          this.suggTop = windowTop(this.suggTop, this.suggAt, MAX_SUGGESTIONS);
+          this.suggFresh = false;
         } else {
           this.recall(1);
         }
