@@ -1527,6 +1527,12 @@ document.addEventListener("alpine:init", () => {
         if (key === "anim" && this.radioOn) {
           this.radioDraw();
         }
+
+        // Le volet de sortie est la seule surface de la radio, et « /radio » le rallume pour
+        // cette raison. L'eteindre la laisserait jouer sans rien pour l'arreter.
+        if (key === "out" && !this.out) {
+          this.radioStop();
+        }
       },
 
       setTheme(id: string, options: { event?: MouseEvent; via?: TrackSource } = {}) {

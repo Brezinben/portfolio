@@ -538,3 +538,20 @@ test("should hush the tune while the tab is hidden", async ({ page }) => {
     "on",
   );
 });
+
+// Le volet de sortie est la seule surface de la radio, et « /radio » le rallume pour cette
+// raison. L'éteindre la laisserait jouer sans rien pour l'arrêter : elle se ferme avec lui.
+test("should close the radio when the output pane is switched off", async ({ page }) => {
+  const cli = await open(page);
+
+  await cli.fill("options");
+  await cli.press("Enter");
+  await page.getByRole("button", { name: /output pane/iu }).click();
+  await page.keyboard.press("Escape");
+
+  await expect(page.locator(".radio")).toHaveCount(0);
+
+  const built = await page.evaluate(() => document.querySelectorAll("[data-radio-bar]").length);
+
+  expect(built, "nothing of the radio is left behind").toBe(0);
+});
