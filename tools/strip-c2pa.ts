@@ -10,7 +10,9 @@
 import { readFile, writeFile } from "node:fs/promises";
 
 const KEPT = new Set(["IDAT", "IEND", "IHDR", "PLTE", "tRNS"]),
-  SIGNATURE = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]),
+  // Les huit octets que la spécification PNG place en tête de tout fichier. Même constante
+  // que « PNG_SIGNATURE » dans build.ts, donc écrite dans la même base.
+  SIGNATURE = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
   HEADER = 8,
   // Longueur sur 4 octets, type sur 4, puis les donnees, puis 4 octets de CRC.
   AROUND = 12,

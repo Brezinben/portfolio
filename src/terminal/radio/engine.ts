@@ -81,6 +81,8 @@ const SEMITONES = 12;
 // basses et rien au-dessus.
 const BIN_BASE = 90;
 const BIN_FLOOR = 2;
+// Le plafond de « getByteFrequencyData », qui rend des octets.
+const BYTE = 0xff;
 const LEVEL_CURVE = 0.78;
 const LEVEL_SCALE = 104;
 const LEVEL_FLOOR = 2;
@@ -388,7 +390,7 @@ export const radioEngine = (): Radio => {
 
         return Math.min(
           LEVEL_CEIL,
-          Math.max(LEVEL_FLOOR, (peak / 255) ** LEVEL_CURVE * LEVEL_SCALE * tilt),
+          Math.max(LEVEL_FLOOR, (peak / BYTE) ** LEVEL_CURVE * LEVEL_SCALE * tilt),
         );
       });
     },
