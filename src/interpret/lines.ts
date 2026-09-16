@@ -1,13 +1,13 @@
 // Les lignes du journal et les six fabriques qui les produisent.
 //
 // « MAX_SUGGESTIONS » vit ici et non avec la completion. Deux lecteurs le partagent :
-// « offer », juste en dessous, et « candidates ». Le remonter dans la completion forcerait
-// l'arete inverse vers ce module, et ce serait le seul cycle possible du decoupage.
+// « offer », juste en dessous, et la coquille, qui en fait la taille de sa fenetre de
+// propositions. Le descendre dans la completion forcerait l'arete inverse vers ce module.
 
 import type { Tone } from "./tone.ts";
 
-// Dix propositions au maximum, sans défilement. Le même seuil décide si une aide en
-// ligne peut lister ses valeurs ou doit renvoyer à la tabulation.
+// Dix propositions affichées à la fois. Le même seuil décide si une aide en ligne peut
+// lister ses valeurs ou doit renvoyer à la tabulation.
 export const MAX_SUGGESTIONS = 10;
 
 // Une ligne du journal : puce, couleur de puce, texte, ton. Les noms courts viennent du

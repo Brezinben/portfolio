@@ -161,6 +161,18 @@ export const interpret = (raw: string, context: Context): Outcome => {
     );
   }
 
+  // La commande ne fabrique aucun son : elle demande le volet, et le volet attend un geste.
+  // L'interpreteur reste pur, l'AudioContext vit dans la coquille.
+  if (command === "radio") {
+    return out(
+      [
+        info("radio — une musique fabriquée par une seed, dans le volet de sortie."),
+        muted("espace met en pause · m coupe le son · r tire une seed · q quitte."),
+      ],
+      [track("easter_egg", { nom: "radio" }), { type: "radio" }],
+    );
+  }
+
   if (command === "propose") {
     const forced = /^-y(?:\s|$)/u.test(rest),
       idea = (forced ? rest.slice(2) : rest).trim();

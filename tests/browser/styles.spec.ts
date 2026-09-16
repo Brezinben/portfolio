@@ -257,6 +257,29 @@ for (const theme of THEMES) {
   });
 }
 
+// La radio : un volet entier que rien d'autre ne couvre. Les deux teintes des barres
+// sortent de « --acc » par color-mix, donc l'instantané dit aussi que le thème a suivi.
+for (const theme of THEMES) {
+  test(`should keep the radio pane unchanged on the ${theme} theme`, async ({ page }) => {
+    await boot(page, theme);
+    await page.getByLabel("Commande").fill("/radio");
+    await page.getByLabel("Commande").press("Enter");
+    await expect(page.locator(".radio")).toBeVisible();
+
+    await fige(page, `radio-${theme}`, {
+      barre: "[data-radio-bar] u",
+      bouton: ".radio__ctl button:last-child",
+      champ: ".radio__number input",
+      crete: "[data-radio-bar] i",
+      "ligne-parametre": ".radio__params p",
+      raccourcis: ".radio__foot",
+      seed: ".radio__seed",
+      spectre: ".radio__viz",
+      tirage: ".radio__ctl button:first-child",
+    });
+  });
+}
+
 for (const theme of THEMES) {
   test(`should keep the tree unchanged on the ${theme} theme`, async ({ page }) => {
     await boot(page, theme, "stack");
