@@ -45,6 +45,7 @@ import {
   type Effect,
   type Expression,
   type Line,
+  MAX_SUGGESTIONS,
   type Tone,
   type TrackValue,
   candidates,
@@ -59,6 +60,7 @@ import type { Magics } from "./terminal/shell.ts";
 import { dragState } from "./terminal/mascot/drag.ts";
 import { lookup } from "./terminal/lookup.ts";
 import { mascotSlice } from "./terminal/mascot/slice.ts";
+import { windowTop } from "./terminal/suggest.ts";
 
 // Une mission du volet gauche : sa pastille et son etat.
 interface Mission {
@@ -256,6 +258,7 @@ interface State {
   suggHead: string;
   suggOpen: boolean;
   suggSlash: boolean;
+  suggTop: number;
   tech: string;
   techNotes: Record<string, TechNote>;
   theme: string;
@@ -368,6 +371,7 @@ document.addEventListener("alpine:init", () => {
       suggHead: "",
       suggOpen: false,
       suggSlash: false,
+      suggTop: 0,
       tech: "",
       techNotes: {},
       theme: "dark",
@@ -2185,6 +2189,7 @@ document.addEventListener("alpine:init", () => {
         this.suggHead = result.head;
         this.suggSlash = result.slash;
         this.suggAt = 0;
+        this.suggTop = 0;
         this.suggOpen = result.hits.length > 0 && this.input !== "";
       },
 
@@ -2194,12 +2199,20 @@ document.addEventListener("alpine:init", () => {
         return hintFor(this.suggHead, this.sugg[this.suggAt] ?? "");
       },
 
+      // Dix propositions a l'ecran, sur une liste qui peut etre plus longue. La fenetre
+      // glisse sous la selection au lieu de couper la liste : une proposition tapable
+      // reste atteignable a la fleche.
+      get suggWindow() {
+        return this.sugg.slice(this.suggTop, this.suggTop + MAX_SUGGESTIONS);
+      },
+
       // La fermeture reste déterministe : la liste se vide, sans compteur de génération
       // qui pourrait annuler le vidage au lieu de le protéger.
       closeSugg() {
         this.suggOpen = false;
         this.sugg = [];
         this.suggAt = 0;
+        this.suggTop = 0;
       },
 
       rebuild(word: string) {
@@ -2269,6 +2282,7 @@ document.addEventListener("alpine:init", () => {
       up() {
         if (this.suggOpen) {
           this.suggAt = (this.suggAt - 1 + this.sugg.length) % this.sugg.length;
+          this.suggTop = windowTop(this.suggTop, this.suggAt, MAX_SUGGESTIONS);
         } else {
           this.recall(-1);
         }
@@ -2277,6 +2291,7 @@ document.addEventListener("alpine:init", () => {
       down() {
         if (this.suggOpen) {
           this.suggAt = (this.suggAt + 1) % this.sugg.length;
+          this.suggTop = windowTop(this.suggTop, this.suggAt, MAX_SUGGESTIONS);
         } else {
           this.recall(1);
         }

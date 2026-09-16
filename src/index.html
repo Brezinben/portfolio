@@ -1721,9 +1721,13 @@
         <div x-show="suggOpen" x-transition:enter.duration.220ms x-transition:leave.duration.170ms
           style="flex:none;border:1px solid var(--edge);background:var(--panel);padding:4px;margin-bottom:-4px">
           <div data-suggestions role="listbox" aria-label="Suggestions" style="display:grid;gap:1px">
-            <template x-for="(hit, index) in sugg" :key="hit">
-              <button type="button" data-suggestion role="option" :aria-selected="index === suggAt"
-                @pointerdown.prevent="pickSugg(index, $event)"
+            <!-- « index » compte dans la fenetre, pas dans la liste : « suggTop » le
+                 ramene au rang reel avant toute selection. « --at » garde le rang de
+                 fenetre, sinon le retard d'animation croitrait sans fin. -->
+            <template x-for="(hit, index) in suggWindow" :key="hit">
+              <button type="button" data-suggestion role="option"
+                :aria-selected="suggTop + index === suggAt"
+                @pointerdown.prevent="pickSugg(suggTop + index, $event)"
                 :style="`--at:${index}`"><span
                 data-tone="acc" x-text="suggFrag"></span><span style="margin-left:-8px"
                   x-text="hit.slice(suggFrag.length)"></span></button>

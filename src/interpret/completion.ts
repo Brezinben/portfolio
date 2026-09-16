@@ -1,10 +1,12 @@
 // L'autocompletion : ce qu'elle propose selon le chemin deja tape, et la description
 // qu'elle affiche sous la liste.
+//
+// Elle rend la liste entiere, jamais tronquee. C'est la coquille qui n'en montre que dix
+// a la fois, et qui fait glisser cette fenetre quand la selection en sort.
 
 import { ACTIVITIES, OFFERED } from "./mascot.ts";
 import { ALIASES, vocabulary } from "./vocabulary.ts";
 import { type CompletionContext } from "./context.ts";
-import { MAX_SUGGESTIONS } from "./lines.ts";
 import { lookup } from "./lookup.ts";
 
 // Le vocabulaire dépend du chemin déjà tapé, et pas seulement du premier mot : « slime »
@@ -120,7 +122,7 @@ export const candidates = (value: string, context: CompletionContext) => {
     return {
       frag: typed,
       head: "",
-      hits: [...new Set(pool)].filter((entry) => entry.startsWith(typed)).slice(0, MAX_SUGGESTIONS),
+      hits: [...new Set(pool)].filter((entry) => entry.startsWith(typed)),
       slash: false,
     };
   }
@@ -136,7 +138,7 @@ export const candidates = (value: string, context: CompletionContext) => {
   return {
     frag,
     head: typed.join(" "),
-    hits: (pool ?? []).filter((entry) => entry.startsWith(frag)).slice(0, MAX_SUGGESTIONS),
+    hits: (pool ?? []).filter((entry) => entry.startsWith(frag)),
     slash,
   };
 };

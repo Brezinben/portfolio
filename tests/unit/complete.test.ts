@@ -28,8 +28,11 @@ it("should hold the sections and the missions in the vocabulary", () => {
   assert.ok(hits("m-").includes("m-kereis"));
 });
 
-it("should never offer more than ten suggestions", () => {
-  assert.ok(hits("").length <= MAX_SUGGESTIONS);
+// La completion ne tronque plus : tronquer ici faisait mentir « commonPrefix », qui
+// completait au-dela du prefixe reel des que la onzieme proposition existait. C'est la
+// coquille qui n'en montre que « MAX_SUGGESTIONS » a la fois.
+it("should return every match instead of truncating the list", () => {
+  assert.ok(hits("").length > MAX_SUGGESTIONS, "the whole vocabulary comes back");
 });
 
 it("should keep the slash prefix in the suggestion", () => {
@@ -126,15 +129,16 @@ it("should hold bd, sleep and ? in the vocabulary", () => {
   assert.ok(hits("?").includes("?"));
 });
 
-// Dix propositions au maximum, et « SLASH_ONLY » en porte exactement dix : le menu est
-// plein au ras. Un onzième easter egg en pousserait un dehors, et l'ordre déciderait
-// lequel. « /slime » porte le plus de branches, il vient donc en premier.
-it("should fit the ten easter eggs in the ten slash suggestions", () => {
+// Taper « / » rend tous les easter eggs, triés, quel qu'en soit le nombre. Aucun ne sort
+// plus de la liste : la fenêtre de la coquille glisse au-delà de dix, et l'ordre
+// d'écriture de « SLASH_ONLY » ne décide donc plus de ce qu'on voit.
+it("should offer every easter egg in alphabetical order", () => {
   const shown = hits("/");
 
-  assert.equal(shown.length, 10, "the slash menu is full");
-  assert.equal(shown[0], "/slime", "the richest one comes first");
+  assert.ok(shown.length >= 10, "no easter egg falls out of the list");
+  assert.deepEqual(shown, shown.toSorted(), "the list comes back sorted");
   assert.ok(shown.includes("/joke"));
+  assert.ok(shown.includes("/slime"));
 });
 
 // Le dispatcher réserve la navigation à ces trois verbes. La liste doit proposer des

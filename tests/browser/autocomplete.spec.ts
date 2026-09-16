@@ -60,8 +60,8 @@ test("should complete up to the common prefix on tab", async ({ page }) => {
 });
 
 // La liste rend la premiere ligne « aria-selected ». Refuser de la prendre rendait la
-// tabulation muette des que le prefixe commun n'apportait rien : « / » met « /slime » en
-// tete, et Tab ne faisait rien.
+// tabulation muette des que le prefixe commun n'apportait rien : « / » met un egg en tete,
+// et Tab ne faisait rien. La tete est le premier egg dans l'ordre alphabetique.
 test("should take the leading line on tab when the common prefix adds nothing", async ({
   page,
 }) => {
@@ -70,11 +70,11 @@ test("should take the leading line on tab when the common prefix adds nothing", 
   await cli.fill("/");
   await cli.dispatchEvent("input");
 
-  await expect(list(page)).toContainText("slime");
+  await expect(list(page)).toContainText("benjamin");
 
   await cli.press("Tab");
 
-  await expect(cli).toHaveValue("/slime ");
+  await expect(cli).toHaveValue("/benjamin ");
 });
 
 test("should complete the only suggestion on tab", async ({ page }) => {
