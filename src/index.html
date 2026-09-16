@@ -2035,7 +2035,8 @@
              le focus sur la ligne de commande, où « espace » et « r » se tapent
              légitimement. Le visiteur atteint le volet par la flèche droite. -->
         <template x-if="radioOn">
-          <div class="radio" :data-audio="radioAudio" @keydown.window="radioKey($event)">
+          <div class="radio" :data-audio="radioAudio" @keydown.window="radioKey($event)"
+            @visibilitychange.document="radioVisibility()">
             <div class="radio__viz">
               <div class="radio__bars" aria-hidden="true">
                 <template x-for="bar in radioBars" :key="bar">
@@ -2046,9 +2047,8 @@
             <div class="radio__seed">
               <p class="radio__label"><span>seed</span><span x-text="radioClock"></span></p>
               <p class="radio__number"><button type="button" class="radio__glyph"
-                  @click="radioToggle()"
-                  :aria-label="radioAudio === 'on' ? 'Pause — touche espace' : 'Lecture — touche espace'"
-                  x-text="radioAudio === 'on' ? '‖' : '▶'"></button><input type="text"
+                  @click="radioToggle()" :aria-label="radioAction"
+                  x-text="radioGlyph"></button><input type="text"
                   inputmode="numeric" autocomplete="off" spellcheck="false"
                   aria-label="Seed — saisissez un nombre puis entrée pour le charger"
                   x-model="radioSeedText" @focus="radioTyping = true"
@@ -2064,9 +2064,8 @@
             <div class="radio__ctl">
               <button type="button" @click="radioReseed(undefined)"><span>nouvelle
                   seed</span><span class="radio__key">r</span></button>
-              <button type="button" @click="radioToggle()"
-                :aria-label="radioAudio === 'on' ? 'Pause — touche espace' : 'Lecture — touche espace'"
-                x-text="radioAudio === 'on' ? '‖' : '▶'"></button>
+              <button type="button" @click="radioToggle()" :aria-label="radioAction"
+                x-text="radioGlyph"></button>
             </div>
             <p class="radio__foot"><b>espace</b> pause · <b>m</b> coupe le son ·
               <b>r</b> tire une seed · <b>q</b> quitte</p>

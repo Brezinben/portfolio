@@ -34,6 +34,21 @@ const clock = (seconds: number) =>
   `${Math.floor(seconds / SECONDS_PER_MINUTE)}:${String(seconds % SECONDS_PER_MINUTE).padStart(2, "0")}`;
 
 const barNodes = () => document.querySelectorAll<HTMLElement>("[data-radio-bar]");
+const outPane = () => document.querySelector('[data-pane="out"]');
+const MEDIA_ACTIONS = ["nexttrack", "pause", "play", "stop"] as const;
+// Le nombre de barres suit la largeur du volet. Il se recalcule au redimensionnement : la
+// bande doit rester lisible quand la fenetre change, pas seulement a l'ouverture.
+const barCount = () => ((outPane()?.clientWidth ?? 0) >= WIDE_PX ? BARS_WIDE : BARS_NARROW);
+
+// Les touches media du clavier et l'ecran de verrouillage pilotent la radio. Le systeme
+// n'affiche que ce qu'on lui donne : sans metadonnees, les commandes restent muettes.
+const announce = (params: Params) => {
+  navigator.mediaSession.metadata = new MediaMetadata({
+    album: "Portfolio Benjamin David",
+    artist: `${params.tempo} bpm · ${params.tonic} ${params.scale.name}`,
+    title: `radio · seed ${grouped(params.seed)}`,
+  });
+};
 
 // Ce que la radio garde dans l'etat du composant. L'etat vit dans app.ts, comme tout le
 // reste ; cette interface est la vue que « this » en donne a la tranche, et app.ts la reprend
@@ -51,6 +66,10 @@ export interface RadioState {
   radioSeconds: number;
   radioSeedText: string;
   radioSeeds: number;
+  // La radio mise en pause parce que l'onglet est passe en arriere-plan, et qu'il faut donc
+  // rendre au retour. Une pause demandee par le visiteur, elle, ne se defait pas seule.
+  radioSlept: boolean;
+  radioSizer: ResizeObserver | undefined;
   radioTicker: ReturnType<typeof setInterval> | undefined;
   radioTyping: boolean;
 }
@@ -58,6 +77,7 @@ export interface RadioState {
 export interface RadioApi {
   radioClose(): void;
   radioDraw(): void;
+  radioFit(): void;
   radioKey(event: KeyboardEvent): void;
   radioLoad(text: string): void;
   radioMute(): void;
@@ -66,6 +86,7 @@ export interface RadioApi {
   radioShow(params: Params): void;
   radioSilhouette(): void;
   radioToggle(): void;
+  radioVisibility(): void;
 }
 
 // Cette tranche n'appelle pas « slice » du socle : elle vit dans un chunk a part, et une
@@ -82,12 +103,26 @@ const members: RadioApi & ThisType<Shell> = {
 
     clearInterval(this.radioTicker);
     this.radioTicker = undefined;
+    this.radioSizer?.disconnect();
+    this.radioSizer = undefined;
 
     if (this.radioFrame !== undefined) {
       cancelAnimationFrame(this.radioFrame);
       this.radioFrame = undefined;
     }
 
+    // Le systeme garderait la radio dans ses commandes media apres sa fermeture. « null »
+    // et non « undefined » : c'est ce que Media Session attend pour effacer.
+    // oxlint-disable-next-line unicorn/no-null
+    navigator.mediaSession.metadata = null;
+    navigator.mediaSession.playbackState = "none";
+
+    for (const action of MEDIA_ACTIONS) {
+      // oxlint-disable-next-line unicorn/no-null
+      navigator.mediaSession.setActionHandler(action, null);
+    }
+
+    this.radioSlept = false;
     this.radioEngine?.close();
     this.radioEngine = undefined;
     this.radioOn = false;
@@ -149,6 +184,20 @@ const members: RadioApi & ThisType<Shell> = {
     };
 
     this.radioFrame = requestAnimationFrame(frame);
+  },
+
+  // Le nombre de barres suit la largeur du volet, donc il se refait au redimensionnement.
+  // Le « x-for » recree les barres, qui perdent leur style en ligne : il faut les repeindre.
+  radioFit(this: Shell) {
+    const count = barCount();
+
+    if (count === this.radioBars.length) {
+      return;
+    }
+
+    this.radioBars = Array.from({ length: count }, (_unused, at) => at);
+    this.radioPeaks = this.radioBars.map(() => 0);
+    this.radioSilhouette();
   },
 
   // Les raccourcis sont poses sur le volet, pas sur la fenetre : la coquille garde le
@@ -246,14 +295,24 @@ const members: RadioApi & ThisType<Shell> = {
     // Le volet vient d'etre demande : sa largeur ne se mesure qu'une fois qu'il est pose.
     // Mesurer avant laissait seize barres sur un grand ecran, quand le reglage « out »
     // etait eteint et que le volet valait donc zero pixel.
-    this.$nextTick(() => {
-      const pane = document.querySelector('[data-pane="out"]'),
-        wide = (pane?.clientWidth ?? 0) >= WIDE_PX;
+    navigator.mediaSession.setActionHandler("play", () => this.radioToggle());
+    navigator.mediaSession.setActionHandler("pause", () => this.radioToggle());
+    navigator.mediaSession.setActionHandler("stop", () => this.radioClose());
+    navigator.mediaSession.setActionHandler("nexttrack", () => this.radioReseed(undefined));
 
-      this.radioBars = Array.from({ length: wide ? BARS_WIDE : BARS_NARROW }, (_u, at) => at);
+    this.$nextTick(() => {
+      const pane = outPane();
+
+      this.radioBars = Array.from({ length: barCount() }, (_unused, at) => at);
       this.radioPeaks = this.radioBars.map(() => 0);
       this.radioReseed(undefined);
       this.radioToggle();
+
+      // La bande doit rester lisible quand la fenetre change, pas seulement a l'ouverture.
+      if (pane) {
+        this.radioSizer = new ResizeObserver(() => this.radioFit());
+        this.radioSizer.observe(pane);
+      }
     });
   },
 
@@ -265,6 +324,10 @@ const members: RadioApi & ThisType<Shell> = {
     this.radioPeaks = this.radioBars.map(() => 0);
     this.radioSeeds += 1;
     this.radioShow(derive(seed ?? newSeed()));
+
+    if (this.radioParams) {
+      announce(this.radioParams);
+    }
 
     if (this.radioEngine?.playing()) {
       this.radioEngine.play(this.radioParams);
@@ -317,9 +380,21 @@ const members: RadioApi & ThisType<Shell> = {
       return;
     }
 
+    // Le son coupe se rend d'abord, et la musique s'arrete avec : le bouton ne fait jamais
+    // deux choses a la fois. Un second clic relance.
+    if (engine.muted()) {
+      engine.toggleMute();
+      engine.pause();
+      this.radioAudio = "pause";
+      navigator.mediaSession.playbackState = "paused";
+
+      return;
+    }
+
     if (engine.playing()) {
       engine.pause();
       this.radioAudio = "pause";
+      navigator.mediaSession.playbackState = "paused";
 
       return;
     }
@@ -332,8 +407,34 @@ const members: RadioApi & ThisType<Shell> = {
 
     // Le son coupe survit a la pause : reprendre ne le rend pas sans qu'on le demande.
     this.radioAudio = engine.muted() ? "muet" : "on";
+    navigator.mediaSession.playbackState = "playing";
     this.radioDraw();
     this.track("radio_ecoute", { seeds: this.radioSeeds });
+  },
+
+  // Un onglet en arriere-plan qui continue de jouer est une impolitesse. La pause rendue au
+  // retour n'est que celle-ci : une pause demandee par le visiteur ne se defait pas seule.
+  radioVisibility(this: Shell) {
+    const engine = this.radioEngine;
+
+    if (!engine) {
+      return;
+    }
+
+    if (document.hidden) {
+      this.radioSlept = engine.playing();
+
+      if (this.radioSlept) {
+        this.radioToggle();
+      }
+
+      return;
+    }
+
+    if (this.radioSlept) {
+      this.radioSlept = false;
+      this.radioToggle();
+    }
   },
 };
 

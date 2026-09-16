@@ -381,6 +381,8 @@ document.addEventListener("alpine:init", () => {
       radioSeconds: 0,
       radioSeeds: 0,
       radioSeedText: "",
+      radioSizer: undefined,
+      radioSlept: false,
       radioTicker: undefined,
       radioTyping: false,
       recallAt: -1,
@@ -990,6 +992,25 @@ document.addEventListener("alpine:init", () => {
         }
 
         return this.radioAudio === "on" ? "live" : this.radioAudio;
+      },
+
+      // Le glyphe des deux commandes de lecture. Trois etats, trois signes : le son coupe
+      // ne se devinerait pas sous un « ▶ » alors que la musique tourne.
+      get radioGlyph() {
+        if (this.radioAudio === "muet") {
+          return "⊘";
+        }
+
+        return this.radioAudio === "on" ? "‖" : "▶";
+      },
+
+      // Ce que la commande fera au prochain appui, pour un lecteur d'ecran.
+      get radioAction() {
+        if (this.radioAudio === "muet") {
+          return "Rendre le son — touche m";
+        }
+
+        return this.radioAudio === "on" ? "Pause — touche espace" : "Lecture — touche espace";
       },
 
       // Le point suit ce que la sortie fait vraiment. Une radio en pause n'est pas en

@@ -237,19 +237,20 @@ test("should download the radio chunk only when the command is typed", async ({ 
   expect(chunks, "the chunk arrives once, stamped").toHaveLength(1);
 });
 
-// Les huit thèmes suivent sans une seule couleur en dur : les deux teintes des barres
-// sortent de « --acc » par color-mix. Un thème qui rendrait la même peinture qu'un autre
-// dirait qu'une valeur a été recopiée au lieu d'être dérivée.
+// Les huit thèmes suivent sans une couleur en dur : les teintes sortent de « --acc » par
+// color-mix, donc deux thèmes ne peignent pas pareil. La commande « theme » les traverse
+// sans recharger — huit démarrages dépassaient la limite de temps en intégration.
 test("should paint the bars from the theme accent on every theme", async ({ page }) => {
-  const painted: string[] = [];
+  const cli = await open(page),
+    painted: string[] = [];
 
   for (const theme of THEMES) {
     // eslint-disable-next-line no-await-in-loop
-    await page.addInitScript((chosen) => {
-      localStorage.setItem("bd-term-opts", JSON.stringify({ theme: chosen }));
-    }, theme);
+    await cli.fill(`theme ${theme}`);
     // eslint-disable-next-line no-await-in-loop
-    await open(page);
+    await cli.press("Enter");
+    // eslint-disable-next-line no-await-in-loop
+    await expect(page.locator(".tm")).toHaveAttribute("data-theme", theme);
 
     // eslint-disable-next-line no-await-in-loop
     const paint = await page
@@ -427,22 +428,113 @@ test("should mute without stopping the tune", async ({ page }) => {
   await expect(page.locator(".radio")).toHaveAttribute("data-audio", "on");
 });
 
-// Le son coupé et la pause sont deux axes séparés. Reprendre après une pause ne doit pas
-// rendre le son que personne n'a redemandé : le gain maître est réécrit par la reprise, et
-// c'est là que les deux états se désynchronisaient.
-test("should keep the sound cut across a pause", async ({ page }) => {
+// Le gain maître est réécrit à chaque lecture, et c'est là que le son coupé se rendait tout
+// seul. Tirer une seed relance le morceau : le son doit rester coupé jusqu'à ce qu'on le
+// redemande.
+test("should keep the sound cut across a new seed", async ({ page }) => {
   await open(page);
+
+  const shown = await values(page).allTextContents(),
+    before = shown.join(",");
 
   await page.locator("body").click({ position: { x: 5, y: 5 } });
   await page.keyboard.press("m");
   await expect(page.locator(".radio")).toHaveAttribute("data-audio", "muet");
 
-  await page.keyboard.press(" ");
-  await expect(page.locator(".radio"), "space still pauses").toHaveAttribute("data-audio", "pause");
+  await page.keyboard.press("r");
 
-  await page.keyboard.press(" ");
-  await expect(page.locator(".radio"), "the sound stays cut").toHaveAttribute("data-audio", "muet");
+  await expect
+    .poll(async () => {
+      const next = await values(page).allTextContents();
+
+      return next.join(",");
+    })
+    .not.toBe(before);
+  await expect(page.locator(".radio"), "the new tune stays silent").toHaveAttribute(
+    "data-audio",
+    "muet",
+  );
 
   await page.keyboard.press("m");
   await expect(page.locator(".radio")).toHaveAttribute("data-audio", "on");
+});
+
+// Le son coupé se lit sur le glyphe : un « ▶ » pendant que la musique tourne mentirait, et
+// un « ‖ » ne dirait pas que rien ne sort. Le premier clic rend le son et arrête la
+// musique, le second la relance — le bouton ne fait jamais deux choses à la fois.
+test("should show the cut sound on the glyph and take two clicks to hear again", async ({
+  page,
+}) => {
+  await open(page);
+
+  const glyph = page.locator(".radio__glyph");
+
+  await expect(glyph).toHaveText("‖");
+
+  await page.locator("body").click({ position: { x: 5, y: 5 } });
+  await page.keyboard.press("m");
+
+  await expect(page.locator(".radio")).toHaveAttribute("data-audio", "muet");
+  await expect(glyph, "the cut sound has its own sign").toHaveText("⊘");
+  await expect(play(page)).toHaveText("⊘");
+
+  await glyph.click();
+
+  await expect(page.locator(".radio"), "the first click gives the sound back").toHaveAttribute(
+    "data-audio",
+    "pause",
+  );
+  await expect(glyph).toHaveText("▶");
+
+  await glyph.click();
+
+  await expect(page.locator(".radio"), "the second click starts it again").toHaveAttribute(
+    "data-audio",
+    "on",
+  );
+  await expect(glyph).toHaveText("‖");
+});
+
+// Le nombre de barres suit la largeur du volet, et se refait au redimensionnement : la
+// bande doit rester lisible quand la fenêtre change, pas seulement à l'ouverture.
+test("should refit the bars when the window changes", async ({ page }) => {
+  await page.setViewportSize({ height: 900, width: 1280 });
+  await open(page);
+
+  const bars = page.locator("[data-radio-bar]");
+
+  await expect(bars).toHaveCount(20);
+
+  // 950 px et non 700 : sous 900 px les volets s'empilent, donc celui de sortie s'élargit
+  // au lieu de rétrécir. Le volet tombe ici à 257 px, sous le seuil.
+  await page.setViewportSize({ height: 900, width: 950 });
+
+  await expect(bars, "a narrower pane carries fewer bars").toHaveCount(16);
+
+  await page.setViewportSize({ height: 900, width: 1280 });
+
+  await expect(bars, "and they come back when it widens").toHaveCount(20);
+});
+
+// Un onglet en arrière-plan qui continue de jouer est une impolitesse. La pause rendue au
+// retour n'est que celle-là : une pause demandée par le visiteur ne se défait pas seule.
+test("should hush the tune while the tab is hidden", async ({ page }) => {
+  await open(page);
+
+  await page.evaluate(() => {
+    Object.defineProperty(document, "hidden", { configurable: true, value: true });
+    document.dispatchEvent(new Event("visibilitychange"));
+  });
+
+  await expect(page.locator(".radio")).toHaveAttribute("data-audio", "pause");
+
+  await page.evaluate(() => {
+    Object.defineProperty(document, "hidden", { configurable: true, value: false });
+    document.dispatchEvent(new Event("visibilitychange"));
+  });
+
+  await expect(page.locator(".radio"), "coming back gives it back").toHaveAttribute(
+    "data-audio",
+    "on",
+  );
 });
