@@ -26,7 +26,7 @@ const SECOND_MS = 1000;
 const SECONDS_PER_MINUTE = 60;
 const MAX_DIGITS = 15;
 const ZERO_CLOCK = "0:00";
-// Les chiffres se groupent par trois au repos : une graine se dicte a voix haute, et
+// Les chiffres se groupent par trois au repos : une seed se dicte a voix haute, et
 // « 8 093 451 772 146 » se recopie, « 8093451772146 » non.
 const grouped = (seed: number) => String(seed).replaceAll(/\B(?=(?:\d{3})+(?!\d))/gu, " ");
 
@@ -145,7 +145,7 @@ const members: RadioApi & ThisType<Shell> = {
 
   // Les raccourcis sont poses sur le volet, pas sur la fenetre : la coquille garde le
   // focus sur la ligne de commande, ou « espace » et « r » se tapent legitimement. Le
-  // champ de graine est exclu pour la meme raison.
+  // champ de seed est exclu pour la meme raison.
   radioKey(this: Shell, event: KeyboardEvent) {
     if (event.altKey || event.ctrlKey || event.metaKey) {
       return;
@@ -170,7 +170,7 @@ const members: RadioApi & ThisType<Shell> = {
   },
 
   // Une ecoute se partage par un nombre : ce nombre doit pouvoir se recoller. Le vide est
-  // refuse plutot que charge comme graine zero. La graine courante ne relance rien, sinon
+  // refuse plutot que charge comme seed zero. La seed courante ne relance rien, sinon
   // « entree » puis la perte de focus redemarreraient le morceau deux fois.
   radioLoad(this: Shell, text: string) {
     const digits = text.replaceAll(/\D/gu, "").slice(0, MAX_DIGITS),
@@ -186,11 +186,12 @@ const members: RadioApi & ThisType<Shell> = {
     }
 
     this.radioReseed(Number(digits));
-    this.track("radio_graine", { saisie: true });
+    this.track("radio_seed", { saisie: true });
   },
 
-  // L'entree dans la commande ne fait aucun son : le graphe audio attend le premier geste.
-  // Le volet de sortie se rallume au passage, car la commande n'a pas de sens sans lui.
+  // Taper la commande est le geste : le morceau part tout de suite. Rien ne sonne avant,
+  // et le graphe audio ne se monte qu'ici. Le volet de sortie se rallume au passage, car la
+  // commande n'a pas de sens sans lui.
   radioOpen(this: Shell) {
     if (this.radioOn) {
       this.radioReseed(undefined);
@@ -215,9 +216,10 @@ const members: RadioApi & ThisType<Shell> = {
       }
     }, SECOND_MS);
     this.radioReseed(undefined);
+    this.radioToggle();
   },
 
-  // Une autre graine, donc un autre morceau, immediatement. Le chronometre repart a zero :
+  // Une autre seed, donc un autre morceau, immediatement. Le chronometre repart a zero :
   // il mesure le morceau en cours, pas la duree d'ecoute.
   radioReseed(this: Shell, seed: number | undefined) {
     this.radioSeconds = 0;
@@ -246,7 +248,7 @@ const members: RadioApi & ThisType<Shell> = {
   },
 
   // L'image qu'on voit sans son, et celle qui reste quand l'animation est coupee. Le gel
-  // est une image fixe lisible, jamais une disparition : les hauteurs sortent de la graine.
+  // est une image fixe lisible, jamais une disparition : les hauteurs sortent de la seed.
   radioSilhouette(this: Shell) {
     const params = this.radioParams;
 
@@ -287,7 +289,7 @@ const members: RadioApi & ThisType<Shell> = {
     engine.play(this.radioParams);
     this.radioAudio = "on";
     this.radioDraw();
-    this.track("radio_ecoute", { graines: this.radioSeeds });
+    this.track("radio_ecoute", { seeds: this.radioSeeds });
   },
 };
 

@@ -1,7 +1,7 @@
 import type { Locator, Page } from "@playwright/test";
 import { expect, test } from "@playwright/test";
 
-// La graine témoin du test unitaire. Ce que le volet en affiche doit correspondre aux
+// La seed témoin du test unitaire. Ce que le volet en affiche doit correspondre aux
 // paramètres gelés : sinon le volet décrit un morceau qu'on n'entend pas.
 const THEMES = ["dark", "light", "noctis", "azureus", "uva", "bordo", "lux", "hibernus"];
 const WITNESS = "8093451772146";
@@ -22,21 +22,67 @@ const boot = async (page: Page) => {
     return cli;
   },
   values = (page: Page) => page.locator(".radio__params b"),
-  field = (page: Page) => page.getByLabel(/^Graine/),
+  field = (page: Page) => page.getByLabel(/^Seed/),
   play = (page: Page) => page.locator(".radio__ctl button").last(),
   reseed = (page: Page) => page.locator(".radio__ctl button").first(),
   heightOf = (node: Locator) => node.evaluate((el) => el.getBoundingClientRect().height);
 
-// Le son ne part jamais tout seul. Chrome refuse d'ailleurs de démarrer un contexte audio
-// sans geste, et un portfolio qui se met à jouer à l'ouverture est un portfolio qu'on ferme.
-test("should make no sound before a gesture", async ({ page }) => {
-  await open(page);
+// Taper la commande est le geste : le morceau part tout de suite. Rien ne sonne avant, et
+// le contexte audio ne se monte même pas — un portfolio qui joue à l'ouverture est un
+// portfolio qu'on referme.
+test("should build no audio context before the command is typed", async ({ page }) => {
+  // Le compteur passe par un attribut de la page plutôt que par une variable globale : il
+  // se relit alors sans rien affirmer sur le type de « globalThis ».
+  await page.addInitScript(() => {
+    const real = globalThis.AudioContext;
 
-  await expect(page.locator(".radio")).toHaveAttribute("data-audio", "muet");
+    globalThis.AudioContext = class extends real {
+      constructor() {
+        super();
+
+        const root = document.documentElement;
+
+        root.dataset["built"] = String(Number(root.dataset["built"] ?? 0) + 1);
+      }
+    };
+  });
+
+  const cli = await boot(page),
+    built = async () => page.evaluate(() => document.documentElement.dataset["built"] ?? "0");
+
+  expect(await built(), "nothing is built at page load").toBe("0");
+
+  await cli.fill("/radio");
+  await cli.press("Enter");
+  await expect(page.locator(".radio")).toBeVisible();
+
   await expect(page.locator(".radio__params p")).toHaveCount(5);
+  await expect(page.locator(".radio"), "the tune starts on the command").toHaveAttribute(
+    "data-audio",
+    "on",
+  );
+  expect(await built(), "exactly one context, built by the command").toBe("1");
 });
 
-// Les chiffres se groupent par trois : une graine se dicte à voix haute et se recopie.
+// Le son doit vraiment sortir, pas seulement l'état du volet le dire. L'analyseur est en
+// bout de chaîne, donc mesurer des niveaux prouve que le graphe joue. La silhouette écrit
+// des pourcentages entiers, l'analyseur une décimale : la décimale est la signature.
+test("should really feed the analyser once the command runs", async ({ page }) => {
+  await open(page);
+
+  await expect
+    .poll(
+      async () => {
+        const bar = page.locator("[data-radio-bar]").first();
+
+        return bar.evaluate((node) => node.style.getPropertyValue("--bar"));
+      },
+      { timeout: 8000 },
+    )
+    .toMatch(/^\d+\.\d%$/u);
+});
+
+// Les chiffres se groupent par trois : une seed se dicte à voix haute et se recopie.
 test("should group the seed digits in threes", async ({ page }) => {
   await open(page);
 
@@ -45,7 +91,7 @@ test("should group the seed digits in threes", async ({ page }) => {
   expect(shown).toMatch(/^\d{1,3}(?: \d{3})+$/u);
 });
 
-// C'est la propriété centrale de la commande : même graine, même morceau. Les valeurs
+// C'est la propriété centrale de la commande : même seed, même morceau. Les valeurs
 // attendues sont celles que le test unitaire gèle.
 test("should replay the very same tune from a pasted seed", async ({ page }) => {
   await open(page);
@@ -72,7 +118,7 @@ test("should replay the very same tune from a pasted seed", async ({ page }) => 
   await expect(values(page).nth(4)).toContainText("3/4");
 });
 
-// Une graine vide ne doit pas se charger comme graine zéro : le champ se remet au nombre
+// Une seed vide ne doit pas se charger comme seed zéro : le champ se remet au nombre
 // courant plutôt que de partir sur un morceau qui n'a pas été demandé.
 test("should refuse an empty seed instead of loading zero", async ({ page }) => {
   await open(page);
@@ -91,7 +137,6 @@ test("should refuse an empty seed instead of loading zero", async ({ page }) => 
 test("should give the pane back to the section on q", async ({ page }) => {
   await open(page);
 
-  await play(page).click();
   await expect(page.locator(".radio")).toHaveAttribute("data-audio", "on");
 
   await play(page).press("q");
@@ -140,29 +185,31 @@ test("should never stretch the spectrum band beyond its ceiling", async ({ page 
   expect(await heightOf(page.locator(".radio__viz"))).toBeLessThanOrEqual(148);
 });
 
-// Animation coupée : la silhouette reste lisible, et la boucle de rendu s'arrête côté JS.
-// Le gel est une image fixe, jamais une disparition.
-test("should freeze a readable silhouette when animation is off", async ({ page }) => {
-  const cli = await open(page);
+// Animation coupée : la boucle de rendu s'arrête côté JS, pas seulement le mouvement CSS.
+// Le gel est une image fixe lisible, jamais une disparition. Le son, lui, continue : le
+// réglage porte sur le mouvement, pas sur la lecture.
+test("should stop the render loop when animation is off", async ({ page }) => {
+  const cli = await open(page),
+    bar = page.locator("[data-radio-bar]").first(),
+    height = async () => bar.evaluate((node) => node.style.getPropertyValue("--bar"));
+
+  await expect.poll(height, { timeout: 8000 }).toMatch(/^\d+\.\d%$/u);
 
   await cli.fill("options");
   await cli.press("Enter");
   await page.getByRole("button", { name: /animation/iu }).click();
   await page.keyboard.press("Escape");
 
-  const animated = await page
-    .locator("[data-radio-bar] u")
-    .first()
-    .evaluate((node) => getComputedStyle(node).animationName);
+  // Deux images suffiraient à le voir bouger : une seconde ne laisse aucun doute.
+  const frozen = await height();
 
-  expect(animated, "no keyframe runs with the setting off").toBe("none");
+  await page.waitForTimeout(1000);
 
-  const drawn = await page
-    .locator("[data-radio-bar] u")
-    .first()
-    .evaluate((node) => getComputedStyle(node).height);
+  expect(await height(), "the loop wrote nothing more").toBe(frozen);
 
-  expect(Number.parseFloat(drawn), "the silhouette stays drawn").toBeGreaterThan(0);
+  const drawn = await bar.evaluate((node) => getComputedStyle(node).height);
+
+  expect(Number.parseFloat(drawn), "the frame stays readable").toBeGreaterThan(0);
 });
 
 // Le code de la radio ne part pas au premier chargement : peu de visiteurs taperont la
@@ -213,4 +260,48 @@ test("should paint the bars from the theme accent on every theme", async ({ page
   }
 
   expect(new Set(painted).size, "each theme paints its own accent").toBe(THEMES.length);
+});
+
+// Le glyphe qui précède la seed commande la lecture, comme le bouton du bas : c'est là
+// que l'œil va quand il lit le nombre. Il doit donc être une cible, pas une décoration.
+test("should let the glyph beside the seed drive playback", async ({ page }) => {
+  await open(page);
+
+  const glyph = page.locator(".radio__glyph");
+
+  await expect(glyph).toHaveText("‖");
+
+  await glyph.click();
+
+  await expect(page.locator(".radio")).toHaveAttribute("data-audio", "pause");
+  await expect(glyph).toHaveText("▶");
+  await expect(play(page)).toHaveText("▶");
+
+  await glyph.click();
+
+  await expect(page.locator(".radio")).toHaveAttribute("data-audio", "on");
+
+  const box = await glyph.boundingBox();
+
+  expect(box?.height ?? 0, "the glyph keeps its target size").toBeGreaterThanOrEqual(44);
+});
+
+// Le point d'état de l'en-tête dit ce que la sortie fait vraiment. Une radio en pause
+// n'est pas en ordre : elle attend, et prend donc le ton d'une commande en vol.
+test("should tell the real state in the pane header", async ({ page }) => {
+  await open(page);
+
+  const head = page.locator('[data-pane="out"] .zone__head'),
+    tone = () => head.locator("[data-outdot]").evaluate((node) => getComputedStyle(node).color);
+
+  await expect(head).toContainText("radio");
+  await expect(head).toContainText("online");
+
+  const live = await tone();
+
+  await page.locator(".radio__glyph").click();
+
+  await expect(head).toContainText("pause");
+  await expect(head).not.toContainText("online");
+  expect(await tone(), "pause does not read as in order").not.toBe(live);
 });

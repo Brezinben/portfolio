@@ -1,10 +1,10 @@
-// La graine devient des parametres musicaux. Pur : ni DOM, ni audio, ni minuteur.
+// La seed devient des parametres musicaux. Pur : ni DOM, ni audio, ni minuteur.
 //
-// L'ordre des tirages EST le format de la graine. Inserer un tirage au milieu change tous
+// L'ordre des tirages EST le format de la seed. Inserer un tirage au milieu change tous
 // les morceaux deja partages : on ajoute a la fin, jamais au milieu. Si l'ordre doit
-// changer, « SEED_VERSION » change avec lui, et le test de la graine temoin tombe.
+// changer, « SEED_VERSION » change avec lui, et le test de la seed temoin tombe.
 
-// Le jour ou l'ordre des tirages bouge, ce nombre bouge aussi. Une graine notee sous une
+// Le jour ou l'ordre des tirages bouge, ce nombre bouge aussi. Une seed notee sous une
 // version ne rend le meme morceau que sous cette version.
 export const SEED_VERSION = 1;
 
@@ -53,7 +53,7 @@ export interface Params {
 }
 
 // Cinq gammes, toutes lumineuses sauf une. Le mineur naturel et le phrygien sont sortis du
-// tirage : ils tiraient chaque graine vers le melancolique, ce qui est l'inverse de la
+// tirage : ils tiraient chaque seed vers le melancolique, ce qui est l'inverse de la
 // commande. Le dorien reste comme seule teinte douce-amere.
 const SCALES: readonly [Scale, ...Scale[]] = [
   { name: "majeur", steps: [0, 2, 4, 5, 7, 9, 11] },
@@ -95,8 +95,8 @@ const METERS: readonly [Meter, ...Meter[]] = [
 
 const ROMAN = ["I", "II", "III", "IV", "V", "VI", "VII"];
 const NOTES = ["do", "do♯", "ré", "ré♯", "mi", "fa", "fa♯", "sol", "sol♯", "la", "la♯", "si"];
-// Vingt-quatre hauteurs de repos : la silhouette du spectre sort de la graine elle aussi.
-// Changer de graine change donc l'image figee, pas seulement le son.
+// Vingt-quatre hauteurs de repos : la silhouette du spectre sort de la seed elle aussi.
+// Changer de seed change donc l'image figee, pas seulement le son.
 const SILHOUETTE_BARS = 24;
 const SILHOUETTE_FLOOR = 0.18;
 const SILHOUETTE_SPAN = 0.78;
@@ -123,7 +123,7 @@ const SEMITONES = 12;
 export const QUARTER_SEC = 30;
 
 // Un generateur deterministe en quatre lignes, suffisant ici — on tire des notes, pas des
-// cles. « Math.random » n'accepte pas de graine, donc un morceau ne se retrouverait jamais.
+// cles. « Math.random » n'accepte pas de seed, donc un morceau ne se retrouverait jamais.
 export const rng = (seed: number) => {
   let state = seed >>> 0;
 
@@ -145,7 +145,7 @@ const pick = <T>(list: readonly [T, ...T[]], roll: number) =>
   list[Math.floor(roll * list.length)] ?? list[0];
 
 // Une hauteur se calcule toujours par degre, jamais en demi-tons absolus. C'est ce qui fait
-// qu'une graine sonne juste plutot qu'aleatoire : le sequenceur ne peut pas tomber en
+// qu'une seed sonne juste plutot qu'aleatoire : le sequenceur ne peut pas tomber en
 // dehors de la gamme.
 export const degreeToMidi = (scale: Scale, root: number, step: number) => {
   const len = scale.steps.length,
@@ -156,7 +156,7 @@ export const degreeToMidi = (scale: Scale, root: number, step: number) => {
 
 export const midiToHertz = (midi: number) => 440 * 2 ** ((midi - 69) / SEMITONES);
 
-// Treize chiffres : assez grand pour qu'une graine ne se recroise jamais par hasard, assez
+// Treize chiffres : assez grand pour qu'une seed ne se recroise jamais par hasard, assez
 // court pour se dicter a voix haute.
 export const newSeed = () => Math.floor(Math.random() * 9e12) + 1e12;
 
@@ -174,7 +174,7 @@ export const romanNumerals = (scale: Scale, prog: readonly number[]) =>
     .join(" ");
 
 // Onze tirages, dans cet ordre exactement. Chaque ligne du tableau de « MUSIQUE.md » §1
-// correspond a une ligne ici, et leur ordre est le format de la graine.
+// correspond a une ligne ici, et leur ordre est le format de la seed.
 export const derive = (seed: number): Params => {
   const roll = rng(seed % 2_147_483_647),
     silhouette = Array.from(

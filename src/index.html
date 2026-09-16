@@ -1509,32 +1509,6 @@
           color-mix(in oklab, var(--acc) 58%, var(--fg)) 85%)
     }
 
-    /* Sans son, les barres bougent quand même : une graine se regarde avant de s'écouter.
-       L'analyseur reprend la main dès que le son part. */
-    .tm[data-anim="true"] .radio[data-audio="muet"] u {
-      transform-origin: 50% 100%;
-      animation: radioEq 1.1s cubic-bezier(.36, .66, .4, 1) infinite alternate
-    }
-
-    .tm[data-anim="true"] .radio[data-audio="muet"] span:nth-child(3n) u {
-      animation-duration: .82s
-    }
-
-    .tm[data-anim="true"] .radio[data-audio="muet"] span:nth-child(3n+1) u {
-      animation-duration: 1.32s;
-      animation-delay: -.4s
-    }
-
-    @keyframes radioEq {
-      from {
-        transform: scaleY(.34)
-      }
-
-      to {
-        transform: scaleY(1.06)
-      }
-    }
-
     .tm .radio__seed {
       flex: none;
       display: grid;
@@ -1562,17 +1536,39 @@
     .tm .radio__number {
       margin: 0;
       display: flex;
-      align-items: baseline;
+      align-items: center;
       gap: 8px;
       min-width: 0
     }
 
-    .tm .radio__number span {
+    /* Le glyphe commande la lecture, comme le bouton du bas : c'est là que l'œil va quand
+       il lit la seed. Il tient les 44 px demandés à toute cible, sans cadre pour ne pas
+       ressembler à un second bouton d'action. */
+    .tm .radio__glyph {
       flex: none;
-      color: var(--acc)
+      min-height: 44px;
+      min-width: 22px;
+      padding: 0;
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      color: var(--acc);
+      font-family: inherit;
+      font-size: 15px;
+      line-height: 1;
+      cursor: pointer
     }
 
-    /* La graine est un champ, pas un texte : une écoute se partage par un nombre, donc ce
+    .tm .radio__glyph:hover {
+      color: var(--acc-text)
+    }
+
+    .tm .radio__glyph:focus-visible {
+      outline: 2px solid var(--acc);
+      outline-offset: 2px
+    }
+
+    /* La seed est un champ, pas un texte : une écoute se partage par un nombre, donc ce
        nombre doit pouvoir se recoller. Pas de cadre, un seul filet sous les chiffres. */
     .tm .radio__number input {
       flex: 1;
@@ -2024,10 +2020,10 @@
       <aside class="zone" data-pane="out" aria-label="Sortie" x-show="out">
         <p class="zone__head">
           <span x-text="radioOn ? 'radio' : open.out.title"></span><span
-            :style="`color:var(--${running && !radioOn ? 'warn' : 'ok'})`"><span
+            :style="`color:var(--${outTone})`"><span
               data-outdot aria-hidden="true"
             :style="`animation:dotPulse 1.2s ease-in-out infinite`">●</span> <span
-              x-text="radioOn ? radioAudio : outStatus"></span></span>
+              x-text="outLabel"></span></span>
         </p>
         <!-- Les raccourcis sont posés sur le volet, pas sur la fenêtre : la coquille garde
              le focus sur la ligne de commande, où « espace » et « r » se tapent
@@ -2042,11 +2038,13 @@
               </div>
             </div>
             <div class="radio__seed">
-              <p class="radio__label"><span>graine</span><span x-text="radioClock"></span></p>
-              <p class="radio__number"><span aria-hidden="true"
-                  x-text="radioAudio === 'on' ? '‖' : '▶'"></span><input type="text"
+              <p class="radio__label"><span>seed</span><span x-text="radioClock"></span></p>
+              <p class="radio__number"><button type="button" class="radio__glyph"
+                  @click="radioToggle()"
+                  :aria-label="radioAudio === 'on' ? 'Pause — touche espace' : 'Lecture — touche espace'"
+                  x-text="radioAudio === 'on' ? '‖' : '▶'"></button><input type="text"
                   inputmode="numeric" autocomplete="off" spellcheck="false"
-                  aria-label="Graine — saisissez un nombre puis entrée pour le charger"
+                  aria-label="Seed — saisissez un nombre puis entrée pour le charger"
                   x-model="radioSeedText" @focus="radioTyping = true"
                   @blur="radioLoad(radioSeedText)"
                   @keydown.enter.prevent="radioLoad(radioSeedText); $event.target.blur()"
@@ -2059,13 +2057,13 @@
             </div>
             <div class="radio__ctl">
               <button type="button" @click="radioReseed(undefined)"><span>nouvelle
-                  graine</span><span class="radio__key">r</span></button>
+                  seed</span><span class="radio__key">r</span></button>
               <button type="button" @click="radioToggle()"
                 :aria-label="radioAudio === 'on' ? 'Pause — touche espace' : 'Lecture — touche espace'"
                 x-text="radioAudio === 'on' ? '‖' : '▶'"></button>
             </div>
             <p class="radio__foot"><b>espace</b> lit ou met en pause · <b>r</b> tire une
-              graine · <b>q</b> quitte</p>
+              seed · <b>q</b> quitte</p>
           </div>
         </template>
         <div tabindex="0" role="region" aria-label="Contenu de la sortie" x-show="!radioOn">

@@ -157,16 +157,18 @@ reçoit aucun flux : le morceau se fabrique dans le navigateur. Aucun son ne par
 geste du visiteur, et quitter la commande ferme le contexte audio.
 _Avoid_: lecteur, player, musique.
 
-**Graine** (`seed`) :
-Le nombre de treize chiffres qui décide d'un morceau. Même graine, même morceau, à la note
+**Seed** (`seed`) :
+Le nombre de treize chiffres qui décide d'un morceau. Même seed, même morceau, à la note
 près. C'est un **format**, pas un détail : l'ordre des tirages qui la lit ne change jamais
 en son milieu, et `SEED_VERSION` en marque la version. Elle s'affiche groupée par trois,
-et elle se saisit : c'est ce qui rend une écoute partageable.
-_Avoid_: seed, clé, identifiant, nombre.
+et elle se saisit : c'est ce qui rend une écoute partageable. Terme technique conservé en
+anglais, comme `seam`, et affiché tel quel : l'interface d'un terminal parle déjà `ls` et
+`cd`.
+_Avoid_: graine, clé, identifiant, nombre.
 
 **Silhouette** (`silhouette`) :
-Les hauteurs de repos du spectre, tirées de la graine. C'est l'image qu'on voit sans son,
-et celle qui reste quand le visiteur demande moins de mouvement. Le gel est une image fixe
+Les hauteurs de repos du spectre, tirées de la seed. C'est l'image qu'on voit sans son, et
+celle qui reste quand le visiteur demande moins de mouvement. Le gel est une image fixe
 lisible, jamais une disparition.
 _Avoid_: forme, shape, profil.
 

@@ -9,11 +9,11 @@ import {
 import assert from "node:assert/strict";
 import { it } from "node:test";
 
-// La graine temoin. Son morceau est publie des que quelqu'un la note : les valeurs
+// La seed temoin. Son morceau est publie des que quelqu'un la note : les valeurs
 // ci-dessous sont donc un contrat, pas un echantillon.
 const WITNESS = 8_093_451_772_146;
 
-// L'ordre des tirages EST le format de la graine. Ce test tombe le jour ou un tirage se
+// L'ordre des tirages EST le format de la seed. Ce test tombe le jour ou un tirage se
 // deplace, et c'est alors une decision a prendre, pas un accident a decouvrir en ecoutant.
 it("should derive the frozen parameters of the witness seed", () => {
   const params = derive(WITNESS);
@@ -36,7 +36,7 @@ it("should derive the frozen parameters of the witness seed", () => {
   );
 });
 
-// La silhouette sort de la graine elle aussi : changer de graine change l'image figee, pas
+// La silhouette sort de la seed elle aussi : changer de seed change l'image figee, pas
 // seulement le son. Vingt-quatre hauteurs, toutes dans la bande de lecture du spectre.
 it("should derive the frozen silhouette of the witness seed", () => {
   const { silhouette } = derive(WITNESS);
@@ -49,13 +49,13 @@ it("should derive the frozen silhouette of the witness seed", () => {
   }
 });
 
-// C'est la propriete centrale de la commande : meme graine, meme morceau, a la note pres.
+// C'est la propriete centrale de la commande : meme seed, meme morceau, a la note pres.
 it("should derive the very same parameters twice", () => {
   assert.deepEqual(derive(WITNESS), derive(WITNESS));
   assert.deepEqual(derive(1), derive(1));
 });
 
-// Deux graines voisines ne doivent pas rendre deux morceaux voisins, sinon le champ de
+// Deux seeds voisines ne doivent pas rendre deux morceaux voisins, sinon le champ de
 // saisie n'aurait aucun interet : on taperait n'importe quoi et on entendrait la meme chose.
 it("should derive a different tune from a neighbouring seed", () => {
   const near = [WITNESS + 1, WITNESS + 2, WITNESS + 3].map((seed) => derive(seed).silhouette[0]);

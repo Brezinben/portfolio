@@ -271,9 +271,9 @@ for (const theme of THEMES) {
       bouton: ".radio__ctl button:last-child",
       champ: ".radio__number input",
       crete: "[data-radio-bar] i",
-      graine: ".radio__seed",
       "ligne-parametre": ".radio__params p",
       raccourcis: ".radio__foot",
+      seed: ".radio__seed",
       spectre: ".radio__viz",
       tirage: ".radio__ctl button:first-child",
     });

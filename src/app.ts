@@ -963,6 +963,26 @@ document.addEventListener("alpine:init", () => {
         return this.running ? "waiting" : "live";
       },
 
+      // Ce que le volet de sortie annonce. « online » plutot que « on » : le point dit un
+      // etat, pas un interrupteur.
+      get outLabel() {
+        if (!this.radioOn) {
+          return this.outStatus;
+        }
+
+        return this.radioAudio === "on" ? "online" : this.radioAudio;
+      },
+
+      // Le point suit ce que la sortie fait vraiment. Une radio en pause n'est pas en
+      // ordre, elle attend : elle prend donc le meme ton qu'une commande en vol.
+      get outTone() {
+        if (this.radioOn) {
+          return this.radioAudio === "on" ? "ok" : "warn";
+        }
+
+        return this.running ? "warn" : "ok";
+      },
+
       // Reappliquer une classe ne redemarre pas son animation : il faut la retirer, forcer
       // une relecture de la geometrie, puis la remettre.
       mascotPlay(state: string) {

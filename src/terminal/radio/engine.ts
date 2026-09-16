@@ -247,7 +247,7 @@ export const radioEngine = (): Radio => {
       source.start(at);
       source.stop(at + HAT_STOP);
     },
-    // Un pas de croche, quatre couches. La graine a ecrit le motif une fois pour toutes, et
+    // Un pas de croche, quatre couches. La seed a ecrit le motif une fois pour toutes, et
     // la grille tourne sur quatre mesures : chaque croche de melodie vise un degre de
     // l'accord en cours, donc elle tombe juste sans jamais etre tiree au hasard.
     step = (live: Graph, tune: Params, cue: Cue) => {
