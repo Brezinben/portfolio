@@ -154,8 +154,9 @@ _Avoid_: spritesheet, planche, atlas.
 **Radio** (`radio`) :
 Le lecteur que `/radio` installe dans le volet de sortie. Il ne lit aucun fichier et ne
 reçoit aucun flux : le morceau se fabrique dans le navigateur. Aucun son ne part avant un
-geste du visiteur, et quitter la commande ferme le contexte audio.
-_Avoid_: lecteur, player, musique.
+geste du visiteur, et quitter la commande ferme le contexte audio. Ce que la radio produit
+s'appelle une musique ; la radio, elle, ne s'appelle jamais ainsi.
+_Avoid_: lecteur, player.
 
 **Seed** (`seed`) :
 Le nombre de treize chiffres qui décide d'un morceau. Même seed, même morceau, à la note

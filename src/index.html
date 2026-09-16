@@ -1380,9 +1380,14 @@
       font-weight: 700
     }
 
-    /* Le délai suit le rang de la proposition, et la ligne ne porte que ce rang. */
+    /* L'animation salue l'ouverture de la liste, pas son défilement. La flèche qui fait
+       glisser la fenêtre révèle une entrée de plus : la voir surgir à chaque pression
+       transformerait un déplacement en clignotement. Le délai suit le rang affiché. */
+    .tm [data-suggestions][data-fresh="true"] [data-suggestion] {
+      animation: suggRow .2s ease calc(var(--at) * 24ms) both
+    }
+
     .tm [data-suggestion] {
-      animation: suggRow .2s ease calc(var(--at) * 24ms) both;
       min-height: 32px;
       display: flex;
       align-items: center;
@@ -1964,7 +1969,8 @@
 
         <div x-show="suggOpen" x-transition:enter.duration.220ms x-transition:leave.duration.170ms
           style="flex:none;border:1px solid var(--edge);background:var(--panel);padding:4px;margin-bottom:-4px">
-          <div data-suggestions role="listbox" aria-label="Suggestions" style="display:grid;gap:1px">
+          <div data-suggestions role="listbox" aria-label="Suggestions"
+            :data-fresh="suggFresh ? 'true' : 'false'" style="display:grid;gap:1px">
             <!-- « index » compte dans la fenetre, pas dans la liste : « suggTop » le
                  ramene au rang reel avant toute selection. « --at » garde le rang de
                  fenetre, sinon le retard d'animation croitrait sans fin. -->
@@ -2029,7 +2035,7 @@
              le focus sur la ligne de commande, où « espace » et « r » se tapent
              légitimement. Le visiteur atteint le volet par la flèche droite. -->
         <template x-if="radioOn">
-          <div class="radio" :data-audio="radioAudio" @keydown="radioKey($event)">
+          <div class="radio" :data-audio="radioAudio" @keydown.window="radioKey($event)">
             <div class="radio__viz">
               <div class="radio__bars" aria-hidden="true">
                 <template x-for="bar in radioBars" :key="bar">
@@ -2062,8 +2068,8 @@
                 :aria-label="radioAudio === 'on' ? 'Pause — touche espace' : 'Lecture — touche espace'"
                 x-text="radioAudio === 'on' ? '‖' : '▶'"></button>
             </div>
-            <p class="radio__foot"><b>espace</b> lit ou met en pause · <b>r</b> tire une
-              seed · <b>q</b> quitte</p>
+            <p class="radio__foot"><b>espace</b> pause · <b>m</b> coupe le son ·
+              <b>r</b> tire une seed · <b>q</b> quitte</p>
           </div>
         </template>
         <div tabindex="0" role="region" aria-label="Contenu de la sortie" x-show="!radioOn">

@@ -166,8 +166,8 @@ export const interpret = (raw: string, context: Context): Outcome => {
   if (command === "radio") {
     return out(
       [
-        info("radio — une boucle fabriquée par une seed, dans le volet de sortie."),
-        muted("espace lit ou met en pause · r tire une seed · q quitte."),
+        info("radio — une musique fabriquée par une seed, dans le volet de sortie."),
+        muted("espace met en pause · m coupe le son · r tire une seed · q quitte."),
       ],
       [track("easter_egg", { nom: "radio" }), { type: "radio" }],
     );

@@ -244,6 +244,9 @@ interface State extends RadioState {
   // La tranche de la radio arrive par import dynamique : ce drapeau dit si elle a rejoint
   // le composant, et « radioOn » ne peut valoir vrai qu'apres.
   radioLoaded: boolean;
+  // La commande a ete tapee et la radio n'a pas encore ete quittee. Le chunk arrive apres
+  // un aller-retour reseau : partir entre-temps ne doit pas la faire s'ouvrir quand meme.
+  radioWanted: boolean;
   recallAt: number;
   resizing: { height: number; y: number } | undefined;
   running: boolean;
@@ -258,6 +261,10 @@ interface State extends RadioState {
   stack: Brick[];
   sugg: string[];
   suggAt: number;
+  // La liste vient d'etre calculee par une frappe, et non deplacee par une fleche. Seule
+  // une liste fraiche s'anime : voir surgir chaque entree revelee par la fenetre qui glisse
+  // transformerait un deplacement en clignotement.
+  suggFresh: boolean;
   suggFrag: string;
   suggHead: string;
   suggOpen: boolean;
@@ -367,6 +374,7 @@ document.addEventListener("alpine:init", () => {
       radioFrame: undefined,
       radioLoaded: false,
       radioOn: false,
+      radioWanted: false,
       radioParams: undefined,
       radioPeaks: [],
       radioRows: [],
@@ -389,6 +397,7 @@ document.addEventListener("alpine:init", () => {
       sugg: [],
       suggAt: 0,
       suggFrag: "",
+      suggFresh: false,
       suggHead: "",
       suggOpen: false,
       suggSlash: false,
@@ -600,11 +609,14 @@ document.addEventListener("alpine:init", () => {
           return;
         }
 
-        // Dans la saisie, les flèches déplacent le curseur dans le texte. Elles ne
-        // rendent la main aux volets que si le champ est vide.
-        if (event.target === this.$refs["cli"]) {
+        // Toute saisie garde ses touches : « j », « k » et « / » s'y tapent, et les flèches
+        // y déplacent le curseur. Seule la ligne de commande vide rend la main aux volets.
+        // Sans cette garde, le champ de seed devenait impossible à corriger.
+        if (event.target instanceof HTMLInputElement) {
           const leaving =
-            this.input === "" && (event.key === "ArrowLeft" || event.key === "ArrowRight");
+            event.target === this.$refs["cli"] &&
+            this.input === "" &&
+            (event.key === "ArrowLeft" || event.key === "ArrowRight");
 
           if (!leaving) {
             return;
@@ -913,14 +925,19 @@ document.addEventListener("alpine:init", () => {
       // La radio n'est chargee qu'apres la commande : « radioOn » ne peut valoir vrai que si
       // sa tranche est en place, donc ce test protege aussi l'appel.
       radioStop() {
+        this.radioWanted = false;
+
         if (this.radioOn) {
           this.radioClose();
         }
       },
 
       // Le code de la radio ne part pas au premier chargement : peu de visiteurs taperont la
-      // commande. Sa tranche arrive ici, une fois, et rejoint le composant.
+      // commande. Sa tranche arrive ici, une fois, et rejoint le composant. Le visiteur peut
+      // partir pendant ce telechargement : la radio ne s'ouvre alors plus.
       async radioBoot() {
+        this.radioWanted = true;
+
         if (!this.radioLoaded) {
           const { radioSlice } = await import("./terminal/radio/slice.ts");
 
@@ -928,7 +945,9 @@ document.addEventListener("alpine:init", () => {
           this.radioLoaded = true;
         }
 
-        this.radioOpen();
+        if (this.radioWanted) {
+          this.radioOpen();
+        }
       },
 
       // Extinction facon CRT, puis la sequence de boot complete.
@@ -963,14 +982,14 @@ document.addEventListener("alpine:init", () => {
         return this.running ? "waiting" : "live";
       },
 
-      // Ce que le volet de sortie annonce. « online » plutot que « on » : le point dit un
-      // etat, pas un interrupteur.
+      // Ce que le volet de sortie annonce. La radio qui joue reprend « live », le mot que
+      // la sortie emploie deja : un seul mot pour un seul etat.
       get outLabel() {
         if (!this.radioOn) {
           return this.outStatus;
         }
 
-        return this.radioAudio === "on" ? "online" : this.radioAudio;
+        return this.radioAudio === "on" ? "live" : this.radioAudio;
       },
 
       // Le point suit ce que la sortie fait vraiment. Une radio en pause n'est pas en
@@ -1481,6 +1500,12 @@ document.addEventListener("alpine:init", () => {
         this[key] = !this[key];
         this.track("option", { cle: key, valeur: this[key] });
         this.persist();
+
+        // La boucle de rendu de la radio s'arrete quand l'animation se coupe. Rien ne la
+        // rallumerait sans cet appel : le depot ne porte aucun observateur de reglage.
+        if (key === "anim" && this.radioOn) {
+          this.radioDraw();
+        }
       },
 
       setTheme(id: string, options: { event?: MouseEvent; via?: TrackSource } = {}) {
@@ -2258,6 +2283,7 @@ document.addEventListener("alpine:init", () => {
         this.suggSlash = result.slash;
         this.suggAt = 0;
         this.suggTop = 0;
+        this.suggFresh = true;
         this.suggOpen = result.hits.length > 0 && this.input !== "";
       },
 
@@ -2351,6 +2377,7 @@ document.addEventListener("alpine:init", () => {
         if (this.suggOpen) {
           this.suggAt = (this.suggAt - 1 + this.sugg.length) % this.sugg.length;
           this.suggTop = windowTop(this.suggTop, this.suggAt, MAX_SUGGESTIONS);
+          this.suggFresh = false;
         } else {
           this.recall(-1);
         }
@@ -2360,6 +2387,7 @@ document.addEventListener("alpine:init", () => {
         if (this.suggOpen) {
           this.suggAt = (this.suggAt + 1) % this.sugg.length;
           this.suggTop = windowTop(this.suggTop, this.suggAt, MAX_SUGGESTIONS);
+          this.suggFresh = false;
         } else {
           this.recall(1);
         }

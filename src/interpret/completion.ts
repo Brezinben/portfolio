@@ -41,7 +41,7 @@ const HINTS = {
     "/joke": "une blague de développeur",
     "/matrix": "réveille-toi, Néo",
     "/propose": "suggérez un ajout à ce portfolio",
-    "/radio": "une boucle fabriquée par une seed",
+    "/radio": "une musique fabriquée par une seed",
     "/slime": "commande la mascotte",
     "/sudo": "non.",
     "/vim": "le piège classique",

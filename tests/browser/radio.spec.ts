@@ -25,6 +25,8 @@ const boot = async (page: Page) => {
   field = (page: Page) => page.getByLabel(/^Seed/),
   play = (page: Page) => page.locator(".radio__ctl button").last(),
   reseed = (page: Page) => page.locator(".radio__ctl button").first(),
+  // « 1:20 » vaut vingt : le test compare des secondes, pas des chaînes.
+  seconds = (shown: string | null) => Number.parseInt(shown?.split(":")[1] ?? "0", 10),
   heightOf = (node: Locator) => node.evaluate((el) => el.getBoundingClientRect().height);
 
 // Taper la commande est le geste : le morceau part tout de suite. Rien ne sonne avant, et
@@ -295,13 +297,152 @@ test("should tell the real state in the pane header", async ({ page }) => {
     tone = () => head.locator("[data-outdot]").evaluate((node) => getComputedStyle(node).color);
 
   await expect(head).toContainText("radio");
-  await expect(head).toContainText("online");
+  await expect(head).toContainText("live");
 
   const live = await tone();
 
   await page.locator(".radio__glyph").click();
 
   await expect(head).toContainText("pause");
-  await expect(head).not.toContainText("online");
+  await expect(head).not.toContainText("live");
   expect(await tone(), "pause does not read as in order").not.toBe(live);
+});
+
+// Le clavier global ne doit pas voler les touches du champ de seed. Les flèches y déplacent
+// le curseur, et « j » s'y tape : sans cette garde, corriger un nombre collé était
+// impossible, et « j » fermait la radio en changeant de section.
+test("should leave the seed field its own keys", async ({ page }) => {
+  await open(page);
+
+  const seed = field(page);
+
+  await seed.click();
+  await seed.press("ArrowLeft");
+  await seed.press("ArrowLeft");
+
+  await expect(seed, "the field keeps the focus").toBeFocused();
+
+  await seed.press("j");
+
+  await expect(page.locator(".radio"), "j types, it does not navigate").toBeVisible();
+  expect(await seed.inputValue(), "the letter is refused, the digits stay").toMatch(/\d/u);
+});
+
+// Espace appartient au bouton qui a le focus. Le lui prendre couperait le clavier sur les
+// deux seuls contrôles du volet.
+test("should let a focused button keep the space key", async ({ page }) => {
+  await open(page);
+
+  const shown = await values(page).allTextContents(),
+    before = shown.join(",");
+
+  await reseed(page).focus();
+  await reseed(page).press(" ");
+
+  await expect(page.locator(".radio"), "playback is untouched").toHaveAttribute("data-audio", "on");
+  await expect
+    .poll(async () => {
+      const next = await values(page).allTextContents();
+
+      return next.join(",");
+    })
+    .not.toBe(before);
+});
+
+// Reprendre n'est pas rejouer : la pause laisse le curseur où il est, donc la boucle
+// continue au lieu de repartir à la première mesure, et l'horloge reste d'accord avec elle.
+test("should resume the tune instead of restarting it", async ({ page }) => {
+  await open(page);
+
+  const clock = page.locator(".radio__label span").last();
+
+  await expect.poll(async () => clock.textContent(), { timeout: 8000 }).not.toBe("0:00");
+
+  const before = await clock.textContent();
+
+  await page.locator(".radio__glyph").click();
+  await expect(page.locator(".radio")).toHaveAttribute("data-audio", "pause");
+  await page.locator(".radio__glyph").click();
+
+  await expect(page.locator(".radio")).toHaveAttribute("data-audio", "on");
+
+  const after = await clock.textContent();
+
+  expect(after, "the clock does not fall back to zero").not.toBe("0:00");
+  expect(seconds(after), "the clock kept counting the same tune").toBeGreaterThanOrEqual(
+    seconds(before),
+  );
+});
+
+// Les raccourcis valent sur toute la page, pas seulement dans le volet : le pied de page
+// les annonce sans dire où poser le focus. Ils s'effacent devant une saisie, et la ligne de
+// commande reste une saisie — « r » doit pouvoir s'y taper.
+test("should honour the shortcuts from anywhere but a text field", async ({ page }) => {
+  const cli = await open(page);
+
+  const shown = await values(page).allTextContents(),
+    before = shown.join(",");
+
+  await page.locator("body").click({ position: { x: 5, y: 5 } });
+  await page.keyboard.press("r");
+
+  await expect
+    .poll(
+      async () => {
+        const next = await values(page).allTextContents();
+
+        return next.join(",");
+      },
+      { timeout: 8000 },
+    )
+    .not.toBe(before);
+
+  await cli.click();
+  await cli.fill("");
+  await cli.press("r");
+
+  expect(await cli.inputValue(), "the command line still types r").toBe("r");
+});
+
+// « m » coupe le son sans arrêter le morceau : le chronomètre continue, et reprendre
+// retrouve la boucle là où elle en est. C'est ce qui le distingue d'« espace ».
+test("should mute without stopping the tune", async ({ page }) => {
+  await open(page);
+
+  const clock = page.locator(".radio__label span").last();
+
+  await expect.poll(async () => clock.textContent(), { timeout: 8000 }).not.toBe("0:00");
+
+  await page.locator("body").click({ position: { x: 5, y: 5 } });
+  await page.keyboard.press("m");
+
+  await expect(page.locator(".radio")).toHaveAttribute("data-audio", "muet");
+
+  const muted = await clock.textContent();
+
+  await expect.poll(async () => clock.textContent(), { timeout: 8000 }).not.toBe(muted);
+
+  await page.keyboard.press("m");
+
+  await expect(page.locator(".radio")).toHaveAttribute("data-audio", "on");
+});
+
+// Le son coupé et la pause sont deux axes séparés. Reprendre après une pause ne doit pas
+// rendre le son que personne n'a redemandé : le gain maître est réécrit par la reprise, et
+// c'est là que les deux états se désynchronisaient.
+test("should keep the sound cut across a pause", async ({ page }) => {
+  await open(page);
+
+  await page.locator("body").click({ position: { x: 5, y: 5 } });
+  await page.keyboard.press("m");
+  await expect(page.locator(".radio")).toHaveAttribute("data-audio", "muet");
+
+  await page.keyboard.press(" ");
+  await expect(page.locator(".radio"), "space still pauses").toHaveAttribute("data-audio", "pause");
+
+  await page.keyboard.press(" ");
+  await expect(page.locator(".radio"), "the sound stays cut").toHaveAttribute("data-audio", "muet");
+
+  await page.keyboard.press("m");
+  await expect(page.locator(".radio")).toHaveAttribute("data-audio", "on");
 });

@@ -60,6 +60,7 @@ export interface RadioApi {
   radioDraw(): void;
   radioKey(event: KeyboardEvent): void;
   radioLoad(text: string): void;
+  radioMute(): void;
   radioOpen(): void;
   radioReseed(seed: number | undefined): void;
   radioShow(params: Params): void;
@@ -98,6 +99,9 @@ const members: RadioApi & ThisType<Shell> = {
     this.radioSeconds = 0;
     this.radioClock = ZERO_CLOCK;
     this.radioSeedText = "";
+    // Un champ retire ne perd pas le focus par un evenement : sans cette remise a zero, la
+    // seed suivante ne s'afficherait jamais.
+    this.radioTyping = false;
   },
 
   // Les hauteurs viennent de l'analyseur, pas d'un keyframe : quand le son tourne, le
@@ -108,20 +112,24 @@ const members: RadioApi & ThisType<Shell> = {
       return;
     }
 
+    // La boucle s'arrete pour de bon : volet ferme, animation coupee ou lecture en pause
+    // ne laissent plus tourner un rappel par image. « radioToggle » la relance a la
+    // lecture, et « flip » au retour du reglage.
     const frame = () => {
-      if (!this.radioOn || !this.radioEngine) {
+      if (
+        !this.radioOn ||
+        !this.radioEngine ||
+        !this.anim ||
+        this.reduced ||
+        this.radioAudio === "muet" ||
+        !this.radioEngine.playing()
+      ) {
         this.radioFrame = undefined;
 
         return;
       }
 
       this.radioFrame = requestAnimationFrame(frame);
-
-      // Le reglage se relit a chaque image : il n'existe aucun observateur, donc sans
-      // cette lecture le basculer pendant l'ecoute ne couperait rien.
-      if (!this.anim || this.reduced || !this.radioEngine.playing()) {
-        return;
-      }
 
       const levels = this.radioEngine.levels(this.radioBars.length);
 
@@ -155,11 +163,18 @@ const members: RadioApi & ThisType<Shell> = {
       return;
     }
 
+    // Espace active le bouton qui a le focus. Le lui prendre couperait le clavier sur les
+    // deux seuls controles du volet.
+    if (event.key === " " && event.target instanceof HTMLButtonElement) {
+      return;
+    }
+
     const press = {
       " ": () => this.radioToggle(),
+      m: () => this.radioMute(),
       q: () => this.radioClose(),
       r: () => this.radioReseed(undefined),
-    }[event.key];
+    }[event.key.toLowerCase()];
 
     if (!press) {
       return;
@@ -189,6 +204,23 @@ const members: RadioApi & ThisType<Shell> = {
     this.track("radio_seed", { saisie: true });
   },
 
+  // Couper le son n'arrete pas le morceau : il continue de tourner, le chronometre avec.
+  // C'est ce qui distingue « m » de « espace », qui met en pause.
+  radioMute(this: Shell) {
+    const engine = this.radioEngine;
+
+    if (!engine?.playing()) {
+      return;
+    }
+
+    this.radioAudio = engine.toggleMute() ? "muet" : "on";
+
+    // Le spectre mesure le son en bout de chaine : coupe, il n'a rien a montrer.
+    if (this.radioAudio === "on") {
+      this.radioDraw();
+    }
+  },
+
   // Taper la commande est le geste : le morceau part tout de suite. Rien ne sonne avant,
   // et le graphe audio ne se monte qu'ici. Le volet de sortie se rallume au passage, car la
   // commande n'a pas de sens sans lui.
@@ -199,24 +231,30 @@ const members: RadioApi & ThisType<Shell> = {
       return;
     }
 
-    const pane = document.querySelector('[data-pane="out"]'),
-      wide = (pane?.clientWidth ?? 0) >= WIDE_PX;
-
     this.out = true;
     this.radioOn = true;
     this.radioAudio = "muet";
     this.radioSeeds = 0;
     this.radioEngine = radioEngine();
-    this.radioBars = Array.from({ length: wide ? BARS_WIDE : BARS_NARROW }, (_u, at) => at);
-    this.radioPeaks = this.radioBars.map(() => 0);
     this.radioTicker = setInterval(() => {
       if (this.radioEngine?.playing()) {
         this.radioSeconds += 1;
         this.radioClock = clock(this.radioSeconds);
       }
     }, SECOND_MS);
-    this.radioReseed(undefined);
-    this.radioToggle();
+
+    // Le volet vient d'etre demande : sa largeur ne se mesure qu'une fois qu'il est pose.
+    // Mesurer avant laissait seize barres sur un grand ecran, quand le reglage « out »
+    // etait eteint et que le volet valait donc zero pixel.
+    this.$nextTick(() => {
+      const pane = document.querySelector('[data-pane="out"]'),
+        wide = (pane?.clientWidth ?? 0) >= WIDE_PX;
+
+      this.radioBars = Array.from({ length: wide ? BARS_WIDE : BARS_NARROW }, (_u, at) => at);
+      this.radioPeaks = this.radioBars.map(() => 0);
+      this.radioReseed(undefined);
+      this.radioToggle();
+    });
   },
 
   // Une autre seed, donc un autre morceau, immediatement. Le chronometre repart a zero :
@@ -286,8 +324,14 @@ const members: RadioApi & ThisType<Shell> = {
       return;
     }
 
-    engine.play(this.radioParams);
-    this.radioAudio = "on";
+    // Une reprise continue le morceau la ou la pause l'a laisse. Seule la premiere lecture,
+    // ou une nouvelle seed, le reprend depuis le debut.
+    if (!engine.resume()) {
+      engine.play(this.radioParams);
+    }
+
+    // Le son coupe survit a la pause : reprendre ne le rend pas sans qu'on le demande.
+    this.radioAudio = engine.muted() ? "muet" : "on";
     this.radioDraw();
     this.track("radio_ecoute", { seeds: this.radioSeeds });
   },

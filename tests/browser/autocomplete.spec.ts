@@ -275,3 +275,31 @@ test("should select the leading line on tab for a new argument", async ({ page }
   await expect(cli).toHaveValue("/slime expression ");
   await expect(list(page)).toContainText("happy");
 });
+
+// L'animation salue l'ouverture de la liste, pas son défilement. La flèche qui fait glisser
+// la fenêtre révèle une entrée de plus : la voir surgir à chaque pression transformerait un
+// déplacement en clignotement.
+test("should animate the list on opening but not on scrolling", async ({ page }) => {
+  const cli = await boot(page);
+
+  await cli.fill("/");
+  await cli.dispatchEvent("input");
+  await expect(list(page)).toBeVisible();
+
+  const played = () =>
+    page
+      .locator("[data-suggestion]")
+      .first()
+      .evaluate((node) => getComputedStyle(node).animationName);
+
+  expect(await played(), "a fresh list greets the eye").toBe("suggRow");
+
+  await cli.press("ArrowDown");
+
+  expect(await played(), "scrolling does not blink").toBe("none");
+
+  await cli.fill("/s");
+  await cli.dispatchEvent("input");
+
+  expect(await played(), "typing computes a new list, which animates again").toBe("suggRow");
+});

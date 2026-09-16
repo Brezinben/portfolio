@@ -106,10 +106,13 @@ interface Graph {
 export interface Radio {
   close(): void;
   levels(count: number): number[] | undefined;
+  muted(): boolean;
   pause(): void;
   play(next: Params | undefined): boolean;
   playing(): boolean;
+  resume(): boolean;
   started(): boolean;
+  toggleMute(): boolean;
 }
 
 // Une note a jouer : quand, quelle hauteur, combien de temps, avec quelle voix et a quel
@@ -195,6 +198,9 @@ export const radioEngine = (): Radio => {
   let graph: Graph | undefined = undefined,
     params: Params | undefined = undefined,
     running = false,
+    // Le moteur porte seul l'etat du son coupe, car il porte le gain maitre. « play » et
+    // « resume » le reecrivent : lu ailleurs, il se desynchroniserait a la premiere pause.
+    silenced = false,
     timer: ReturnType<typeof setInterval> | undefined = undefined,
     cursor = 0,
     nextAt = 0;
@@ -333,6 +339,9 @@ export const radioEngine = (): Radio => {
         cursor += 1;
       }
     },
+    // Le niveau que le gain maitre doit viser : zero tant que le son est coupe. « play » et
+    // « resume » passent par ici, sinon ils rendraient le son sans que rien le demande.
+    level = () => (silenced ? 0 : MASTER_GAIN),
     pause = () => {
       running = false;
       clearInterval(timer);
@@ -384,6 +393,8 @@ export const radioEngine = (): Radio => {
       });
     },
 
+    muted: () => silenced,
+
     pause,
 
     play(next) {
@@ -400,7 +411,7 @@ export const radioEngine = (): Radio => {
       nextAt = graph.ctx.currentTime + START_SEC;
       running = true;
       graph.master.gain.cancelScheduledValues(graph.ctx.currentTime);
-      graph.master.gain.setTargetAtTime(MASTER_GAIN, graph.ctx.currentTime, MASTER_RAMP);
+      graph.master.gain.setTargetAtTime(level(), graph.ctx.currentTime, MASTER_RAMP);
       clearInterval(timer);
       timer = setInterval(pump, PUMP_MS);
 
@@ -409,6 +420,42 @@ export const radioEngine = (): Radio => {
 
     playing: () => running,
 
+    // Reprendre n'est pas rejouer : le curseur reste ou la pause l'a laisse, donc la boucle
+    // continue au lieu de repartir a la premiere mesure. L'horloge du contexte, elle, a
+    // continue d'avancer pendant la pause : il faut donc replacer le prochain pas.
+    resume() {
+      if (!graph || !params) {
+        return false;
+      }
+
+      void graph.ctx.resume();
+      nextAt = Math.max(nextAt, graph.ctx.currentTime + START_SEC);
+      running = true;
+      graph.master.gain.cancelScheduledValues(graph.ctx.currentTime);
+      graph.master.gain.setTargetAtTime(level(), graph.ctx.currentTime, MASTER_RAMP);
+      clearInterval(timer);
+      timer = setInterval(pump, PUMP_MS);
+
+      return true;
+    },
+
     started: () => graph !== undefined,
+
+    // Couper le son n'arrete pas le sequenceur : le morceau continue de tourner, et le
+    // chronometre avec. C'est ce qui distingue le son coupe de la pause, qui elle arrete
+    // tout. Rend l'etat obtenu, pour que le volet n'ait pas a le tenir en double.
+    toggleMute() {
+      silenced = !silenced;
+
+      if (graph) {
+        graph.master.gain.setTargetAtTime(
+          silenced ? 0 : MASTER_GAIN,
+          graph.ctx.currentTime,
+          silenced ? FADE_OUT : MASTER_RAMP,
+        );
+      }
+
+      return silenced;
+    },
   };
 };
