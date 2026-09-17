@@ -96,8 +96,8 @@ Sept accroches restent, une ligne chacune :
 ## Le marquage
 
 Deux événements Umami, pas vingt-sept. `succes` avec la clé en propriété au déblocage, et
-`succes_ouverts` à l'ouverture de la modale, comme `options_ouvertes`. Voir
-`docs/` et le plan de marquage du commit 424ac69.
+`succes_ouverts` à l'ouverture de la modale, comme `options_ouvertes`. Le plan de marquage
+vit dans le commit 424ac69, et dans aucun document.
 
 ## Le glossaire
 

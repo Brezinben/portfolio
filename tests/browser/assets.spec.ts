@@ -44,7 +44,10 @@ test("should not recompress the font", async ({ request }) => {
 
 const SITE = "https://me.brezinben.dpdns.org/",
   PAGES = ["/", "/texte.html"],
-  LIEN = /(?:href|src)="(?<url>[^"]+)"/gu,
+  // Le blanc devant le nom d'attribut écarte les liaisons Alpine, « :href » et « :src ».
+  // Une liaison ne porte pas une adresse mais l'expression qui la fabrique, et la suivre
+  // faisait demander « `#i-${row.icon}` » au serveur.
+  LIEN = /(?:^|\s)(?:href|src)="(?<url>[^"]+)"/gu,
   // Les métadonnées de partage donnent une adresse absolue. Sans ce relevé, l'image de
   // partage échapperait au test.
   META = /content="(?<url>https:\/\/portfolio\.brezinben\.dpdns\.org\/[^"]*)"/gu,
