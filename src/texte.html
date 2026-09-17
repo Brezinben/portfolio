@@ -22,7 +22,10 @@
   <meta property="og:image:height" content="630">
   <!-- Seul script de la page. Il reprend le thème choisi sur la version terminal, et rien
      d'autre. Sans lui, les valeurs light-dark() de :root s'appliquent. -->
-  <script>try { document.documentElement.dataset.theme = JSON.parse(localStorage["bd-term-opts"] || "{}").theme || "" } catch { }</script>
+  <!-- Deux gestes, et la page reste entière sans eux : poser le thème choisi sur la version
+       terminal, et déposer la clé du succès que cette page débloque. Relire avant d'écrire,
+       car la version terminal peut être ouverte dans un autre onglet. -->
+  <script>try { document.documentElement.dataset.theme = JSON.parse(localStorage["bd-term-opts"] || "{}").theme || ""; const won = JSON.parse(localStorage["bd-term-achievements"] || "[]"); if (!won.includes("text-version")) localStorage["bd-term-achievements"] = JSON.stringify([...won, "text-version"]) } catch { }</script>
   <style>
     /* Atkinson Hyperlegible Next, dessinée par le Braille Institute pour la basse vision.
      Police variable auto-hébergée, sous-ensemble latin, un seul fichier de 200 à 800, sous

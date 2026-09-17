@@ -7,6 +7,25 @@ export const FADE_MS = 620;
 export const PANES = ["nav", "main", "out"];
 export const VERTICAL = new Set(["ArrowDown", "ArrowUp"]);
 export const OPTS_KEY = "bd-term-opts";
+export const ACHIEVEMENTS_KEY = "bd-term-achievements";
+// L'alerte de déblocage tient dix secondes, et le badge s'agite toutes les deux secondes
+// tant qu'un succès acquis n'a pas été regardé. Deux valeurs réglées dans le canvas.
+export const ALERT_MS = 10_000;
+export const NUDGE_MS = 2000;
+// La grille qui matérialise l'alerte, case par case. Vingt colonnes sur six rangs : le
+// bandeau se construit au lieu d'apparaître.
+export const ALERT_COLUMNS = 20;
+export const ALERT_ROWS = 6;
+// Les retards de la grille, mesurés à l'œil. La sortie s'étale davantage que l'entrée : à
+// 470 ms, personne ne la voyait. Le grain empêche le front d'être une ligne droite, sans
+// quoi l'effet redevient un balayage.
+export const ALERT_IN_MS = 300;
+export const ALERT_IN_GRAIN_MS = 170;
+export const ALERT_OUT_MS = 460;
+export const ALERT_OUT_GRAIN_MS = 190;
+// L'enveloppe de la sortie, du premier retard à la dernière case éteinte. La coquille
+// attend ce total avant de rendre la place ; la feuille porte la durée d'une case.
+export const ALERT_OUT_TOTAL_MS = 810;
 export const THEMES = [
   { acc: "#F5B83B", bg: "#242538", edge: "#33344a", id: "dark", label: "ambra" },
   { acc: "#e6a000", bg: "#fff6f6", edge: "#ded2d2", id: "light", label: "solis" },

@@ -88,6 +88,19 @@ Le caractère `✨` qui suffixe la commande de recherche quand un modèle local 
 ensemble : l'étincelle est la seule chose qui dise au visiteur qu'un modèle est là.
 _Avoid_: icône, emoji, marqueur.
 
+**Succès** (`achievement`) :
+Ce qu'un visiteur débloque par une action qu'il a voulue. Vingt-sept. Rien ne se débloque
+en arrivant sur la page, rien ne se débloque au bout d'un délai : c'est ce qui sépare une
+récompense d'une décoration. Acquis et vu sont deux états distincts, et la relance du badge
+vit entre les deux. La clé d'un succès est stable : renommer son titre ne le re-verrouille
+pas.
+_Avoid_: trophée, badge, récompense, achievement.
+
+**Badge** (`badge`) :
+La coupe et le compteur du pied de page, qui ouvrent la liste des succès. Le trophée est
+son icône, jamais la chose : un badge compte des succès, il n'en est pas un.
+_Avoid_: trophée, coupe, compteur.
+
 **Fiche techno** (`techNote`) :
 Texte attaché à une technologie de la stack, en trois parties : où, quoi, pourquoi.
 _Avoid_: tooltip, détail techno, carte.
