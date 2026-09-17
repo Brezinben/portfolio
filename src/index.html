@@ -734,13 +734,19 @@
       clip-path: inset(50%)
     }
 
+    /* Le curseur de la ligne de commande est un bloc, comme dans un terminal. Un navigateur
+       sans « caret-shape » rend la barre habituelle, dans la même couleur.
+       L'ambre textuel, et non le décoratif : sur le thème clair, le second tient 2,1:1
+       contre le panneau, sous les 3:1 qu'un indicateur demande. */
     .tm #cli {
       min-width: 0;
       border: 0;
       background: transparent;
       font-family: inherit;
       font-size: 14px;
-      outline: none
+      outline: none;
+      caret-color: var(--acc-text);
+      caret-shape: block
     }
 
     .tm [data-status] {
