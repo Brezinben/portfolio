@@ -1,0 +1,131 @@
+import { expect, test } from "@playwright/test";
+import type { Page } from "@playwright/test";
+
+// La liste des succès ne s'ouvre qu'après le démarrage : le badge vit dans le pied, que le
+// cadre de démarrage recouvre.
+const boot = async (page: Page) => {
+    await page.emulateMedia({ colorScheme: "dark" });
+    await page.goto("/");
+    await expect(page.locator("[data-boot]")).toHaveCount(0, { timeout: 10_000 });
+  },
+  badge = (page: Page) => page.locator("[data-ctl='ach']"),
+  alert = (page: Page) => page.locator("[data-ach-alert]"),
+  type = async (page: Page, command: string) => {
+    await page.locator("input").first().fill(command);
+    await page.keyboard.press("Enter");
+  },
+  saved = async (page: Page) =>
+    page.evaluate(() => {
+      // SAFETY: la page vient d'écrire ce tableau elle-même. L'affirmation ne sert qu'à
+      // rendre le contenu comparable, et un JSON illisible ferait tomber le test ici.
+      const marks = JSON.parse(localStorage["bd-term-achievements"] ?? "[]") as string[];
+
+      return marks;
+    });
+
+test("should start with nothing won and nothing to look at", async ({ page }) => {
+  await boot(page);
+
+  await expect(badge(page)).toHaveAttribute("aria-label", "succès : 0 sur 27");
+  await expect(page.locator("[data-ach-new]")).toHaveCount(0);
+});
+
+// Une commande tapée en débloque deux : la première commande, et la commande elle-même.
+// Deux déblocages rapprochés font la queue, ils ne s'écrasent pas.
+test("should queue one alert per unlocked achievement", async ({ page }) => {
+  await boot(page);
+  await type(page, "help");
+
+  await expect(alert(page)).toContainText("succès débloqué");
+  await expect(alert(page)).toContainText("première commande");
+  await expect(alert(page)).toContainText("le manuel", { timeout: 15_000 });
+  await expect(badge(page)).toHaveAttribute("aria-label", /succès : 2 sur 27/u);
+});
+
+test("should nudge the badge until the list is opened, and not one second longer", async ({
+  page,
+}) => {
+  await boot(page);
+  await type(page, "ls");
+
+  await expect(page.locator("[data-ach-new]")).toHaveCount(1);
+  await badge(page).click();
+  await expect(page.getByRole("dialog", { name: "Succès" })).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(page.locator("[data-ach-new]")).toHaveCount(0);
+});
+
+test("should move the focus into the list and give it back to the badge", async ({ page }) => {
+  await boot(page);
+  await badge(page).click();
+
+  const dialog = page.getByRole("dialog", { name: "Succès" });
+
+  await expect(dialog.locator(":focus")).toHaveCount(1);
+  await page.keyboard.press("ArrowDown");
+  await expect(dialog.locator(":focus")).toHaveCount(1);
+  await page.keyboard.press("Escape");
+  await expect(badge(page)).toBeFocused();
+});
+
+// Un succès verrouillé garde son rang. Son sous-titre est une suite de « ??? » de longueur
+// variable : une liste de longueurs identiques fait grille de mots croisés.
+test("should hide what is still locked", async ({ page }) => {
+  await boot(page);
+  await badge(page).click();
+
+  const rows = page.locator("[data-ach-row]"),
+    hidden = await rows.locator("[data-ach-title]").allTextContents();
+
+  await expect(rows).toHaveCount(27);
+  expect(hidden.every((title) => title === "???")).toBe(true);
+  expect(new Set(await rows.locator("[data-ach-trigger]").allTextContents()).size).toBeGreaterThan(
+    1,
+  );
+});
+
+test("should keep a won achievement across a reload", async ({ page }) => {
+  await boot(page);
+  await type(page, "ls");
+  await expect(badge(page)).toHaveAttribute("aria-label", /succès : 2 sur 27/u);
+
+  await page.reload();
+  await expect(page.locator("[data-boot]")).toHaveCount(0, { timeout: 10_000 });
+  await expect(badge(page)).toHaveAttribute("aria-label", /succès : 2 sur 27/u);
+  expect(await saved(page)).toContain("ls");
+});
+
+// Le volet de sortie coupé retire l'alerte, et rien ne se replie sur le journal. Le badge
+// porte alors le signal à lui seul.
+test("should show no alert when the output pane is off", async ({ page }) => {
+  await boot(page);
+  await page.getByRole("button", { name: "options" }).click();
+  await page.getByRole("button", { name: "output pane" }).click();
+  await page.keyboard.press("Escape");
+  await type(page, "ls");
+
+  await expect(alert(page)).toBeHidden();
+  await expect(page.locator("[data-ach-new]")).toHaveCount(1);
+});
+
+// La page introuvable et la version texte écrivent leur clé. La version terminal la trouve
+// au chargement suivant, et le badge s'agite : l'alerte, elle, appartient au moment du
+// déblocage.
+test("should pick up what the side pages wrote", async ({ page }) => {
+  await page.goto("/texte.html");
+  await page.goto("/une/route/qui-n-existe-pas");
+  await boot(page);
+
+  await expect(badge(page)).toHaveAttribute("aria-label", "succès : 2 sur 27, 2 non regardé");
+  await expect(alert(page)).toHaveCount(0);
+});
+
+test("should ignore a key the catalogue no longer carries", async ({ page }) => {
+  await page.goto("/");
+  await page.evaluate(() =>
+    localStorage.setItem("bd-term-achievements", JSON.stringify(["konami", "ls"])),
+  );
+  await boot(page);
+
+  await expect(badge(page)).toHaveAttribute("aria-label", /succès : 1 sur 27/u);
+});

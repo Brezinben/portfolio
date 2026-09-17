@@ -442,7 +442,7 @@
   },
   "pied-de-page": {
     "align-content": "normal",
-    "align-items": "baseline",
+    "align-items": "center",
     "animation-delay": "0s",
     "animation-duration": "0s",
     "animation-name": "none",
@@ -474,7 +474,7 @@
     "list-style-type": "disc",
     "margin-bottom": "0px",
     "margin-top": "0px",
-    "min-height": "auto",
+    "min-height": "44px",
     "min-width": "auto",
     "outline-color": "rgb(155, 157, 184)",
     "outline-width": "3px",

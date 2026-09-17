@@ -778,11 +778,15 @@
       cursor: pointer
     }
 
+    /* Le pied porte depuis les succès une cible tactile, et une cible se vise : sa hauteur
+       vaut celle d'un bouton, et non celle de son texte. Les deux paragraphes se centrent
+       dessus, là où ils s'alignaient sur leur ligne de base. */
     .tm footer {
       flex: none;
       display: flex;
       justify-content: space-between;
-      align-items: baseline;
+      align-items: center;
+      min-height: 44px;
       gap: 20px;
       padding: 0 4px;
       font-size: 12px;
@@ -1709,10 +1713,256 @@
         order: -1
       }
     }
+
+    /* Les succès. Cinq teintes dérivées du thème, aucune couleur en dur : les huit thèmes
+       suivent sans une seule règle par thème. L'encre suit le texte, l'accent suit le
+       thème, l'ombre est l'accent fondu vers le panneau, le reflet l'accent éclairci, et
+       la sixième perce un trou à la couleur du panneau. */
+    .tm {
+      --t-ink: currentColor;
+      --t-soft: color-mix(in srgb, currentColor 45%, var(--panel));
+      --t-acc: var(--acc);
+      --t-dim: color-mix(in srgb, var(--acc) 55%, var(--panel));
+      --t-hl: color-mix(in srgb, var(--acc) 35%, white);
+      --t-bg: var(--panel)
+    }
+
+    /* Sur les trois thèmes clairs, un reflet aussi blanc que sur les cinq sombres
+       disparaît dans le panneau. */
+    .tm[data-theme="hibernus"],
+    .tm[data-theme="light"],
+    .tm[data-theme="lux"] {
+      --t-hl: color-mix(in srgb, var(--acc) 72%, white)
+    }
+
+    /* Une icône de succès est du pixel art sur une grille de seize. Sans ce rendu, un
+       pixel tombe entre deux pixels d'écran et le contour bave. */
+    .tm .icon {
+      display: block;
+      flex: none;
+      width: 32px;
+      height: 32px;
+      shape-rendering: crispEdges
+    }
+
+    /* Le badge du pied. L'acquis prend l'ambre textuel, le total reste en retrait : une
+       barre oblique se lisait comme une fraction, ce n'en est pas une. */
+    .tm [data-ctl="ach"] {
+      display: inline-flex;
+      align-items: center;
+      min-height: 44px;
+      gap: 6px;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      color: inherit;
+      font: inherit;
+      cursor: pointer
+    }
+
+    .tm [data-ctl="ach"] .icon {
+      width: 16px;
+      height: 16px
+    }
+
+    .tm [data-ctl="ach"]:hover {
+      color: var(--acc-text)
+    }
+
+    .tm [data-ach-count] {
+      color: var(--acc-text)
+    }
+
+    /* La pastille survit au réglage d'animation, et l'agitation non. Sans elle, un
+       visiteur sans mouvement n'aurait plus aucun signal : le volet de sortie, qui porte
+       l'alerte, peut être fermé lui aussi. */
+    .tm [data-ach-mark] {
+      position: relative;
+      display: block;
+      flex: none
+    }
+
+    .tm [data-ach-new] {
+      position: absolute;
+      top: -2px;
+      right: -3px;
+      width: 5px;
+      height: 5px;
+      background: var(--acc)
+    }
+
+    .tm [data-ach-nudge] {
+      animation: ach-nudge 2s ease-in-out infinite
+    }
+
+    @keyframes ach-nudge {
+      0%, 62%, 100% {
+        transform: translateY(0) rotate(0)
+      }
+
+      70% {
+        transform: translateY(-3px) rotate(-8deg)
+      }
+
+      78% {
+        transform: translateY(-3px) rotate(8deg)
+      }
+
+      86% {
+        transform: translateY(-1px) rotate(-3deg)
+      }
+
+      94% {
+        transform: translateY(0) rotate(0)
+      }
+    }
+
+    /* La liste des succès. Vingt-sept entrées ne tiennent pas dans un écran court : la
+       zone plafonne et défile, comme la modale d'options. */
+    /* Vingt-sept entrées ne tiennent pas dans un écran court. Seule la liste défile : le
+       compteur et le rappel clavier restent en vue, sinon ils se perdent au bout du
+       déroulement. */
+    .tm [data-ach] {
+      width: min(560px, 100%);
+      max-height: min(88dvh, 620px);
+      box-sizing: border-box;
+      padding: 18px;
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      gap: 10px
+    }
+
+    .tm [data-ach-list] {
+      overflow: auto;
+      display: grid;
+      gap: 2px;
+      align-content: start
+    }
+
+    .tm [data-ach-row] {
+      display: grid;
+      grid-template-columns: 2ch 32px minmax(0, 1fr);
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+      padding: 4px 8px;
+      border: 0;
+      background: transparent;
+      color: var(--fg);
+      font: inherit;
+      line-height: 1.35;
+      text-align: left;
+      cursor: default
+    }
+
+    .tm [data-ach-row]:hover {
+      background: var(--acc-soft)
+    }
+
+    .tm [data-ach-rank] {
+      color: var(--fg2);
+      font-size: 12px
+    }
+
+    .tm [data-ach-row][aria-disabled="true"] [data-ach-title],
+    .tm [data-ach-row][aria-disabled="true"] [data-ach-trigger] {
+      color: var(--fg2)
+    }
+
+    .tm [data-ach-title] {
+      font-size: 13px
+    }
+
+    .tm [data-ach-trigger] {
+      color: var(--fg2);
+      font-size: 12px
+    }
+
+    /* L'alerte de déblocage, en bas du volet de sortie. Le centre de la page recouvrirait
+       la session qu'on est en train de lire. Angle droit en haut, filet d'accent à gauche,
+       et aucune ombre portée : il n'y en a nulle part ailleurs dans le terminal. */
+    .tm [data-ach-alert] {
+      flex: none;
+      margin-top: auto;
+      position: relative
+    }
+
+    .tm [data-ach-alert] button {
+      display: grid;
+      grid-template-columns: 32px minmax(0, 1fr);
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+      box-sizing: border-box;
+      padding: 10px 12px;
+      border: 0;
+      border-top: 1px solid var(--edge);
+      border-left: 2px solid var(--acc);
+      background: var(--panel);
+      color: var(--fg);
+      font: inherit;
+      text-align: left;
+      cursor: pointer
+    }
+
+    .tm [data-ach-said] {
+      color: var(--fg2);
+      font-size: 11px;
+      letter-spacing: .12em
+    }
+
+    /* La grille couvre la boîte entière, bord et filet compris. Posée dans le bouton, le
+       cadre apparaîtrait avant son contenu, et l'effet tombe. */
+    .tm [data-ach-mask] {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      grid-template-columns: repeat(20, 1fr);
+      grid-template-rows: repeat(6, 1fr);
+      pointer-events: none
+    }
+
+    .tm [data-ach-cell] {
+      background: var(--panel);
+      animation: ach-alert-in 120ms steps(1) var(--in) both
+    }
+
+    /* La sortie porte sa propre image-clé. Rejouer celle de l'entrée en « reverse » ne
+       redémarre rien : le navigateur la considère terminée, et le bandeau disparaît d'un
+       coup. */
+    .tm [data-ach-leaving] [data-ach-cell] {
+      animation: ach-alert-out 160ms steps(1) var(--out) both
+    }
+
+    @keyframes ach-alert-in {
+      0% {
+        opacity: 1
+      }
+
+      100% {
+        opacity: 0
+      }
+    }
+
+    @keyframes ach-alert-out {
+      0% {
+        opacity: 0
+      }
+
+      100% {
+        opacity: 1
+      }
+    }
   </style>
 </head>
 
 <body>
+  <!-- Les icônes des succès, en pixel art sur une grille de seize. Elles sont en ligne
+       parce qu'un « use » vers un SVG externe n'hérite pas des variables CSS du document :
+       servies en fichier, elles perdraient les huit thèmes. La construction remplace le
+       marqueur ci-dessous par « src/assets/succes.svg ». -->
+  <svg aria-hidden="true" focusable="false" style="position:absolute;width:0;height:0;overflow:hidden">
+    <!--succes.svg--></svg>
   <!-- Le lien de saut est le seul contenu hors des volets. Sans ce reperage, il reste
        hors de tout reperage, et le scan le signale. -->
   <header>
@@ -2103,6 +2353,28 @@
             </div>
           </template>
         </div>
+
+        <!-- L'alerte est ancrée en bas du volet, et non au centre de la page : le centre
+             recouvre la session qu'on est en train de lire. La grille de masques n'existe
+             que si le mouvement est permis — sinon les cases resteraient opaques. -->
+        <template x-if="alerted">
+          <div data-ach-alert :data-ach-leaving="alertLeaving ? '' : null" role="status">
+            <button type="button" @click="openAchievements('alerte')"><svg class="icon"
+                aria-hidden="true"><use :href="`#i-${alerted.icon}`" /></svg><span><span data-ach-said>succès
+                  débloqué</span><span data-ach-title style="display:block" x-text="alerted.title"></span><span
+                  data-ach-trigger style="display:block" x-text="alerted.trigger"></span></span></button>
+            <template x-if="anim && !reduced">
+              <span data-ach-mask aria-hidden="true">
+                <!-- La clé porte le succès, et pas seulement le rang de la case. Sans lui, la
+                     deuxième alerte de la file réutilise les mêmes éléments : le nom d'image-clé
+                     ne change pas, l'animation est déjà terminée, et le bandeau paraît d'un coup. -->
+                <template x-for="(cell, index) in alertCells" :key="`${alert}-${index}`">
+                  <i data-ach-cell :style="cell"></i>
+                </template>
+              </span>
+            </template>
+          </div>
+        </template>
       </aside>
     </main>
 
@@ -2148,6 +2420,34 @@
               · <span data-tone="acc">esc</span> close · kept on this device</p>
             <button type="button" data-ctl="opt" @click="closeOpts()"
               data-tone="fg">close</button>
+          </div>
+        </div>
+      </div>
+    </template>
+
+    <template x-if="achievementsOpen">
+      <div @click="closeAchievements()"
+        style="position:fixed;inset:0;z-index:40;display:grid;place-items:center;padding:20px;background:rgba(10,10,18,.62);animation:fadeIn .16s ease both">
+        <div role="dialog" aria-modal="true" aria-label="Succès" data-ach @click.stop
+          @keydown="achievementsKey($event)" class="zone">
+          <p data-tone="fg2" style="font-size:12px;letter-spacing:.12em">succès <span
+            x-text="`${won} | ${ACHIEVEMENTS.length}`"></span></p>
+
+          <div data-ach-list>
+            <template x-for="row in achievementRows" :key="row.key">
+              <button type="button" data-ctl="ach-row" data-ach-row
+                :aria-disabled="row.done ? null : 'true'"><span data-ach-rank
+                  x-text="row.rank"></span><svg class="icon" aria-hidden="true"><use
+                    :href="`#i-${row.icon}`" /></svg><span><span data-ach-title style="display:block"
+                    x-text="row.title"></span><span data-ach-trigger style="display:block"
+                    x-text="row.trigger"></span></span></button>
+            </template>
+          </div>
+
+          <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:16px">
+            <p data-tone="fg2" style="font-size:12px;max-width:40ch;line-height:1.5;text-wrap:pretty"><span
+              data-tone="acc">↑ ↓</span> parcourir · <span data-tone="acc">esc</span> close · kept on this device</p>
+            <button type="button" data-ctl="opt" @click="closeAchievements()" data-tone="fg">close</button>
           </div>
         </div>
       </div>
@@ -2211,7 +2511,13 @@
       <p style="overflow:hidden;text-overflow:ellipsis"><span style="color:var(--acc)">←→</span> volet · <span
         style="color:var(--acc)">↑↓</span> parcourir · <span data-tone="acc">j/k</span> section · <span
         style="color:var(--acc)">/</span> saisie · <span data-tone="acc">help</span></p>
-      <p style="display:flex;gap:14px"><a href="texte.html">texte</a><a href="llms.txt">llms.txt</a></p>
+      <p style="display:flex;gap:14px;align-items:center"><button type="button" data-ctl="ach"
+          :aria-label="badgeLabel" @click="openAchievements('interface')"><span data-ach-mark
+            :data-ach-nudge="unseen > 0 ? '' : null"><svg class="icon" aria-hidden="true"><use
+                href="#i-trophy" /></svg><template x-if="unseen > 0"><span data-ach-new
+                aria-hidden="true"></span></template></span><span><span data-ach-count
+              x-text="won"></span> | <span x-text="ACHIEVEMENTS.length"></span></span></button><a
+          href="texte.html">texte</a><a href="llms.txt">llms.txt</a></p>
     </footer>
   </div>
   <script type="module" src="app.ts"></script>

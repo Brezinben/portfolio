@@ -32,7 +32,14 @@ const ROOT = fileURLToPath(new URL("../", import.meta.url)),
   LEGACY = join(ROOT, ".versions", `${OUTPUT}.reprise`),
   KEPT_VERSIONS = 3,
   CONTENT = "content.json",
-  TRANSFORMED = new Set([CONTENT, "404.css", "404.html", "index.html", "texte.html"]),
+  TRANSFORMED = new Set([
+    CONTENT,
+    "404.css",
+    "404.html",
+    "assets/succes.svg",
+    "index.html",
+    "texte.html",
+  ]),
   // Ces noms sont des contrats avec l'extérieur : iOS demande /apple-touch-icon.png sans
   // balise, la page charge content.json par une URL relative, et les robots lisent llms.txt.
   FIXED_NAMES = new Set([
@@ -49,6 +56,9 @@ const ROOT = fileURLToPath(new URL("../", import.meta.url)),
   // son nom dans le bundle en ligne, qui fait partie du texte de la page.
   RADIO_CHUNK = "radio.js",
   MODULE_TAG = '<script type="module" src="app.ts"></script>',
+  // Les icônes des succès partent en ligne dans la page. Un « use » vers un SVG externe
+  // n'hérite pas des variables CSS du document, et les cinq teintes suivent le thème.
+  SPRITE_TAG = "<!--succes.svg-->",
   STYLE_TAG = '<link rel="stylesheet" href="404.css">',
   SCRIPT_TAG = '<script src="404.ts"></script>',
   // Une case de mascotte fait 32 px natifs et s'affiche à x2. Voir l'ADR 0004.
@@ -410,10 +420,13 @@ const unfilter = (filter: number, value: number, around: Around) => {
     }, folded);
   },
   buildIndex = async (staging: string, plan: SheetPlan) => {
-    const page = await readFile(join(SOURCE, "index.html"), "utf8");
+    const page = await readFile(join(SOURCE, "index.html"), "utf8"),
+      sprite = await readFile(join(SOURCE, "assets", "succes.svg"), "utf8");
 
-    if (!page.includes(MODULE_TAG)) {
-      throw new Error(`index.html ne porte plus ${MODULE_TAG}`);
+    for (const tag of [MODULE_TAG, SPRITE_TAG]) {
+      if (!page.includes(tag)) {
+        throw new Error(`index.html ne porte plus ${tag}`);
+      }
     }
 
     const folded = foldPage(
@@ -424,7 +437,9 @@ const unfilter = (filter: number, value: number, around: Around) => {
       bundled = await bundle("app.ts", "esm"),
       // Une fonction de remplacement, car un remplacement littéral interprète les motifs en
       // dollar. Le code source porte « $$ » dans les yeux de cowsay.
-      replaced = folded.replace(MODULE_TAG, () => `<script type="module">${bundled.code}</script>`);
+      replaced = folded
+        .replace(MODULE_TAG, () => `<script type="module">${bundled.code}</script>`)
+        .replace(SPRITE_TAG, () => sprite);
 
     // Le chunk paresseux s'écrit à la racine, comme la page : un spécificateur relatif dans
     // un module en ligne se résout contre l'adresse du document, pas contre un fichier.
