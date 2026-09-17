@@ -613,6 +613,15 @@ document.addEventListener("alpine:init", () => {
           return;
         }
 
+        // Entrée maintenue : le système répète la touche, et le navigateur fabrique un clic
+        // par répétition. Valider au clavier envoyait alors dix mesures pour un seul geste.
+        // Les flèches gardent leur répétition, qui sert à parcourir une liste.
+        if (event.repeat && event.key === "Enter") {
+          event.preventDefault();
+
+          return;
+        }
+
         // La touche qui abrege le boot s'arrete la : sans cette sortie, elle partirait
         // aussi dans la saisie, et le visiteur taperait une commande sans le vouloir.
         if (this.skipBoot()) {
@@ -1871,7 +1880,7 @@ document.addEventListener("alpine:init", () => {
           globalThis.history.pushState({}, "", `#${id}`);
         }
 
-        this.play(id);
+        this.play(id, via);
 
         // « push » distingue la navigation voulue de celle du chargement. Sans lui, arriver
         // sur la page débloquait « je pars à la découverte », et un succès qui s'obtient
@@ -1920,7 +1929,7 @@ document.addEventListener("alpine:init", () => {
 
       // Première visite : la commande se tape, puis s'exécute. Retour sur une section
       // déjà vue : immédiat, sans quoi l'effet devient une attente.
-      play(id: string) {
+      play(id: string, via: TrackSource = "interface") {
         const target = this.current.cmd;
 
         clearInterval(this.typer);
@@ -1941,7 +1950,12 @@ document.addEventListener("alpine:init", () => {
           this.mascotPlay("load");
         }
 
-        this.bump(this.weigh(this.current));
+        // Seule une commande tapée consomme la fenêtre. Sans cette garde, un visiteur qui
+        // n'a rien tapé atteignait cent pour cent en cliquant les onglets.
+        if (via === "commande") {
+          this.bump(this.weigh(this.current));
+        }
+
         this.seen = [...this.seen, id];
 
         if (this.current.suggest) {
@@ -2350,7 +2364,7 @@ document.addEventListener("alpine:init", () => {
             this.journal = [];
             this.commandResult = undefined;
             this.seen = this.seen.filter((entry) => entry !== this.section);
-            this.play(this.section);
+            this.play(this.section, "commande");
           } else if (effect.type === "state") {
             Object.assign(this, effect.patch);
           } else if (effect.type === "power") {
