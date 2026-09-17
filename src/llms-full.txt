@@ -45,7 +45,7 @@ Connexions (2024-2026, Assist'enGare), digital4better (2023-2024, équipe RUN),
 Transway (2021-2023, full stack puis tech lead), LDC Services (2020-2021,
 alternance), FPEE Industries (2018-2020, technicien réseau en alternance).
 
-### Kereis — pôle DSI
+### Kereis · pôle DSI
 
 mai 2026 → aujourd'hui · Développeur IA / Full Stack · via digital4better
 
@@ -69,7 +69,7 @@ Statut : en cours · Rôle : développeur IA / full stack · Client : Kereis · 
 DSI · Via : digital4better · Pile : MCP, SpecKit, LiteLLM, Langfuse · Apport :
 cadrer l'IA par la spec.
 
-### SNCF Gares & Connexions — Assist'enGare
+### SNCF Gares & Connexions · Assist'enGare
 
 sept. 2024 → mai 2026 · Développeur Full Stack · via digital4better
 
@@ -98,7 +98,7 @@ Statut : livré · Rôle : développeur full stack · Client : SNCF Gares & Conn
 dossiers / jour · RGAA 4.1 : 96 %, déclaration publique · Pile : React, MUI,
 NestJS, PostgreSQL.
 
-### digital4better — équipe RUN
+### digital4better · équipe RUN
 
 oct. 2023 → sept. 2024 · Développeur Full Stack / IA
 
@@ -122,7 +122,7 @@ Statut : livré · Rôle : full stack / IA · Employeur : digital4better · Clie
 Body Nature, Dorval AM, PiLeJe, Servier · Périmètre : RUN, support, sécurité ·
 Mesure : fruggr · éco-conception.
 
-### Transway — mobilité durable
+### Transway · mobilité durable
 
 sept. 2021 → sept. 2023 · Full Stack, puis Technical Lead Developer
 
@@ -215,7 +215,7 @@ Cinq domaines, 57 briques. Chaque brique indique où elle a été pratiquée.
 - PHP — LDC Services, Transway, digital4better — Langage des back-offices Laravel.
   Typage strict et outillage moderne depuis la 8.
 - API REST — toutes les missions — Contrats documentés en OpenAPI avant
-  l'implémentation — la spec précède le code.
+  l'implémentation : la spec précède le code.
 - OpenAPI — toutes les missions — Le contrat s'écrit avant l'implémentation. Le
   front et le back avancent en parallèle sans se bloquer.
 - JWT — Transway, SNCF, Kereis — Jetons d'authentification entre services. Sur un
@@ -289,7 +289,7 @@ Cinq domaines, 57 briques. Chaque brique indique où elle a été pratiquée.
   qui échoue localise le défaut à la ligne près.
 - E2E — Transway, ce portfolio — Le parcours complet dans un vrai navigateur. Ce
   niveau attrape les défauts d'assemblage que les tests unitaires laissent passer.
-- Cypress — Transway — Tests de bout en bout sur les parcours critiques —
+- Cypress — Transway — Tests de bout en bout sur les parcours critiques :
   réservation, authentification.
 - ESLint — toutes les missions — Règles partagées : la revue humaine se concentre
   sur le fond, pas sur la forme.
