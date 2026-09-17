@@ -55,6 +55,47 @@ test("should nudge the badge until the list is opened, and not one second longer
   await expect(page.locator("[data-ach-new]")).toHaveCount(0);
 });
 
+// La tabulation doit atteindre le bouton de fermeture. Sans lui dans la boucle, « échap »
+// était la seule sortie de la liste. Le focus part de la première entrée : une tabulation
+// arrière atteint donc le dernier élément, qui est ce bouton.
+test("should reach the close button by tabbing through the list", async ({ page }) => {
+  await boot(page);
+  await badge(page).click();
+  await page.keyboard.press("Shift+Tab");
+
+  await expect(page.getByRole("button", { name: "close" })).toBeFocused();
+});
+
+// Une ligne que le répartiteur refuse ne débloque rien. Il rend pourtant l'effet de mesure
+// « commande » : « out » le pose avant de savoir si la commande existe.
+test("should unlock nothing on a command that does not exist", async ({ page }) => {
+  await boot(page);
+  await type(page, "pipo");
+
+  await expect(alert(page)).toBeHidden();
+  await expect(badge(page)).toHaveAttribute("aria-label", "succès : 0 sur 27");
+});
+
+// L'alerte qui a ouvert la liste disparaît au bout de dix secondes. Le focus doit revenir
+// au badge, et non tomber sur le corps de la page.
+test("should give the focus back to the badge when the alert that opened the list is gone", async ({
+  page,
+}) => {
+  // « première commande » est déjà acquis : « ls » n'en débloque donc qu'un, et la file ne
+  // remet pas une seconde alerte à l'écran pendant que l'on attend la disparition.
+  await page.goto("/");
+  await page.evaluate(() =>
+    localStorage.setItem("bd-term-achievements", JSON.stringify(["first-command"])),
+  );
+  await boot(page);
+  await type(page, "ls");
+  await alert(page).locator("button").click();
+  await expect(alert(page)).toBeHidden({ timeout: 20_000 });
+  await page.keyboard.press("Escape");
+
+  await expect(badge(page)).toBeFocused();
+});
+
 test("should move the focus into the list and give it back to the badge", async ({ page }) => {
   await boot(page);
   await badge(page).click();
@@ -116,7 +157,7 @@ test("should pick up what the side pages wrote", async ({ page }) => {
   await page.goto("/une/route/qui-n-existe-pas");
   await boot(page);
 
-  await expect(badge(page)).toHaveAttribute("aria-label", "succès : 2 sur 27, 2 non regardé");
+  await expect(badge(page)).toHaveAttribute("aria-label", "succès : 2 sur 27, 2 non regardés");
   await expect(alert(page)).toHaveCount(0);
 });
 

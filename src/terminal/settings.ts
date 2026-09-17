@@ -8,10 +8,9 @@ export const PANES = ["nav", "main", "out"];
 export const VERTICAL = new Set(["ArrowDown", "ArrowUp"]);
 export const OPTS_KEY = "bd-term-opts";
 export const ACHIEVEMENTS_KEY = "bd-term-achievements";
-// L'alerte de déblocage tient dix secondes, et le badge s'agite toutes les deux secondes
-// tant qu'un succès acquis n'a pas été regardé. Deux valeurs réglées dans le canvas.
+// L'alerte de déblocage tient dix secondes. Le rythme du badge, lui, vit dans la feuille :
+// aucun code ne le lit, et le déclarer ici en ferait une seconde vérité.
 export const ALERT_MS = 10_000;
-export const NUDGE_MS = 2000;
 // La grille qui matérialise l'alerte, case par case. Vingt colonnes sur six rangs : le
 // bandeau se construit au lieu d'apparaître.
 export const ALERT_COLUMNS = 20;

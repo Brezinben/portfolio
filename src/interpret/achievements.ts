@@ -37,7 +37,7 @@ export const ACHIEVEMENTS: Achievement[] = [
   },
   { icon: "book", key: "help", title: "le manuel", trigger: "help" },
   { icon: "list", key: "ls", title: "inventaire", trigger: "ls" },
-  { icon: "tab", key: "tab", title: "les deux premières lettres", trigger: "Tab complète" },
+  { icon: "tab", key: "tab", title: "les deux premières lettres", trigger: "Tab ou → complète" },
   { icon: "history", key: "history", title: "déjà vu", trigger: "↑ rappelle l'historique" },
   { icon: "broom", key: "clear", title: "table rase", trigger: "clear" },
   { icon: "power", key: "shutdown", title: "extinction des feux", trigger: "shutdown" },
@@ -106,9 +106,15 @@ const MARKS = [ACTIVITY_MARK, SECTION_MARK, SEEN_MARK, THEME_MARK];
 export const wonCount = (marks: string[]) =>
   ACHIEVEMENTS.filter((entry) => marks.includes(entry.key)).length;
 
-// Combien avaient été regardés à la dernière ouverture. Une marque absente vaut zéro.
-export const seenCount = (marks: string[]) =>
-  Number(marks.find((mark) => mark.startsWith(SEEN_MARK))?.slice(SEEN_MARK.length) ?? 0);
+// Combien avaient été regardés à la dernière ouverture. Le stockage est une entrée
+// extérieure : une marque absente vaut zéro, et une marque illisible aussi. Sans ce
+// filtre, « seen:abc » rendait NaN, le badge cessait de s'agiter pour toujours, et son
+// libellé annonçait « NaN non regardés ».
+export const seenCount = (marks: string[]) => {
+  const found = Number(marks.find((mark) => mark.startsWith(SEEN_MARK))?.slice(SEEN_MARK.length));
+
+  return Number.isFinite(found) ? found : 0;
+};
 
 // Le stockage est une entrée extérieure, et le catalogue bouge. Une clé retirée disparaît
 // sans laisser d'orphelin, et une valeur qui n'est ni une clé ni une marque ne rentre pas.

@@ -22,7 +22,7 @@ export const readMarks = () => {
   }
 };
 
-const write = (marks: string[]) => {
+export const writeMarks = (marks: string[]) => {
   try {
     globalThis.localStorage.setItem(ACHIEVEMENTS_KEY, JSON.stringify(marks));
   } catch {
@@ -41,7 +41,7 @@ export const addMark = (mark: string) => {
 
   const next = [...saved, mark];
 
-  write(next);
+  writeMarks(next);
 
   return next;
 };
@@ -51,7 +51,7 @@ export const addMark = (mark: string) => {
 export const setMark = (prefix: string, value: string) => {
   const next = [...readMarks().filter((mark) => !mark.startsWith(prefix)), `${prefix}${value}`];
 
-  write(next);
+  writeMarks(next);
 
   return next;
 };

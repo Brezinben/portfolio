@@ -60,19 +60,27 @@ export interface AchievementsApi {
   unlockFrom(effects: Effect[]): void;
 }
 
+// Une case bascule en « steps(1) » : aucune fonction de temps ne s'applique à elle, et le
+// rythme du front vient donc des seuls retards. La racine carrée est l'inverse d'un carré :
+// le front avance en « ease-in », lentement d'abord, vite à la fin.
+const eased = (ratio: number) => Math.sqrt(ratio);
+
 // La grille couvre le bandeau entier, bords compris, et s'efface case par case de gauche à
 // droite. Le grain empêche le front d'être une ligne droite : sans lui, l'effet redevient
 // un balayage, qui est justement ce qu'on ne voulait pas.
 const cells = () =>
   Array.from({ length: ALERT_COLUMNS * ALERT_ROWS }, (_, index) => {
     const ratio = (index % ALERT_COLUMNS) / ALERT_COLUMNS,
-      entering = ratio * ALERT_IN_MS + Math.random() * ALERT_IN_GRAIN_MS,
-      leaving = (1 - ratio) * ALERT_OUT_MS + Math.random() * ALERT_OUT_GRAIN_MS;
+      entering = eased(ratio) * ALERT_IN_MS + Math.random() * ALERT_IN_GRAIN_MS,
+      leaving = eased(1 - ratio) * ALERT_OUT_MS + Math.random() * ALERT_OUT_GRAIN_MS;
 
     return `--in:${Math.round(entering)}ms;--out:${Math.round(leaving)}ms`;
   });
 
 const rowNodes = () => [...document.querySelectorAll<HTMLElement>("[data-ach-row]")];
+// Les flèches parcourent les entrées, la tabulation boucle sur tout ce qui prend le focus.
+// Le bouton de fermeture en fait partie : sans lui, « échap » était la seule sortie.
+const focusables = () => [...document.querySelectorAll<HTMLElement>("[data-ach] [data-ctl]")];
 
 export const achievementsSlice = () => ({
   // Le focus entre dans la liste à l'ouverture, sinon échap et tab restent à la page
@@ -85,13 +93,15 @@ export const achievementsSlice = () => ({
       return;
     }
 
-    const rows = rowNodes(),
-      at =
-        document.activeElement instanceof HTMLElement ? rows.indexOf(document.activeElement) : -1;
+    const active =
+      document.activeElement instanceof HTMLElement ? document.activeElement : undefined;
 
     if (event.key === "Tab") {
+      const all = focusables(),
+        from = active ? all.indexOf(active) : -1;
+
       event.preventDefault();
-      rows[(at + (event.shiftKey ? -1 : 1) + rows.length) % rows.length]?.focus();
+      all[(from + (event.shiftKey ? -1 : 1) + all.length) % all.length]?.focus();
 
       return;
     }
@@ -99,6 +109,9 @@ export const achievementsSlice = () => ({
     if (event.key !== "ArrowDown" && event.key !== "ArrowUp") {
       return;
     }
+
+    const rows = rowNodes(),
+      at = active ? rows.indexOf(active) : -1;
 
     event.preventDefault();
     rows[
@@ -137,9 +150,15 @@ export const achievementsSlice = () => ({
 
   closeAchievements(this: Shell) {
     this.achievementsOpen = false;
-    this.$nextTick(() =>
-      (this.achievementsReturn ?? document.querySelector<HTMLElement>("[data-ctl='ach']"))?.focus(),
-    );
+    // L'alerte qui a ouvert la liste a pu disparaître entre-temps : elle ne tient que dix
+    // secondes. Un nœud détaché reste vrai, donc sans « isConnected » le repli ne part
+    // jamais et le focus tombe sur le corps de la page.
+    this.$nextTick(() => {
+      const back =
+        this.achievementsReturn?.isConnected === true ? this.achievementsReturn : undefined;
+
+      (back ?? document.querySelector<HTMLElement>("[data-ctl='ach']"))?.focus();
+    });
   },
 
   markActivity(this: Shell, name: string) {
@@ -201,9 +220,14 @@ export const achievementsSlice = () => ({
     const measured = effects.find(
         (effect) => effect.type === "track" && effect.event === "commande",
       ),
+      // Le répartiteur rend « commande » même pour une ligne qu'il refuse : « out » pose la
+      // mesure avant de savoir. Une faute de frappe ne débloque donc rien.
+      refused = effects.some(
+        (effect) => effect.type === "track" && effect.event === "commande_inconnue",
+      ),
       command = measured?.type === "track" ? String(measured.props["cmd"]) : "";
 
-    if (command === "") {
+    if (command === "" || refused) {
       return;
     }
 

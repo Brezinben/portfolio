@@ -62,12 +62,12 @@ import {
 import { type AchievementsState, achievementsSlice } from "./terminal/achievements/slice.ts";
 import type { RadioApi, RadioState } from "./terminal/radio/slice.ts";
 import { type Section, barParts, printed, section } from "./terminal/format.ts";
+import { readMarks, writeMarks } from "./terminal/achievements/store.ts";
 import type { Magics } from "./terminal/shell.ts";
 
 import { dragState } from "./terminal/mascot/drag.ts";
 import { lookup } from "./terminal/lookup.ts";
 import { mascotSlice } from "./terminal/mascot/slice.ts";
-import { readMarks } from "./terminal/achievements/store.ts";
 import { windowTop } from "./terminal/suggest.ts";
 
 // Une mission du volet gauche : sa pastille et son etat.
@@ -1731,7 +1731,7 @@ document.addEventListener("alpine:init", () => {
       },
 
       get badgeLabel() {
-        const left = this.unseen === 0 ? "" : `, ${this.unseen} non regardé`;
+        const left = this.unseen === 0 ? "" : `, ${this.unseen} non regardés`;
 
         return `succès : ${this.won} sur ${ACHIEVEMENTS.length}${left}`;
       },
@@ -1790,7 +1790,15 @@ document.addEventListener("alpine:init", () => {
 
         // Le catalogue bouge, le stockage non : une clé retirée disparaît sans laisser
         // d'orphelin. Les pages annexes écrivent ici, depuis un autre onglet.
-        this.achievements = keepKnown(readMarks());
+        const stored = readMarks();
+
+        this.achievements = keepKnown(stored);
+
+        // Le nettoyage se réécrit, et ne reste pas en mémoire. « addMark » relit le stockage
+        // brut avant d'écrire : sans cette passe, l'orphelin revenait au premier déblocage.
+        if (this.achievements.length !== stored.length) {
+          writeMarks(this.achievements);
+        }
       },
 
       // Première visite : la page suit la préférence du système. Sans préférence, elle

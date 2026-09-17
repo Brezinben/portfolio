@@ -1881,17 +1881,21 @@
     /* L'alerte de déblocage, en bas du volet de sortie. Le centre de la page recouvrirait
        la session qu'on est en train de lire. Angle droit en haut, et aucune ombre portée :
        il n'y en a nulle part ailleurs dans le terminal. */
-    .tm [data-ach-alert] {
+    .tm [data-ach-live] {
       flex: none;
-      margin-top: auto;
+      margin-top: auto
+    }
+
+    .tm [data-ach-alert] {
       position: relative
     }
 
-    /* Le fond prend l'ambre textuel, et non l'ambre décoratif. Sur le thème clair, le second
-       donne 1,9:1 contre le fond : correct pour une pastille, illisible sous du texte. Le
-       premier tient 4,7:1 au pire des huit thèmes, et il ne demande aucune règle par thème.
-       Le filet d'accent disparaît : il marquait le bandeau contre le panneau, et le fond
-       fait désormais ce travail. */
+    /* Le fond est l'accent fondu au cinquième dans le panneau. Un accent plein écrasait le
+       texte et l'icône, qui portent eux-mêmes l'accent ; ce lavis détache le bandeau du
+       volet sans entrer en concurrence avec ce qu'il montre. À ce dosage, le texte tient
+       6,4:1 au pire des huit thèmes et l'accent de l'icône 3,8:1.
+       Le fondu plutôt qu'une couche translucide : la grille de masques passe par-dessus, et
+       un fond à demi transparent laisserait voir deux surfaces au lieu d'une. */
     .tm [data-ach-alert] button {
       display: grid;
       grid-template-columns: 32px minmax(0, 1fr);
@@ -1901,26 +1905,22 @@
       box-sizing: border-box;
       padding: 10px 12px;
       border: 0;
-      background: var(--acc-text);
-      color: var(--bg);
+      border-top: 1px solid var(--edge);
+      border-left: 2px solid var(--acc);
+      background: color-mix(in srgb, var(--acc) 22%, var(--panel));
+      color: var(--fg);
       font: inherit;
       text-align: left;
       cursor: pointer
     }
 
-    /* Le fond du bandeau est l'accent : les teintes de l'icône s'inversent, sinon ses
-       parties accentuées disparaissent dedans. Le trou prend la couleur du fond, et ce qui
-       était accent prend celle du panneau. */
-    .tm [data-ach-alert] {
-      --t-soft: color-mix(in srgb, currentColor 45%, var(--acc-text));
-      --t-acc: var(--panel);
-      --t-dim: color-mix(in srgb, var(--panel) 55%, var(--acc-text));
-      --t-hl: color-mix(in srgb, var(--panel) 40%, white);
-      --t-bg: var(--acc-text)
+    .tm [data-ach-alert] [data-ach-title] {
+      font-weight: 700
     }
 
-    /* Aucune ligne du bandeau ne passe en retrait : sous le fond accentué, « fg2 » tombe
-       sous le seuil de lisibilité. La hiérarchie tient à la taille et à l'interlettrage. */
+    /* Aucune ligne du bandeau ne passe en retrait : sur ce lavis, « fg2 » tombe à 3:1, sous
+       le seuil d'un texte de douze pixels. La hiérarchie tient à la graisse, à la taille et
+       à l'interlettrage. */
     .tm [data-ach-alert] [data-ach-said],
     .tm [data-ach-alert] [data-ach-trigger] {
       color: inherit
@@ -2390,8 +2390,11 @@
         <!-- L'alerte est ancrée en bas du volet, et non au centre de la page : le centre
              recouvre la session qu'on est en train de lire. La grille de masques n'existe
              que si le mouvement est permis — sinon les cases resteraient opaques. -->
-        <template x-if="alerted">
-          <div data-ach-alert :data-ach-leaving="alertLeaving ? '' : null" role="status">
+        <!-- Le conteneur reste monté, vide compris : une région live que l'on insère déjà
+             remplie n'annonce rien, faute d'un changement à observer. -->
+        <div data-ach-live role="status">
+          <template x-if="alerted">
+            <div data-ach-alert :data-ach-leaving="alertLeaving ? '' : null">
             <button type="button" @click="openAchievements('alerte')"><svg class="icon"
                 aria-hidden="true"><use :href="`#i-${alerted.icon}`" /></svg><span><span data-ach-said>succès
                   débloqué</span><span data-ach-title style="display:block" x-text="alerted.title"></span><span
@@ -2405,10 +2408,11 @@
                 <template x-for="(cell, index) in alertCells" :key="`${alert}-${index}`">
                   <i data-ach-cell :style="cell"></i>
                 </template>
-              </span>
-            </template>
-          </div>
-        </template>
+                </span>
+              </template>
+            </div>
+          </template>
+        </div>
       </aside>
     </main>
 
