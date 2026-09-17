@@ -313,8 +313,8 @@ h1 {
 }
 
 /* La construction pose ici l'image fusionnée et sa taille, à la place de
-   « background-position: 0 0 ». Cette déclaration doit rester la première du fichier : le
-   garde-fou du build n'est pas ancré sur « .slime ». */
+   « background-position: 0 0 ». Le garde-fou du build s'ancre sur le sélecteur : cette
+   déclaration n'a plus besoin d'être la première du fichier. */
 .slime::before {
   content: "";
   position: absolute;

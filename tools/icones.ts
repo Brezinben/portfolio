@@ -49,4 +49,15 @@ const symbols = wanted.map((icon) => {
   return `<symbol id="i-${icon}" viewBox="0 0 16 16">${layers}</symbol>`;
 });
 
-await writeFile(TARGET, `${symbols.join("\n")}\n`);
+// Le fichier est un document SVG entier, et non une liste de symboles nus : un éditeur ou
+// un validateur doit pouvoir l'ouvrir. La page le met en ligne tel quel, racine comprise,
+// et la feuille le sort du flux par « data-sprite ».
+const sprite = [
+  // « data-sprite="" » plutôt que l'attribut nu : un document SVG est du XML, qui exige
+  // une valeur là où HTML accepte un attribut booléen.
+  '<svg xmlns="http://www.w3.org/2000/svg" data-sprite="" aria-hidden="true" focusable="false">',
+  ...symbols,
+  "</svg>",
+].join("\n");
+
+await writeFile(TARGET, `${sprite}\n`);
