@@ -252,9 +252,6 @@ test("should give the boot zone the radius too", async ({ page }) => {
   expect(await rayon(), "the variable drives it too").toBe("0px");
 });
 
-// L'invariant de CONTEXT.md : focalisable ⇒ élément intérieur ⇒ carré. Un outline suit le
-// rayon de l'élément qu'il entoure, et un rayon sur un contrôle se voit d'abord à l'état
-// sélectionné, où la frise reste carrée et la section ne l'était plus.
 // Un contrôle prend l'ambre décoratif, une région de texte l'ambre textuel. En sombre les
 // deux coïncident : c'est le thème clair qui prouve la règle, et c'est là que l'ambre
 // décoratif tombe sous les 3:1 qu'un indicateur de focus demande.
@@ -285,6 +282,9 @@ for (const [theme, controle, texte] of [
   });
 }
 
+// L'invariant de CONTEXT.md : focalisable ⇒ élément intérieur ⇒ carré. Un outline suit le
+// rayon de l'élément qu'il entoure, et un rayon sur un contrôle se voit d'abord à l'état
+// sélectionné, où la frise reste carrée et la section ne l'était plus.
 test("should keep every focusable element square", async ({ page }) => {
   await boot(page);
   // La modale porte quatre des six contrôles corrigés : sans elle le parcours les rate.
