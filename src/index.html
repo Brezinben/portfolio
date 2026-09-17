@@ -1281,9 +1281,21 @@
        couronne est un objet solide et garde sa forme, d'ou l'animation portee par le
        bloc et non par la couronne. */
 
+    /* Un contrôle prend l'ambre décoratif, une région de texte prend l'ambre textuel. La
+       feuille porte déjà cette distinction pour les liens, et l'ambre décoratif du thème
+       clair ne tient pas les 3:1 qu'un indicateur de focus demande.
+       Le journal et la poignée y entrent : sans eux, les deux seuls éléments focalisables
+       du volet central retombaient sur l'anneau du navigateur, invisible sur un fond
+       sombre. */
     .tm [data-ctl]:focus-visible,
-    .tm [data-pane="out"] [tabindex="0"]:focus-visible {
+    .tm [data-handle]:focus-visible {
       outline: 2px solid var(--acc);
+      outline-offset: -2px;
+    }
+
+    .tm [data-journal]:focus-visible,
+    .tm [data-pane="out"] [tabindex="0"]:focus-visible {
+      outline: 2px solid var(--acc-text);
       outline-offset: -2px;
     }
 

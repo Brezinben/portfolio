@@ -255,6 +255,36 @@ test("should give the boot zone the radius too", async ({ page }) => {
 // L'invariant de CONTEXT.md : focalisable ⇒ élément intérieur ⇒ carré. Un outline suit le
 // rayon de l'élément qu'il entoure, et un rayon sur un contrôle se voit d'abord à l'état
 // sélectionné, où la frise reste carrée et la section ne l'était plus.
+// Un contrôle prend l'ambre décoratif, une région de texte l'ambre textuel. En sombre les
+// deux coïncident : c'est le thème clair qui prouve la règle, et c'est là que l'ambre
+// décoratif tombe sous les 3:1 qu'un indicateur de focus demande.
+for (const [theme, controle, texte] of [
+  ["dark", "rgb(245, 184, 59)", "rgb(245, 184, 59)"],
+  ["light", "rgb(230, 160, 0)", "rgb(143, 95, 0)"],
+]) {
+  test(`should mark the focus with the right amber on the ${theme} theme`, async ({ page }) => {
+    await page.addInitScript((choisi) => {
+      localStorage["bd-term-opts"] = JSON.stringify({ anim: true, out: true, theme: choisi });
+    }, theme);
+
+    const cli = await boot(page);
+
+    await fill(cli);
+
+    const marks = await page.evaluate(() =>
+      ["[data-handle]", "[data-journal]", '[data-pane="out"] [tabindex="0"]'].map((selector) => {
+        const node = document.querySelector<HTMLElement>(selector);
+
+        node?.focus();
+
+        return node ? getComputedStyle(node).outlineColor : "absent";
+      }),
+    );
+
+    expect(marks).toEqual([controle, texte, texte]);
+  });
+}
+
 test("should keep every focusable element square", async ({ page }) => {
   await boot(page);
   // La modale porte quatre des six contrôles corrigés : sans elle le parcours les rate.
