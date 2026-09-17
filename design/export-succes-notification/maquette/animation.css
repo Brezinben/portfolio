@@ -1,0 +1,50 @@
+/* MAQUETTE — à lire, pas à committer telle quelle.
+   Les deux animations de l'alerte de succès, isolées. Elles sont ici parce que leur
+   réglage a demandé plusieurs essais, pas parce que ce fichier serait prêt à servir :
+   les sélecteurs, les noms de classes et le découpage appartiennent au projet. */
+
+/* Le bandeau se matérialise case par case, sans fondu : un bloc est là ou il ne l'est
+   pas. La grille de masques est couleur panneau et couvre la boîte ENTIÈRE — bord et
+   filet d'accent compris — sinon le cadre apparaît avant son contenu.
+   Entrée : les cases s'effacent de gauche à droite. */
+@keyframes ach-alert-in {
+  0% { opacity: 1 }
+  100% { opacity: 0 }
+}
+
+/* Sortie : les mêmes cases reviennent, depuis la droite. Elle porte son propre nom
+   d'image-clé, et c'est volontaire — réutiliser celle de l'entrée en `reverse` ne
+   redémarre pas l'animation, le navigateur la considère déjà terminée et le bandeau
+   disparaît d'un coup. Le piège coûte une demi-heure à retrouver. */
+@keyframes ach-alert-out {
+  0% { opacity: 0 }
+  100% { opacity: 1 }
+}
+
+/* Retards, mesurés à l'œil :
+   — entrée : (colonne / colonnes) × 300 ms + jusqu'à 170 ms d'aléatoire, cases de 120 ms ;
+   — sortie : (1 − colonne / colonnes) × 460 ms + jusqu'à 190 ms, cases de 160 ms.
+   La sortie s'étale davantage que l'entrée : à 470 ms elle passait inaperçue. Le grain
+   d'aléatoire existe pour que le front ne soit pas une ligne droite — sans lui, l'effet
+   redevient un balayage, qui est justement ce qu'on ne voulait pas.
+   Le tirage se fait UNE FOIS par déblocage : recalculé à chaque rendu, il repart de zéro
+   au moindre changement d'état voisin. */
+
+/* Le badge du pied s'agite tant qu'un succès n'a pas été regardé. C'est la seule
+   relance, et elle s'arrête au clic, pas au bout d'un minuteur. */
+@keyframes ach-nudge {
+  0%, 62%, 100% { transform: translateY(0) rotate(0) }
+  70% { transform: translateY(-3px) rotate(-8deg) }
+  78% { transform: translateY(-3px) rotate(8deg) }
+  86% { transform: translateY(-1px) rotate(-3deg) }
+  94% { transform: translateY(0) rotate(0) }
+}
+
+@keyframes ach-caret {
+  0%, 49% { opacity: 1 }
+  50%, 100% { opacity: 0 }
+}
+
+/* Le réglage d'animation du site et le mouvement réduit coupent tout : plus de grille de
+   masques du tout, l'alerte apparaît et disparaît sèchement. Ce n'est pas une
+   dégradation, c'est le comportement attendu. */
