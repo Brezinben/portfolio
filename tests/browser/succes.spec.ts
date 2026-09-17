@@ -55,6 +55,25 @@ test("should nudge the badge until the list is opened, and not one second longer
   await expect(page.locator("[data-ach-new]")).toHaveCount(0);
 });
 
+// Le bandeau et la liste prennent le focus comme tout élément intérieur : contour de 2 px
+// en accent, posé à l'intérieur, jamais arrondi. Sans « data-ctl », le bandeau tombait sur
+// l'anneau du navigateur.
+test("should mark the focus on the alert like every other inner element", async ({ page }) => {
+  await boot(page);
+  await type(page, "ls");
+  await alert(page).locator("button").focus();
+
+  const marked = await alert(page)
+    .locator("button")
+    .evaluate((node) => {
+      const style = getComputedStyle(node);
+
+      return [style.outlineWidth, style.outlineStyle, style.outlineOffset, style.borderRadius];
+    });
+
+  expect(marked).toEqual(["2px", "solid", "-2px", "0px"]);
+});
+
 // La tabulation doit atteindre le bouton de fermeture. Sans lui dans la boucle, « échap »
 // était la seule sortie de la liste. Le focus part de la première entrée : une tabulation
 // arrière atteint donc le dernier élément, qui est ce bouton.
@@ -141,8 +160,14 @@ test("should keep a won achievement across a reload", async ({ page }) => {
 test("should show no alert when the output pane is off", async ({ page }) => {
   await boot(page);
   await page.getByRole("button", { name: "options" }).click();
+
+  const options = page.getByRole("dialog", { name: "Options d'affichage" });
+
+  await expect(options).toBeVisible();
   await page.getByRole("button", { name: "output pane" }).click();
+  await expect(page.locator("[data-pane='out']")).toBeHidden();
   await page.keyboard.press("Escape");
+  await expect(options).toBeHidden();
   await type(page, "ls");
 
   await expect(alert(page)).toBeHidden();

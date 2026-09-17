@@ -2395,7 +2395,7 @@
         <div data-ach-live role="status">
           <template x-if="alerted">
             <div data-ach-alert :data-ach-leaving="alertLeaving ? '' : null">
-            <button type="button" @click="openAchievements('alerte')"><svg class="icon"
+            <button type="button" data-ctl="ach-alert" @click="openAchievements('alerte')"><svg class="icon"
                 aria-hidden="true"><use :href="`#i-${alerted.icon}`" /></svg><span><span data-ach-said>succès
                   débloqué</span><span data-ach-title style="display:block" x-text="alerted.title"></span><span
                   data-ach-trigger style="display:block"><span x-text="alerted.trigger"></span><span
