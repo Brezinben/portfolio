@@ -474,7 +474,7 @@
     "list-style-type": "disc",
     "margin-bottom": "0px",
     "margin-top": "0px",
-    "min-height": "44px",
+    "min-height": "auto",
     "min-width": "auto",
     "outline-color": "rgb(126, 160, 166)",
     "outline-width": "3px",

@@ -79,7 +79,8 @@
       padding: 0 18px;
       background: #1c1d2b;
       color: #fff6f6;
-      border: 1px solid #F5B83B;
+      outline: 2px solid #F5B83B;
+      outline-offset: -2px;
       font-size: 14px
     }
 
@@ -784,15 +785,13 @@
       cursor: pointer
     }
 
-    /* Le pied porte depuis les succès une cible tactile, et une cible se vise : sa hauteur
-       vaut celle d'un bouton, et non celle de son texte. Les deux paragraphes se centrent
-       dessus, là où ils s'alignaient sur leur ligne de base. */
+    /* Les deux paragraphes se centrent, là où ils s'alignaient sur leur ligne de base : la
+       coupe du badge et le texte n'ont pas la même hauteur. */
     .tm footer {
       flex: none;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      min-height: 44px;
       gap: 20px;
       padding: 0 4px;
       font-size: 12px;
@@ -1300,9 +1299,17 @@
     }
 
     .tm [data-journal]:focus-visible,
-    .tm [data-pane="out"] [tabindex="0"]:focus-visible {
+    .tm [data-pane="out"] [tabindex="0"]:focus-visible,
+    .tm footer a:focus-visible,
+    .tm [data-boot] a[href="texte.html"]:focus-visible {
       outline: 2px solid var(--acc-text);
       outline-offset: -2px;
+    }
+
+    /* Un lien du pied reçoit la marge intérieure du badge. Sans elle, un contour posé à
+       l'intérieur traverserait les lettres, faute de place. */
+    .tm footer a {
+      padding: 3px 6px
     }
 
     .tm [data-pane="main"] p[tabindex] {
@@ -1768,9 +1775,8 @@
     .tm [data-ctl="ach"] {
       display: inline-flex;
       align-items: center;
-      min-height: 44px;
       gap: 6px;
-      padding: 0;
+      padding: 3px 7px;
       border: 0;
       background: transparent;
       color: inherit;
@@ -1779,8 +1785,8 @@
     }
 
     .tm [data-ctl="ach"] .icon {
-      width: 16px;
-      height: 16px
+      width: 14px;
+      height: 14px
     }
 
     .tm [data-ctl="ach"]:hover {
