@@ -27,14 +27,16 @@ export const answerPending = (input: string, pending: string): Outcome => {
 
 // Consentement en deux temps : la commande dit ce qui part, ou, et ce qui ne part pas.
 // Rien n'est envoye avant un oui.
-export const proposalPrompt = (text: string, feedback: Record<string, string>): Line[] => [
-  line({ marker: "›", markerTone: "acc", text: `« ${text} »`, tone: "fg" }),
-  line({
-    marker: "·",
-    text: `Destination : ${feedback.tool}, ${feedback.umamiHost}.`,
-    tone: "fg2",
-  }),
-  line({ marker: "·", text: `Ce qui part : ${feedback.sent}`, tone: "fg2" }),
-  line({ marker: "·", text: `Ce qui ne part pas : ${feedback.notSent}`, tone: "fg2" }),
-  line({ marker: "?", markerTone: "acc", text: "Envoyer ? tapez oui ou non.", tone: "fg" }),
-];
+export const proposalPrompt = (text: string, feedback: Record<string, string>): Line[] => {
+  return [
+    line({ marker: "›", markerTone: "acc", text: `« ${text} »`, tone: "fg" }),
+    line({
+      marker: "·",
+      text: `Destination : ${feedback.tool}, ${feedback.umamiHost}.`,
+      tone: "fg2",
+    }),
+    line({ marker: "·", text: `Ce qui part : ${feedback.sent}`, tone: "fg2" }),
+    line({ marker: "·", text: `Ce qui ne part pas : ${feedback.notSent}`, tone: "fg2" }),
+    line({ marker: "?", markerTone: "acc", text: "Envoyer ? tapez oui ou non.", tone: "fg" }),
+  ];
+};

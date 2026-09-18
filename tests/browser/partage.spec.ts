@@ -32,9 +32,15 @@ test("should copy the address on share link", async ({ page, context }) => {
 
   // L'adresse partagee est celle d'ou la page vient, pas celle que content.json annonce :
   // le lien copie depuis une preproduction doit ramener a cette preproduction.
-  const here = await page.evaluate(() => globalThis.location.origin + globalThis.location.pathname);
+  const here = await page.evaluate(() => {
+    return globalThis.location.origin + globalThis.location.pathname;
+  });
 
-  expect(await page.evaluate(() => navigator.clipboard.readText())).toContain(here);
+  expect(
+    await page.evaluate(() => {
+      return navigator.clipboard.readText();
+    }),
+  ).toContain(here);
 });
 
 test("should say so without opening anything on an unknown target", async ({ page }) => {
@@ -102,7 +108,9 @@ test("should set no cookie", async ({ page, context }) => {
 
 // Umami bloque ou absent ne doit rien casser : le helper est silencieux.
 test("should not break the page when the audience measurement is blocked", async ({ page }) => {
-  await page.route("**/umami.brezinben.dpdns.org/**", (route) => route.abort());
+  await page.route("**/umami.brezinben.dpdns.org/**", (route) => {
+    return route.abort();
+  });
 
   const cli = await boot(page);
 

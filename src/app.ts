@@ -60,10 +60,11 @@ import {
   TYPE_REST_MS,
 } from "./terminal/mascot/constants.ts";
 import { type AchievementsState, achievementsSlice } from "./terminal/achievements/slice.ts";
+import { GAUGE_AT, type GlitchState, SHIFT_COUNT, glitchSlice } from "./terminal/glitch/slice.ts";
+import type { Magics, TrackSource } from "./terminal/shell.ts";
 import type { RadioApi, RadioState } from "./terminal/radio/slice.ts";
 import { type Section, barParts, printed, section } from "./terminal/format.ts";
 import { readMarks, writeMarks } from "./terminal/achievements/store.ts";
-import type { Magics } from "./terminal/shell.ts";
 
 import { dragState } from "./terminal/mascot/drag.ts";
 import { lookup } from "./terminal/lookup.ts";
@@ -117,7 +118,9 @@ interface Share {
 
 // Alpine vient du script vendu a cote de la page : il n'apporte pas ses types.
 
-const rect = (node: Element) => node.getBoundingClientRect();
+const rect = (node: Element) => {
+  return node.getBoundingClientRect();
+};
 
 declare const Alpine: {
   data: (name: string, factory: () => State) => void;
@@ -151,10 +154,11 @@ const readChoice = (raw: string) => {
 
 // L'attente depassee et le refus ne se reparent pas de la meme facon : l'une demande de
 // patienter, l'autre de regarder l'etat du modele.
-const askFailure = (cause: unknown) =>
-  cause instanceof DOMException && cause.name === "TimeoutError"
+const askFailure = (cause: unknown) => {
+  return cause instanceof DOMException && cause.name === "TimeoutError"
     ? `le modèle local n'a pas répondu en ${ASK_MS / 1000} s.`
     : "le modèle local a refusé de répondre.";
+};
 
 // Ce que le stockage rend. Rien n'y est garanti : c'est une entree exterieure, et le canvas
 // injectait dans l'etat tout ce qu'il y trouvait.
@@ -175,14 +179,9 @@ type Delay = ReturnType<typeof setTimeout>;
 
 type Beat = ReturnType<typeof setInterval>;
 
-// D'où vient une action mesurée : un clic ou une touche dans l'interface, ou une commande
-// tapée dans le terminal. Type partagé pour que les deux ne divergent jamais entre les
-// événements qui la distinguent.
-type TrackSource = "commande" | "interface";
-
 // Ce que la page tient en memoire. Les minuteurs en font partie : les declarer les rend
 // visibles. « RadioState » vient de la tranche qui l'emploie, pour ne pas deriver.
-interface State extends AchievementsState, RadioState {
+interface State extends AchievementsState, GlitchState, RadioState {
   asker: AbortController | undefined;
   bubbleTimer: Delay | undefined;
   compactor: Delay | undefined;
@@ -291,7 +290,9 @@ interface State extends AchievementsState, RadioState {
 // page a la premiere utilisation. Cette liste grossit d'une ligne a chaque extraction.
 //
 // L'etalement est sur ici : une tranche ne porte jamais d'accesseur.
-const slices = () => ({ ...achievementsSlice(), ...mascotSlice() });
+const slices = () => {
+  return { ...achievementsSlice(), ...glitchSlice(), ...mascotSlice() };
+};
 
 // « RadioApi » n'est pas dans « slices » : sa tranche arrive par import dynamique, une fois
 // la commande tapee. Elle rejoint le composant a ce moment, mais « this » la voit des ici.
@@ -302,7 +303,9 @@ type Slices = RadioApi & ReturnType<typeof slices>;
 // sans ce partage, un champ initialise a vide prendrait le type du vide.
 const withMagics = <T>(
   component: State & T & ThisType<Magics & State & Omit<T, keyof State> & Slices>,
-): State & Omit<T, keyof State> => component;
+): State & Omit<T, keyof State> => {
+  return component;
+};
 
 document.addEventListener("alpine:init", () => {
   // Les proprietes sont triees, les methodes suivent un ordre de lecture : chargement,
@@ -318,6 +321,14 @@ document.addEventListener("alpine:init", () => {
       achievementsOpen: false,
       achievementsReturn: undefined,
       alert: "",
+      glitchArmed: 0,
+      glitchBeat: undefined,
+      glitchCache: [],
+      glitchEnd: undefined,
+      glitchMode: "",
+      glitchRain: [],
+      glitchTap: undefined,
+      glitchWait: undefined,
       alertCells: [],
       alertLeaving: false,
       alertQueue: [],
@@ -437,7 +448,11 @@ document.addEventListener("alpine:init", () => {
       // La sortie appartient a la section ouverte, pas a la derniere commande. Une reponse
       // qui prend le resultat ne doit pas vider le volet de droite.
       get open() {
-        return this.all.find((entry: Section) => entry.id === this.section) ?? EMPTY;
+        return (
+          this.all.find((entry: Section) => {
+            return entry.id === this.section;
+          }) ?? EMPTY
+        );
       },
 
       init() {
@@ -446,10 +461,14 @@ document.addEventListener("alpine:init", () => {
           this.bootTick += 1;
         }, COMPACT_TICK_MS);
         this.startMascot();
-        globalThis.addEventListener("popstate", () => this.fromHash());
+        globalThis.addEventListener("popstate", () => {
+          return this.fromHash();
+        });
         this.watchNetwork();
         this.learnModel();
-        globalThis.addEventListener("resize", () => this.setLogHeight(this.logHeight));
+        globalThis.addEventListener("resize", () => {
+          return this.setLogHeight(this.logHeight);
+        });
         this.load();
       },
 
@@ -498,7 +517,9 @@ document.addEventListener("alpine:init", () => {
       },
 
       moveSection(step: number) {
-        const ids = this.sections.map((entry) => entry.id),
+        const ids = this.sections.map((entry) => {
+            return entry.id;
+          }),
           next = ids.indexOf(this.section) + step;
 
         if (next >= 0 && next < ids.length) {
@@ -523,9 +544,11 @@ document.addEventListener("alpine:init", () => {
         // SAFETY: « at » vient de cells.indexOf et le cas -1 est sorti juste au-dessus,
         // donc l'index designe une cellule de la liste.
         const from = rect(cells[at] as HTMLElement),
-          beyond = cells.filter((cell) =>
-            key === "ArrowDown" ? rect(cell).top > from.top + 1 : rect(cell).top < from.top - 1,
-          );
+          beyond = cells.filter((cell) => {
+            return key === "ArrowDown"
+              ? rect(cell).top > from.top + 1
+              : rect(cell).top < from.top - 1;
+          });
 
         if (beyond.length === 0) {
           return true;
@@ -534,15 +557,17 @@ document.addEventListener("alpine:init", () => {
         // La colonne prime sur la ligne. Une derniere ligne plus courte n'a pas de cellule dans la
         // colonne du curseur : viser la ligne d'a cote le faisait glisser tout a gauche, et les
         // frappes suivantes partaient d'ailleurs. Le curseur saute donc cette ligne pour retrouver sa colonne.
-        const inColumn = beyond.filter((cell) => Math.abs(rect(cell).left - from.left) < 1);
+        const inColumn = beyond.filter((cell) => {
+          return Math.abs(rect(cell).left - from.left) < 1;
+        });
 
         if (inColumn.length > 0) {
           inColumn
-            .reduce((best, cell) =>
-              Math.abs(rect(cell).top - from.top) < Math.abs(rect(best).top - from.top)
+            .reduce((best, cell) => {
+              return Math.abs(rect(cell).top - from.top) < Math.abs(rect(best).top - from.top)
                 ? cell
-                : best,
-            )
+                : best;
+            })
             .focus();
 
           return true;
@@ -550,16 +575,20 @@ document.addEventListener("alpine:init", () => {
 
         // Plus rien dans cette colonne : le curseur prend la cellule la plus proche de la
         // premiere ligne atteignable, plutot que de rester sur place.
-        const tops = beyond.map((cell) => rect(cell).top),
+        const tops = beyond.map((cell) => {
+            return rect(cell).top;
+          }),
           edge = key === "ArrowDown" ? Math.min(...tops) : Math.max(...tops),
-          row = beyond.filter((cell) => Math.abs(rect(cell).top - edge) < 1);
+          row = beyond.filter((cell) => {
+            return Math.abs(rect(cell).top - edge) < 1;
+          });
 
         row
-          .reduce((best, cell) =>
-            Math.abs(rect(cell).left - from.left) < Math.abs(rect(best).left - from.left)
+          .reduce((best, cell) => {
+            return Math.abs(rect(cell).left - from.left) < Math.abs(rect(best).left - from.left)
               ? cell
-              : best,
-          )
+              : best;
+          })
           .focus();
 
         return true;
@@ -650,6 +679,18 @@ document.addEventListener("alpine:init", () => {
           }
         }
 
+        // Cinq appuis sur Shift corrompent l'affichage. La garde ci-dessus laisse deja
+        // passer la majuscule tapee dans la ligne de commande : elle ne compte pas.
+        if (event.key === "Shift") {
+          // Le systeme repete une touche maintenue : sans cette sortie, garder Shift
+          // enfonce armait l'egg tout seul en une fraction de seconde.
+          if (!event.repeat) {
+            this.glitchShift();
+          }
+
+          return;
+        }
+
         if (event.key === "/") {
           event.preventDefault();
           this.$refs["cli"]?.focus();
@@ -677,7 +718,9 @@ document.addEventListener("alpine:init", () => {
             this.wantResult = true;
             items[at]?.click();
           }) ||
-          this.listMove('[data-ctl="tl"]', event.key, (at) => this.openTimeline(at));
+          this.listMove('[data-ctl="tl"]', event.key, (at) => {
+            return this.openTimeline(at);
+          });
 
         if (handled) {
           event.preventDefault();
@@ -686,10 +729,18 @@ document.addEventListener("alpine:init", () => {
         }
 
         const fallback = {
-          ArrowDown: () => this.moveInPane(1),
-          ArrowLeft: () => this.movePane(-1),
-          ArrowRight: () => this.movePane(1),
-          ArrowUp: () => this.moveInPane(-1),
+          ArrowDown: () => {
+            return this.moveInPane(1);
+          },
+          ArrowLeft: () => {
+            return this.movePane(-1);
+          },
+          ArrowRight: () => {
+            return this.movePane(1);
+          },
+          ArrowUp: () => {
+            return this.moveInPane(-1);
+          },
         }[event.key];
 
         if (!fallback) {
@@ -703,10 +754,9 @@ document.addEventListener("alpine:init", () => {
       // La stack s'arme à la première validation, puis suit le focus. Avant l'armement,
       // aucun texte d'invite ne s'affiche.
       get stackSummary() {
-        const bricks = this.stack.reduce(
-          (total: number, root: Brick) => total + root.kids.length,
-          0,
-        );
+        const bricks = this.stack.reduce((total: number, root: Brick) => {
+          return total + root.kids.length;
+        }, 0);
 
         return `${this.stack.length} domaines · ${bricks} briques`;
       },
@@ -725,7 +775,9 @@ document.addEventListener("alpine:init", () => {
       // Chaque entree de la frise annonce la commande qui ouvre sa fiche. La commande vient
       // du contenu : la reconstruire ici la ferait mentir au premier renommage.
       missionCue(entry: Step) {
-        const detail = this.details.find((item) => item.id === entry.detail);
+        const detail = this.details.find((item) => {
+          return item.id === entry.detail;
+        });
 
         return detail ? `↵ ${detail.cmd}` : "— pas de fiche";
       },
@@ -765,6 +817,20 @@ document.addEventListener("alpine:init", () => {
         );
       },
 
+      // La jauge des appuis sur Shift, faite comme celle du contexte. Elle n'apparait
+      // qu'au deuxieme appui : au premier elle trahirait l'egg.
+      get shiftArming() {
+        return this.glitchArmed >= GAUGE_AT;
+      },
+
+      get shiftBar() {
+        return barParts(this.glitchArmed, SHIFT_COUNT);
+      },
+
+      get shiftTail() {
+        return `] ${this.glitchArmed}/${SHIFT_COUNT}`;
+      },
+
       // Meme forme que la compaction, memes durees qu'avant : la barre se remplit sur le
       // temps minimum du demarrage, puis attend le contenu, pleine.
       get bootBar() {
@@ -780,17 +846,21 @@ document.addEventListener("alpine:init", () => {
       weigh(entry: Section) {
         if (entry.view === "timeline") {
           return printed(
-            this.timeline.map((item) => ({
-              text: `${item.years}${item.org}${item.role}${item.note}`,
-            })),
+            this.timeline.map((item) => {
+              return {
+                text: `${item.years}${item.org}${item.role}${item.note}`,
+              };
+            }),
           );
         }
 
         if (entry.view === "tree") {
           return printed(
-            this.stack.map((root) => ({
-              text: `${root.label}${root.note ?? ""}${root.kids.join("")}`,
-            })),
+            this.stack.map((root) => {
+              return {
+                text: `${root.label}${root.note ?? ""}${root.kids.join("")}`,
+              };
+            }),
           );
         }
 
@@ -834,8 +904,12 @@ document.addEventListener("alpine:init", () => {
             );
           }),
           taken = rows
-            .filter((node) => node !== journal && !node.hasAttribute("data-result"))
-            .reduce((total, node) => total + node.getBoundingClientRect().height, 0);
+            .filter((node) => {
+              return node !== journal && !node.hasAttribute("data-result");
+            })
+            .reduce((total, node) => {
+              return total + node.getBoundingClientRect().height;
+            }, 0);
 
         return Math.max(
           44,
@@ -1000,7 +1074,9 @@ document.addEventListener("alpine:init", () => {
       },
 
       get outKeyWidth() {
-        const keys = this.open.out.lines.map((row: { k: unknown }) => String(row.k).length);
+        const keys = this.open.out.lines.map((row: { k: unknown }) => {
+          return String(row.k).length;
+        });
 
         return `${Math.max(3, ...keys)}ch`;
       },
@@ -1460,14 +1536,26 @@ document.addEventListener("alpine:init", () => {
       },
 
       startMascot() {
-        this.walker = setInterval(() => this.wander(), 2400);
-        this.twitcher = setInterval(() => this.twitch(), TWITCH_MS);
+        this.walker = setInterval(() => {
+          return this.wander();
+        }, 2400);
+        this.twitcher = setInterval(() => {
+          return this.twitch();
+        }, TWITCH_MS);
         // La piste bouge avec la mise en page, la mascotte non : sans cette reprise, une
         // fenetre redimensionnee la laisserait hors champ.
-        globalThis.addEventListener("resize", () => this.place(this.at));
+        globalThis.addEventListener("resize", () => {
+          return this.place(this.at);
+        });
 
         for (const event of ["pointermove", "keydown", "wheel"]) {
-          globalThis.addEventListener(event, () => this.rouse(), { passive: true });
+          globalThis.addEventListener(
+            event,
+            () => {
+              return this.rouse();
+            },
+            { passive: true },
+          );
         }
 
         this.rouse();
@@ -1487,7 +1575,9 @@ document.addEventListener("alpine:init", () => {
           this.settle();
         }
 
-        this.sleeper = setTimeout(() => this.mascotPlay("sleep"), SLEEP_MS);
+        this.sleeper = setTimeout(() => {
+          return this.mascotPlay("sleep");
+        }, SLEEP_MS);
       },
 
       // Une explosion ou un voyage en cours laisserait la mascotte absente, et leur minuteur
@@ -1592,7 +1682,9 @@ document.addEventListener("alpine:init", () => {
 
         document.documentElement.style.setProperty("--vt-x", `${origin.x}px`);
         document.documentElement.style.setProperty("--vt-y", `${origin.y}px`);
-        document.startViewTransition(() => apply());
+        document.startViewTransition(() => {
+          return apply();
+        });
       },
 
       // La propagation part de ce que le visiteur a touche : le bouton clique, sinon
@@ -1647,7 +1739,12 @@ document.addEventListener("alpine:init", () => {
         const buttons = this.themeButtons(),
           top = buttons[0]?.offsetTop;
 
-        return Math.max(1, buttons.filter((button) => button.offsetTop === top).length);
+        return Math.max(
+          1,
+          buttons.filter((button) => {
+            return button.offsetTop === top;
+          }).length,
+        );
       },
 
       moveTheme(index: number) {
@@ -1659,7 +1756,9 @@ document.addEventListener("alpine:init", () => {
         }
 
         this.setTheme(target.dataset["themeChoice"] ?? "dark");
-        this.$nextTick(() => target.focus());
+        this.$nextTick(() => {
+          return target.focus();
+        });
       },
 
       optsKey(event: KeyboardEvent) {
@@ -1727,7 +1826,11 @@ document.addEventListener("alpine:init", () => {
       },
 
       get themeLabel() {
-        return THEMES.find((entry) => entry.id === this.theme)?.label ?? "";
+        return (
+          THEMES.find((entry) => {
+            return entry.id === this.theme;
+          })?.label ?? ""
+        );
       },
 
       get won() {
@@ -1759,13 +1862,17 @@ document.addEventListener("alpine:init", () => {
             title: done ? entry.title : "???",
             trigger: done
               ? entry.trigger
-              : Array.from({ length: 1 + (entry.key.length % 3) }, () => "???").join(" "),
+              : Array.from({ length: 1 + (entry.key.length % 3) }, () => {
+                  return "???";
+                }).join(" "),
           };
         });
       },
 
       get alerted() {
-        return ACHIEVEMENTS.find((entry) => entry.key === this.alert);
+        return ACHIEVEMENTS.find((entry) => {
+          return entry.key === this.alert;
+        });
       },
 
       restore() {
@@ -1793,7 +1900,9 @@ document.addEventListener("alpine:init", () => {
         }
 
         // Un thème inconnu vaut un thème absent : la préférence du système tranche.
-        this.theme = THEMES.some((entry) => entry.id === saved.theme)
+        this.theme = THEMES.some((entry) => {
+          return entry.id === saved.theme;
+        })
           ? String(saved.theme)
           : this.preferredTheme();
 
@@ -1832,14 +1941,18 @@ document.addEventListener("alpine:init", () => {
         this.optsReturn =
           document.activeElement instanceof HTMLElement ? document.activeElement : undefined;
         this.optsOpen = true;
-        this.$nextTick(() => this.focusSetting());
+        this.$nextTick(() => {
+          return this.focusSetting();
+        });
       },
 
       closeOpts() {
         this.optsOpen = false;
-        this.$nextTick(() =>
-          (this.optsReturn ?? document.querySelector<HTMLElement>("[data-ctl='opts']"))?.focus(),
-        );
+        this.$nextTick(() => {
+          return (
+            this.optsReturn ?? document.querySelector<HTMLElement>("[data-ctl='opts']")
+          )?.focus();
+        });
 
         if (!this.morphHeld) {
           return;
@@ -1855,13 +1968,24 @@ document.addEventListener("alpine:init", () => {
       fromHash() {
         const id = globalThis.location.hash.slice(1);
 
-        this.goSection(this.all.some((entry) => entry.id === id) ? id : "whoami", { push: false });
+        this.goSection(
+          this.all.some((entry) => {
+            return entry.id === id;
+          })
+            ? id
+            : "whoami",
+          { push: false },
+        );
       },
 
       goSection(id: string, options: { push?: boolean; via?: TrackSource } = {}) {
         const { push = true, via = "interface" } = options;
 
-        if (!this.all.some((entry) => entry.id === id)) {
+        if (
+          !this.all.some((entry) => {
+            return entry.id === id;
+          })
+        ) {
           return;
         }
 
@@ -1992,7 +2116,9 @@ document.addEventListener("alpine:init", () => {
         this.typed = raw;
         this.running = false;
         this.commandResult = section({ id: raw, label: raw, lines });
-        this.$nextTick(() => this.setLogHeight(this.logHeight));
+        this.$nextTick(() => {
+          return this.setLogHeight(this.logHeight);
+        });
       },
 
       submit() {
@@ -2022,12 +2148,19 @@ document.addEventListener("alpine:init", () => {
           sections: this.sections,
           share: this.share,
           shareTargets: this.shareTargets,
-          themes: THEMES.map((entry) => entry.id),
+          themes: THEMES.map((entry) => {
+            return entry.id;
+          }),
         });
 
         this.input = "";
         this.closeSugg();
-        this.commands = [raw, ...this.commands.filter((entry) => entry !== raw)];
+        this.commands = [
+          raw,
+          ...this.commands.filter((entry) => {
+            return entry !== raw;
+          }),
+        ];
         this.recallAt = -1;
         this.journal = [...this.journal, ...lines];
         this.$nextTick(() => {
@@ -2228,7 +2361,9 @@ document.addEventListener("alpine:init", () => {
       askPrompt(query: string, candidateIds: string[]) {
         const corpus = [...this.sections, ...this.details],
           topics = candidateIds.map((id) => {
-            const found = corpus.find((entry) => entry.id === id);
+            const found = corpus.find((entry) => {
+              return entry.id === id;
+            });
 
             return `${id} : ${found?.label ?? id} — ${found?.ask ?? ""}`;
           });
@@ -2248,7 +2383,9 @@ document.addEventListener("alpine:init", () => {
           return;
         }
 
-        const found = [...this.sections, ...this.details].find((entry) => entry.id === id);
+        const found = [...this.sections, ...this.details].find((entry) => {
+          return entry.id === id;
+        });
 
         this.journal =
           !found || (found.ask ?? "") === ""
@@ -2309,14 +2446,16 @@ document.addEventListener("alpine:init", () => {
         // Trouver un easter egg vaut une celebration, mais plusieurs disent deja une
         // expression : le but ne se joue que si rien d'autre ne bouge la mascotte, sinon il
         // s'ecraserait aussitot. Il se joue apres la boucle, pour ne pas dependre de l'ordre des effets.
-        const found = effects.some(
-            (effect) => effect.type === "track" && effect.event === "easter_egg",
-          ),
-          moved = effects.some((entry) =>
-            ["activity", "blowUp", "drop", "emote", "say"].includes(entry.type),
-          ),
+        const found = effects.some((effect) => {
+            return effect.type === "track" && effect.event === "easter_egg";
+          }),
+          moved = effects.some((entry) => {
+            return ["activity", "blowUp", "drop", "emote", "say"].includes(entry.type);
+          }),
           // Une commande qui a liste son usage n'a rien fait : lire l'aide ne se celebre pas.
-          listed = effects.some((entry) => entry.type === "usage");
+          listed = effects.some((entry) => {
+            return entry.type === "usage";
+          });
 
         for (const effect of effects) {
           if (effect.type === "track") {
@@ -2363,7 +2502,9 @@ document.addEventListener("alpine:init", () => {
           } else if (effect.type === "replay") {
             this.journal = [];
             this.commandResult = undefined;
-            this.seen = this.seen.filter((entry) => entry !== this.section);
+            this.seen = this.seen.filter((entry) => {
+              return entry !== this.section;
+            });
             this.play(this.section, "commande");
           } else if (effect.type === "state") {
             Object.assign(this, effect.patch);
@@ -2377,6 +2518,14 @@ document.addEventListener("alpine:init", () => {
             this.openOpts("commande");
           } else if (effect.type === "radio") {
             void this.radioBoot();
+          } else if (effect.type === "glitch") {
+            // « sudo » laisse lire son refus avant de tomber en panne ; « matrix » part
+            // avec sa ligne.
+            if (effect.mode === "sudo") {
+              this.glitchLater(effect.mode);
+            } else {
+              this.glitchStart(effect.mode);
+            }
           }
         }
 
@@ -2391,7 +2540,9 @@ document.addEventListener("alpine:init", () => {
           model: this.modelState === "available",
           sections: this.sections,
           shareTargets: this.shareTargets,
-          themes: THEMES.map((entry) => entry.id),
+          themes: THEMES.map((entry) => {
+            return entry.id;
+          }),
         });
 
         this.sugg = result.hits;
@@ -2578,18 +2729,20 @@ document.addEventListener("alpine:init", () => {
           this.share.url = globalThis.location.origin + globalThis.location.pathname;
           this.feedback = content.feedback ?? {};
           this.profileEmail = content.profile?.email ?? "";
-          this.shareTargets = (content.share?.targets ?? []).map(
-            (entry: { id: string }) => entry.id,
-          );
+          this.shareTargets = (content.share?.targets ?? []).map((entry: { id: string }) => {
+            return entry.id;
+          });
           this.timeline = content.timeline ?? [];
           this.stack = content.stack ?? [];
           this.techNotes = content.techNotes ?? {};
-          this.missions = (content.missions ?? []).map((raw: Record<string, string>) => ({
-            dot: safeTone(raw.dot, "ok"),
-            id: raw.id,
-            label: raw.label,
-            state: raw.state ?? "",
-          }));
+          this.missions = (content.missions ?? []).map((raw: Record<string, string>) => {
+            return {
+              dot: safeTone(raw.dot, "ok"),
+              id: raw.id,
+              label: raw.label,
+              state: raw.state ?? "",
+            };
+          });
         } catch (error) {
           // Le boot reste affiché : la page ne se rabat jamais sur un contenu figé.
           this.errDetail = `caused by: ${error instanceof Error ? error.message : String(error)}`;
@@ -2605,7 +2758,9 @@ document.addEventListener("alpine:init", () => {
         // Le plancher tombe quand le visiteur demande moins de mouvement : il ne reste que
         // le temps de charger le contenu.
         this.booter = setTimeout(
-          () => this.finishBoot(),
+          () => {
+            return this.finishBoot();
+          },
           Math.max(0, (this.reduced ? 0 : BOOT_MS) - waited),
         );
       },

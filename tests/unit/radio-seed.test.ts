@@ -31,7 +31,9 @@ it("should derive the frozen parameters of the witness seed", () => {
   assert.equal(params.tonic, "mi");
   assert.equal(params.chords, "I V vi IV");
   assert.deepEqual(
-    params.melody.map((note) => (note ? [note.degree, note.octave] : undefined)),
+    params.melody.map((note) => {
+      return note ? [note.degree, note.octave] : undefined;
+    }),
     [[0, 0], undefined, [1, 0], [0, 0], undefined, [2, 0]],
   );
 });
@@ -58,7 +60,9 @@ it("should derive the very same parameters twice", () => {
 // Deux seeds voisines ne doivent pas rendre deux morceaux voisins, sinon le champ de
 // saisie n'aurait aucun interet : on taperait n'importe quoi et on entendrait la meme chose.
 it("should derive a different tune from a neighbouring seed", () => {
-  const near = [WITNESS + 1, WITNESS + 2, WITNESS + 3].map((seed) => derive(seed).silhouette[0]);
+  const near = [WITNESS + 1, WITNESS + 2, WITNESS + 3].map((seed) => {
+    return derive(seed).silhouette[0];
+  });
 
   assert.equal(new Set(near).size, 3, "three seeds, three silhouettes");
 });
@@ -109,7 +113,9 @@ it("should describe the tune with five lines", () => {
 
   assert.equal(lines.length, 5);
   assert.deepEqual(
-    lines.map((line) => line.label),
+    lines.map((line) => {
+      return line.label;
+    }),
     ["tempo", "tonique", "accords", "timbre · mélodie", "mesure"],
   );
   assert.ok(lines[0]?.value.includes(String(params.tempo)));

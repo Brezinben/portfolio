@@ -4,26 +4,42 @@ import type { Page } from "@playwright/test";
 const UNKNOWN = "/une/route/qui-n-existe-pas";
 const HOME = /cd ~/u;
 const PLAIN = /texte\.html/u;
-const mascot = (page: Page) => page.getByRole("button", { name: "Caresser le slime" });
+const mascot = (page: Page) => {
+  return page.getByRole("button", { name: "Caresser le slime" });
+};
 
 // Le sprite vit sur un pseudo-élément : le bouton, lui, ne porte aucun fond.
-const band = (page: Page) =>
-  mascot(page).evaluate((node) => getComputedStyle(node, "::before").backgroundPositionY);
+const band = (page: Page) => {
+  return mascot(page).evaluate((node) => {
+    return getComputedStyle(node, "::before").backgroundPositionY;
+  });
+};
 
-const exit = (page: Page, name: RegExp) => page.getByRole("link", { name });
+const exit = (page: Page, name: RegExp) => {
+  return page.getByRole("link", { name });
+};
 
 // Ce que la mise en avant dessine : le fond de la ligne, et sa barre d'accent.
-const paint = (page: Page, name: RegExp) =>
-  exit(page, name).evaluate((node) => ({
-    bar: getComputedStyle(node).borderLeftColor,
-    fill: getComputedStyle(node).backgroundColor,
-  }));
+const paint = (page: Page, name: RegExp) => {
+  return exit(page, name).evaluate((node) => {
+    return {
+      bar: getComputedStyle(node).borderLeftColor,
+      fill: getComputedStyle(node).backgroundColor,
+    };
+  });
+};
 
-const focusedText = (page: Page) =>
-  page.evaluate(() => document.activeElement?.textContent?.trim() ?? "");
+const focusedText = (page: Page) => {
+  return page.evaluate(() => {
+    return document.activeElement?.textContent?.trim() ?? "";
+  });
+};
 
-const setOptions = (page: Page, opts: string) =>
-  page.addInitScript((value) => localStorage.setItem("bd-term-opts", value), opts);
+const setOptions = (page: Page, opts: string) => {
+  return page.addInitScript((value) => {
+    return localStorage.setItem("bd-term-opts", value);
+  }, opts);
+};
 
 // Caddy renvoie toute adresse inconnue vers cette page, et file_server y conserve le
 // statut. Un corps sans le statut mentirait aux robots comme aux moteurs.
@@ -57,7 +73,9 @@ test("should take the theme from bd-term-opts", async ({ page }) => {
 
   await expect(page.locator("html")).toHaveAttribute("data-theme", "noctis");
   expect(
-    await page.evaluate(() => getComputedStyle(document.body).backgroundColor),
+    await page.evaluate(() => {
+      return getComputedStyle(document.body).backgroundColor;
+    }),
     "the noctis background",
   ).toBe("rgb(4, 37, 42)");
 });
@@ -65,11 +83,13 @@ test("should take the theme from bd-term-opts", async ({ page }) => {
 test("should draw the mascot from the merged sheet", async ({ page }) => {
   await page.goto(UNKNOWN);
 
-  const sprite = await mascot(page).evaluate((node) => ({
-    animation: getComputedStyle(node, "::before").animationName,
-    duration: getComputedStyle(node, "::before").animationDuration,
-    image: getComputedStyle(node, "::before").backgroundImage,
-  }));
+  const sprite = await mascot(page).evaluate((node) => {
+    return {
+      animation: getComputedStyle(node, "::before").animationName,
+      duration: getComputedStyle(node, "::before").animationDuration,
+      image: getComputedStyle(node, "::before").backgroundImage,
+    };
+  });
 
   expect(sprite.image, "the merged image").toMatch(/slime-sheets(?:\.[\da-f]+)?\.png/u);
   expect(sprite.animation, "sixteen frames, then a pause").toBe("slime-16-pause");
@@ -83,10 +103,12 @@ test("should keep the focus ring out of the mascot hue filter", async ({ page })
   await setOptions(page, JSON.stringify({ theme: "azureus" }));
   await page.goto(UNKNOWN);
 
-  const filters = await mascot(page).evaluate((node) => ({
-    button: getComputedStyle(node).filter,
-    sprite: getComputedStyle(node, "::before").filter,
-  }));
+  const filters = await mascot(page).evaluate((node) => {
+    return {
+      button: getComputedStyle(node).filter,
+      sprite: getComputedStyle(node, "::before").filter,
+    };
+  });
 
   expect(filters.button, "the button draws the outline, so it stays unfiltered").toBe("none");
   expect(filters.sprite, "the sprite follows the theme").toBe("hue-rotate(163deg)");
@@ -117,7 +139,9 @@ test("should move the highlight to the exit the visitor reaches", async ({ page 
   expect(await paint(page, PLAIN), "the paint travels with it").toEqual(marked);
   expect(await paint(page, HOME), "the first one goes back to rest").toEqual(resting);
   expect(
-    await plain.evaluate((node) => getComputedStyle(node).outlineStyle),
+    await plain.evaluate((node) => {
+      return getComputedStyle(node).outlineStyle;
+    }),
     "the ring says focus, which the highlight alone does not",
   ).toBe("solid");
 
@@ -195,7 +219,9 @@ test("should fall back to a known theme when the stored one is unknown", async (
 
   await expect(page.locator("html")).toHaveAttribute("data-theme", /^(?:dark|light)$/u);
   expect(
-    await page.evaluate(() => getComputedStyle(document.body).backgroundColor),
+    await page.evaluate(() => {
+      return getComputedStyle(document.body).backgroundColor;
+    }),
     "an unknown theme must not leave the page without colours",
   ).not.toBe("rgba(0, 0, 0, 0)");
 });

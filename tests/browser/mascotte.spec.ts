@@ -7,14 +7,21 @@ const boot = async (page: Page) => {
 
     return page.getByLabel("Commande");
   },
-  mascot = (page: Page) => page.locator("[data-mascot]"),
+  mascot = (page: Page) => {
+    return page.locator("[data-mascot]");
+  },
   // La construction fusionne les feuilles en une image. Ce n'est plus l'URL qui dit
   // l'etat, c'est la bande : chaque etat lit sa tranche par background-position-y.
-  bande = (page: Page) =>
-    mascot(page).evaluate((node) => getComputedStyle(node).backgroundPositionY),
+  bande = (page: Page) => {
+    return mascot(page).evaluate((node) => {
+      return getComputedStyle(node).backgroundPositionY;
+    });
+  },
   // La construction empreinte le nom des feuilles pour le cache long : on compare la
   // racine, pas l'empreinte.
-  racine = (file: string) => file.replace(/\.[\da-f]{6,}\.png$/u, ".png"),
+  racine = (file: string) => {
+    return file.replace(/\.[\da-f]{6,}\.png$/u, ".png");
+  },
   // Les feuilles sont lourdes : on ne tire que celle qu'on montre.
   watchSheets = (page: Page) => {
     const asked: string[] = [];
@@ -36,7 +43,9 @@ const boot = async (page: Page) => {
     await page.mouse.down();
   },
   // Plusieurs pas : un saut unique ne dirait pas le sens du deplacement.
-  pousser = (page: Page, x: number, y: number) => page.mouse.move(x, y, { steps: 12 });
+  pousser = (page: Page, x: number, y: number) => {
+    return page.mouse.move(x, y, { steps: 12 });
+  };
 
 test("should draw the mascot from a sprite sheet and play the idle state", async ({ page }) => {
   await boot(page);
@@ -44,11 +53,13 @@ test("should draw the mascot from a sprite sheet and play the idle state", async
   await expect(mascot(page)).toBeVisible();
   await expect(mascot(page)).toHaveClass(/slime--idle/u);
 
-  const fond = await mascot(page).evaluate((node) => ({
-    animation: getComputedStyle(node).animationName,
-    image: getComputedStyle(node).backgroundImage,
-    lissage: getComputedStyle(node).imageRendering,
-  }));
+  const fond = await mascot(page).evaluate((node) => {
+    return {
+      animation: getComputedStyle(node).animationName,
+      image: getComputedStyle(node).backgroundImage,
+      lissage: getComputedStyle(node).imageRendering,
+    };
+  });
 
   expect(fond.image, "the merged image").toMatch(/slime-sheets(?:\.[\da-f]+)?\.png/u);
   expect(fond.animation, "twelve frames").toBe("slime-12");
@@ -82,9 +93,9 @@ test("should hide the mascot and load no sheet under reduced motion", async ({ p
 });
 
 test("should hide the mascot and load no sheet when animations are off", async ({ page }) => {
-  await page.addInitScript(() =>
-    localStorage.setItem("bd-term-opts", JSON.stringify({ anim: false })),
-  );
+  await page.addInitScript(() => {
+    return localStorage.setItem("bd-term-opts", JSON.stringify({ anim: false }));
+  });
 
   const asked = watchSheets(page);
 
@@ -155,11 +166,12 @@ test("should pull the mascot out of thinking when a section already seen opens a
 }) => {
   await boot(page);
 
-  const aller = (nom: string) =>
-    page
+  const aller = (nom: string) => {
+    return page
       .getByRole("button", { name: new RegExp(nom) })
       .first()
       .click();
+  };
 
   await aller("contact");
   await aller("whoami");
@@ -191,19 +203,27 @@ test("should replay the morph while the options modal stays open", async ({ page
 // oublierait la mue laisserait la mascotte dessus pour toujours.
 const FERMETURES = [
   {
-    fermer: (page: Page) => page.getByRole("button", { name: "close" }).click(),
+    fermer: (page: Page) => {
+      return page.getByRole("button", { name: "close" }).click();
+    },
     nom: "the close button",
   },
-  { fermer: (page: Page) => page.getByRole("dialog").press("Escape"), nom: "the Escape key" },
+  {
+    fermer: (page: Page) => {
+      return page.getByRole("dialog").press("Escape");
+    },
+    nom: "the Escape key",
+  },
   // Le voile de la modale ferme au clic ; le coin haut gauche tombe hors de la boîte. On
   // vise le voile et non un point de l'écran : pendant la transition de vue, un clic à
   // l'aveugle atterrit sur la racine et se perd.
   {
-    fermer: (page: Page) =>
-      page
+    fermer: (page: Page) => {
+      return page
         .getByRole("dialog")
         .locator("..")
-        .click({ position: { x: 5, y: 5 } }),
+        .click({ position: { x: 5, y: 5 } });
+    },
     nom: "a click outside",
   },
 ];
@@ -232,7 +252,11 @@ test("should bring the hue with the morph, not before it", async ({ page }) => {
   await page.getByRole("button", { name: "options" }).click();
   await page.getByRole("button", { name: "noctis" }).click();
 
-  const teinte = () => mascot(page).evaluate((node) => getComputedStyle(node).filter),
+  const teinte = () => {
+      return mascot(page).evaluate((node) => {
+        return getComputedStyle(node).filter;
+      });
+    },
     depart = await teinte();
 
   expect(depart, "the hue starts from the old theme").not.toContain("hue-rotate(117deg)");
@@ -268,10 +292,15 @@ test("should restart the typing countdown on every key", async ({ page }) => {
 
   // Six touches espacées de 600 ms, moins que le délai de retour : seule la relance à
   // chaque frappe garde la mascotte sur « type » jusqu'au bout.
-  await Array.from({ length: 6 }).reduce<Promise<unknown>>(
-    (chain) => chain.then(() => cli.press("h")).then(() => page.waitForTimeout(600)),
-    Promise.resolve(),
-  );
+  await Array.from({ length: 6 }).reduce<Promise<unknown>>((chain) => {
+    return chain
+      .then(() => {
+        return cli.press("h");
+      })
+      .then(() => {
+        return page.waitForTimeout(600);
+      });
+  }, Promise.resolve());
 
   expect(await mascot(page).getAttribute("class"), "typing was not cut").toBe("slime slime--type");
 });
@@ -294,9 +323,9 @@ test("should load no sheet when the theme changes without a mascot", async ({ pa
 // Rallumer les animations apres un changement de theme remonte la mascotte : elle doit
 // reprendre son repos, pas rester sur la mue d'un theme deja applique.
 test("should return to idle when animations come back after a theme change", async ({ page }) => {
-  await page.addInitScript(() =>
-    localStorage.setItem("bd-term-opts", JSON.stringify({ anim: false })),
-  );
+  await page.addInitScript(() => {
+    return localStorage.setItem("bd-term-opts", JSON.stringify({ anim: false }));
+  });
 
   await boot(page);
   await page.getByRole("button", { name: "options" }).click();
@@ -310,12 +339,13 @@ test("should return to idle when animations come back after a theme change", asy
 
 // Les couleurs sont cuites dans les PNG : les themes sombres les font tourner.
 test("should rotate the hue on dark themes and leave light themes alone", async ({ page }) => {
-  const filtre = (theme: string) =>
-    page.evaluate((chosen) => {
+  const filtre = (theme: string) => {
+    return page.evaluate((chosen) => {
       document.querySelector<HTMLElement>(".tm")!.dataset.theme = chosen;
 
       return getComputedStyle(document.querySelector<HTMLElement>("[data-mascot]")!)!.filter;
     }, theme);
+  };
 
   await boot(page);
 
@@ -392,17 +422,24 @@ test("should write the position straight into the style", async ({ page }) => {
   await cli.fill("/slime drop");
   await cli.press("Enter");
 
-  await expect.poll(() => mascot(page).evaluate((node) => node.style.left)).toMatch(/px$/u);
+  await expect
+    .poll(() => {
+      return mascot(page).evaluate((node) => {
+        return node.style.left;
+      });
+    })
+    .toMatch(/px$/u);
 });
 
 // Cinq clics font exploser le slime. Il ne repond plus a rien jusqu'a sa reapparition.
 test("should blow the mascot up after five clicks", async ({ page }) => {
   await boot(page);
 
-  await Array.from({ length: 5 }).reduce<Promise<unknown>>(
-    (chain) => chain.then(() => mascot(page).click({ force: true })),
-    Promise.resolve(),
-  );
+  await Array.from({ length: 5 }).reduce<Promise<unknown>>((chain) => {
+    return chain.then(() => {
+      return mascot(page).click({ force: true });
+    });
+  }, Promise.resolve());
 
   await expect(mascot(page)).toHaveClass(/slime--boom/u);
 });
@@ -410,14 +447,17 @@ test("should blow the mascot up after five clicks", async ({ page }) => {
 test("should stop answering once the mascot has blown up", async ({ page }) => {
   const cli = await boot(page);
 
-  await Array.from({ length: 5 }).reduce<Promise<unknown>>(
-    (chain) => chain.then(() => mascot(page).click({ force: true })),
-    Promise.resolve(),
-  );
+  await Array.from({ length: 5 }).reduce<Promise<unknown>>((chain) => {
+    return chain.then(() => {
+      return mascot(page).click({ force: true });
+    });
+  }, Promise.resolve());
   await expect(mascot(page)).toHaveClass(/slime--boom/u);
 
   expect(
-    await mascot(page).evaluate((node) => getComputedStyle(node).pointerEvents),
+    await mascot(page).evaluate((node) => {
+      return getComputedStyle(node).pointerEvents;
+    }),
     "the debris cannot be clicked",
   ).toBe("none");
 
@@ -433,22 +473,29 @@ test("should stop answering once the mascot has blown up", async ({ page }) => {
 test("should reform the mascot after its explosion", async ({ page }) => {
   await boot(page);
 
-  await Array.from({ length: 5 }).reduce<Promise<unknown>>(
-    (chain) => chain.then(() => mascot(page).click({ force: true })),
-    Promise.resolve(),
-  );
+  await Array.from({ length: 5 }).reduce<Promise<unknown>>((chain) => {
+    return chain.then(() => {
+      return mascot(page).click({ force: true });
+    });
+  }, Promise.resolve());
 
   await expect(mascot(page)).toHaveClass(/slime--reform/u, { timeout: 15_000 });
   // Reformée, elle quitte l'explosion et se laisse de nouveau toucher. Son état exact
   // dépend du temps écoulé : dix secondes sans geste et la veille prend la main.
   await expect(mascot(page)).not.toHaveClass(/slime--(?:boom|reform)/u, { timeout: 5000 });
-  expect(await mascot(page).evaluate((node) => getComputedStyle(node).pointerEvents)).toBe("auto");
+  expect(
+    await mascot(page).evaluate((node) => {
+      return getComputedStyle(node).pointerEvents;
+    }),
+  ).toBe("auto");
 });
 
 test("should no longer mention any crown", async ({ page }) => {
   await boot(page);
 
-  const garde = await page.evaluate(() => localStorage.getItem("bd-term-opts"));
+  const garde = await page.evaluate(() => {
+    return localStorage.getItem("bd-term-opts");
+  });
 
   expect(garde ?? "", "the crown is no longer stored").not.toContain("crowned");
   await expect(mascot(page)).not.toHaveClass(/slime--(?:king|crown)/u);
@@ -473,7 +520,11 @@ test("should give the mascot a clickable target, not a pixel", async ({ page }) 
 
   expect(box!.width).toBe(64);
   expect(box!.height).toBe(64);
-  expect(await mascot(page).evaluate((node) => getComputedStyle(node).cursor)).toBe("grab");
+  expect(
+    await mascot(page).evaluate((node) => {
+      return getComputedStyle(node).cursor;
+    }),
+  ).toBe("grab");
 });
 
 test("should play the grab when the mascot is caught", async ({ page }) => {
@@ -530,7 +581,9 @@ test("should keep the last frame of a splat that is held long", async ({ page })
   // La passe dure 0,96 s. On attend bien au-dela, comme une main qui ne lache pas.
   await page.waitForTimeout(1600);
 
-  const arret = await mascot(page).evaluate((node) => getComputedStyle(node).backgroundPositionX);
+  const arret = await mascot(page).evaluate((node) => {
+    return getComputedStyle(node).backgroundPositionX;
+  });
 
   expect(arret, "the twelfth frame, not the thirteenth").toBe("-704px");
 
@@ -682,15 +735,21 @@ test("should bring the mascot back into its track when the window is resized", a
 test("should not count a mascot drag as a click", async ({ page }) => {
   await boot(page);
 
-  await Array.from({ length: 5 }).reduce<Promise<unknown>>(
-    (chain) =>
-      chain
-        .then(() => attraper(page))
-        .then(() => pousser(page, 460, 240))
-        .then(() => page.mouse.up())
-        .then(() => expect(mascot(page)).toHaveClass(/slime--idle/u, { timeout: 9000 })),
-    Promise.resolve(),
-  );
+  await Array.from({ length: 5 }).reduce<Promise<unknown>>((chain) => {
+    return chain
+      .then(() => {
+        return attraper(page);
+      })
+      .then(() => {
+        return pousser(page, 460, 240);
+      })
+      .then(() => {
+        return page.mouse.up();
+      })
+      .then(() => {
+        return expect(mascot(page)).toHaveClass(/slime--idle/u, { timeout: 9000 });
+      });
+  }, Promise.resolve());
 
   await expect(mascot(page), "five drags do not explode").not.toHaveClass(/slime--boom/u);
 
@@ -908,7 +967,9 @@ test("should play the cube states on the right bands", async ({ page }) => {
   await expect(mascot(page)).toHaveClass(/slime--sleep\b/u);
   expect(await bande(page), "sleep does not open the idle band").not.toBe("0px");
 
-  const feuille = await mascot(page).evaluate((node) => getComputedStyle(node).backgroundImage);
+  const feuille = await mascot(page).evaluate((node) => {
+    return getComputedStyle(node).backgroundImage;
+  });
 
   expect(feuille).toContain("cube-sheets");
 });

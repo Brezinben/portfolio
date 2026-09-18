@@ -5,9 +5,13 @@ import { it } from "node:test";
 // La piste du test : 100 px de haut, 400 de large. La marge de plaquage vaut 24 px, et
 // elle ne joue que sur la verticale.
 const TRACK = { bottom: 100, left: 0, right: 400, top: 0 },
-  at = (x: number, y: number) => ({ clientX: x, clientY: y }),
+  at = (x: number, y: number) => {
+    return { clientX: x, clientY: y };
+  },
   // Un pas nul : ni « dragLeft » ni « dragRight » ne peuvent gagner par accident.
-  state = (x: number, y: number, step = 0) => dragState(at(x, y), TRACK, step);
+  state = (x: number, y: number, step = 0) => {
+    return dragState(at(x, y), TRACK, step);
+  };
 
 // Un coin se teste avant un bord. Sur une diagonale les deux lectures sont vraies au meme
 // instant, et un coin place apres un mur ne serait jamais atteint.

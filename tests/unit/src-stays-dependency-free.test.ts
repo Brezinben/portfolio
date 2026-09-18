@@ -9,12 +9,20 @@ const PRODUCTION = fileURLToPath(new URL("../../src/", import.meta.url)),
   findForbidden = async (directory: string): Promise<string[]> => {
     const entries = await readdir(directory, { withFileTypes: true }),
       found = entries
-        .filter((entry) => FORBIDDEN.has(entry.name))
-        .map((entry) => relative(PRODUCTION, `${directory}/${entry.name}`)),
+        .filter((entry) => {
+          return FORBIDDEN.has(entry.name);
+        })
+        .map((entry) => {
+          return relative(PRODUCTION, `${directory}/${entry.name}`);
+        }),
       deeper = await Promise.all(
         entries
-          .filter((entry) => entry.isDirectory() && !FORBIDDEN.has(entry.name))
-          .map((entry) => findForbidden(`${directory}/${entry.name}`)),
+          .filter((entry) => {
+            return entry.isDirectory() && !FORBIDDEN.has(entry.name);
+          })
+          .map((entry) => {
+            return findForbidden(`${directory}/${entry.name}`);
+          }),
       );
 
     return [...found, ...deeper.flat()];

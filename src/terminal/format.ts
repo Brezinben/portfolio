@@ -141,18 +141,29 @@ export const banner = (shaped: { banner: string; text: string }): Banner => {
     label: shaped.text,
     shadow: pixels(rows, TONE.acc),
     size: `${BANNER_PX - 1}px`,
-    width: `${Math.max(...rows.map((row) => row.length)) * BANNER_PX}px`,
+    width: `${
+      Math.max(
+        ...rows.map((row) => {
+          return row.length;
+        }),
+      ) * BANNER_PX
+    }px`,
   };
 };
 // Ce qu'une sortie a réellement imprimé, jetons compris.
-export const printed = (lines: Printable[]) =>
-  lines.reduce((total: number, entry: Printable) => {
+export const printed = (lines: Printable[]) => {
+  return lines.reduce((total: number, entry: Printable) => {
     const text = entry.tokens
-      ? entry.tokens.map((token) => token.t).join("")
+      ? entry.tokens
+          .map((token) => {
+            return token.t;
+          })
+          .join("")
       : (entry.t ?? entry.text ?? "");
 
     return total + text.length;
   }, 0);
+};
 // Le bandeau change de nature ici : l'interpreteur rend le mot a dessiner, la coquille
 // rend la geometrie et l'ombre que le balisage ne sait pas calculer.
 export const line = (raw: ContentLine): ShapedLine => {
@@ -170,24 +181,30 @@ export const line = (raw: ContentLine): ShapedLine => {
 };
 /* eslint-enable anti-slop/no-shape-in-symbol-names */
 
-export const outPane = (out: RawOut | undefined) => ({
-  lines: (out?.lines ?? []).map((row: (number | string)[]) => ({
-    k: row[0],
-    kc: safeTone(String(row[2] ?? ""), "fg2"),
-    v: row[1],
-    vc: safeTone(String(row[3] ?? "")),
-  })),
-  title: out?.title ?? "",
-});
-export const section = (raw: RawSection) => ({
-  ask: raw.ask ?? "",
-  cmd: raw.cmd ?? "",
-  dot: safeTone(raw.dot, "ok"),
-  id: raw.id,
-  label: raw.label,
-  lines: (raw.lines ?? []).map(line),
-  out: outPane(raw.out),
-  sub: raw.sub ?? "",
-  suggest: raw.suggest ?? "",
-  view: raw.view ?? "pairs",
-});
+export const outPane = (out: RawOut | undefined) => {
+  return {
+    lines: (out?.lines ?? []).map((row: (number | string)[]) => {
+      return {
+        k: row[0],
+        kc: safeTone(String(row[2] ?? ""), "fg2"),
+        v: row[1],
+        vc: safeTone(String(row[3] ?? "")),
+      };
+    }),
+    title: out?.title ?? "",
+  };
+};
+export const section = (raw: RawSection) => {
+  return {
+    ask: raw.ask ?? "",
+    cmd: raw.cmd ?? "",
+    dot: safeTone(raw.dot, "ok"),
+    id: raw.id,
+    label: raw.label,
+    lines: (raw.lines ?? []).map(line),
+    out: outPane(raw.out),
+    sub: raw.sub ?? "",
+    suggest: raw.suggest ?? "",
+    view: raw.view ?? "pairs",
+  };
+};

@@ -11,7 +11,9 @@ const CONTEXT = {
   },
   // Le meme contexte, avec un modele local disponible : la recherche y porte l'etincelle.
   AVEC_MODELE = { ...CONTEXT, model: true },
-  hits = (value: string) => candidates(value, CONTEXT).hits;
+  hits = (value: string) => {
+    return candidates(value, CONTEXT).hits;
+  };
 
 // Le vocabulaire ne propose que ce que le dispatcher accepte : les easter eggs portent
 // leur slash, les vraies commandes n'en ont pas.

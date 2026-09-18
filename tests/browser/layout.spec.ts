@@ -24,12 +24,19 @@ const fill = async (cli: Locator) => {
 test("should never grow the page past the window height", async ({ page }) => {
   const cli = await boot(page);
 
-  await Array.from({ length: 12 }).reduce<Promise<unknown>>(
-    (chain) => chain.then(() => cli.fill("help")).then(() => cli.press("Enter")),
-    Promise.resolve(),
-  );
+  await Array.from({ length: 12 }).reduce<Promise<unknown>>((chain) => {
+    return chain
+      .then(() => {
+        return cli.fill("help");
+      })
+      .then(() => {
+        return cli.press("Enter");
+      });
+  }, Promise.resolve());
 
-  const overflow = await page.evaluate(() => document.body.scrollHeight - window.innerHeight);
+  const overflow = await page.evaluate(() => {
+    return document.body.scrollHeight - window.innerHeight;
+  });
 
   expect(overflow, "no vertical overflow").toBeLessThanOrEqual(1);
 });
@@ -48,10 +55,12 @@ test("should show the whole help answer in the result", async ({ page }) => {
   await expect(result).toContainText("Clavier");
   await expect(page.locator("[data-journal]")).not.toContainText("à vos risques");
 
-  const shown = await result.evaluate((node) => ({
-    client: node.clientHeight,
-    scroll: node.scrollHeight,
-  }));
+  const shown = await result.evaluate((node) => {
+    return {
+      client: node.clientHeight,
+      scroll: node.scrollHeight,
+    };
+  });
 
   expect(shown.scroll, "nothing stays hidden below the fold of the result").toBeLessThanOrEqual(
     shown.client + 1,
@@ -71,13 +80,13 @@ test("should keep the output filled when a command takes the result", async ({ p
 
   // La colonne des clés se mesure sur la section, elle aussi : mesurée sur la réponse,
   // elle retombait à son plancher et la clé passait sous sa valeur.
-  const chevauche = await page.evaluate(() =>
-    [...document.querySelectorAll('[data-pane="out"] dt')].some((key) => {
+  const chevauche = await page.evaluate(() => {
+    return [...document.querySelectorAll('[data-pane="out"] dt')].some((key) => {
       const value = key.nextElementSibling;
 
       return value ? key.getBoundingClientRect().right > value.getBoundingClientRect().left : false;
-    }),
-  );
+    });
+  });
 
   expect(chevauche, "no key slips under its value").toBe(false);
 });
@@ -106,9 +115,9 @@ test("should take the result back from the command when a section opens", async 
 test("should keep the content at the top of its pane", async ({ page }) => {
   await boot(page);
 
-  const align = await page
-    .locator("[data-result]")
-    .evaluate((node) => getComputedStyle(node).alignContent);
+  const align = await page.locator("[data-result]").evaluate((node) => {
+    return getComputedStyle(node).alignContent;
+  });
 
   expect(align).toBe("start");
 });
@@ -117,9 +126,9 @@ test("should stack the three panes below 900 px", async ({ page }) => {
   await page.setViewportSize({ height: 800, width: 700 });
   await boot(page);
 
-  const direction = await page
-    .locator("[data-panes]")
-    .evaluate((node) => getComputedStyle(node).flexDirection);
+  const direction = await page.locator("[data-panes]").evaluate((node) => {
+    return getComputedStyle(node).flexDirection;
+  });
 
   expect(direction).toBe("column");
 });
@@ -128,7 +137,9 @@ test("should centre the layout beyond 2400 px", async ({ page }) => {
   await page.setViewportSize({ height: 900, width: 3200 });
   await boot(page);
 
-  const width = await page.locator("[data-panes]").evaluate((node) => node.clientWidth);
+  const width = await page.locator("[data-panes]").evaluate((node) => {
+    return node.clientWidth;
+  });
 
   expect(width).toBeLessThanOrEqual(2400);
 });
@@ -136,9 +147,9 @@ test("should centre the layout beyond 2400 px", async ({ page }) => {
 test("should hide the scrollbars", async ({ page }) => {
   await boot(page);
 
-  const width = await page
-    .locator("[data-journal]")
-    .evaluate((node: HTMLElement) => node.offsetWidth - node.clientWidth);
+  const width = await page.locator("[data-journal]").evaluate((node: HTMLElement) => {
+    return node.offsetWidth - node.clientWidth;
+  });
 
   expect(width, "no scrollbar gutter").toBe(0);
 });
@@ -148,11 +159,18 @@ test("should hide the scrollbars", async ({ page }) => {
 test("should show an indicator while content remains below", async ({ page }) => {
   const cli = await boot(page);
 
-  await Array.from({ length: 6 }).reduce<Promise<unknown>>(
-    (chain) => chain.then(() => cli.fill("help")).then(() => cli.press("Enter")),
-    Promise.resolve(),
-  );
-  await page.locator("[data-journal]").evaluate((node) => node.scrollTo(0, 0));
+  await Array.from({ length: 6 }).reduce<Promise<unknown>>((chain) => {
+    return chain
+      .then(() => {
+        return cli.fill("help");
+      })
+      .then(() => {
+        return cli.press("Enter");
+      });
+  }, Promise.resolve());
+  await page.locator("[data-journal]").evaluate((node) => {
+    return node.scrollTo(0, 0);
+  });
 
   await expect(page.locator("[data-more]")).toBeVisible();
 });
@@ -165,11 +183,15 @@ test("should never cut a label of the left pane", async ({ page }) => {
   await page.setViewportSize({ height: 900, width: 1024 });
   await boot(page);
 
-  const cut = await page.evaluate(() =>
-    [...document.querySelectorAll<HTMLElement>('[data-pane="nav"] *')]
-      .filter((node) => node.scrollWidth > node.clientWidth)
-      .map((node) => node.textContent.trim()),
-  );
+  const cut = await page.evaluate(() => {
+    return [...document.querySelectorAll<HTMLElement>('[data-pane="nav"] *')]
+      .filter((node) => {
+        return node.scrollWidth > node.clientWidth;
+      })
+      .map((node) => {
+        return node.textContent.trim();
+      });
+  });
 
   expect(cut, "nothing is cut in the left pane").toEqual([]);
 });
@@ -179,27 +201,32 @@ test("should never cut a label of the left pane", async ({ page }) => {
 test("should keep the pane widths from one section to the next", async ({ page }) => {
   await boot(page);
 
-  const widths = () =>
-      page.evaluate(() =>
-        ["nav", "main", "out"].map((pane) =>
-          Math.round(document.querySelector<HTMLElement>(`[data-pane="${pane}"]`)!.clientWidth),
-        ),
-      ),
+  const widths = () => {
+      return page.evaluate(() => {
+        return ["nav", "main", "out"].map((pane) => {
+          return Math.round(
+            document.querySelector<HTMLElement>(`[data-pane="${pane}"]`)!.clientWidth,
+          );
+        });
+      });
+    },
     first = await widths();
 
-  await ["parcours", "stack", "impact", "contact"].reduce(
-    (chain, id) =>
-      chain
-        .then(() =>
-          page
-            .getByRole("button", { name: new RegExp(id) })
-            .first()
-            .click(),
-        )
-        .then(() => widths())
-        .then((seen) => expect(seen, `section ${id}`).toEqual(first)),
-    Promise.resolve(),
-  );
+  await ["parcours", "stack", "impact", "contact"].reduce((chain, id) => {
+    return chain
+      .then(() => {
+        return page
+          .getByRole("button", { name: new RegExp(id) })
+          .first()
+          .click();
+      })
+      .then(() => {
+        return widths();
+      })
+      .then((seen) => {
+        return expect(seen, `section ${id}`).toEqual(first);
+      });
+  }, Promise.resolve());
 });
 
 // Un seul rayon pilote les coins des zones : la valeur se teste dans le navigateur en
@@ -209,27 +236,34 @@ test("should drive the rounded corners of every zone with a single radius", asyn
   await page.locator("[data-ctl='opts']").click();
   await expect(page.locator("[data-opts]")).toBeVisible();
 
-  const rayons = () =>
-    page.evaluate(() =>
-      [
+  const rayons = () => {
+    return page.evaluate(() => {
+      return [
         "[data-pane='nav'] > div > div:nth-child(1)",
         "[data-pane='nav'] > div > div:nth-child(2)",
         "[data-pane='main']",
         "[data-pane='out']",
         "[data-opts]",
-      ].map((cible) => getComputedStyle(document.querySelector<HTMLElement>(cible)!).borderRadius),
-    );
+      ].map((cible) => {
+        return getComputedStyle(document.querySelector<HTMLElement>(cible)!).borderRadius;
+      });
+    });
+  };
 
   expect(await rayons(), "the five visible zones carry the radius").toEqual(
-    Array.from({ length: 5 }, () => "5px"),
+    Array.from({ length: 5 }, () => {
+      return "5px";
+    }),
   );
 
-  await page.evaluate(() =>
-    document.querySelector<HTMLElement>(".tm")!.style.setProperty("--radius", "0px"),
-  );
+  await page.evaluate(() => {
+    return document.querySelector<HTMLElement>(".tm")!.style.setProperty("--radius", "0px");
+  });
 
   expect(await rayons(), "the variable drives them all").toEqual(
-    Array.from({ length: 5 }, () => "0px"),
+    Array.from({ length: 5 }, () => {
+      return "0px";
+    }),
   );
 });
 
@@ -239,15 +273,19 @@ test("should give the boot zone the radius too", async ({ page }) => {
   await page.goto("/");
 
   const cadre = page.locator("[data-boot] > div"),
-    rayon = () => cadre.evaluate((node) => getComputedStyle(node).borderRadius);
+    rayon = () => {
+      return cadre.evaluate((node) => {
+        return getComputedStyle(node).borderRadius;
+      });
+    };
 
   await expect(cadre).toBeVisible();
 
   expect(await rayon(), "the zone carries the radius").toBe("5px");
 
-  await page.evaluate(() =>
-    document.querySelector<HTMLElement>(".tm")!.style.setProperty("--radius", "0px"),
-  );
+  await page.evaluate(() => {
+    return document.querySelector<HTMLElement>(".tm")!.style.setProperty("--radius", "0px");
+  });
 
   expect(await rayon(), "the variable drives it too").toBe("0px");
 });
@@ -268,15 +306,17 @@ for (const [theme, controle, texte] of [
 
     await fill(cli);
 
-    const marks = await page.evaluate(() =>
-      ["[data-handle]", "[data-journal]", '[data-pane="out"] [tabindex="0"]'].map((selector) => {
-        const node = document.querySelector<HTMLElement>(selector);
+    const marks = await page.evaluate(() => {
+      return ["[data-handle]", "[data-journal]", '[data-pane="out"] [tabindex="0"]'].map(
+        (selector) => {
+          const node = document.querySelector<HTMLElement>(selector);
 
-        node?.focus();
+          node?.focus();
 
-        return node ? getComputedStyle(node).outlineColor : "absent";
-      }),
-    );
+          return node ? getComputedStyle(node).outlineColor : "absent";
+        },
+      );
+    });
 
     expect(marks).toEqual([controle, texte, texte]);
   });
@@ -291,12 +331,18 @@ test("should keep every focusable element square", async ({ page }) => {
   await page.locator("[data-ctl='opts']").click();
   await expect(page.locator("[data-opts]")).toBeVisible();
 
-  const arrondis = await page.evaluate(() =>
-    [...document.querySelectorAll<HTMLElement>('button, input, a[href], [tabindex="0"]')]
-      .filter((node) => node.offsetParent !== null)
-      .filter((node) => getComputedStyle(node).borderRadius !== "0px")
-      .map((node) => `${node.tagName.toLowerCase()}[${node.dataset.ctl ?? "?"}]`),
-  );
+  const arrondis = await page.evaluate(() => {
+    return [...document.querySelectorAll<HTMLElement>('button, input, a[href], [tabindex="0"]')]
+      .filter((node) => {
+        return node.offsetParent !== null;
+      })
+      .filter((node) => {
+        return getComputedStyle(node).borderRadius !== "0px";
+      })
+      .map((node) => {
+        return `${node.tagName.toLowerCase()}[${node.dataset.ctl ?? "?"}]`;
+      });
+  });
 
   expect(arrondis, "focusable ⇒ inner ⇒ square").toEqual([]);
 });
@@ -306,7 +352,11 @@ test("should resize the log with the keyboard and keep its height", async ({ pag
 
   await fill(cli);
 
-  const height = () => page.locator("[data-journal]").evaluate((node) => node.clientHeight),
+  const height = () => {
+      return page.locator("[data-journal]").evaluate((node) => {
+        return node.clientHeight;
+      });
+    },
     before = await height();
 
   await page.getByRole("separator", { name: "Redimensionner le journal" }).focus();
@@ -329,9 +379,9 @@ test("should resize the log with the keyboard and keep its height", async ({ pag
 test("should give the result its room back when a too tall log meets a new section", async ({
   page,
 }) => {
-  await page.addInitScript(() =>
-    localStorage.setItem("bd-term-opts", JSON.stringify({ logH: 900 })),
-  );
+  await page.addInitScript(() => {
+    return localStorage.setItem("bd-term-opts", JSON.stringify({ logH: 900 }));
+  });
   await boot(page);
   await page
     .getByRole("button", { name: /contact/ })
@@ -359,10 +409,11 @@ test("should never shrink the log below 44 px", async ({ page }) => {
   const handle = page.getByRole("separator", { name: "Redimensionner le journal" });
 
   await handle.focus();
-  await Array.from({ length: 20 }).reduce<Promise<unknown>>(
-    (chain) => chain.then(() => handle.press("ArrowDown")),
-    Promise.resolve(),
-  );
+  await Array.from({ length: 20 }).reduce<Promise<unknown>>((chain) => {
+    return chain.then(() => {
+      return handle.press("ArrowDown");
+    });
+  }, Promise.resolve());
 
   // On lit le réglage lui-même, pas la hauteur rendue : le rendu arrondit au sous-pixel,
   // et la colonne empilée remplace la hauteur par un jeton.

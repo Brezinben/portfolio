@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { ACHIEVEMENTS } from "../../src/interpret.ts";
 import type { Page } from "@playwright/test";
 
 // La liste des succès ne s'ouvre qu'après le démarrage : le badge vit dans le pied, que le
@@ -8,25 +9,30 @@ const boot = async (page: Page) => {
     await page.goto("/");
     await expect(page.locator("[data-boot]")).toHaveCount(0, { timeout: 10_000 });
   },
-  badge = (page: Page) => page.locator("[data-ctl='ach']"),
-  alert = (page: Page) => page.locator("[data-ach-alert]"),
+  badge = (page: Page) => {
+    return page.locator("[data-ctl='ach']");
+  },
+  alert = (page: Page) => {
+    return page.locator("[data-ach-alert]");
+  },
   type = async (page: Page, command: string) => {
     await page.locator("input").first().fill(command);
     await page.keyboard.press("Enter");
   },
-  saved = async (page: Page) =>
-    page.evaluate(() => {
+  saved = async (page: Page) => {
+    return page.evaluate(() => {
       // SAFETY: la page vient d'écrire ce tableau elle-même. L'affirmation ne sert qu'à
       // rendre le contenu comparable, et un JSON illisible ferait tomber le test ici.
       const marks = JSON.parse(localStorage["bd-term-achievements"] ?? "[]") as string[];
 
       return marks;
     });
+  };
 
 test("should start with nothing won and nothing to look at", async ({ page }) => {
   await boot(page);
 
-  await expect(badge(page)).toHaveAttribute("aria-label", "succès : 0 sur 27");
+  await expect(badge(page)).toHaveAttribute("aria-label", `succès : 0 sur ${ACHIEVEMENTS.length}`);
   await expect(page.locator("[data-ach-new]")).toHaveCount(0);
 });
 
@@ -39,7 +45,10 @@ test("should queue one alert per unlocked achievement", async ({ page }) => {
   await expect(alert(page)).toContainText("succès débloqué");
   await expect(alert(page)).toContainText("première commande");
   await expect(alert(page)).toContainText("le manuel", { timeout: 15_000 });
-  await expect(badge(page)).toHaveAttribute("aria-label", /succès : 2 sur 27/u);
+  await expect(badge(page)).toHaveAttribute(
+    "aria-label",
+    new RegExp(`succès : 2 sur ${ACHIEVEMENTS.length}`, "u"),
+  );
 });
 
 test("should nudge the badge until the list is opened, and not one second longer", async ({
@@ -92,7 +101,7 @@ test("should unlock nothing on a command that does not exist", async ({ page }) 
   await type(page, "pipo");
 
   await expect(alert(page)).toBeHidden();
-  await expect(badge(page)).toHaveAttribute("aria-label", "succès : 0 sur 27");
+  await expect(badge(page)).toHaveAttribute("aria-label", `succès : 0 sur ${ACHIEVEMENTS.length}`);
 });
 
 // L'alerte qui a ouvert la liste disparaît au bout de dix secondes. Le focus doit revenir
@@ -103,9 +112,9 @@ test("should give the focus back to the badge when the alert that opened the lis
   // « première commande » est déjà acquis : « ls » n'en débloque donc qu'un, et la file ne
   // remet pas une seconde alerte à l'écran pendant que l'on attend la disparition.
   await page.goto("/");
-  await page.evaluate(() =>
-    localStorage.setItem("bd-term-achievements", JSON.stringify(["first-command"])),
-  );
+  await page.evaluate(() => {
+    return localStorage.setItem("bd-term-achievements", JSON.stringify(["first-command"]));
+  });
   await boot(page);
   await type(page, "ls");
   await alert(page).locator("button").click();
@@ -137,8 +146,12 @@ test("should hide what is still locked", async ({ page }) => {
   const rows = page.locator("[data-ach-row]"),
     hidden = await rows.locator("[data-ach-title]").allTextContents();
 
-  await expect(rows).toHaveCount(27);
-  expect(hidden.every((title) => title === "???")).toBe(true);
+  await expect(rows).toHaveCount(ACHIEVEMENTS.length);
+  expect(
+    hidden.every((title) => {
+      return title === "???";
+    }),
+  ).toBe(true);
   expect(new Set(await rows.locator("[data-ach-trigger]").allTextContents()).size).toBeGreaterThan(
     1,
   );
@@ -147,11 +160,17 @@ test("should hide what is still locked", async ({ page }) => {
 test("should keep a won achievement across a reload", async ({ page }) => {
   await boot(page);
   await type(page, "ls");
-  await expect(badge(page)).toHaveAttribute("aria-label", /succès : 2 sur 27/u);
+  await expect(badge(page)).toHaveAttribute(
+    "aria-label",
+    new RegExp(`succès : 2 sur ${ACHIEVEMENTS.length}`, "u"),
+  );
 
   await page.reload();
   await expect(page.locator("[data-boot]")).toHaveCount(0, { timeout: 10_000 });
-  await expect(badge(page)).toHaveAttribute("aria-label", /succès : 2 sur 27/u);
+  await expect(badge(page)).toHaveAttribute(
+    "aria-label",
+    new RegExp(`succès : 2 sur ${ACHIEVEMENTS.length}`, "u"),
+  );
   expect(await saved(page)).toContain("ls");
 });
 
@@ -182,16 +201,22 @@ test("should pick up what the side pages wrote", async ({ page }) => {
   await page.goto("/une/route/qui-n-existe-pas");
   await boot(page);
 
-  await expect(badge(page)).toHaveAttribute("aria-label", "succès : 2 sur 27, 2 non regardés");
+  await expect(badge(page)).toHaveAttribute(
+    "aria-label",
+    `succès : 2 sur ${ACHIEVEMENTS.length}, 2 non regardés`,
+  );
   await expect(alert(page)).toHaveCount(0);
 });
 
 test("should ignore a key the catalogue no longer carries", async ({ page }) => {
   await page.goto("/");
-  await page.evaluate(() =>
-    localStorage.setItem("bd-term-achievements", JSON.stringify(["konami", "ls"])),
-  );
+  await page.evaluate(() => {
+    return localStorage.setItem("bd-term-achievements", JSON.stringify(["konami", "ls"]));
+  });
   await boot(page);
 
-  await expect(badge(page)).toHaveAttribute("aria-label", /succès : 1 sur 27/u);
+  await expect(badge(page)).toHaveAttribute(
+    "aria-label",
+    new RegExp(`succès : 1 sur ${ACHIEVEMENTS.length}`, "u"),
+  );
 });

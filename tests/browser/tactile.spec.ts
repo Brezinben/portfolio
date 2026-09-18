@@ -6,8 +6,11 @@ const TELEPHONE = { hasTouch: true, isMobile: true, viewport: { height: 640, wid
     await page.goto(hash);
     await expect(page.locator("[data-boot]")).toHaveCount(0, { timeout: 10_000 });
   },
-  height = (page: Page, selector: string) =>
-    page.locator(selector).evaluate((node) => node.clientHeight);
+  height = (page: Page, selector: string) => {
+    return page.locator(selector).evaluate((node) => {
+      return node.clientHeight;
+    });
+  };
 
 // Un style inline bat une feuille de style. La requête de média ne peut donc pas écraser
 // les bases de la maquette : elle pose des jetons, et ces tests prouvent que les deux
@@ -18,9 +21,9 @@ test.describe("on touch", () => {
   test("should scroll the stacked column instead of squeezing the panes", async ({ page }) => {
     await boot(page);
 
-    const panes = await page
-      .locator("[data-panes]")
-      .evaluate((node) => ({ client: node.clientHeight, scroll: node.scrollHeight }));
+    const panes = await page.locator("[data-panes]").evaluate((node) => {
+      return { client: node.clientHeight, scroll: node.scrollHeight };
+    });
 
     expect(panes.scroll, "the panes overflow, and the column scrolls them").toBeGreaterThan(
       panes.client + 1,
@@ -30,11 +33,11 @@ test.describe("on touch", () => {
   test("should put the main pane first in the stacked column", async ({ page }) => {
     await boot(page);
 
-    const tops = await page.evaluate(() =>
-      ["main", "nav", "out"].map(
-        (name) => document.querySelector(`[data-pane="${name}"]`)?.getBoundingClientRect().top ?? 0,
-      ),
-    );
+    const tops = await page.evaluate(() => {
+      return ["main", "nav", "out"].map((name) => {
+        return document.querySelector(`[data-pane="${name}"]`)?.getBoundingClientRect().top ?? 0;
+      });
+    });
 
     expect(tops[0]).toBeLessThan(tops[1] ?? 0);
     expect(tops[1]).toBeLessThan(tops[2] ?? 0);
@@ -43,7 +46,9 @@ test.describe("on touch", () => {
   test("should give the main pane the largest share", async ({ page }) => {
     await boot(page);
 
-    const inner = await page.evaluate(() => window.innerHeight);
+    const inner = await page.evaluate(() => {
+      return window.innerHeight;
+    });
 
     expect(await height(page, '[data-pane="main"]')).toBeGreaterThanOrEqual(inner * 0.62);
   });
@@ -51,7 +56,9 @@ test.describe("on touch", () => {
   test("should keep the share of the left pane and of the output pane", async ({ page }) => {
     await boot(page);
 
-    const inner = await page.evaluate(() => window.innerHeight);
+    const inner = await page.evaluate(() => {
+      return window.innerHeight;
+    });
 
     expect(await height(page, '[data-pane="nav"]')).toBeGreaterThanOrEqual(inner * 0.38);
     expect(await height(page, '[data-pane="out"]')).toBeGreaterThanOrEqual(inner * 0.38);
@@ -78,10 +85,12 @@ test.describe("on touch", () => {
 
     await expect(result).toContainText("à vos risques");
 
-    const shown = await result.evaluate((node) => ({
-      client: node.clientHeight,
-      scroll: node.scrollHeight,
-    }));
+    const shown = await result.evaluate((node) => {
+      return {
+        client: node.clientHeight,
+        scroll: node.scrollHeight,
+      };
+    });
 
     expect(shown.scroll, "nothing stays hidden below the fold of the result").toBeLessThanOrEqual(
       shown.client + 1,
@@ -114,10 +123,12 @@ test.describe("on touch", () => {
 
     await expect(journal).toContainText("commande introuvable");
 
-    const shown = await journal.evaluate((node) => ({
-      client: node.clientHeight,
-      scroll: node.scrollHeight,
-    }));
+    const shown = await journal.evaluate((node) => {
+      return {
+        client: node.clientHeight,
+        scroll: node.scrollHeight,
+      };
+    });
 
     expect(shown.scroll, "nothing stays hidden below the fold of the log").toBeLessThanOrEqual(
       shown.client + 1,
@@ -127,7 +138,9 @@ test.describe("on touch", () => {
   test("should never grow the page past the window height", async ({ page }) => {
     await boot(page);
 
-    const overflow = await page.evaluate(() => document.body.scrollHeight - window.innerHeight);
+    const overflow = await page.evaluate(() => {
+      return document.body.scrollHeight - window.innerHeight;
+    });
 
     expect(overflow, "the overflow goes into the column, never into the page").toBeLessThanOrEqual(
       1,
@@ -142,13 +155,13 @@ test.describe("on desktop", () => {
     await boot(page);
 
     const bases = await Promise.all(
-      ["nav", "main", "out"].map((name) =>
-        page.locator(`[data-pane="${name}"]`).evaluate((node) => {
+      ["nav", "main", "out"].map((name) => {
+        return page.locator(`[data-pane="${name}"]`).evaluate((node) => {
           const style = getComputedStyle(node);
 
           return [style.flexGrow, style.flexShrink, style.flexBasis, style.minHeight].join(" ");
-        }),
-      ),
+        });
+      }),
     );
 
     expect(bases).toEqual(["0 1 244.8px 0px", "3 1 360px 0px", "1.3 1 230px 0px"]);
@@ -167,9 +180,9 @@ test.describe("on desktop", () => {
   test("should keep the panes side by side", async ({ page }) => {
     await boot(page);
 
-    const direction = await page
-      .locator("[data-panes]")
-      .evaluate((node) => getComputedStyle(node).flexDirection);
+    const direction = await page.locator("[data-panes]").evaluate((node) => {
+      return getComputedStyle(node).flexDirection;
+    });
 
     expect(direction).toBe("row");
   });

@@ -79,8 +79,12 @@ const ROOT = fileURLToPath(new URL("../", import.meta.url)),
     { dir: "cube", prefix: "cube" },
     { dir: "pingouin", prefix: "peng" },
   ],
-  sheetsOf = (dir: string) => `assets/sprites/${dir}-sheets.png`,
-  dirOf = (file: string) => file.replace(LEADING_SLASH, "").split("/")[2] ?? "",
+  sheetsOf = (dir: string) => {
+    return `assets/sprites/${dir}-sheets.png`;
+  },
+  dirOf = (file: string) => {
+    return file.replace(LEADING_SLASH, "").split("/")[2] ?? "";
+  },
   // Le CSS de src/ nomme une feuille par état, dans l'ordre des bandes attendues ; la
   // construction empile les feuilles dans cet ordre, puis remplace chaque paire par le
   // décalage de sa bande. Les deux sortent du même balayage : ils ne peuvent pas diverger.
@@ -106,11 +110,12 @@ const ROOT = fileURLToPath(new URL("../", import.meta.url)),
   // Le code d'erreur de Node n'est pas dans le type Error : on le retrecit plutot que de
   // l'affirmer. TypeScript impose « unknown » sur un catch ; deviner une forme avant de la verifier ecrirait moins sur que ce code.
   // oxlint-disable-next-line anti-slop/no-unknown-parameters
-  errorCode = (error: unknown): string | undefined =>
+  errorCode = (error: unknown): string | undefined => {
     // oxlint-disable-next-line anti-slop/no-runtime-typeof
-    error instanceof Error && "code" in error && typeof error.code === "string"
+    return error instanceof Error && "code" in error && typeof error.code === "string"
       ? error.code
-      : undefined,
+      : undefined;
+  },
   // Deux formats : la page d'erreur pose son thème avant le premier rendu, donc son script
   // est bloquant. L'entrée part en ligne dans la page, un chunk d'import dynamique devient
   // un fichier. Ne garder que le premier chunk les jetait en silence. Voir l'ADR 0008.
@@ -120,9 +125,15 @@ const ROOT = fileURLToPath(new URL("../", import.meta.url)),
         output: { chunkFileNames: RADIO_CHUNK, format, minify: true },
         write: false,
       }),
-      chunks = result.output.filter((part) => part.type === "chunk"),
-      main = chunks.find((part) => part.isEntry),
-      lazy = chunks.filter((part) => !part.isEntry);
+      chunks = result.output.filter((part) => {
+        return part.type === "chunk";
+      }),
+      main = chunks.find((part) => {
+        return part.isEntry;
+      }),
+      lazy = chunks.filter((part) => {
+        return !part.isEntry;
+      });
 
     if (!main) {
       throw new Error(`Rolldown n'a rien produit pour ${entry}`);
@@ -137,7 +148,9 @@ const ROOT = fileURLToPath(new URL("../", import.meta.url)),
     // L'entrée est mise en ligne dans la page : elle n'a pas d'URL, donc rien ne peut
     // l'importer. Un chunk paresseux doit être autonome. Une seule valeur partagée avec le
     // paquet principal suffit à écrire cet import, et la page casse alors en production.
-    const borrowed = lazy.flatMap((part) => part.imports);
+    const borrowed = lazy.flatMap((part) => {
+      return part.imports;
+    });
 
     if (borrowed.length > 0) {
       throw new Error(`Le chunk paresseux de ${entry} importe ${borrowed.join(", ")}`);
@@ -145,7 +158,9 @@ const ROOT = fileURLToPath(new URL("../", import.meta.url)),
 
     return {
       code: main.code,
-      lazy: lazy.map((part) => ({ code: part.code, file: part.fileName })),
+      lazy: lazy.map((part) => {
+        return { code: part.code, file: part.fileName };
+      }),
     };
   },
   // Les feuilles sont en 8 bits RGBA, non entrelacées : le cas le plus simple du
@@ -298,15 +313,23 @@ const unfilter = (filter: number, value: number, around: Around) => {
   // vide à droite : le CSS ne s'y rend jamais, il s'arrête au nombre de cases de son état.
   mergeSheets = async (files: string[]) => {
     const sheets = await Promise.all(
-        files.map(async (file) => readSheet(file, await readFile(join(SOURCE, file)))),
+        files.map(async (file) => {
+          return readSheet(file, await readFile(join(SOURCE, file)));
+        }),
       ),
-      tall = sheets.findIndex((sheet) => sheet.height !== FRAME);
+      tall = sheets.findIndex((sheet) => {
+        return sheet.height !== FRAME;
+      });
 
     if (tall !== -1) {
       throw new Error(`${files[tall]} ne tient pas sur une ligne de ${FRAME} px`);
     }
 
-    const width = Math.max(...sheets.map((sheet) => sheet.width)),
+    const width = Math.max(
+        ...sheets.map((sheet) => {
+          return sheet.width;
+        }),
+      ),
       height = sheets.length * FRAME,
       pixels = Buffer.alloc(width * height * BYTES_PER_PIXEL);
 
@@ -332,7 +355,9 @@ const unfilter = (filter: number, value: number, around: Around) => {
       // Les trente-deux etats communs ne sont ecrits qu'une fois, sous le slime : les trois
       // formes portent les memes, dans le meme ordre, avec le meme nombre de cases. Les
       // autres formes les deduisent par leur prefixe, et n'ecrivent que leurs transitions.
-      common = declared.filter((file) => dirOf(file) === "slime");
+      common = declared.filter((file) => {
+        return dirOf(file) === "slime";
+      });
 
     if (common.length === 0) {
       throw new Error(`${STYLES} ne déclare plus de feuille de mascotte`);
@@ -340,21 +365,33 @@ const unfilter = (filter: number, value: number, around: Around) => {
 
     // Une transition suit les trente-deux etats communs de la feuille ou elle vit :
     // « evolveCube » montre un slime, mais elle vit dans la feuille du cube.
-    const forms = FORMS.map(({ dir, prefix }) => ({
-        dir,
-        files: [
-          ...common.map((file) => file.replace(`/slime/slime-`, `/${dir}/${prefix}-`)),
-          ...declared.filter((file) => dirOf(file) === dir && !common.includes(file)),
-        ],
-      })),
-      merges = await Promise.all(forms.map(({ files }) => mergeSheets(files))),
+    const forms = FORMS.map(({ dir, prefix }) => {
+        return {
+          dir,
+          files: [
+            ...common.map((file) => {
+              return file.replace(`/slime/slime-`, `/${dir}/${prefix}-`);
+            }),
+            ...declared.filter((file) => {
+              return dirOf(file) === dir && !common.includes(file);
+            }),
+          ],
+        };
+      }),
+      merges = await Promise.all(
+        forms.map(({ files }) => {
+          return mergeSheets(files);
+        }),
+      ),
       bands = new Map<string, number>(),
       sizes = new Map<string, SheetSize>();
 
     forms.forEach(({ dir, files }, index) => {
       const merged = merges[index];
 
-      files.forEach((file, band) => bands.set(file, band));
+      files.forEach((file, band) => {
+        return bands.set(file, band);
+      });
       sizes.set(dir, {
         height: (merged?.height ?? 0) * SCALE,
         width: (merged?.width ?? 0) * SCALE,
@@ -364,12 +401,12 @@ const unfilter = (filter: number, value: number, around: Around) => {
     // Les feuilles source sortent de l'artefact : leur dossier ne sert plus a rien une fois
     // les bandes empilees.
     await Promise.all([
-      ...forms.map(({ dir }, index) =>
-        writeFile(join(staging, sheetsOf(dir)), merges[index]?.bytes ?? Buffer.alloc(0)),
-      ),
-      ...forms.map(({ dir }) =>
-        rm(join(staging, "assets/sprites", dir), { force: true, recursive: true }),
-      ),
+      ...forms.map(({ dir }, index) => {
+        return writeFile(join(staging, sheetsOf(dir)), merges[index]?.bytes ?? Buffer.alloc(0));
+      }),
+      ...forms.map(({ dir }) => {
+        return rm(join(staging, "assets/sprites", dir), { force: true, recursive: true });
+      }),
     ]);
 
     return { bands, sizes };
@@ -411,13 +448,14 @@ const unfilter = (filter: number, value: number, around: Around) => {
         // BASE_RULE. Une forme ajoutee sans sa regle de base ne compilerait pas.
         next = carry.replace(
           BASE_RULE[dir as keyof typeof BASE_RULE],
-          (_rule: string, head: string, indent: string) =>
-            `${head}${indent}background-image: url("${root}${sheetsOf(dir)}");\n${
+          (_rule: string, head: string, indent: string) => {
+            return `${head}${indent}background-image: url("${root}${sheetsOf(dir)}");\n${
               // Seule la forme par defaut pose la position de depart. Un « background-position »
               // sur une regle d'attribut ecraserait le « background-position-y » des regles
               // d'etat, moins specifiques : toutes les bandes retomberaient sur la premiere.
               dir === "slime" ? `${indent}background-position: 0 0;\n` : ""
-            }${indent}background-size: ${size?.width ?? 0}px ${size?.height ?? 0}px;\n`,
+            }${indent}background-size: ${size?.width ?? 0}px ${size?.height ?? 0}px;\n`;
+          },
         );
 
       if (next === carry) {
@@ -439,21 +477,31 @@ const unfilter = (filter: number, value: number, around: Around) => {
     }
 
     const folded = foldPage(
-        page.replace(STYLE_TAG, () => `<style>\n${sheet}</style>`),
+        page.replace(STYLE_TAG, () => {
+          return `<style>\n${sheet}</style>`;
+        }),
         plan,
-        FORMS.map(({ dir }) => dir),
+        FORMS.map(({ dir }) => {
+          return dir;
+        }),
       ),
       bundled = await bundle("app.ts", "esm"),
       // Une fonction de remplacement, car un remplacement littéral interprète les motifs en
       // dollar. Le code source porte « $$ » dans les yeux de cowsay.
       replaced = folded
-        .replace(MODULE_TAG, () => `<script type="module">${bundled.code}</script>`)
-        .replace(SPRITE_TAG, () => sprite);
+        .replace(MODULE_TAG, () => {
+          return `<script type="module">${bundled.code}</script>`;
+        })
+        .replace(SPRITE_TAG, () => {
+          return sprite;
+        });
 
     // Le chunk paresseux s'écrit à la racine, comme la page : un spécificateur relatif dans
     // un module en ligne se résout contre l'adresse du document, pas contre un fichier.
     await Promise.all(
-      bundled.lazy.map(async (part) => writeFile(join(staging, part.file), part.code)),
+      bundled.lazy.map(async (part) => {
+        return writeFile(join(staging, part.file), part.code);
+      }),
     );
     await writeFile(join(staging, "index.html"), await minify(replaced, MINIFY));
   },
@@ -474,8 +522,12 @@ const unfilter = (filter: number, value: number, around: Around) => {
       bundled = await bundle("404.ts", "iife"),
       // Deux fonctions de remplacement : un littéral interpréterait les motifs en dollar.
       inlined = page
-        .replace(ERROR_STYLE_TAG, () => `<style>${folded}</style>`)
-        .replace(SCRIPT_TAG, () => `<script>${bundled.code}</script>`);
+        .replace(ERROR_STYLE_TAG, () => {
+          return `<style>${folded}</style>`;
+        })
+        .replace(SCRIPT_TAG, () => {
+          return `<script>${bundled.code}</script>`;
+        });
 
     // La page d'erreur est servie sur une adresse quelconque : un spécificateur relatif n'y
     // résoudrait pas. Elle ne doit donc porter aucun import dynamique.
@@ -521,9 +573,9 @@ const unfilter = (filter: number, value: number, around: Around) => {
   // reçoive jamais un actif périmé contre une page fraîche.
   stampAssets = async (staging: string) => {
     const files = await walk(staging),
-      stampable = files.filter(
-        (file) => STAMPED_EXTENSIONS.has(extname(file)) && !FIXED_NAMES.has(basename(file)),
-      ),
+      stampable = files.filter((file) => {
+        return STAMPED_EXTENSIONS.has(extname(file)) && !FIXED_NAMES.has(basename(file));
+      }),
       pairs = await Promise.all(
         stampable.map(async (file) => {
           const extension = extname(file),
@@ -542,9 +594,14 @@ const unfilter = (filter: number, value: number, around: Around) => {
   // Du plus long au plus court : aucun nom n'est aujourd'hui le préfixe d'un autre, mais
   // l'ordre protège le jour où deux actifs partageront un début de chemin.
   rewritePages = async (staging: string, renamed: Map<string, string>) => {
-    const ordered = [...renamed].toSorted(([left], [right]) => right.length - left.length),
-      substitute = (text: string) =>
-        ordered.reduce((carry, [from, to]) => carry.split(from).join(to), text);
+    const ordered = [...renamed].toSorted(([left], [right]) => {
+        return right.length - left.length;
+      }),
+      substitute = (text: string) => {
+        return ordered.reduce((carry, [from, to]) => {
+          return carry.split(from).join(to);
+        }, text);
+      };
 
     await Promise.all(
       PAGES.map(async (page) => {
@@ -584,7 +641,11 @@ const unfilter = (filter: number, value: number, around: Around) => {
 
     // Un arrêt brutal ne passe pas par le nettoyage. Sans cette reprise, un Ctrl-C
     // interdirait toute construction suivante jusqu'à un effacement à la main.
-    const owner = Number(await readFile(join(LOCK, "pid"), "utf8").catch(() => 0));
+    const owner = Number(
+      await readFile(join(LOCK, "pid"), "utf8").catch(() => {
+        return 0;
+      }),
+    );
 
     if (owner && running(owner)) {
       throw new Error(`Une construction de ${OUTPUT} tourne déjà, sous le pid ${owner}.`);
@@ -599,7 +660,9 @@ const unfilter = (filter: number, value: number, around: Around) => {
     await rm(LINK, { force: true });
     await symlink(relative(ROOT, version), LINK);
 
-    const existing = await lstat(TARGET).catch(() => undefined);
+    const existing = await lstat(TARGET).catch(() => {
+      return undefined;
+    });
 
     if (existing?.isDirectory()) {
       await rename(TARGET, LEGACY);
@@ -613,7 +676,9 @@ const unfilter = (filter: number, value: number, around: Around) => {
       stale = versions.toSorted().slice(0, -KEPT_VERSIONS);
 
     await Promise.all(
-      stale.map((name) => rm(join(VERSIONS, name), { force: true, recursive: true })),
+      stale.map((name) => {
+        return rm(join(VERSIONS, name), { force: true, recursive: true });
+      }),
     );
   };
 
@@ -624,17 +689,21 @@ const pruneChildren = async (directory: string): Promise<void> => {
 
   await Promise.all(
     entries
-      .filter((entry) => entry.isDirectory())
-      .map(async (entry) => pruneEmpty(join(directory, entry.name))),
+      .filter((entry) => {
+        return entry.isDirectory();
+      })
+      .map(async (entry) => {
+        return pruneEmpty(join(directory, entry.name));
+      }),
   );
 };
 
 const pruneEmpty = async (directory: string): Promise<boolean> => {
   const entries = await readdir(directory, { withFileTypes: true }),
     kept = await Promise.all(
-      entries.map(async (entry) =>
-        entry.isDirectory() ? await pruneEmpty(join(directory, entry.name)) : true,
-      ),
+      entries.map(async (entry) => {
+        return entry.isDirectory() ? await pruneEmpty(join(directory, entry.name)) : true;
+      }),
     );
 
   if (kept.some(Boolean)) {
@@ -656,10 +725,13 @@ try {
     // Une regle plutot qu'une liste de noms : le bundle absorbe les modules, et un renommage
     // ne doit pas republier la source en silence. Les CONTEXT.md sont de la documentation de
     // depot, pas des actifs : les publier exposerait la carte des modules, et empecherait l'elagage.
-    filter: (from: string) =>
-      extname(from) !== ".ts" &&
-      basename(from) !== "CONTEXT.md" &&
-      !TRANSFORMED.has(relative(SOURCE, from)),
+    filter: (from: string) => {
+      return (
+        extname(from) !== ".ts" &&
+        basename(from) !== "CONTEXT.md" &&
+        !TRANSFORMED.has(relative(SOURCE, from))
+      );
+    },
     // Sans ça, chaque construction date à neuf des fichiers identiques. Leur ETag change,
     // et la revalidation « no-cache » du serveur ne rend jamais de 304.
     preserveTimestamps: true,

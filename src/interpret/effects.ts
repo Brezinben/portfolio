@@ -23,6 +23,7 @@ export type Effect =
   | { type: "emote"; expression: Expression }
   | { type: "usage" }
   | { type: "evolve" }
+  | { type: "glitch"; mode: string }
   | { type: "options" }
   | { type: "pending"; answer?: string; payload: string }
   | { type: "power"; mode: string }
@@ -46,14 +47,18 @@ export interface Outcome {
   result?: ContentLine[];
 }
 
-export const track = (event: string, props: Record<string, TrackValue>): Effect => ({
-  event,
-  props,
-  type: "track",
-});
+export const track = (event: string, props: Record<string, TrackValue>): Effect => {
+  return {
+    event,
+    props,
+    type: "track",
+  };
+};
 
-export const say = (text: string, expression: Expression): Effect => ({
-  expression,
-  text,
-  type: "say",
-});
+export const say = (text: string, expression: Expression): Effect => {
+  return {
+    expression,
+    text,
+    type: "say",
+  };
+};

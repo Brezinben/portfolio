@@ -136,7 +136,9 @@ interface Cue {
 
 // Un accord est un empilement de degres, pas d'intervalles : d, d+2, d+4. Cela fonctionne
 // pour n'importe quelle longueur de gamme, pentatonique comprise.
-const chordTone = (chord: number, index: number) => chord + 2 * (index % 3);
+const chordTone = (chord: number, index: number) => {
+  return chord + 2 * (index % 3);
+};
 
 // Le graphe se monte au premier geste, jamais au montage du volet : Chrome refuse de
 // demarrer un contexte sans interaction, et un contexte suspendu ne rend aucun son.
@@ -266,7 +268,9 @@ export const radioEngine = (): Radio => {
         lift = bar % LIFT_EVERY === LIFT_EVERY - 1 ? SEMITONES : 0,
         // La croche faible arrive en retard : rien ne fait sonner « joue » comme ce decalage.
         at = index % 2 === 1 ? cue.at + tune.swingSec : cue.at,
-        pitch = (degree: number) => degreeToMidi(tune.scale, tune.root, degree),
+        pitch = (degree: number) => {
+          return degreeToMidi(tune.scale, tune.root, degree);
+        },
         melody = tune.melody[index];
 
       if (melody) {
@@ -343,7 +347,9 @@ export const radioEngine = (): Radio => {
     },
     // Le niveau que le gain maitre doit viser : zero tant que le son est coupe. « play » et
     // « resume » passent par ici, sinon ils rendraient le son sans que rien le demande.
-    level = () => (silenced ? 0 : MASTER_GAIN),
+    level = () => {
+      return silenced ? 0 : MASTER_GAIN;
+    },
     pause = () => {
       running = false;
       clearInterval(timer);
@@ -395,7 +401,9 @@ export const radioEngine = (): Radio => {
       });
     },
 
-    muted: () => silenced,
+    muted: () => {
+      return silenced;
+    },
 
     pause,
 
@@ -420,7 +428,9 @@ export const radioEngine = (): Radio => {
       return true;
     },
 
-    playing: () => running,
+    playing: () => {
+      return running;
+    },
 
     // Reprendre n'est pas rejouer : le curseur reste ou la pause l'a laisse, donc la boucle
     // continue au lieu de repartir a la premiere mesure. L'horloge du contexte, elle, a
@@ -441,7 +451,9 @@ export const radioEngine = (): Radio => {
       return true;
     },
 
-    started: () => graph !== undefined,
+    started: () => {
+      return graph !== undefined;
+    },
 
     // Couper le son n'arrete pas le sequenceur : le morceau continue de tourner, et le
     // chronometre avec. C'est ce qui distingue le son coupe de la pause, qui elle arrete

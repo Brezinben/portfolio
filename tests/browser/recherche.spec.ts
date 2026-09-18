@@ -17,30 +17,39 @@ const boot = async (page: Page) => {
   // Le modele local n'existe que dans Chrome, derriere un contexte securise. Le faux
   // modele pose le contrat attendu, rien de plus : il prouve l'usage, pas l'API.
   // Le Chromium de Playwright annonce un modele telechargeable mais absent, comme la majorite des visiteurs.
-  retirerModele = (page: Page) =>
-    page.addInitScript(() => {
+  retirerModele = (page: Page) => {
+    return page.addInitScript(() => {
       Reflect.deleteProperty(globalThis, "LanguageModel");
-    }),
+    });
+  },
   // « responseConstraint » fait rendre du JSON au vrai modele : un identifiant en sort
   // entre guillemets. Un faux modele qui rend l'identifiant nu cacherait ce piege.
-  poserModele = (page: Page, choix: string) =>
-    page.addInitScript((id: string) => {
+  poserModele = (page: Page, choix: string) => {
+    return page.addInitScript((id: string) => {
       Object.defineProperty(globalThis, "LanguageModel", {
         configurable: true,
         value: {
-          availability: () => Promise.resolve("available"),
-          create: () =>
-            Promise.resolve({
-              destroy: () => undefined,
-              prompt: () => Promise.resolve(JSON.stringify(id)),
-            }),
+          availability: () => {
+            return Promise.resolve("available");
+          },
+          create: () => {
+            return Promise.resolve({
+              destroy: () => {
+                return undefined;
+              },
+              prompt: () => {
+                return Promise.resolve(JSON.stringify(id));
+              },
+            });
+          },
         },
       });
-    }, choix),
+    }, choix);
+  },
   // Un modele qui ne repond que sur ordre. Un minuteur ferait courir le test contre la
   // latence de la machine : l'attente doit tenir tant que le test ne l'a pas relachee.
-  poserModeleLent = (page: Page) =>
-    page.addInitScript(() => {
+  poserModeleLent = (page: Page) => {
+    return page.addInitScript(() => {
       const { promise, reject, resolve } = Promise.withResolvers<string>();
 
       globalThis.repondre = (id: string) => {
@@ -49,10 +58,14 @@ const boot = async (page: Page) => {
       Object.defineProperty(globalThis, "LanguageModel", {
         configurable: true,
         value: {
-          availability: () => Promise.resolve("available"),
-          create: () =>
-            Promise.resolve({
-              destroy: () => undefined,
+          availability: () => {
+            return Promise.resolve("available");
+          },
+          create: () => {
+            return Promise.resolve({
+              destroy: () => {
+                return undefined;
+              },
               prompt: (_input: string, options?: { signal?: AbortSignal }) => {
                 options?.signal?.addEventListener("abort", () => {
                   reject(new Error("coupé"));
@@ -60,14 +73,17 @@ const boot = async (page: Page) => {
 
                 return promise;
               },
-            }),
+            });
+          },
         },
       });
-    }),
-  relacherModele = (page: Page) =>
-    page.evaluate(() => {
+    });
+  },
+  relacherModele = (page: Page) => {
+    return page.evaluate(() => {
       globalThis.repondre?.("contact");
     });
+  };
 
 test("should answer with the portfolio text on ask, with no model and no network", async ({
   page,
@@ -224,8 +240,12 @@ test("should let the corpus answer come out when the model stays silent", async 
     Object.defineProperty(globalThis, "LanguageModel", {
       configurable: true,
       value: {
-        availability: () => Promise.resolve("available"),
-        create: () => Promise.reject(new Error("muet")),
+        availability: () => {
+          return Promise.resolve("available");
+        },
+        create: () => {
+          return Promise.reject(new Error("muet"));
+        },
       },
     });
   });
@@ -304,12 +324,19 @@ test("should still use an identifier returned without JSON", async ({ page }) =>
     Object.defineProperty(globalThis, "LanguageModel", {
       configurable: true,
       value: {
-        availability: () => Promise.resolve("available"),
-        create: () =>
-          Promise.resolve({
-            destroy: () => undefined,
-            prompt: () => Promise.resolve("  contact  "),
-          }),
+        availability: () => {
+          return Promise.resolve("available");
+        },
+        create: () => {
+          return Promise.resolve({
+            destroy: () => {
+              return undefined;
+            },
+            prompt: () => {
+              return Promise.resolve("  contact  ");
+            },
+          });
+        },
       },
     });
   });
@@ -328,8 +355,12 @@ test("should tell a model failure apart from a missing answer", async ({ page })
     Object.defineProperty(globalThis, "LanguageModel", {
       configurable: true,
       value: {
-        availability: () => Promise.resolve("available"),
-        create: () => Promise.reject(new Error("refus")),
+        availability: () => {
+          return Promise.resolve("available");
+        },
+        create: () => {
+          return Promise.reject(new Error("refus"));
+        },
       },
     });
   });

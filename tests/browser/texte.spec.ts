@@ -2,7 +2,11 @@ import { expect, test } from "@playwright/test";
 import type { Page } from "@playwright/test";
 
 const THEMES = ["dark", "light", "noctis", "azureus", "uva", "bordo", "lux", "hibernus"],
-  fond = (page: Page) => page.evaluate(() => getComputedStyle(document.body).backgroundColor);
+  fond = (page: Page) => {
+    return page.evaluate(() => {
+      return getComputedStyle(document.body).backgroundColor;
+    });
+  };
 
 // La page est le repli du portfolio : elle ne dépend d'aucune ressource externe, et son seul
 // script ne fait que reprendre le thème. Une panne de ce script ne coûte rien.
@@ -15,9 +19,11 @@ test("should load the text version with no image and no external script", async 
   await expect(page.locator("script[src]")).toHaveCount(0);
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Benjamin David");
 
-  const scripts = await page
-    .locator("script")
-    .evaluateAll((nodes) => nodes.map((node) => node.textContent ?? ""));
+  const scripts = await page.locator("script").evaluateAll((nodes) => {
+    return nodes.map((node) => {
+      return node.textContent ?? "";
+    });
+  });
 
   expect(scripts).toHaveLength(1);
   expect(scripts[0]).toContain("dataset.theme");
@@ -43,11 +49,17 @@ test("should link the text version to the terminal version and to llms.txt", asy
 test("should point no link to the canvas", async ({ page }) => {
   await page.goto("/texte.html");
 
-  const hrefs = await page
-    .locator("a[href]")
-    .evaluateAll((links) => links.map((link) => link.getAttribute("href")));
+  const hrefs = await page.locator("a[href]").evaluateAll((links) => {
+    return links.map((link) => {
+      return link.getAttribute("href");
+    });
+  });
 
-  expect(hrefs.filter((href) => href?.includes(".dc.html"))).toEqual([]);
+  expect(
+    hrefs.filter((href) => {
+      return href?.includes(".dc.html");
+    }),
+  ).toEqual([]);
 });
 
 // La personne a déjà choisi son thème sur la version terminal. La page le reprend, et ne
@@ -102,19 +114,29 @@ test("should keep the page whole without JavaScript", async ({ browser }) => {
 test("should self-host the font and let nothing else out", async ({ page }) => {
   const vues: string[] = [];
 
-  page.on("request", (requete) => vues.push(requete.url()));
+  page.on("request", (requete) => {
+    return vues.push(requete.url());
+  });
   await page.goto("/texte.html");
-  await page.evaluate(() => document.fonts.ready);
+  await page.evaluate(() => {
+    return document.fonts.ready;
+  });
 
   const origine = new URL(page.url()).origin,
-    tiers = vues.filter((url) => new URL(url).origin !== origine),
-    polices = vues.filter((url) => url.endsWith(".woff2"));
+    tiers = vues.filter((url) => {
+      return new URL(url).origin !== origine;
+    }),
+    polices = vues.filter((url) => {
+      return url.endsWith(".woff2");
+    });
 
   expect(tiers, `third parties seen: ${JSON.stringify(tiers)}`).toEqual([]);
   expect(polices).toHaveLength(1);
   expect(polices[0]).toContain("atkinson-hyperlegible-next");
 
-  const famille = await page.evaluate(() => getComputedStyle(document.body).fontFamily);
+  const famille = await page.evaluate(() => {
+    return getComputedStyle(document.body).fontFamily;
+  });
 
   expect(famille).toContain("Atkinson Hyperlegible Next");
 });
@@ -133,10 +155,14 @@ test("should offer its navigation landmarks", async ({ page }) => {
 test("should skip no heading level", async ({ page }) => {
   await page.goto("/texte.html");
 
-  const niveaux = await page
-      .locator("h1, h2, h3, h4, h5, h6")
-      .evaluateAll((nodes) => nodes.map((node) => Number(node.tagName.slice(1)))),
-    sauts = niveaux.filter((niveau, index) => index > 0 && niveau - Number(niveaux[index - 1]) > 1);
+  const niveaux = await page.locator("h1, h2, h3, h4, h5, h6").evaluateAll((nodes) => {
+      return nodes.map((node) => {
+        return Number(node.tagName.slice(1));
+      });
+    }),
+    sauts = niveaux.filter((niveau, index) => {
+      return index > 0 && niveau - Number(niveaux[index - 1]) > 1;
+    });
 
   expect(niveaux[0]).toBe(1);
   expect(sauts).toEqual([]);
@@ -158,7 +184,11 @@ test("should serve the side files", async ({ request }) => {
       ["/llms.txt", "text/plain"],
       [`/${partage}`, "image/png"],
     ],
-    responses = await Promise.all(annexes.map(([path]) => request.get(path)));
+    responses = await Promise.all(
+      annexes.map(([path]) => {
+        return request.get(path);
+      }),
+    );
 
   for (const [index, response] of responses.entries()) {
     const [path, type] = annexes[index] ?? ["", ""];

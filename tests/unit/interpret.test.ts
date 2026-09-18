@@ -32,13 +32,28 @@ const CONTEXT: Context = {
   },
   // Le meme contexte, avec un modele local disponible : la recherche lui laisse choisir.
   AVEC_MODELE: Context = { ...CONTEXT, model: true },
-  texts = (result: Outcome) => result.lines.map((line) => line.t),
+  texts = (result: Outcome) => {
+    return result.lines.map((line) => {
+      return line.t;
+    });
+  },
   // Ce qu'une commande met dans le resultat, la ou le journal ne recoit que l'echo.
-  resultTexts = (result: Outcome) => (result.result ?? []).map((line) => line.t ?? ""),
-  kinds = (result: Outcome) => result.effects.map((effect) => effect.type),
+  resultTexts = (result: Outcome) => {
+    return (result.result ?? []).map((line) => {
+      return line.t ?? "";
+    });
+  },
+  kinds = (result: Outcome) => {
+    return result.effects.map((effect) => {
+      return effect.type;
+    });
+  },
   // Retrouver un effet par son genre, en gardant le type precis que l'union lui donne.
-  effectOf = <K extends Effect["type"]>(result: Outcome, kind: K) =>
-    result.effects.find((entry): entry is Extract<Effect, { type: K }> => entry.type === kind);
+  effectOf = <K extends Effect["type"]>(result: Outcome, kind: K) => {
+    return result.effects.find((entry): entry is Extract<Effect, { type: K }> => {
+      return entry.type === kind;
+    });
+  };
 
 it("should produce nothing on an empty input", () => {
   for (const empty of ["", "   ", "\t"]) {
@@ -95,7 +110,11 @@ it("should list the commands and recall the keyboard in the result of help", () 
   assert.match(body, /ls · cd <section>/);
   assert.match(body, /Clavier/);
   assert.deepEqual(texts(result), ["help"]);
-  assert.ok(result.effects.some((effect) => effect.type === "say"));
+  assert.ok(
+    result.effects.some((effect) => {
+      return effect.type === "say";
+    }),
+  );
 });
 
 it("should leave the result to the section on an ordinary command", () => {
@@ -114,7 +133,11 @@ it("should treat aide and the question mark as aliases of help", () => {
 it("should navigate to a section named alone", () => {
   const result = interpret("stack", CONTEXT);
 
-  assert.ok(result.effects.some((effect) => effect.type === "navigate" && effect.id === "stack"));
+  assert.ok(
+    result.effects.some((effect) => {
+      return effect.type === "navigate" && effect.id === "stack";
+    }),
+  );
   assert.match(result.lines[1]?.t ?? "", /section « stack » chargée/);
 });
 
@@ -123,7 +146,9 @@ it("should navigate with cd, and with its aliases open and bd", () => {
     const result = interpret(`${verb} stack`, CONTEXT);
 
     assert.ok(
-      result.effects.some((effect) => effect.type === "navigate" && effect.id === "stack"),
+      result.effects.some((effect) => {
+        return effect.type === "navigate" && effect.id === "stack";
+      }),
       `${verb} must navigate`,
     );
   }
@@ -140,7 +165,11 @@ it("should replay the section when its command is typed again", () => {
 it("should empty the log without showing anything", () => {
   const result = interpret("clear", CONTEXT);
 
-  assert.ok(result.effects.some((effect) => effect.type === "clear"));
+  assert.ok(
+    result.effects.some((effect) => {
+      return effect.type === "clear";
+    }),
+  );
   assert.deepEqual(result.lines, []);
 });
 
@@ -165,7 +194,9 @@ it("should put the mascot to sleep on sleep", () => {
   const result = interpret("sleep", CONTEXT);
 
   assert.ok(
-    result.effects.some((effect) => effect.type === "say" && effect.expression === "sleep"),
+    result.effects.some((effect) => {
+      return effect.type === "say" && effect.expression === "sleep";
+    }),
   );
 });
 
@@ -174,7 +205,9 @@ it("should introduce Benjamin and give his address", () => {
 
   assert.match(texts(result).join("\n"), /benjamin\.david1@hotmail\.fr/);
   assert.ok(
-    result.effects.some((effect) => effect.type === "track" && effect.event === "easter_egg"),
+    result.effects.some((effect) => {
+      return effect.type === "track" && effect.event === "easter_egg";
+    }),
   );
 });
 
@@ -208,7 +241,9 @@ it("should not recognize an easter egg typed without its slash", () => {
 it("should accept the real commands without a slash", () => {
   for (const command of ["help", "ls", "clear"]) {
     assert.ok(
-      !interpret(command, CONTEXT).lines.some((entry) => /introuvable/u.test(entry.t)),
+      !interpret(command, CONTEXT).lines.some((entry) => {
+        return /introuvable/u.test(entry.t);
+      }),
       `${command} must stay a command`,
     );
   }
@@ -219,9 +254,9 @@ it("should say so and track an unknown command", () => {
 
   assert.match(result.lines[1]?.t ?? "", /commande introuvable : xyzzy/);
   assert.ok(
-    result.effects.some(
-      (effect) => effect.type === "track" && effect.event === "commande_inconnue",
-    ),
+    result.effects.some((effect) => {
+      return effect.type === "track" && effect.event === "commande_inconnue";
+    }),
   );
 });
 
@@ -267,12 +302,16 @@ it("should no longer offer idle as an expression of slime", () => {
   assert.ok(
     texts(result)
       .slice(1)
-      .some((text) => text.includes("/slime expression <nom>")),
+      .some((text) => {
+        return text.includes("/slime expression <nom>");
+      }),
   );
   assert.ok(
     !texts(result)
       .slice(1)
-      .some((text) => text.includes("idle")),
+      .some((text) => {
+        return text.includes("idle");
+      }),
   );
 });
 
@@ -296,7 +335,11 @@ it("should list the activities when slime activity gets no known name", () => {
   const result = interpret("/slime activity xyzzy", CONTEXT);
 
   assert.equal(effectOf(result, "activity"), undefined);
-  assert.ok(texts(result).some((text) => text.includes("slime activity <nom>")));
+  assert.ok(
+    texts(result).some((text) => {
+      return text.includes("slime activity <nom>");
+    }),
+  );
 });
 
 // Quatre alias sur dix-huit seulement sont proposés par l'autocomplétion. Les autres ne
@@ -359,7 +402,9 @@ it("should answer with a passage of the corpus, never with generated text", () =
 
   assert.ok(texts(result).includes("stack"), "ask must name the source of its answer");
   assert.ok(
-    texts(result).some((t) => t.includes("accessibilité RGAA")),
+    texts(result).some((t) => {
+      return t.includes("accessibilité RGAA");
+    }),
     "the answer is the text of the corpus",
   );
 });
@@ -369,7 +414,11 @@ it("should answer alone and describe no candidate when ask runs without a model"
   const result = interpret("ask nantes développeur", CONTEXT);
 
   assert.equal(effectOf(result, "ask"), undefined);
-  assert.ok(texts(result).some((t) => t.includes("Nantes")));
+  assert.ok(
+    texts(result).some((t) => {
+      return t.includes("Nantes");
+    }),
+  );
 });
 
 // Le modele voit tous les passages, pas seulement ceux qui partagent un mot avec la
@@ -389,7 +438,9 @@ it("should keep the corpus answer waiting in the descriptor when ask runs with a
 
   assert.deepEqual(texts(result), ["ask nantes développeur"], "nothing is shown yet");
   assert.ok(
-    (descripteur?.lexical ?? []).some((entry) => entry.t.includes("Nantes")),
+    (descripteur?.lexical ?? []).some((entry) => {
+      return entry.t.includes("Nantes");
+    }),
     "the lexical answer waits in reserve",
   );
 });
@@ -401,7 +452,9 @@ it("should consult the model even without a lexical match", () => {
 
   assert.deepEqual(descripteur?.candidates, ["whoami", "stack", "m-kereis"]);
   assert.ok(
-    (descripteur?.lexical ?? []).some((entry) => entry.t.includes("rien ne répond")),
+    (descripteur?.lexical ?? []).some((entry) => {
+      return entry.t.includes("rien ne répond");
+    }),
     "the refusal waits in reserve, in case the model finds nothing either",
   );
 });
@@ -409,12 +462,20 @@ it("should consult the model even without a lexical match", () => {
 it("should say so and offer no candidate when ask finds no answer without a model", () => {
   const result = interpret("ask zzzzz", CONTEXT);
 
-  assert.ok(texts(result).some((t) => t.includes("rien ne répond")));
+  assert.ok(
+    texts(result).some((t) => {
+      return t.includes("rien ne répond");
+    }),
+  );
   assert.equal(effectOf(result, "ask"), undefined);
 });
 
 it("should recall its usage when ask gets no question", () => {
-  assert.ok(texts(interpret("ask", CONTEXT)).some((t) => t.startsWith("ask —")));
+  assert.ok(
+    texts(interpret("ask", CONTEXT)).some((t) => {
+      return t.startsWith("ask —");
+    }),
+  );
 });
 
 // Les deux modes partagent une branche. Sans ce test, corriger le texte de l'un
@@ -498,7 +559,11 @@ it("should say so and recall the list on an unknown theme", () => {
 
   assert.equal(effectOf(result, "theme"), undefined);
   assert.match(texts(result)[1] ?? "", /thème inconnu : xyzzy/u);
-  assert.ok(texts(result).some((text) => text.includes("theme <nom>")));
+  assert.ok(
+    texts(result).some((text) => {
+      return text.includes("theme <nom>");
+    }),
+  );
 });
 
 // « ai » et « ask » n'ont pas encore de partie pure. Les annoncer promet un résultat
@@ -527,11 +592,15 @@ it("should explain what each navigation verb expects", () => {
 
     assert.doesNotMatch(texts(result).join(" "), /introuvable/u, verb);
     assert.ok(
-      texts(result).some((text) => text.includes(`${verb} <section>`)),
+      texts(result).some((text) => {
+        return text.includes(`${verb} <section>`);
+      }),
       verb,
     );
     assert.ok(
-      texts(result).some((text) => text.includes("whoami")),
+      texts(result).some((text) => {
+        return text.includes("whoami");
+      }),
       verb,
     );
   }
@@ -541,20 +610,31 @@ it("should say so and recall the sections on an unknown section", () => {
   const result = interpret("cd xyzzy", CONTEXT);
 
   assert.match(texts(result)[1] ?? "", /section inconnue : xyzzy/u);
-  assert.ok(texts(result).some((text) => text.includes("whoami")));
+  assert.ok(
+    texts(result).some((text) => {
+      return text.includes("whoami");
+    }),
+  );
 });
 
 it("should recall the targets on an unknown share target", () => {
   const result = interpret("share xyzzy", { ...CONTEXT, shareTargets: ["linkedin"] });
 
   assert.match(texts(result)[1] ?? "", /cible inconnue : xyzzy/u);
-  assert.ok(texts(result).some((text) => text.includes("share <cible>")));
+  assert.ok(
+    texts(result).some((text) => {
+      return text.includes("share <cible>");
+    }),
+  );
 });
 
 // À dix valeurs, la ligne déborde du volet : la complétion les montre mieux, et l'aide
 // apprend la touche plutôt que de recopier une liste illisible.
-const many = (count: number) =>
-  Array.from({ length: count }, (_, index) => ({ id: `s-${index}`, label: `s-${index}` }));
+const many = (count: number) => {
+  return Array.from({ length: count }, (_, index) => {
+    return { id: `s-${index}`, label: `s-${index}` };
+  });
+};
 
 it("should point to the tab key from ten values on", () => {
   const listed = interpret("cd", { ...CONTEXT, details: [], sections: many(9) }),
@@ -579,7 +659,9 @@ it("should list the expressions when slime expression gets no known expression",
 
     assert.equal(effectOf(result, "emote"), undefined, command);
     assert.ok(
-      texts(result).some((text) => text.includes("/slime expression <nom>")),
+      texts(result).some((text) => {
+        return text.includes("/slime expression <nom>");
+      }),
       command,
     );
   }
@@ -603,11 +685,15 @@ it("should no longer accept slime jump as a second name for drop", () => {
   const result = interpret("/slime jump", CONTEXT);
 
   assert.equal(effectOf(result, "drop"), undefined);
-  assert.ok(texts(result).some((text) => text.includes("/slime drop")));
+  assert.ok(
+    texts(result).some((text) => {
+      return text.includes("/slime drop");
+    }),
+  );
 });
 
-it("should emit nothing more than its expression on matrix", () => {
-  assert.deepEqual(kinds(interpret("/matrix", CONTEXT)), ["track", "track", "emote"]);
+it("should emit its expression and the glitch on matrix", () => {
+  assert.deepEqual(kinds(interpret("/matrix", CONTEXT)), ["track", "track", "emote", "glitch"]);
 });
 
 // Le journal ne doit pas annoncer un geste que la coquille avale. La mascotte est absente

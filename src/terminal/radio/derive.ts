@@ -141,8 +141,9 @@ export const rng = (seed: number) => {
 
 // Un tirage dans une liste fermee. L'index tombe toujours dans les bornes, mais le type
 // d'entree non vide est ce qui le prouve au compilateur.
-const pick = <T>(list: readonly [T, ...T[]], roll: number) =>
-  list[Math.floor(roll * list.length)] ?? list[0];
+const pick = <T>(list: readonly [T, ...T[]], roll: number) => {
+  return list[Math.floor(roll * list.length)] ?? list[0];
+};
 
 // Une hauteur se calcule toujours par degre, jamais en demi-tons absolus. C'est ce qui fait
 // qu'une seed sonne juste plutot qu'aleatoire : le sequenceur ne peut pas tomber en
@@ -154,16 +155,20 @@ export const degreeToMidi = (scale: Scale, root: number, step: number) => {
   return root + (scale.steps[index] ?? 0) + SEMITONES * Math.floor(step / len);
 };
 
-export const midiToHertz = (midi: number) => 440 * 2 ** ((midi - 69) / SEMITONES);
+export const midiToHertz = (midi: number) => {
+  return 440 * 2 ** ((midi - 69) / SEMITONES);
+};
 
 // Treize chiffres : assez grand pour qu'une seed ne se recroise jamais par hasard, assez
 // court pour se dicter a voix haute.
-export const newSeed = () => Math.floor(Math.random() * 9e12) + 1e12;
+export const newSeed = () => {
+  return Math.floor(Math.random() * 9e12) + 1e12;
+};
 
 // Le chiffrage est calcule, pas ecrit : la tierce reelle de l'accord decide de la casse. Le
 // volet annonce donc les accords qu'il joue, y compris quand la gamme change leur qualite.
-export const romanNumerals = (scale: Scale, prog: readonly number[]) =>
-  prog
+export const romanNumerals = (scale: Scale, prog: readonly number[]) => {
+  return prog
     .map((step) => {
       const third = degreeToMidi(scale, 0, step + 2) - degreeToMidi(scale, 0, step),
         len = scale.steps.length,
@@ -172,15 +177,15 @@ export const romanNumerals = (scale: Scale, prog: readonly number[]) =>
       return third >= MAJOR_THIRD ? numeral : numeral.toLowerCase();
     })
     .join(" ");
+};
 
 // Onze tirages, dans cet ordre exactement. Chaque ligne du tableau de « MUSIQUE.md » §1
 // correspond a une ligne ici, et leur ordre est le format de la seed.
 export const derive = (seed: number): Params => {
   const roll = rng(seed % 2_147_483_647),
-    silhouette = Array.from(
-      { length: SILHOUETTE_BARS },
-      () => SILHOUETTE_FLOOR + roll() * SILHOUETTE_SPAN,
-    ),
+    silhouette = Array.from({ length: SILHOUETTE_BARS }, () => {
+      return SILHOUETTE_FLOOR + roll() * SILHOUETTE_SPAN;
+    }),
     tempo = TEMPO_FLOOR + Math.floor(roll() * TEMPO_SPAN),
     scale = pick(SCALES, roll()),
     timbre = pick(TIMBRES, roll()),
@@ -216,7 +221,11 @@ export const derive = (seed: number): Params => {
 
   // Une mesure entierement silencieuse ne se reconnait pas : elle ne sonne pas du tout. Le
   // test passe par « some », car « every » retrecirait « melody » a un tableau de vides.
-  if (!melody.some((note) => note !== undefined)) {
+  if (
+    !melody.some((note) => {
+      return note !== undefined;
+    })
+  ) {
     melody[0] = { degree: 0, octave: 0 };
   }
 
@@ -240,13 +249,15 @@ export const derive = (seed: number): Params => {
 
 // Une ligne affichee est une valeur que le sequenceur lit vraiment. Le premier jet annoncait
 // une mesure que le sequenceur ignorait : c'est un bug d'honnetete, pas un detail cosmetique.
-export const radioLines = (params: Params) => [
-  { label: "tempo", value: `${params.tempo} bpm` },
-  { label: "tonique", value: `${params.tonic} ${params.scale.name}` },
-  { label: "accords", value: params.chords },
-  { label: "timbre · mélodie", value: params.timbre.name },
-  {
-    label: "mesure",
-    value: `${params.meter.label} · ${params.voices} voix · ${params.swing ? "swing" : "droit"}`,
-  },
-];
+export const radioLines = (params: Params) => {
+  return [
+    { label: "tempo", value: `${params.tempo} bpm` },
+    { label: "tonique", value: `${params.tonic} ${params.scale.name}` },
+    { label: "accords", value: params.chords },
+    { label: "timbre · mélodie", value: params.timbre.name },
+    {
+      label: "mesure",
+      value: `${params.meter.label} · ${params.voices} voix · ${params.swing ? "swing" : "droit"}`,
+    },
+  ];
+};

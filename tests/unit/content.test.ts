@@ -23,11 +23,15 @@ it("should split a jq pair into colored tokens", () => {
   const result = contentLine({ jq: ["14px", "email", "a@b.c", "str", true] });
 
   assert.deepEqual(
-    result.tokens?.map((entry) => entry.t),
+    result.tokens?.map((entry) => {
+      return entry.t;
+    }),
     ['"email"', ": ", '"a@b.c"', ","],
   );
   assert.deepEqual(
-    result.tokens?.map((entry) => entry.c),
+    result.tokens?.map((entry) => {
+      return entry.c;
+    }),
     ["acc", "fg2", "ok", "fg2"],
   );
   assert.equal(result.tokens?.[0]?.w, "700", "the key is bold");
@@ -46,7 +50,9 @@ it("should render the key and the brace on a jq object opening", () => {
   const result = contentLine({ jqOpen: ["14px", "social"] });
 
   assert.deepEqual(
-    result.tokens?.map((entry) => entry.t),
+    result.tokens?.map((entry) => {
+      return entry.t;
+    }),
     ['"social"', ": {"],
   );
 });

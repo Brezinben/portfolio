@@ -29,12 +29,17 @@ export const OFFERED: Expression[] = ["alert", "happy", "laugh", "sad", "scared"
 // les sépare, et la commande aussi : « slime activity <nom> ».
 export const ACTIVITIES = ["bike", "coffee", "goal", "juggle", "lift", "train"];
 
-const isExpression = (value: string): value is Expression =>
-  OFFERED.some((expression) => expression === value);
-const emoted = (expression: Expression): Told => ({
-  effects: [{ expression, type: "emote" }, say(EXPRESSIONS[expression], expression)],
-  lines: [done(`le slime est ${EXPRESSIONS[expression]}.`)],
-});
+const isExpression = (value: string): value is Expression => {
+  return OFFERED.some((expression) => {
+    return expression === value;
+  });
+};
+const emoted = (expression: Expression): Told => {
+  return {
+    effects: [{ expression, type: "emote" }, say(EXPRESSIONS[expression], expression)],
+    lines: [done(`le slime est ${EXPRESSIONS[expression]}.`)],
+  };
+};
 const absent: Told = {
   effects: [{ type: "usage" }],
   lines: [failed("le slime n'est pas la : attendez qu'il revienne.")],

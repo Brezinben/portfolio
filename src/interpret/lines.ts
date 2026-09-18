@@ -29,28 +29,41 @@ export const line = ({
   markerTone?: Tone;
   text?: string;
   tone?: Tone;
-}): Line => ({
-  c: tone,
-  m: marker,
-  mc: markerTone,
-  t: text,
-});
+}): Line => {
+  return {
+    c: tone,
+    m: marker,
+    mc: markerTone,
+    t: text,
+  };
+};
 
-export const info = (t: string) => line({ marker: "·", text: t });
+export const info = (t: string) => {
+  return line({ marker: "·", text: t });
+};
 
-export const muted = (t: string) => line({ marker: "·", text: t, tone: "fg2" });
+export const muted = (t: string) => {
+  return line({ marker: "·", text: t, tone: "fg2" });
+};
 
-export const done = (t: string) => line({ marker: "✓", markerTone: "ok", text: t });
+export const done = (t: string) => {
+  return line({ marker: "✓", markerTone: "ok", text: t });
+};
 
-export const failed = (t: string) => line({ marker: "✗", markerTone: "warn", text: t });
+export const failed = (t: string) => {
+  return line({ marker: "✗", markerTone: "warn", text: t });
+};
 
-export const echoed = (t: string) => line({ marker: "›", markerTone: "acc", text: t, tone: "fg2" });
+export const echoed = (t: string) => {
+  return line({ marker: "›", markerTone: "acc", text: t, tone: "fg2" });
+};
 
 // Sous dix valeurs, la liste tient sur une ligne et se lit d'un coup. Au-dela, elle
 // deborde du volet : la completion la montre mieux, et la ligne apprend la touche.
-export const offer = (usage: string, values: string[]) =>
-  info(
+export const offer = (usage: string, values: string[]) => {
+  return info(
     values.length < MAX_SUGGESTIONS
       ? `${usage} — ${values.join(" · ")}`
       : `${usage} — Tab propose les ${Math.min(values.length, MAX_SUGGESTIONS)} valeurs`,
   );
+};

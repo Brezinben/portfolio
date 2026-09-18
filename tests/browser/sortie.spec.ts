@@ -5,7 +5,9 @@ const open = async (page: Page, hash: string) => {
     await page.goto(`/${hash}`);
     await expect(page.locator("[data-boot]")).toHaveCount(0, { timeout: 10_000 });
   },
-  out = (page: Page) => page.locator('[data-pane="out"]');
+  out = (page: Page) => {
+    return page.locator('[data-pane="out"]');
+  };
 
 // La frise et l'arbre sont le contenu de la section : ils s'affichent au centre. Le volet
 // de sortie garde ses paires et la fiche techno.
@@ -25,9 +27,11 @@ test("should set the timeline years in tabular figures", async ({ page }) => {
   const years = page.locator("[data-years]").first();
 
   await expect(years).toContainText("2026");
-  expect(await years.evaluate((node) => getComputedStyle(node).fontVariantNumeric)).toContain(
-    "tabular-nums",
-  );
+  expect(
+    await years.evaluate((node) => {
+      return getComputedStyle(node).fontVariantNumeric;
+    }),
+  ).toContain("tabular-nums");
 });
 
 test("should open the mission when a timeline entry is confirmed", async ({ page }) => {
@@ -50,9 +54,9 @@ test("should show the stack tree in the main pane, in columns", async ({ page })
   const columns = await page
     .locator("[data-tech]")
     .first()
-    .evaluate(
-      (node) => getComputedStyle(node.parentElement!).gridTemplateColumns.split(" ").length,
-    );
+    .evaluate((node) => {
+      return getComputedStyle(node.parentElement!).gridTemplateColumns.split(" ").length;
+    });
 
   expect(columns, "the technologies flow over several columns").toBeGreaterThan(1);
 });
@@ -78,7 +82,11 @@ test("should move through the stack grid with the four arrows", async ({ page })
   await open(page, "#stack");
   await page.locator("[data-tech]").first().focus();
 
-  const focused = () => page.evaluate(() => document.activeElement!.textContent.trim()),
+  const focused = () => {
+      return page.evaluate(() => {
+        return document.activeElement!.textContent.trim();
+      });
+    },
     first = await focused();
 
   await page.keyboard.press("ArrowRight");
@@ -106,23 +114,43 @@ test("should keep the column from one stack row to the next on arrow down", asyn
   const strayed = await page.evaluate(() => {
     const cells = [...document.querySelectorAll<HTMLElement>("[data-tech]")],
       // Une cellule est toujours dans la carte : elle vient de la meme liste.
-      boxes = new Map(cells.map((cell) => [cell, cell.getBoundingClientRect()])),
-      boxOf = (cell: HTMLElement) => boxes.get(cell)!,
+      boxes = new Map(
+        cells.map((cell) => {
+          return [cell, cell.getBoundingClientRect()];
+        }),
+      ),
+      boxOf = (cell: HTMLElement) => {
+        return boxes.get(cell)!;
+      },
       wrong: string[] = [],
       // La derniere ligne n'a rien en dessous : la fleche bas n'y promet rien.
-      departures = cells.filter((cell) =>
-        cells.some((other) => boxOf(other).top > boxOf(cell).top + 1),
-      );
+      departures = cells.filter((cell) => {
+        return cells.some((other) => {
+          return boxOf(other).top > boxOf(cell).top + 1;
+        });
+      });
 
     for (const cell of departures) {
       cell.focus();
       cell.dispatchEvent(new KeyboardEvent("keydown", { bubbles: true, key: "ArrowDown" }));
 
       const from = boxOf(cell),
-        below = cells.filter((other) => boxOf(other).top > from.top + 1),
-        next = Math.min(...below.map((other) => boxOf(other).top)),
-        row = below.filter((other) => boxOf(other).top < next + 1),
-        closest = Math.min(...row.map((other) => Math.abs(boxOf(other).left - from.left))),
+        below = cells.filter((other) => {
+          return boxOf(other).top > from.top + 1;
+        }),
+        next = Math.min(
+          ...below.map((other) => {
+            return boxOf(other).top;
+          }),
+        ),
+        row = below.filter((other) => {
+          return boxOf(other).top < next + 1;
+        }),
+        closest = Math.min(
+          ...row.map((other) => {
+            return Math.abs(boxOf(other).left - from.left);
+          }),
+        ),
         landed = document.activeElement,
         arrivee = landed instanceof HTMLElement ? landed : undefined;
 
@@ -144,7 +172,11 @@ test("should colour the contact output by type", async ({ page }) => {
 
   const colours = await page
     .locator('[data-pane="main"] [data-result] span[data-tone]')
-    .evaluateAll((nodes) => nodes.map((node) => getComputedStyle(node).color));
+    .evaluateAll((nodes) => {
+      return nodes.map((node) => {
+        return getComputedStyle(node).color;
+      });
+    });
 
   expect(
     new Set(colours).size,

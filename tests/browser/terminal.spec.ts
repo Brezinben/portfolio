@@ -20,9 +20,9 @@ test("should render the three panes", async ({ page }) => {
   await expect(page.locator('[data-pane="main"]')).toBeVisible();
 
   await Promise.all(
-    ["nav", "main", "out"].map((pane) =>
-      expect(page.locator(`[data-pane="${pane}"]`)).toHaveCount(1),
-    ),
+    ["nav", "main", "out"].map((pane) => {
+      return expect(page.locator(`[data-pane="${pane}"]`)).toHaveCount(1);
+    }),
   );
 });
 
@@ -53,8 +53,18 @@ test("should drop the boot floor under reduced motion", async ({ page }) => {
 });
 
 for (const [geste, jouer] of [
-  ["a key", async (page: Page) => page.keyboard.press("Enter")],
-  ["a click", async (page: Page) => page.locator("[data-boot]").click()],
+  [
+    "a key",
+    async (page: Page) => {
+      return page.keyboard.press("Enter");
+    },
+  ],
+  [
+    "a click",
+    async (page: Page) => {
+      return page.locator("[data-boot]").click();
+    },
+  ],
 ] as const) {
   test(`should cut the boot short on ${geste}`, async ({ page }) => {
     await page.goto("/");
@@ -86,7 +96,11 @@ test("should make no external request apart from the audience measurement", asyn
     allowed = ["http://127.0.0.1", "https://umami.brezinben.dpdns.org"];
 
   page.on("request", (request) => {
-    if (!allowed.some((prefix) => request.url().startsWith(prefix))) {
+    if (
+      !allowed.some((prefix) => {
+        return request.url().startsWith(prefix);
+      })
+    ) {
       external.push(request.url());
     }
   });
