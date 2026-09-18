@@ -26,7 +26,7 @@ const boot = async (page: Page) => {
 test("should start with nothing won and nothing to look at", async ({ page }) => {
   await boot(page);
 
-  await expect(badge(page)).toHaveAttribute("aria-label", "succès : 0 sur 27");
+  await expect(badge(page)).toHaveAttribute("aria-label", "succès : 0 sur 28");
   await expect(page.locator("[data-ach-new]")).toHaveCount(0);
 });
 
@@ -39,7 +39,7 @@ test("should queue one alert per unlocked achievement", async ({ page }) => {
   await expect(alert(page)).toContainText("succès débloqué");
   await expect(alert(page)).toContainText("première commande");
   await expect(alert(page)).toContainText("le manuel", { timeout: 15_000 });
-  await expect(badge(page)).toHaveAttribute("aria-label", /succès : 2 sur 27/u);
+  await expect(badge(page)).toHaveAttribute("aria-label", /succès : 2 sur 28/u);
 });
 
 test("should nudge the badge until the list is opened, and not one second longer", async ({
@@ -92,7 +92,7 @@ test("should unlock nothing on a command that does not exist", async ({ page }) 
   await type(page, "pipo");
 
   await expect(alert(page)).toBeHidden();
-  await expect(badge(page)).toHaveAttribute("aria-label", "succès : 0 sur 27");
+  await expect(badge(page)).toHaveAttribute("aria-label", "succès : 0 sur 28");
 });
 
 // L'alerte qui a ouvert la liste disparaît au bout de dix secondes. Le focus doit revenir
@@ -137,7 +137,7 @@ test("should hide what is still locked", async ({ page }) => {
   const rows = page.locator("[data-ach-row]"),
     hidden = await rows.locator("[data-ach-title]").allTextContents();
 
-  await expect(rows).toHaveCount(27);
+  await expect(rows).toHaveCount(28);
   expect(hidden.every((title) => title === "???")).toBe(true);
   expect(new Set(await rows.locator("[data-ach-trigger]").allTextContents()).size).toBeGreaterThan(
     1,
@@ -147,11 +147,11 @@ test("should hide what is still locked", async ({ page }) => {
 test("should keep a won achievement across a reload", async ({ page }) => {
   await boot(page);
   await type(page, "ls");
-  await expect(badge(page)).toHaveAttribute("aria-label", /succès : 2 sur 27/u);
+  await expect(badge(page)).toHaveAttribute("aria-label", /succès : 2 sur 28/u);
 
   await page.reload();
   await expect(page.locator("[data-boot]")).toHaveCount(0, { timeout: 10_000 });
-  await expect(badge(page)).toHaveAttribute("aria-label", /succès : 2 sur 27/u);
+  await expect(badge(page)).toHaveAttribute("aria-label", /succès : 2 sur 28/u);
   expect(await saved(page)).toContain("ls");
 });
 
@@ -182,7 +182,7 @@ test("should pick up what the side pages wrote", async ({ page }) => {
   await page.goto("/une/route/qui-n-existe-pas");
   await boot(page);
 
-  await expect(badge(page)).toHaveAttribute("aria-label", "succès : 2 sur 27, 2 non regardés");
+  await expect(badge(page)).toHaveAttribute("aria-label", "succès : 2 sur 28, 2 non regardés");
   await expect(alert(page)).toHaveCount(0);
 });
 
@@ -193,5 +193,5 @@ test("should ignore a key the catalogue no longer carries", async ({ page }) => 
   );
   await boot(page);
 
-  await expect(badge(page)).toHaveAttribute("aria-label", /succès : 1 sur 27/u);
+  await expect(badge(page)).toHaveAttribute("aria-label", /succès : 1 sur 28/u);
 });

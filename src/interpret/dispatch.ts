@@ -134,7 +134,11 @@ export const interpret = (raw: string, context: Context): Outcome => {
   if (command === "matrix") {
     return out(
       [line({ marker: "·", text: "Réveille-toi, Néo.", tone: "ok" })],
-      [track("easter_egg", { nom: "matrix" }), { expression: "scared", type: "emote" }],
+      [
+        track("easter_egg", { nom: "matrix" }),
+        { expression: "scared", type: "emote" },
+        { mode: "matrix", type: "glitch" },
+      ],
     );
   }
 
@@ -238,7 +242,7 @@ export const interpret = (raw: string, context: Context): Outcome => {
   const egg = lookup<Egg>(EGGS, command);
 
   if (egg) {
-    return out(egg.lines, [track("easter_egg", { nom: egg.egg }), ...(egg.say ? [egg.say] : [])]);
+    return out(egg.lines, [track("easter_egg", { nom: egg.egg }), ...(egg.effects ?? [])]);
   }
 
   if (command === "ask") {

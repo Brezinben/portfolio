@@ -287,3 +287,100 @@ test("should keep the eyes of the greedy mode through the build", async ({ reque
   // Le minifieur choisit ses guillemets : on cherche la paire de dollars, pas sa mise en forme.
   expect(servi, "the double dollar must not be reduced to one").toMatch(/eyes:.\$\$./u);
 });
+
+// Le glitch : cinq secondes d'affichage corrompu. Le calque en est la seule trace stable,
+// puisque le texte, lui, change a chaque passe.
+const layer = (page: Page) => page.locator("[data-glitch-layer]"),
+  pressShift = async (page: Page, times: number) => {
+    await Array.from({ length: times }).reduce<Promise<unknown>>(
+      (chain) => chain.then(() => page.keyboard.press("Shift")),
+      Promise.resolve(),
+    );
+  };
+
+test("should corrupt the display after five taps on Shift", async ({ page }) => {
+  await boot(page);
+  await page.locator("[data-journal]").focus();
+
+  await pressShift(page, 5);
+
+  await expect(layer(page)).toHaveCount(1);
+  await expect(page.locator("[data-panes]")).toHaveAttribute("data-glitch", "shift");
+  await expect(layer(page)).toHaveCount(0, { timeout: 10_000 });
+});
+
+// La jauge n'entre qu'au deuxieme appui : au premier elle trahirait l'easter egg a
+// quiconque effleure la touche.
+test("should show the shift gauge only from the second tap", async ({ page }) => {
+  await boot(page);
+  await page.locator("[data-journal]").focus();
+
+  await pressShift(page, 1);
+  await expect(page.locator("[data-shift]")).toHaveCount(0);
+
+  await pressShift(page, 1);
+  await expect(page.locator("[data-shift]")).toContainText("2/5");
+});
+
+// Une majuscule tapee dans la commande ne doit jamais declencher l'egg : sans ce
+// garde-fou, ecrire « Benjamin » corrompait la page.
+test("should ignore the Shift taps typed in the command line", async ({ page }) => {
+  const cli = await boot(page);
+
+  await cli.focus();
+  await pressShift(page, 6);
+
+  await expect(page.locator("[data-glitch-layer]")).toHaveCount(0);
+  await expect(page.locator("[data-shift]")).toHaveCount(0);
+});
+
+test("should add the katakana rain on matrix", async ({ page }) => {
+  const cli = await boot(page);
+
+  await run(cli, "/matrix");
+
+  await expect(page.locator("[data-panes]")).toHaveAttribute("data-glitch", "matrix");
+  await expect(page.locator("[data-glitch-column]").first()).toBeVisible();
+});
+
+// Le refus de sudo doit se lire avant que l'ecran parte. Les deux lignes d'abord, le
+// silence, puis la panne.
+test("should let the sudo refusal be read before the glitch", async ({ page }) => {
+  const cli = await boot(page);
+
+  await run(cli, "/sudo");
+
+  await expect(page.locator("[data-journal]")).toContainText("sudoers");
+  await expect(page.locator("[data-glitch-layer]")).toHaveCount(0);
+  await expect(layer(page)).toHaveCount(1, { timeout: 5000 });
+});
+
+// Le texte d'origine est mis en cache, et rendu tel quel a la fin : cinq secondes de
+// panne ne doivent pas coûter une lettre.
+test("should give the pane its text back once the glitch is over", async ({ page }) => {
+  const cli = await boot(page),
+    pane = page.locator('[data-pane="nav"]'),
+    before = await pane.textContent();
+
+  await run(cli, "/matrix");
+  await expect(layer(page)).toHaveCount(1);
+  await expect(layer(page)).toHaveCount(0, { timeout: 10_000 });
+
+  await expect(pane).toHaveText(before ?? "");
+});
+
+// Le mouvement reduit court-circuite tout : un lecteur d'ecran relirait sinon cinq
+// secondes de charabia sans avoir rien demande.
+test("should corrupt nothing when reduced motion is on", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+
+  const cli = await boot(page),
+    pane = page.locator('[data-pane="nav"]'),
+    before = await pane.textContent();
+
+  await run(cli, "/matrix");
+  await page.waitForTimeout(500);
+
+  await expect(page.locator("[data-glitch-layer]")).toHaveCount(0);
+  await expect(pane).toHaveText(before ?? "");
+});

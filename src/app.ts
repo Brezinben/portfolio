@@ -60,10 +60,11 @@ import {
   TYPE_REST_MS,
 } from "./terminal/mascot/constants.ts";
 import { type AchievementsState, achievementsSlice } from "./terminal/achievements/slice.ts";
+import { GAUGE_AT, type GlitchState, SHIFT_COUNT, glitchSlice } from "./terminal/glitch/slice.ts";
+import type { Magics, TrackSource } from "./terminal/shell.ts";
 import type { RadioApi, RadioState } from "./terminal/radio/slice.ts";
 import { type Section, barParts, printed, section } from "./terminal/format.ts";
 import { readMarks, writeMarks } from "./terminal/achievements/store.ts";
-import type { Magics } from "./terminal/shell.ts";
 
 import { dragState } from "./terminal/mascot/drag.ts";
 import { lookup } from "./terminal/lookup.ts";
@@ -175,14 +176,9 @@ type Delay = ReturnType<typeof setTimeout>;
 
 type Beat = ReturnType<typeof setInterval>;
 
-// D'où vient une action mesurée : un clic ou une touche dans l'interface, ou une commande
-// tapée dans le terminal. Type partagé pour que les deux ne divergent jamais entre les
-// événements qui la distinguent.
-type TrackSource = "commande" | "interface";
-
 // Ce que la page tient en memoire. Les minuteurs en font partie : les declarer les rend
 // visibles. « RadioState » vient de la tranche qui l'emploie, pour ne pas deriver.
-interface State extends AchievementsState, RadioState {
+interface State extends AchievementsState, GlitchState, RadioState {
   asker: AbortController | undefined;
   bubbleTimer: Delay | undefined;
   compactor: Delay | undefined;
@@ -291,7 +287,7 @@ interface State extends AchievementsState, RadioState {
 // page a la premiere utilisation. Cette liste grossit d'une ligne a chaque extraction.
 //
 // L'etalement est sur ici : une tranche ne porte jamais d'accesseur.
-const slices = () => ({ ...achievementsSlice(), ...mascotSlice() });
+const slices = () => ({ ...achievementsSlice(), ...glitchSlice(), ...mascotSlice() });
 
 // « RadioApi » n'est pas dans « slices » : sa tranche arrive par import dynamique, une fois
 // la commande tapee. Elle rejoint le composant a ce moment, mais « this » la voit des ici.
@@ -318,6 +314,14 @@ document.addEventListener("alpine:init", () => {
       achievementsOpen: false,
       achievementsReturn: undefined,
       alert: "",
+      glitchArmed: 0,
+      glitchBeat: undefined,
+      glitchCache: [],
+      glitchEnd: undefined,
+      glitchMode: "",
+      glitchRain: [],
+      glitchTap: undefined,
+      glitchWait: undefined,
       alertCells: [],
       alertLeaving: false,
       alertQueue: [],
@@ -650,6 +654,14 @@ document.addEventListener("alpine:init", () => {
           }
         }
 
+        // Cinq appuis sur Shift corrompent l'affichage. La garde ci-dessus laisse deja
+        // passer la majuscule tapee dans la ligne de commande : elle ne compte pas.
+        if (event.key === "Shift") {
+          this.glitchShift();
+
+          return;
+        }
+
         if (event.key === "/") {
           event.preventDefault();
           this.$refs["cli"]?.focus();
@@ -763,6 +775,20 @@ document.addEventListener("alpine:init", () => {
           CTX_CELLS,
           this.compactTick,
         );
+      },
+
+      // La jauge des appuis sur Shift, faite comme celle du contexte. Elle n'apparait
+      // qu'au deuxieme appui : au premier elle trahirait l'egg.
+      get shiftArming() {
+        return this.glitchArmed >= GAUGE_AT;
+      },
+
+      get shiftBar() {
+        return barParts(this.glitchArmed, SHIFT_COUNT);
+      },
+
+      get shiftTail() {
+        return `] ${this.glitchArmed}/${SHIFT_COUNT}`;
       },
 
       // Meme forme que la compaction, memes durees qu'avant : la barre se remplit sur le
@@ -2377,6 +2403,14 @@ document.addEventListener("alpine:init", () => {
             this.openOpts("commande");
           } else if (effect.type === "radio") {
             void this.radioBoot();
+          } else if (effect.type === "glitch") {
+            // « sudo » laisse lire son refus avant de tomber en panne ; « matrix » part
+            // avec sa ligne.
+            if (effect.mode === "sudo") {
+              this.glitchLater(effect.mode);
+            } else {
+              this.glitchStart(effect.mode);
+            }
           }
         }
 

@@ -47,6 +47,7 @@ export const ACHIEVEMENTS: Achievement[] = [
   { icon: "teapot", key: "coffee", title: "je suis une théière", trigger: "/coffee" },
   { icon: "esc", key: "vim", title: ":q! ne marche pas ici", trigger: "/vim" },
   { icon: "matrix", key: "matrix", title: "réveille-toi", trigger: "/matrix" },
+  { icon: "glitch", key: "glitch", title: "cinq Shift, c'est un aveu", trigger: "cinq Shift" },
   { icon: "sign", key: "name", title: "mon nom dans un terminal", trigger: "/benjamin" },
   {
     icon: "heart",

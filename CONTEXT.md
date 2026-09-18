@@ -89,7 +89,7 @@ ensemble : l'étincelle est la seule chose qui dise au visiteur qu'un modèle es
 _Avoid_: icône, emoji, marqueur.
 
 **Succès** (`achievement`) :
-Ce qu'un visiteur débloque par une action qu'il a voulue. Vingt-sept. Rien ne se débloque
+Ce qu'un visiteur débloque par une action qu'il a voulue. Vingt-huit. Rien ne se débloque
 en arrivant sur la page, rien ne se débloque au bout d'un délai : c'est ce qui sépare une
 récompense d'une décoration. Acquis et vu sont deux états distincts, et la relance du badge
 vit entre les deux. La clé d'un succès est stable : renommer son titre ne le re-verrouille
@@ -124,6 +124,15 @@ _Avoid_: chargement, splash, loader.
 **Écran de panique** (`panicScreen`) :
 Écran d'échec affiché quand le contenu ne se charge pas. Imite une panique Go.
 _Avoid_: page d'erreur, écran 404.
+
+**Glitch** (`glitch`) :
+Cinq secondes d'affichage corrompu : texte en mojibake, couleurs du thème permutées,
+tranches d'image décalées, mascotte qui explose. Trois gestes le déclenchent : cinq appuis
+sur `Shift`, `/matrix`, et `/sudo` après son refus. Il ne se déclenche jamais tout seul, et
+il ne se déclenche pas du tout chez qui demande moins de mouvement : le texte corrompu vit
+dans les nœuds existants, et un lecteur d'écran y lirait du charabia. Terme technique
+conservé en anglais, comme `seam` et `seed`.
+_Avoid_: corruption, panne, mode développeur, bug.
 
 **Mascotte** (`mascot`) :
 Le slime. Il se déplace librement sur toute la fenêtre, et se plaque contre ses bords.

@@ -606,8 +606,8 @@ it("should no longer accept slime jump as a second name for drop", () => {
   assert.ok(texts(result).some((text) => text.includes("/slime drop")));
 });
 
-it("should emit nothing more than its expression on matrix", () => {
-  assert.deepEqual(kinds(interpret("/matrix", CONTEXT)), ["track", "track", "emote"]);
+it("should emit its expression and the glitch on matrix", () => {
+  assert.deepEqual(kinds(interpret("/matrix", CONTEXT)), ["track", "track", "emote", "glitch"]);
 });
 
 // Le journal ne doit pas annoncer un geste que la coquille avale. La mascotte est absente

@@ -6,3 +6,4 @@ Ce qu'il reste à faire
 - Mettre la règle sur les commentaires de antislop
 - Décider si la graine de /radio voyage dans l'URL, avec la commande share
 - Demander une 28e icône à Claude Design pour donner un succès à /radio : c'est la plus grosse fonctionnalité cachée du site, et les succès sont là pour faire découvrir ce qui est caché.
+- Demander à Claude Design l'icône du succès « glitch ». Celle qui est en place est provisoire, dessinée à la main dans src/assets/succes.svg.

@@ -44,8 +44,8 @@ const read = (name: string) =>
     return effect?.type === "track" ? unlockedBy(String(effect.props["cmd"])) : undefined;
   };
 
-it("should hold twenty-seven achievements with unique keys", () => {
-  assert.equal(ACHIEVEMENTS.length, 27);
+it("should hold twenty-eight achievements with unique keys", () => {
+  assert.equal(ACHIEVEMENTS.length, 28);
   assert.equal(new Set(ACHIEVEMENTS.map((entry) => entry.key)).size, ACHIEVEMENTS.length);
 });
 

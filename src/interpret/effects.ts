@@ -23,6 +23,7 @@ export type Effect =
   | { type: "emote"; expression: Expression }
   | { type: "usage" }
   | { type: "evolve" }
+  | { type: "glitch"; mode: string }
   | { type: "options" }
   | { type: "pending"; answer?: string; payload: string }
   | { type: "power"; mode: string }
