@@ -12,8 +12,8 @@ dans le code.
 ### Les trois zones
 
 **Zone** (`zone`) :
-Un conteneur encadré : les deux cartes du volet gauche, les trois volets, la modale
-d'options, le cadre de démarrage. Une zone porte un coin arrondi et ne prend jamais le focus.
+Un conteneur encadré : les deux cartes du volet gauche, les trois volets, les deux
+modales, le cadre de démarrage. Une zone porte un coin arrondi et ne prend jamais le focus.
 _Avoid_: bloc, panneau, boîte, carte.
 
 **Élément intérieur** (`inner`) :
@@ -87,6 +87,26 @@ Le caractère `✨` qui suffixe la commande de recherche quand un modèle local 
 `ask` et `ask✨` sont la même commande sous deux noms, et ils ne s'offrent jamais
 ensemble : l'étincelle est la seule chose qui dise au visiteur qu'un modèle est là.
 _Avoid_: icône, emoji, marqueur.
+
+**Succès** (`achievement`) :
+Ce qu'un visiteur débloque par une action qu'il a voulue. Vingt-sept. Rien ne se débloque
+en arrivant sur la page, rien ne se débloque au bout d'un délai : c'est ce qui sépare une
+récompense d'une décoration. Acquis et vu sont deux états distincts, et la relance du badge
+vit entre les deux. La clé d'un succès est stable : renommer son titre ne le re-verrouille
+pas.
+_Avoid_: trophée, badge, récompense, achievement.
+
+**Badge** (`badge`) :
+La coupe et le compteur du pied de page, qui ouvrent la liste des succès. Le trophée est
+son icône, jamais la chose : un badge compte des succès, il n'en est pas un.
+_Avoid_: trophée, coupe, compteur.
+
+**Alerte** (`alert`) :
+Le bandeau qui annonce un déblocage, au bas du volet de sortie. Dix secondes, une par
+succès : deux déblocages rapprochés font la queue au lieu de s'écraser. Elle appartient au
+moment du déblocage, et ne rejoue jamais une clé posée par une autre page. Le volet fermé,
+elle n'existe pas, et le badge porte seul le signal.
+_Avoid_: notification, toast, bandeau, popup.
 
 **Fiche techno** (`techNote`) :
 Texte attaché à une technologie de la stack, en trois parties : où, quoi, pourquoi.

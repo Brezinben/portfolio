@@ -1,6 +1,6 @@
 # La couleur du focus du volet de sortie n'est pas la bonne
 
-Status: ready-for-agent
+Status: resolved
 Type: task
 
 ## Ce qu'on observe
@@ -43,3 +43,17 @@ en deux règles.
 
 Un test qui lit `outlineColor` sur la région de sortie focalisée, en thème `light` et en
 thème `dark`. En `dark` les deux valeurs coïncident ; c'est `light` qui prouve la règle.
+
+## Answer
+
+Corrigé en même temps qu'un défaut voisin : le journal et sa poignée, les deux seuls
+éléments focalisables du volet central, n'avaient aucune marque de focus. Ils retombaient
+sur l'anneau du navigateur, invisible sur un fond sombre.
+
+La règle se coupe en deux, comme demandé. Les contrôles — `[data-ctl]` et la poignée —
+gardent `var(--acc)`. Les régions de texte — le journal et la sortie — prennent
+`var(--acc-text)`.
+
+`tests/browser/layout.spec.ts` lit la couleur du contour sur les trois éléments, en
+sombre et en clair. En sombre les deux ambres coïncident ; c'est le clair qui prouve la
+règle.

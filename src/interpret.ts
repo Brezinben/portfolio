@@ -6,6 +6,18 @@
 
 // La facade : les tests et la coquille passent par cette porte, jamais par un module de
 // « interpret/ ». Elle n'expose que ce qui a un consommateur.
+export {
+  ACHIEVEMENTS,
+  ACTIVITY_MARK,
+  type Achievement,
+  SECTION_MARK,
+  SEEN_MARK,
+  THEME_MARK,
+  keepKnown,
+  seenCount,
+  unlockedBy,
+  wonCount,
+} from "./interpret/achievements.ts";
 export { type ContentLine, contentLine } from "./interpret/content.ts";
 export {
   type Effect,
@@ -15,6 +27,7 @@ export {
 } from "./interpret/effects.ts";
 export type { Context } from "./interpret/context.ts";
 export { COW_HEAD_MODES, cowsay } from "./interpret/cowsay.ts";
+export { ACTIVITIES } from "./interpret/mascot.ts";
 export { candidates, commonPrefix, hintFor } from "./interpret/completion.ts";
 export { proposalPrompt } from "./interpret/consent.ts";
 export { MAX_SUGGESTIONS, type Line } from "./interpret/lines.ts";

@@ -6,6 +6,7 @@
 // le DOM.
 
 import { OPTS_KEY, THEMES } from "./terminal/settings.ts";
+import { addMark } from "./terminal/achievements/store.ts";
 
 // Ce que le stockage rend. Rien n'y est garanti : c'est une entrée extérieure, écrite par
 // une autre page.
@@ -144,5 +145,9 @@ root.dataset.theme = THEMES.some((entry) => entry.id === opts.theme)
 if (opts.anim === false) {
   root.dataset.anim = "false";
 }
+
+// Arriver ici est un succès. La page ne sait ni les compter ni les annoncer : elle pose la
+// clé, et la version terminal la trouve au chargement suivant.
+addMark("not-found");
 
 document.addEventListener("DOMContentLoaded", ready);

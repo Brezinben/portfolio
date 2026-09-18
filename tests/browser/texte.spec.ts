@@ -21,7 +21,11 @@ test("should load the text version with no image and no external script", async 
 
   expect(scripts).toHaveLength(1);
   expect(scripts[0]).toContain("dataset.theme");
-  expect(scripts[0]?.split("\n")).toHaveLength(1);
+
+  // Un plafond de taille, et non un compte de lignes : le formateur décide de la mise en
+  // page depuis que « src/**/*.html » est sorti de ses exclusions. Ce qui compte reste le
+  // même, un seul script et minuscule, et la page entière tient sans lui.
+  expect(scripts[0]?.length ?? 0).toBeLessThanOrEqual(600);
 });
 
 test("should link the text version to the terminal version and to llms.txt", async ({ page }) => {

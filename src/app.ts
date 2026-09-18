@@ -1,4 +1,24 @@
 import {
+  ACHIEVEMENTS,
+  type Achievement,
+  type ContentLine,
+  type Context,
+  type Effect,
+  type Expression,
+  type Line,
+  MAX_SUGGESTIONS,
+  type Tone,
+  type TrackValue,
+  candidates,
+  commonPrefix,
+  hintFor,
+  interpret,
+  keepKnown,
+  safeTone,
+  seenCount,
+  wonCount,
+} from "./interpret.ts";
+import {
   ASK_MS,
   BOOT_CELLS,
   BOOT_MS,
@@ -39,23 +59,10 @@ import {
   TWITCH_ODDS,
   TYPE_REST_MS,
 } from "./terminal/mascot/constants.ts";
-import {
-  type ContentLine,
-  type Context,
-  type Effect,
-  type Expression,
-  type Line,
-  MAX_SUGGESTIONS,
-  type Tone,
-  type TrackValue,
-  candidates,
-  commonPrefix,
-  hintFor,
-  interpret,
-  safeTone,
-} from "./interpret.ts";
+import { type AchievementsState, achievementsSlice } from "./terminal/achievements/slice.ts";
 import type { RadioApi, RadioState } from "./terminal/radio/slice.ts";
 import { type Section, barParts, printed, section } from "./terminal/format.ts";
+import { readMarks, writeMarks } from "./terminal/achievements/store.ts";
 import type { Magics } from "./terminal/shell.ts";
 
 import { dragState } from "./terminal/mascot/drag.ts";
@@ -175,7 +182,7 @@ type TrackSource = "commande" | "interface";
 
 // Ce que la page tient en memoire. Les minuteurs en font partie : les declarer les rend
 // visibles. « RadioState » vient de la tranche qui l'emploie, pour ne pas deriver.
-interface State extends RadioState {
+interface State extends AchievementsState, RadioState {
   asker: AbortController | undefined;
   bubbleTimer: Delay | undefined;
   compactor: Delay | undefined;
@@ -284,7 +291,7 @@ interface State extends RadioState {
 // page a la premiere utilisation. Cette liste grossit d'une ligne a chaque extraction.
 //
 // L'etalement est sur ici : une tranche ne porte jamais d'accesseur.
-const slices = () => ({ ...mascotSlice() });
+const slices = () => ({ ...achievementsSlice(), ...mascotSlice() });
 
 // « RadioApi » n'est pas dans « slices » : sa tranche arrive par import dynamique, une fois
 // la commande tapee. Elle rejoint le composant a ce moment, mais « this » la voit des ici.
@@ -304,8 +311,17 @@ document.addEventListener("alpine:init", () => {
   Alpine.data("terminal", () => {
     // eslint-disable-next-line sort-keys
     const component = withMagics({
+      ACHIEVEMENTS,
       THEMES,
       TOGGLES,
+      achievements: [],
+      achievementsOpen: false,
+      achievementsReturn: undefined,
+      alert: "",
+      alertCells: [],
+      alertLeaving: false,
+      alertQueue: [],
+      alertTimer: undefined,
       asker: undefined,
       bubbleTimer: undefined,
       compactor: undefined,
@@ -597,6 +613,15 @@ document.addEventListener("alpine:init", () => {
           return;
         }
 
+        // Entrée maintenue : le système répète la touche, et le navigateur fabrique un clic
+        // par répétition. Valider au clavier envoyait alors dix mesures pour un seul geste.
+        // Les flèches gardent leur répétition, qui sert à parcourir une liste.
+        if (event.repeat && event.key === "Enter") {
+          event.preventDefault();
+
+          return;
+        }
+
         // La touche qui abrege le boot s'arrete la : sans cette sortie, elle partirait
         // aussi dans la saisie, et le visiteur taperait une commande sans le vouloir.
         if (this.skipBoot()) {
@@ -605,9 +630,9 @@ document.addEventListener("alpine:init", () => {
           return;
         }
 
-        // La modale a son propre clavier. Sans cette garde, les deux gestionnaires
+        // Une modale a son propre clavier. Sans cette garde, les deux gestionnaires
         // traitent la même flèche et le focus s'échappe de la modale.
-        if (this.optsOpen) {
+        if (this.optsOpen || this.achievementsOpen) {
           return;
         }
 
@@ -1182,6 +1207,7 @@ document.addEventListener("alpine:init", () => {
         }
 
         this.clicks += 1;
+        this.unlock("expression");
 
         if (this.clicks >= BOOM_AT) {
           this.blowUp();
@@ -1539,6 +1565,7 @@ document.addEventListener("alpine:init", () => {
         const { event, via = "interface" } = options;
 
         this.track("theme", { nom: id, via });
+        this.markTheme(id);
 
         // Le choix se fait depuis la modale, donc la mue tient jusqu'a sa fermeture. Le
         // marquer ici et non dans apply() : startViewTransition differe le rappel, et une
@@ -1703,6 +1730,44 @@ document.addEventListener("alpine:init", () => {
         return THEMES.find((entry) => entry.id === this.theme)?.label ?? "";
       },
 
+      get won() {
+        return wonCount(this.achievements);
+      },
+
+      // Acquis et vu sont deux comptes, et la relance du badge vit entre les deux.
+      get unseen() {
+        return Math.max(0, this.won - seenCount(this.achievements));
+      },
+
+      get badgeLabel() {
+        const left = this.unseen === 0 ? "" : `, ${this.unseen} non regardés`;
+
+        return `succès : ${this.won} sur ${ACHIEVEMENTS.length}${left}`;
+      },
+
+      // Un succès verrouillé garde son rang et son cadenas. La longueur de son sous-titre
+      // vient de sa clé, jamais d'un tirage : recalculé au rendu, il clignoterait.
+      get achievementRows() {
+        return ACHIEVEMENTS.map((entry: Achievement, index: number) => {
+          const done = this.achievements.includes(entry.key);
+
+          return {
+            done,
+            icon: done ? entry.icon : "locked",
+            key: entry.key,
+            rank: String(index + 1).padStart(2, "0"),
+            title: done ? entry.title : "???",
+            trigger: done
+              ? entry.trigger
+              : Array.from({ length: 1 + (entry.key.length % 3) }, () => "???").join(" "),
+          };
+        });
+      },
+
+      get alerted() {
+        return ACHIEVEMENTS.find((entry) => entry.key === this.alert);
+      },
+
       restore() {
         let saved: SavedOpts = {};
 
@@ -1731,6 +1796,18 @@ document.addEventListener("alpine:init", () => {
         this.theme = THEMES.some((entry) => entry.id === saved.theme)
           ? String(saved.theme)
           : this.preferredTheme();
+
+        // Le catalogue bouge, le stockage non : une clé retirée disparaît sans laisser
+        // d'orphelin. Les pages annexes écrivent ici, depuis un autre onglet.
+        const stored = readMarks();
+
+        this.achievements = keepKnown(stored);
+
+        // Le nettoyage se réécrit, et ne reste pas en mémoire. « addMark » relit le stockage
+        // brut avant d'écrire : sans cette passe, l'orphelin revenait au premier déblocage.
+        if (this.achievements.length !== stored.length) {
+          writeMarks(this.achievements);
+        }
       },
 
       // Première visite : la page suit la préférence du système. Sans préférence, elle
@@ -1803,7 +1880,14 @@ document.addEventListener("alpine:init", () => {
           globalThis.history.pushState({}, "", `#${id}`);
         }
 
-        this.play(id);
+        this.play(id, via);
+
+        // « push » distingue la navigation voulue de celle du chargement. Sans lui, arriver
+        // sur la page débloquait « je pars à la découverte », et un succès qui s'obtient
+        // sans rien faire dévalue les vingt-six autres.
+        if (push) {
+          this.markSection(id);
+        }
         // Une section plus longue que la precedente ne doit pas heriter d'un journal trop
         // haut : le resultat serait coupe des l'ouverture.
         this.$nextTick(() => {
@@ -1845,7 +1929,7 @@ document.addEventListener("alpine:init", () => {
 
       // Première visite : la commande se tape, puis s'exécute. Retour sur une section
       // déjà vue : immédiat, sans quoi l'effet devient une attente.
-      play(id: string) {
+      play(id: string, via: TrackSource = "interface") {
         const target = this.current.cmd;
 
         clearInterval(this.typer);
@@ -1866,7 +1950,12 @@ document.addEventListener("alpine:init", () => {
           this.mascotPlay("load");
         }
 
-        this.bump(this.weigh(this.current));
+        // Seule une commande tapée consomme la fenêtre. Sans cette garde, un visiteur qui
+        // n'a rien tapé atteignait cent pour cent en cliquant les onglets.
+        if (via === "commande") {
+          this.bump(this.weigh(this.current));
+        }
+
         this.seen = [...this.seen, id];
 
         if (this.current.suggest) {
@@ -1956,6 +2045,7 @@ document.addEventListener("alpine:init", () => {
         }
 
         this.apply(effects);
+        this.unlockFrom(effects);
       },
 
       // Marquage silencieux : Umami absent, bloqué ou en erreur ne casse rien et
@@ -2274,7 +2364,7 @@ document.addEventListener("alpine:init", () => {
             this.journal = [];
             this.commandResult = undefined;
             this.seen = this.seen.filter((entry) => entry !== this.section);
-            this.play(this.section);
+            this.play(this.section, "commande");
           } else if (effect.type === "state") {
             Object.assign(this, effect.patch);
           } else if (effect.type === "power") {
@@ -2375,6 +2465,8 @@ document.addEventListener("alpine:init", () => {
           return;
         }
 
+        this.unlock("tab");
+
         // Une proposition choisie a la fleche doit s'appliquer telle quelle : c'est
         // pour cela qu'on l'a choisie.
         if (this.sugg.length === 1 || this.suggAt > 0) {
@@ -2449,6 +2541,11 @@ document.addEventListener("alpine:init", () => {
 
         this.recallAt = next;
         this.input = next < 0 ? "" : pool[next];
+
+        // Une fleche qui ne ramene rien n'a rien rappele : la ligne vide ne compte pas.
+        if (next >= 0) {
+          this.unlock("history");
+        }
       },
 
       // Distant d'abord, local ensuite. Le repli n'est pas un luxe : la page dependrait
