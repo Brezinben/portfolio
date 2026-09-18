@@ -18,11 +18,14 @@ const CONTEXT: Context = {
     themes: [],
   },
   YEUX = /\((?<yeux>..)\)\\_______/u,
-  body = (lines: string[]) =>
-    lines.slice(
+  body = (lines: string[]) => {
+    return lines.slice(
       0,
-      lines.findIndex((row: string) => row.includes("^__^")),
+      lines.findIndex((row: string) => {
+        return row.includes("^__^");
+      }),
     );
+  };
 
 it("should fit a short sentence in an angle bracket bubble", () => {
   const lines = cowsay("Moo", { columns: 40 });
@@ -58,9 +61,11 @@ it("should wrap the text at the requested width", () => {
 // huit restent donc atteignables par l'API, et c'est le repartiteur qui choisit.
 it("should give each of the eight head modes its own eyes", () => {
   const eyes = new Set(
-    COW_HEAD_MODES.map((mode) =>
-      cowsay("x", { mode }).find((row) => row.includes(String.raw`)\_______`)),
-    ),
+    COW_HEAD_MODES.map((mode) => {
+      return cowsay("x", { mode }).find((row) => {
+        return row.includes(String.raw`)\_______`);
+      });
+    }),
   );
 
   assert.equal(COW_HEAD_MODES.length, 8);
@@ -69,21 +74,31 @@ it("should give each of the eight head modes its own eyes", () => {
 
 it("should stick the tongue out in the dead and the stoned modes", () => {
   for (const mode of ["-d", "-s"]) {
-    const tongue = cowsay("x", { mode }).find((row) => row.includes("||----w |"));
+    const tongue = cowsay("x", { mode }).find((row) => {
+      return row.includes("||----w |");
+    });
 
     assert.match(tongue ?? "", /U/u, `mode ${mode} sticks the tongue out`);
   }
 });
 
 it("should make the cow say something even without text", () => {
-  assert.ok(cowsay("", {}).some((row) => row.includes("Moo.")));
+  assert.ok(
+    cowsay("", {}).some((row) => {
+      return row.includes("Moo.");
+    }),
+  );
 });
 
 it("should not loop on a word longer than the width", () => {
   const lines = cowsay("anticonstitutionnellement", { columns: 10 });
 
   assert.ok(lines.length > 5);
-  assert.ok(lines.some((row) => row.includes("anticonstitutionnellement")));
+  assert.ok(
+    lines.some((row) => {
+      return row.includes("anticonstitutionnellement");
+    }),
+  );
 });
 
 // Les drapeaux ont disparu de la commande : « cowsay -d » ecrit « -d », il ne l'interprete
@@ -92,15 +107,21 @@ it("should draw a face at random among the eight", () => {
   const yeux = new Set(
       Array.from({ length: 60 }, () => {
         const rendu = interpret("/cowsay bonjour", CONTEXT)
-          .lines.map((row) => row.t ?? "")
-          .find((texte) => texte.includes(String.raw`)\_______`));
+          .lines.map((row) => {
+            return row.t ?? "";
+          })
+          .find((texte) => {
+            return texte.includes(String.raw`)\_______`);
+          });
 
         return YEUX.exec(rendu ?? "")?.groups?.yeux ?? "";
       }),
     ),
     connus = new Set(
       COW_HEAD_MODES.map((mode) => {
-        const tete = cowsay("x", { mode }).find((row) => row.includes(String.raw`)\_______`));
+        const tete = cowsay("x", { mode }).find((row) => {
+          return row.includes(String.raw`)\_______`);
+        });
 
         return YEUX.exec(tete ?? "")?.groups?.yeux ?? "";
       }),

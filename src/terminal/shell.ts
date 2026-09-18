@@ -56,4 +56,6 @@ export type Shell = Magics & Terminal;
 
 // L'identite, comme withMagics dont elle prend la place : ThisType ne change rien au code
 // produit, elle donne seulement son type a « this ».
-export const slice = <T extends object>(members: T & ThisType<Shell>): T => members;
+export const slice = <T extends object>(members: T & ThisType<Shell>): T => {
+  return members;
+};

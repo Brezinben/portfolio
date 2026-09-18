@@ -49,7 +49,12 @@ export const addMark = (mark: string) => {
 // Une marque à valeur unique : le compte des succès déjà regardés. L'ancienne sort, la
 // nouvelle entre.
 export const setMark = (prefix: string, value: string) => {
-  const next = [...readMarks().filter((mark) => !mark.startsWith(prefix)), `${prefix}${value}`];
+  const next = [
+    ...readMarks().filter((mark) => {
+      return !mark.startsWith(prefix);
+    }),
+    `${prefix}${value}`,
+  ];
 
   writeMarks(next);
 

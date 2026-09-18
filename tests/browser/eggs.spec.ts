@@ -31,7 +31,9 @@ test("should keep the multiple spaces of the ASCII art", async ({ page }) => {
   const spacing = await page
     .locator("[data-journal] span", { hasText: "^__^" })
     .first()
-    .evaluate((node) => getComputedStyle(node).whiteSpace);
+    .evaluate((node) => {
+      return getComputedStyle(node).whiteSpace;
+    });
 
   expect(spacing).toMatch(/pre/);
 });
@@ -39,10 +41,12 @@ test("should keep the multiple spaces of the ASCII art", async ({ page }) => {
 test("should keep the ligatures off", async ({ page }) => {
   await boot(page);
 
-  const settings = await page.locator("body").evaluate((node) => ({
-    features: getComputedStyle(node).fontFeatureSettings,
-    ligatures: getComputedStyle(node).fontVariantLigatures,
-  }));
+  const settings = await page.locator("body").evaluate((node) => {
+    return {
+      features: getComputedStyle(node).fontFeatureSettings,
+      ligatures: getComputedStyle(node).fontVariantLigatures,
+    };
+  });
 
   expect(`${settings.features} ${settings.ligatures}`).toMatch(/none|liga/);
 });
@@ -61,7 +65,9 @@ test("should give the cow one of the eight faces", async ({ page }) => {
 
 test("should raise the context gauge on every command", async ({ page }) => {
   const cli = await boot(page),
-    filled = () => page.locator("[data-gauge]").textContent(),
+    filled = () => {
+      return page.locator("[data-gauge]").textContent();
+    },
     before = await filled();
 
   await run(cli, "/sudo");
@@ -101,11 +107,15 @@ test("should announce the compaction with a bar and no word", async ({ page }) =
   const cli = await boot(page),
     bar = page.locator("[data-compacting]");
 
-  await Array.from({ length: 12 }).reduce<Promise<unknown>>(
-    (chain) =>
-      chain.then(() => bar.count()).then((seen) => (seen === 0 ? run(cli, "help") : undefined)),
-    Promise.resolve(),
-  );
+  await Array.from({ length: 12 }).reduce<Promise<unknown>>((chain) => {
+    return chain
+      .then(() => {
+        return bar.count();
+      })
+      .then((seen) => {
+        return seen === 0 ? run(cli, "help") : undefined;
+      });
+  }, Promise.resolve());
 
   await expect(bar).toHaveCount(1);
   // La jauge entiere est decorative : le journal, lui, dit la compaction en toutes lettres.
@@ -122,11 +132,15 @@ test("should keep only one bar on screen during the compaction", async ({ page }
   const cli = await boot(page),
     bar = page.locator("[data-compacting]");
 
-  await Array.from({ length: 12 }).reduce<Promise<unknown>>(
-    (chain) =>
-      chain.then(() => bar.count()).then((seen) => (seen === 0 ? run(cli, "help") : undefined)),
-    Promise.resolve(),
-  );
+  await Array.from({ length: 12 }).reduce<Promise<unknown>>((chain) => {
+    return chain
+      .then(() => {
+        return bar.count();
+      })
+      .then((seen) => {
+        return seen === 0 ? run(cli, "help") : undefined;
+      });
+  }, Promise.resolve());
 
   await expect(bar).toHaveCount(1);
 
@@ -140,10 +154,11 @@ test("should keep only one bar on screen during the compaction", async ({ page }
 // parcourant les onglets, et elle cessait de dire ce qu'elle mesure.
 test("should leave the gauge empty when the panes are only clicked", async ({ page }) => {
   const cli = await boot(page),
-    gauge = () =>
-      page
-        .locator("[data-gauge]")
-        .evaluate((node) => (node.textContent ?? "").split("█").length - 1);
+    gauge = () => {
+      return page.locator("[data-gauge]").evaluate((node) => {
+        return (node.textContent ?? "").split("█").length - 1;
+      });
+    };
 
   const nav = page.locator('[data-ctl="nav"]'),
     entries = await nav.count();
@@ -168,11 +183,15 @@ test("should start a compaction and empty itself when the gauge is full", async 
     warned = page.locator("[data-journal]", { hasText: "fenêtre de contexte pleine" });
 
   // Le nombre de commandes depend de ce qu'elles impriment : on tape jusqu'a saturation.
-  await Array.from({ length: 12 }).reduce<Promise<unknown>>(
-    (chain) =>
-      chain.then(() => warned.count()).then((seen) => (seen === 0 ? run(cli, "help") : undefined)),
-    Promise.resolve(),
-  );
+  await Array.from({ length: 12 }).reduce<Promise<unknown>>((chain) => {
+    return chain
+      .then(() => {
+        return warned.count();
+      })
+      .then((seen) => {
+        return seen === 0 ? run(cli, "help") : undefined;
+      });
+  }, Promise.resolve());
 
   await expect(page.locator("[data-journal]")).toContainText("fenêtre de contexte pleine");
   // La compaction dure cinq secondes : l'attente par défaut de Playwright serait trop courte.
@@ -192,15 +211,21 @@ test("should fill the compaction bar cell by cell over five seconds", async ({ p
   const cli = await boot(page),
     bar = page.locator("[data-compacting]");
 
-  await Array.from({ length: 12 }).reduce<Promise<unknown>>(
-    (chain) =>
-      chain.then(() => bar.count()).then((seen) => (seen === 0 ? run(cli, "help") : undefined)),
-    Promise.resolve(),
-  );
+  await Array.from({ length: 12 }).reduce<Promise<unknown>>((chain) => {
+    return chain
+      .then(() => {
+        return bar.count();
+      })
+      .then((seen) => {
+        return seen === 0 ? run(cli, "help") : undefined;
+      });
+  }, Promise.resolve());
 
   const started = Date.now(),
     posees = async () => {
-      const drawn = await bar.textContent().catch(() => "");
+      const drawn = await bar.textContent().catch(() => {
+        return "";
+      });
 
       return (drawn ?? "").replaceAll("░", "").length;
     },
@@ -220,11 +245,15 @@ test("should show no compaction bar in the output pane", async ({ page }) => {
   const cli = await boot(page),
     bar = page.locator("[data-compacting]");
 
-  await Array.from({ length: 12 }).reduce<Promise<unknown>>(
-    (chain) =>
-      chain.then(() => bar.count()).then((seen) => (seen === 0 ? run(cli, "help") : undefined)),
-    Promise.resolve(),
-  );
+  await Array.from({ length: 12 }).reduce<Promise<unknown>>((chain) => {
+    return chain
+      .then(() => {
+        return bar.count();
+      })
+      .then((seen) => {
+        return seen === 0 ? run(cli, "help") : undefined;
+      });
+  }, Promise.resolve());
 
   await expect(bar).toHaveCount(1);
   await expect(page.locator('[data-pane="out"] [data-compacting-out]')).toHaveCount(0);
@@ -251,11 +280,15 @@ test("should cancel the running compaction on a reboot", async ({ page }) => {
   const cli = await boot(page),
     bar = page.locator("[data-compacting]");
 
-  await Array.from({ length: 12 }).reduce<Promise<unknown>>(
-    (chain) =>
-      chain.then(() => bar.count()).then((seen) => (seen === 0 ? run(cli, "help") : undefined)),
-    Promise.resolve(),
-  );
+  await Array.from({ length: 12 }).reduce<Promise<unknown>>((chain) => {
+    return chain
+      .then(() => {
+        return bar.count();
+      })
+      .then((seen) => {
+        return seen === 0 ? run(cli, "help") : undefined;
+      });
+  }, Promise.resolve());
 
   await run(cli, "/reboot");
   await expect(page.locator("[data-boot]")).toHaveCount(0, { timeout: 15_000 });
@@ -290,12 +323,15 @@ test("should keep the eyes of the greedy mode through the build", async ({ reque
 
 // Le glitch : cinq secondes d'affichage corrompu. Le calque en est la seule trace stable,
 // puisque le texte, lui, change a chaque passe.
-const layer = (page: Page) => page.locator("[data-glitch-layer]"),
+const layer = (page: Page) => {
+    return page.locator("[data-glitch-layer]");
+  },
   pressShift = async (page: Page, times: number) => {
-    await Array.from({ length: times }).reduce<Promise<unknown>>(
-      (chain) => chain.then(() => page.keyboard.press("Shift")),
-      Promise.resolve(),
-    );
+    await Array.from({ length: times }).reduce<Promise<unknown>>((chain) => {
+      return chain.then(() => {
+        return page.keyboard.press("Shift");
+      });
+    }, Promise.resolve());
   };
 
 test("should corrupt the display after five taps on Shift", async ({ page }) => {
@@ -364,9 +400,11 @@ test("should really run the theme permutation on the panes", async ({ page }) =>
   await run(cli, "/matrix");
 
   await expect
-    .poll(() =>
-      page.locator("[data-panes]").evaluate((node) => getComputedStyle(node).animationName),
-    )
+    .poll(() => {
+      return page.locator("[data-panes]").evaluate((node) => {
+        return getComputedStyle(node).animationName;
+      });
+    })
     .toBe("glitch-theme");
 });
 

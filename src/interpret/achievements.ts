@@ -89,7 +89,9 @@ const BY_COMMAND = {
   vim: "vim",
 };
 
-export const unlockedBy = (command: string) => lookup(BY_COMMAND, command);
+export const unlockedBy = (command: string) => {
+  return lookup(BY_COMMAND, command);
+};
 
 // Les marques de progression partagent le tableau des clés acquises. Le préfixe les en
 // distingue, et il permet de compter sans garder un second stockage.
@@ -104,24 +106,39 @@ const MARKS = [ACTIVITY_MARK, SECTION_MARK, SEEN_MARK, THEME_MARK];
 
 // Combien de succès sont acquis. Les marques de progression partagent le tableau, donc le
 // compte ne peut pas être sa longueur.
-export const wonCount = (marks: string[]) =>
-  ACHIEVEMENTS.filter((entry) => marks.includes(entry.key)).length;
+export const wonCount = (marks: string[]) => {
+  return ACHIEVEMENTS.filter((entry) => {
+    return marks.includes(entry.key);
+  }).length;
+};
 
 // Combien avaient été regardés à la dernière ouverture. Le stockage est une entrée
 // extérieure : une marque absente vaut zéro, et une marque illisible aussi. Sans ce
 // filtre, « seen:abc » rendait NaN, le badge cessait de s'agiter pour toujours, et son
 // libellé annonçait « NaN non regardés ».
 export const seenCount = (marks: string[]) => {
-  const found = Number(marks.find((mark) => mark.startsWith(SEEN_MARK))?.slice(SEEN_MARK.length));
+  const found = Number(
+    marks
+      .find((mark) => {
+        return mark.startsWith(SEEN_MARK);
+      })
+      ?.slice(SEEN_MARK.length),
+  );
 
   return Number.isFinite(found) ? found : 0;
 };
 
 // Le stockage est une entrée extérieure, et le catalogue bouge. Une clé retirée disparaît
 // sans laisser d'orphelin, et une valeur qui n'est ni une clé ni une marque ne rentre pas.
-export const keepKnown = (saved: string[]) =>
-  saved.filter(
-    (entry) =>
-      ACHIEVEMENTS.some((found) => found.key === entry) ||
-      MARKS.some((mark) => entry.startsWith(mark) && entry.length > mark.length),
-  );
+export const keepKnown = (saved: string[]) => {
+  return saved.filter((entry) => {
+    return (
+      ACHIEVEMENTS.some((found) => {
+        return found.key === entry;
+      }) ||
+      MARKS.some((mark) => {
+        return entry.startsWith(mark) && entry.length > mark.length;
+      })
+    );
+  });
+};

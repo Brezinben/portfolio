@@ -36,20 +36,25 @@ const RAIN_SPREAD_MS = 900;
 // d'ecran quatorze fois par seconde. Les champs de saisie le sont aussi, sinon la commande
 // en cours part avec le reste.
 const SPARED = "input,textarea,[contenteditable],[aria-live],[data-no-glitch]";
-const stage = () => document.querySelector("[data-panes]");
+const stage = () => {
+  return document.querySelector("[data-panes]");
+};
 
 // Chaque colonne tire sa duree et son retard. Deriver les deux du rang faisait tomber la
 // pluie en cascade reguliere, qui se lit comme un balayage et non comme une pluie. Le
 // retard est negatif : la colonne est deja en route, sinon les trente entrent ensemble.
-const rainColumns = () =>
-  Array.from({ length: RAIN_COLUMNS }, (_, index) => {
+const rainColumns = () => {
+  return Array.from({ length: RAIN_COLUMNS }, (_, index) => {
     const fall = Math.round(RAIN_FALL_MS + Math.random() * RAIN_SPREAD_MS);
 
     return {
-      glyphs: Array.from({ length: RAIN_LENGTH }, () => pick(RAIN)).join(""),
+      glyphs: Array.from({ length: RAIN_LENGTH }, () => {
+        return pick(RAIN);
+      }).join(""),
       style: `--i:${index};--fall:${fall}ms;--delay:-${Math.round(Math.random() * fall)}ms`,
     };
   });
+};
 
 // Ce que le glitch garde dans l'etat du composant. L'etat vit dans app.ts, comme tout le
 // reste ; app.ts reprend cette interface pour ne pas declarer les memes champs deux fois.
@@ -76,13 +81,15 @@ export interface GlitchApi {
   glitchStop(): void;
 }
 
-export const glitchSlice = () =>
-  slice<GlitchApi>({
+export const glitchSlice = () => {
+  return slice<GlitchApi>({
     // « sudo » refuse, puis tombe en panne. L'interpreteur ne pose aucun minuteur : il dit
     // que le glitch vient, la coquille tient le silence entre les deux.
     glitchLater(this: Shell, mode: string) {
       clearTimeout(this.glitchWait);
-      this.glitchWait = setTimeout(() => this.glitchStart(mode), SUDO_MS);
+      this.glitchWait = setTimeout(() => {
+        return this.glitchStart(mode);
+      }, SUDO_MS);
     },
 
     // Cinq appuis sur Shift, le reflexe de qui cherche une console. app.ts rend deja la
@@ -120,10 +127,11 @@ export const glitchSlice = () =>
       this.blowUp(mode === "shift" ? "interface" : "commande");
 
       const walker = document.createTreeWalker(stage() ?? document.body, NodeFilter.SHOW_TEXT, {
-          acceptNode: (node) =>
-            (node.nodeValue ?? "").trim().length > 1 && !node.parentElement?.closest(SPARED)
+          acceptNode: (node) => {
+            return (node.nodeValue ?? "").trim().length > 1 && !node.parentElement?.closest(SPARED)
               ? NodeFilter.FILTER_ACCEPT
-              : NodeFilter.FILTER_REJECT,
+              : NodeFilter.FILTER_REJECT;
+          },
         }),
         cache: GlitchState["glitchCache"] = [];
 
@@ -147,7 +155,9 @@ export const glitchSlice = () =>
         }
       }, TICK_MS);
 
-      this.glitchEnd = setTimeout(() => this.glitchStop(), GLITCH_MS);
+      this.glitchEnd = setTimeout(() => {
+        return this.glitchStop();
+      }, GLITCH_MS);
     },
 
     glitchStop(this: Shell) {
@@ -166,3 +176,4 @@ export const glitchSlice = () =>
       this.glitchRain = [];
     },
   });
+};

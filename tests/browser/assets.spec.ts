@@ -61,18 +61,22 @@ const SITE = "https://me.brezinben.dpdns.org/",
 
     return site.startsWith("#") || site.startsWith("//") || site.includes(":") ? [] : [site];
   },
-  declared = (html: string) => [
-    ...new Set(
-      [...html.matchAll(LIEN), ...html.matchAll(META), ...html.matchAll(CSS)].flatMap(chemin),
-    ),
-  ],
+  declared = (html: string) => {
+    return [
+      ...new Set(
+        [...html.matchAll(LIEN), ...html.matchAll(META), ...html.matchAll(CSS)].flatMap(chemin),
+      ),
+    ];
+  },
   missing = async (request: APIRequestContext, page: string) => {
     const served = await request.get(page),
       adresses = declared(await served.text());
 
     // Un relevé qui ne reconnaît plus rien rendrait ce test vert sans rien vérifier.
     expect(
-      adresses.filter((url) => EMPREINTE.test(url)),
+      adresses.filter((url) => {
+        return EMPREINTE.test(url);
+      }),
       `${page} declares no fingerprinted asset: the scan no longer recognizes the page`,
     ).not.toEqual([]);
 
@@ -84,14 +88,24 @@ const SITE = "https://me.brezinben.dpdns.org/",
       }),
     );
 
-    return responses.filter((each) => each.status !== 200).map((each) => `${page} → ${each.url}`);
+    return responses
+      .filter((each) => {
+        return each.status !== 200;
+      })
+      .map((each) => {
+        return `${page} → ${each.url}`;
+      });
   };
 
 // Une adresse qui pointe dans le vide ne casse rien de visible : la page se charge, et
 // l'actif manque en silence. Ce test suit les adresses de la page construite plutôt qu'une
 // liste de noms, qu'un renommage a déjà rendue fausse deux fois.
 test("should serve every address the pages declare", async ({ request }) => {
-  const absentes = await Promise.all(PAGES.map((page) => missing(request, page)));
+  const absentes = await Promise.all(
+    PAGES.map((page) => {
+      return missing(request, page);
+    }),
+  );
 
   expect(absentes.flat()).toEqual([]);
 });

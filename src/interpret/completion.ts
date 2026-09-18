@@ -13,7 +13,9 @@ import { lookup } from "./lookup.ts";
 // propose ses sous-commandes, « slime expression » les expressions, « slime activity » les
 // activités. Proposer le vocabulaire entier après l'un ou l'autre ferait du bruit.
 const argumentsFor = (path: string, context: CompletionContext): string[] | undefined => {
-  const ids = [...context.sections, ...context.details].map((entry) => entry.id),
+  const ids = [...context.sections, ...context.details].map((entry) => {
+      return entry.id;
+    }),
     // Quatre sous-commandes claires valent mieux que dix mots melanges : les expressions
     // vivent un niveau plus bas, derriere « expression ».
     slimeArguments = ["expression", "activity", "evolve", "drop", "kill"];
@@ -93,8 +95,9 @@ const HINTS = {
   },
 };
 
-export const hintFor = (head: string, value: string): string =>
-  lookup(lookup<Record<string, string>>(HINTS, head) ?? {}, value) ?? "";
+export const hintFor = (head: string, value: string): string => {
+  return lookup(lookup<Record<string, string>>(HINTS, head) ?? {}, value) ?? "";
+};
 
 export const candidates = (value: string, context: CompletionContext) => {
   // L'interpréteur normalise les espaces avant de lire la commande. La complétion suit le
@@ -115,21 +118,29 @@ export const candidates = (value: string, context: CompletionContext) => {
   if (parts.length === 1) {
     const pool = [
         ...vocabulary(context.model),
-        ...context.sections.map((entry) => entry.id),
-        ...context.details.map((entry) => entry.id),
+        ...context.sections.map((entry) => {
+          return entry.id;
+        }),
+        ...context.details.map((entry) => {
+          return entry.id;
+        }),
       ],
       typed = slash ? `/${first}` : first;
 
     return {
       frag: typed,
       head: "",
-      hits: [...new Set(pool)].filter((entry) => entry.startsWith(typed)),
+      hits: [...new Set(pool)].filter((entry) => {
+        return entry.startsWith(typed);
+      }),
       slash: false,
     };
   }
 
   const command = lookup(ALIASES, first) ?? first,
-    typed = parts.slice(0, -1).map((word) => word.toLowerCase()),
+    typed = parts.slice(0, -1).map((word) => {
+      return word.toLowerCase();
+    }),
     // L'alias ne porte que sur le premier mot : « mascotte activity » suivrait le meme
     // chemin que « slime activity ».
     path = [command, ...typed.slice(1)].join(" "),
@@ -139,7 +150,9 @@ export const candidates = (value: string, context: CompletionContext) => {
   return {
     frag,
     head: typed.join(" "),
-    hits: (pool ?? []).filter((entry) => entry.startsWith(frag)),
+    hits: (pool ?? []).filter((entry) => {
+      return entry.startsWith(frag);
+    }),
     slash,
   };
 };

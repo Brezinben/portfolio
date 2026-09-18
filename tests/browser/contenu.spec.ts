@@ -1,8 +1,9 @@
 import { expect, test } from "@playwright/test";
 import type { Page } from "@playwright/test";
 
-const booted = (page: Page) =>
-  expect(page.locator("[data-boot]")).toHaveCount(0, { timeout: 15_000 });
+const booted = (page: Page) => {
+  return expect(page.locator("[data-boot]")).toHaveCount(0, { timeout: 15_000 });
+};
 
 // Le depot est prive : le contenu est servi a cote de la page, et nulle part ailleurs.
 test("should load the content from a relative URL next to the page", async ({ page }) => {
@@ -31,7 +32,9 @@ test("should fill the page with the served content", async ({ page }) => {
 
 // Sans contenu, la page ne se rabat sur rien : elle panique et propose la version texte.
 test("should panic when the content fails", async ({ page }) => {
-  await page.route("**/content.json", (route) => route.fulfill({ status: 500 }));
+  await page.route("**/content.json", (route) => {
+    return route.fulfill({ status: 500 });
+  });
   await page.goto("/");
 
   await expect(page.locator("[data-boot]")).toContainText("panic: content.json not found", {
@@ -43,9 +46,9 @@ test("should panic when the content fails", async ({ page }) => {
 });
 
 test("should panic when the JSON is unreadable", async ({ page }) => {
-  await page.route("**/content.json", (route) =>
-    route.fulfill({ body: "{ pas du json", contentType: "application/json" }),
-  );
+  await page.route("**/content.json", (route) => {
+    return route.fulfill({ body: "{ pas du json", contentType: "application/json" });
+  });
   await page.goto("/");
 
   await expect(page.locator("[data-boot]")).toContainText("panic: content.json not found", {

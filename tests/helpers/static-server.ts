@@ -28,7 +28,9 @@ const ROOT = resolve(
   COMPRESSIBLE = new Set([".css", ".html", ".js", ".json", ".svg", ".txt"]),
   // Une extension libre dans une table fermee : la table garde le type que l'inference
   // lui donne, et l'appelant recoit undefined quand l'extension n'y est pas.
-  lookup = <V>(table: Readonly<Record<string, V>>, key: string): V | undefined => table[key],
+  lookup = <V>(table: Readonly<Record<string, V>>, key: string): V | undefined => {
+    return table[key];
+  },
   resolveTarget = (rawUrl: string) => {
     let pathname = "";
 
@@ -66,7 +68,9 @@ const ROOT = resolve(
 
     // Stat() peut réussir là où open() échoue. Sans cet écouteur, l'erreur est non gérée
     // et tue le processus : le harnais tombe au milieu d'une série de tests.
-    stream.on("error", () => notFound(response));
+    stream.on("error", () => {
+      return notFound(response);
+    });
 
     if (
       COMPRESSIBLE.has(extname(target)) &&

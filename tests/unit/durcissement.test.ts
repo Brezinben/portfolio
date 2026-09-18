@@ -74,6 +74,8 @@ it("should not return a share target with a forbidden scheme", () => {
 
 // Une sequence pourcent invalide ne doit pas lever d'exception.
 it("should not break the validation on a badly encoded URL", () => {
-  assert.doesNotThrow(() => isSafeUrl("https://x.test/%E0%A4%A"));
+  assert.doesNotThrow(() => {
+    return isSafeUrl("https://x.test/%E0%A4%A");
+  });
   assert.equal(isSafeUrl("https://x.test/%E0%A4%A"), true);
 });

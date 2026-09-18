@@ -126,6 +126,10 @@
         "exceptions": ["-", "+", "*"],
       },
     ],
+    // Une fonction porte ses accolades et son return, rappel d'une ligne compris. La forme
+    // courte faisait lire deux styles dans un meme fichier, et l'objet qu'elle rend demande
+    // une paire de parentheses qu'on retire par erreur : l'objet devient alors un bloc.
+    "arrow-body-style": ["error", "always"],
     "capitalized-comments": [
       "warn",
       "always",

@@ -17,11 +17,12 @@ export interface Share {
 
 // Les jetons sont substitues dans les URL de partage declarees par content.json : une
 // nouvelle cible s'ajoute sans toucher au code.
-export const fillTokens = (template: string, share: Share): string =>
-  template
+export const fillTokens = (template: string, share: Share): string => {
+  return template
     .replaceAll("{url}", encodeURIComponent(share.url ?? ""))
     .replaceAll("{title}", encodeURIComponent(share.title ?? ""))
     .replaceAll("{text}", encodeURIComponent(share.text ?? ""));
+};
 
 const SAFE_SCHEMES = new Set(["https:", "http:", "mailto:"]);
 
@@ -36,7 +37,9 @@ export const isSafeUrl = (candidate: string): boolean => {
 };
 
 export const shareTarget = (id: string, share: Share) => {
-  const target = (share.targets ?? []).find((entry) => entry.id === id);
+  const target = (share.targets ?? []).find((entry) => {
+    return entry.id === id;
+  });
 
   if (!target) {
     return undefined;

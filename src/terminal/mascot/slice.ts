@@ -7,11 +7,12 @@ export interface MascotApi {
   trackWidth(): number;
 }
 
-export const mascotSlice = () =>
-  slice<MascotApi>({
+export const mascotSlice = () => {
+  return slice<MascotApi>({
     trackWidth(this: Shell) {
       const { track } = this.$refs;
 
       return track ? Math.max(0, track.clientWidth - SPRITE) : 0;
     },
   });
+};

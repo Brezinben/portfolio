@@ -33,7 +33,9 @@ export interface ContentLine {
 }
 
 const JQ_TONE = { num: "warn", str: "ok" } satisfies Record<string, Tone>;
-const token = (t: string, c: string | undefined, w = "400"): Token => ({ c: safeTone(c), t, w });
+const token = (t: string, c: string | undefined, w = "400"): Token => {
+  return { c: safeTone(c), t, w };
+};
 
 export const contentLine = (raw: ContentLine) => {
   if (raw.banner) {

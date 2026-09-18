@@ -64,10 +64,9 @@ const THEMES = ["dark", "light", "noctis"],
   // cours au moment de la mesure. La section ouverte vient de l'ancre, jamais du stockage :
   // « restore » ne lit que quatre cles, et « section » n'en fait pas partie.
   boot = async (page: Page, theme: string, section = "") => {
-    await page.addInitScript(
-      (saved: string) => globalThis.localStorage.setItem("bd-term-opts", saved),
-      JSON.stringify({ theme }),
-    );
+    await page.addInitScript((saved: string) => {
+      return globalThis.localStorage.setItem("bd-term-opts", saved);
+    }, JSON.stringify({ theme }));
     await page.setViewportSize({ height: 900, width: 1280 });
     await page.goto(section === "" ? "/" : `/#${section}`);
     await expect(page.locator("[data-boot]")).toHaveCount(0, { timeout: 10_000 });
@@ -79,26 +78,28 @@ const THEMES = ["dark", "light", "noctis"],
     const arg: [[string, string][], string[]] = [Object.entries(selectors), PROPS],
       // Un selecteur absent laisse la trace « absent » plutot qu'une erreur : l'instantane
       // doit dire qu'un element a disparu, pas s'arreter a la premiere disparition.
-      mesure = await page.evaluate(
-        ([entries, props]) =>
-          Object.fromEntries(
-            entries.map(([label, selector]) => {
-              const node = document.querySelector(selector);
+      mesure = await page.evaluate(([entries, props]) => {
+        return Object.fromEntries(
+          entries.map(([label, selector]) => {
+            const node = document.querySelector(selector);
 
-              if (!(node instanceof HTMLElement)) {
-                return [label, "absent"];
-              }
+            if (!(node instanceof HTMLElement)) {
+              return [label, "absent"];
+            }
 
-              const computed = globalThis.getComputedStyle(node);
+            const computed = globalThis.getComputedStyle(node);
 
-              return [
-                label,
-                Object.fromEntries(props.map((prop) => [prop, computed.getPropertyValue(prop)])),
-              ];
-            }),
-          ),
-        arg,
-      );
+            return [
+              label,
+              Object.fromEntries(
+                props.map((prop) => {
+                  return [prop, computed.getPropertyValue(prop)];
+                }),
+              ),
+            ];
+          }),
+        );
+      }, arg);
 
     expect(JSON.stringify(mesure, undefined, 2)).toMatchSnapshot(`${nom}.json`);
   };
@@ -226,7 +227,9 @@ for (const theme of THEMES) {
   test(`should keep the boot unchanged on the ${theme} theme`, async ({ page }) => {
     await page.setViewportSize({ height: 900, width: 1280 });
     await page.addInitScript(
-      (saved: string) => globalThis.localStorage.setItem("bd-term-opts", saved),
+      (saved: string) => {
+        return globalThis.localStorage.setItem("bd-term-opts", saved);
+      },
       JSON.stringify({ anim: false, theme }),
     );
     await page.goto("/");

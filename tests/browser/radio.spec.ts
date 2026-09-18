@@ -21,13 +21,27 @@ const boot = async (page: Page) => {
 
     return cli;
   },
-  values = (page: Page) => page.locator(".radio__params b"),
-  field = (page: Page) => page.getByLabel(/^Seed/),
-  play = (page: Page) => page.locator(".radio__ctl button").last(),
-  reseed = (page: Page) => page.locator(".radio__ctl button").first(),
+  values = (page: Page) => {
+    return page.locator(".radio__params b");
+  },
+  field = (page: Page) => {
+    return page.getByLabel(/^Seed/);
+  },
+  play = (page: Page) => {
+    return page.locator(".radio__ctl button").last();
+  },
+  reseed = (page: Page) => {
+    return page.locator(".radio__ctl button").first();
+  },
   // « 1:20 » vaut vingt : le test compare des secondes, pas des chaînes.
-  seconds = (shown: string | null) => Number.parseInt(shown?.split(":")[1] ?? "0", 10),
-  heightOf = (node: Locator) => node.evaluate((el) => el.getBoundingClientRect().height);
+  seconds = (shown: string | null) => {
+    return Number.parseInt(shown?.split(":")[1] ?? "0", 10);
+  },
+  heightOf = (node: Locator) => {
+    return node.evaluate((el) => {
+      return el.getBoundingClientRect().height;
+    });
+  };
 
 // Taper la commande est le geste : le morceau part tout de suite. Rien ne sonne avant, et
 // le contexte audio ne se monte même pas — un portfolio qui joue à l'ouverture est un
@@ -50,7 +64,11 @@ test("should build no audio context before the command is typed", async ({ page 
   });
 
   const cli = await boot(page),
-    built = async () => page.evaluate(() => document.documentElement.dataset["built"] ?? "0");
+    built = async () => {
+      return page.evaluate(() => {
+        return document.documentElement.dataset["built"] ?? "0";
+      });
+    };
 
   expect(await built(), "nothing is built at page load").toBe("0");
 
@@ -77,7 +95,9 @@ test("should really feed the analyser once the command runs", async ({ page }) =
       async () => {
         const bar = page.locator("[data-radio-bar]").first();
 
-        return bar.evaluate((node) => node.style.getPropertyValue("--bar"));
+        return bar.evaluate((node) => {
+          return node.style.getPropertyValue("--bar");
+        });
       },
       { timeout: 8000 },
     )
@@ -173,7 +193,9 @@ test("should keep the controls visible on a 540 pixel high window", async ({ pag
   ).toBeGreaterThanOrEqual(44);
 
   const pane = page.locator('[data-pane="out"]'),
-    scrolls = await pane.evaluate((node) => node.scrollHeight > node.clientHeight + 1);
+    scrolls = await pane.evaluate((node) => {
+      return node.scrollHeight > node.clientHeight + 1;
+    });
 
   expect(scrolls, "the pane does not overflow").toBe(false);
 });
@@ -193,7 +215,11 @@ test("should never stretch the spectrum band beyond its ceiling", async ({ page 
 test("should stop the render loop when animation is off", async ({ page }) => {
   const cli = await open(page),
     bar = page.locator("[data-radio-bar]").first(),
-    height = async () => bar.evaluate((node) => node.style.getPropertyValue("--bar"));
+    height = async () => {
+      return bar.evaluate((node) => {
+        return node.style.getPropertyValue("--bar");
+      });
+    };
 
   await expect.poll(height, { timeout: 8000 }).toMatch(/^\d+\.\d%$/u);
 
@@ -209,7 +235,9 @@ test("should stop the render loop when animation is off", async ({ page }) => {
 
   expect(await height(), "the loop wrote nothing more").toBe(frozen);
 
-  const drawn = await bar.evaluate((node) => getComputedStyle(node).height);
+  const drawn = await bar.evaluate((node) => {
+    return getComputedStyle(node).height;
+  });
 
   expect(Number.parseFloat(drawn), "the frame stays readable").toBeGreaterThan(0);
 });
@@ -219,12 +247,16 @@ test("should stop the render loop when animation is off", async ({ page }) => {
 test("should download the radio chunk only when the command is typed", async ({ page }) => {
   const pulled: string[] = [];
 
-  page.on("request", (request) => pulled.push(request.url()));
+  page.on("request", (request) => {
+    return pulled.push(request.url());
+  });
 
   const cli = await boot(page);
 
   expect(
-    pulled.filter((url) => url.includes("radio")),
+    pulled.filter((url) => {
+      return url.includes("radio");
+    }),
     "nothing radio on first load",
   ).toEqual([]);
 
@@ -232,7 +264,9 @@ test("should download the radio chunk only when the command is typed", async ({ 
   await cli.press("Enter");
   await expect(page.locator(".radio")).toBeVisible();
 
-  const chunks = pulled.filter((url) => /\/radio\.[\da-f]+\.js$/u.test(url));
+  const chunks = pulled.filter((url) => {
+    return /\/radio\.[\da-f]+\.js$/u.test(url);
+  });
 
   expect(chunks, "the chunk arrives once, stamped").toHaveLength(1);
 });
@@ -256,7 +290,9 @@ test("should paint the bars from the theme accent on every theme", async ({ page
     const paint = await page
       .locator("[data-radio-bar] u")
       .first()
-      .evaluate((node) => getComputedStyle(node).backgroundImage);
+      .evaluate((node) => {
+        return getComputedStyle(node).backgroundImage;
+      });
 
     expect(paint, `${theme} paints a gradient`).toContain("gradient");
     painted.push(paint);
@@ -295,7 +331,11 @@ test("should tell the real state in the pane header", async ({ page }) => {
   await open(page);
 
   const head = page.locator('[data-pane="out"] .zone__head'),
-    tone = () => head.locator("[data-outdot]").evaluate((node) => getComputedStyle(node).color);
+    tone = () => {
+      return head.locator("[data-outdot]").evaluate((node) => {
+        return getComputedStyle(node).color;
+      });
+    };
 
   await expect(head).toContainText("radio");
   await expect(head).toContainText("live");
@@ -357,7 +397,14 @@ test("should resume the tune instead of restarting it", async ({ page }) => {
 
   const clock = page.locator(".radio__label span").last();
 
-  await expect.poll(async () => clock.textContent(), { timeout: 8000 }).not.toBe("0:00");
+  await expect
+    .poll(
+      async () => {
+        return clock.textContent();
+      },
+      { timeout: 8000 },
+    )
+    .not.toBe("0:00");
 
   const before = await clock.textContent();
 
@@ -412,7 +459,14 @@ test("should mute without stopping the tune", async ({ page }) => {
 
   const clock = page.locator(".radio__label span").last();
 
-  await expect.poll(async () => clock.textContent(), { timeout: 8000 }).not.toBe("0:00");
+  await expect
+    .poll(
+      async () => {
+        return clock.textContent();
+      },
+      { timeout: 8000 },
+    )
+    .not.toBe("0:00");
 
   await page.locator("body").click({ position: { x: 5, y: 5 } });
   await page.keyboard.press("m");
@@ -421,7 +475,14 @@ test("should mute without stopping the tune", async ({ page }) => {
 
   const muted = await clock.textContent();
 
-  await expect.poll(async () => clock.textContent(), { timeout: 8000 }).not.toBe(muted);
+  await expect
+    .poll(
+      async () => {
+        return clock.textContent();
+      },
+      { timeout: 8000 },
+    )
+    .not.toBe(muted);
 
   await page.keyboard.press("m");
 
@@ -551,7 +612,9 @@ test("should close the radio when the output pane is switched off", async ({ pag
 
   await expect(page.locator(".radio")).toHaveCount(0);
 
-  const built = await page.evaluate(() => document.querySelectorAll("[data-radio-bar]").length);
+  const built = await page.evaluate(() => {
+    return document.querySelectorAll("[data-radio-bar]").length;
+  });
 
   expect(built, "nothing of the radio is left behind").toBe(0);
 });

@@ -8,7 +8,9 @@ const boot = async (page: Page) => {
     await page.goto("/");
     await expect(page.locator("[data-boot]")).toHaveCount(0, { timeout: 10_000 });
   },
-  opts = (page: Page) => page.getByRole("button", { name: "options" }),
+  opts = (page: Page) => {
+    return page.getByRole("button", { name: "options" });
+  },
   // Le focus entre dans la modale au tick suivant. Sans cette attente, une touche envoyée
   // juste après part avant lui : la modale ne la voit pas, et la page l'ignore parce que la
   // modale est ouverte. Les deux gestionnaires laissent tomber la touche.
@@ -39,7 +41,9 @@ test("should offer the eight themes", async ({ page }) => {
   const labels = ["ambra", "solis", "noctis", "azureus", "uva", "bordo", "lux", "hibernus"];
 
   await Promise.all(
-    labels.map((label) => expect(page.getByRole("button", { name: label })).toHaveCount(1)),
+    labels.map((label) => {
+      return expect(page.getByRole("button", { name: label })).toHaveCount(1);
+    }),
   );
 });
 
@@ -133,9 +137,9 @@ test("should follow the dark preference of the system on the first visit", async
 // Le choix conserve prime sur la preference du systeme.
 test("should ignore the system preference when a theme is already chosen", async ({ page }) => {
   await page.emulateMedia({ colorScheme: "light" });
-  await page.addInitScript(() =>
-    localStorage.setItem("bd-term-opts", JSON.stringify({ theme: "bordo" })),
-  );
+  await page.addInitScript(() => {
+    return localStorage.setItem("bd-term-opts", JSON.stringify({ theme: "bordo" }));
+  });
   await page.goto("/");
   await expect(page.locator("[data-boot]")).toHaveCount(0, { timeout: 10_000 });
 
@@ -164,9 +168,12 @@ test("should keep the chosen theme across a reload", async ({ page }) => {
 
 test("should ignore a foreign key in the storage", async ({ page }) => {
   await boot(page);
-  await page.evaluate(() =>
-    localStorage.setItem("bd-term-opts", JSON.stringify({ section: "piraté", theme: "uva" })),
-  );
+  await page.evaluate(() => {
+    return localStorage.setItem(
+      "bd-term-opts",
+      JSON.stringify({ section: "piraté", theme: "uva" }),
+    );
+  });
   await page.reload();
   await expect(page.locator("[data-boot]")).toHaveCount(0, { timeout: 10_000 });
 
@@ -176,7 +183,9 @@ test("should ignore a foreign key in the storage", async ({ page }) => {
 
 test("should still boot with an unreadable storage", async ({ page }) => {
   await boot(page);
-  await page.evaluate(() => localStorage.setItem("bd-term-opts", "{ pas du json"));
+  await page.evaluate(() => {
+    return localStorage.setItem("bd-term-opts", "{ pas du json");
+  });
   await page.reload();
 
   await expect(page.locator("[data-boot]")).toHaveCount(0, { timeout: 10_000 });
@@ -201,10 +210,11 @@ test("should loop the tab key inside the modal", async ({ page }) => {
   const dialog = await openOpts(page);
 
   // Les tabulations doivent s'enchaîner : les paralléliser ne testerait plus la boucle.
-  await Array.from({ length: 14 }).reduce<Promise<unknown>>(
-    (chain) => chain.then(() => dialog.press("Tab")),
-    Promise.resolve(),
-  );
+  await Array.from({ length: 14 }).reduce<Promise<unknown>>((chain) => {
+    return chain.then(() => {
+      return dialog.press("Tab");
+    });
+  }, Promise.resolve());
 
   await expect(dialog.locator(":focus"), "the focus must not leave the modal").toHaveCount(1);
 });

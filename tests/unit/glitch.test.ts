@@ -5,7 +5,13 @@ import { MOJIBAKE, corrupt, heatAt } from "../../src/terminal/glitch/corrupt.ts"
 import assert from "node:assert/strict";
 import { it } from "node:test";
 
-const spaces = (value: string) => [...value].map((glyph) => (glyph === " " ? "·" : "x")).join("");
+const spaces = (value: string) => {
+  return [...value]
+    .map((glyph) => {
+      return glyph === " " ? "·" : "x";
+    })
+    .join("");
+};
 
 // La mise en page tient parce que les espaces ne partent jamais. Sans cette garantie,
 // chaque passe redessinait la largeur des trois volets.
@@ -46,8 +52,12 @@ it("should keep the heat inside its floor and its ceiling", () => {
 // Une decroissance droite se lisait comme un fondu. La vague doit donc remonter au moins
 // une fois avant la fin.
 it("should make the heat wave instead of fading", () => {
-  const samples = Array.from({ length: 100 }, (_, step) => heatAt(step / 100)),
-    rises = samples.filter((heat, index) => index > 0 && heat > (samples[index - 1] ?? 0));
+  const samples = Array.from({ length: 100 }, (_, step) => {
+      return heatAt(step / 100);
+    }),
+    rises = samples.filter((heat, index) => {
+      return index > 0 && heat > (samples[index - 1] ?? 0);
+    });
 
   assert.ok(rises.length > 1, "the heat only ever falls");
 });

@@ -7,7 +7,9 @@ const boot = async (page: Page) => {
 
     return page.getByLabel("Commande");
   },
-  list = (page: Page) => page.locator("[data-suggestions]");
+  list = (page: Page) => {
+    return page.locator("[data-suggestions]");
+  };
 
 test("should unfold the list when a prefix is typed", async ({ page }) => {
   const cli = await boot(page);
@@ -31,7 +33,9 @@ test("should keep the list at ten suggestions at most and never scroll", async (
   expect(shown).toBeGreaterThan(0);
   expect(shown).toBeLessThanOrEqual(10);
 
-  const overflow = await list(page).evaluate((node) => getComputedStyle(node).overflowY);
+  const overflow = await list(page).evaluate((node) => {
+    return getComputedStyle(node).overflowY;
+  });
 
   expect(overflow, "the list does not scroll: it is limited to ten").not.toBe("scroll");
 });
@@ -286,11 +290,14 @@ test("should animate the list on opening but not on scrolling", async ({ page })
   await cli.dispatchEvent("input");
   await expect(list(page)).toBeVisible();
 
-  const played = () =>
-    page
+  const played = () => {
+    return page
       .locator("[data-suggestion]")
       .first()
-      .evaluate((node) => getComputedStyle(node).animationName);
+      .evaluate((node) => {
+        return getComputedStyle(node).animationName;
+      });
+  };
 
   expect(await played(), "a fresh list greets the eye").toBe("suggRow");
 

@@ -12,7 +12,9 @@ const boot = async (page: Page, hash = "") => {
     await page.goto(`/${hash}`);
     await expect(page.locator("[data-boot]")).toHaveCount(0, { timeout: 10_000 });
   },
-  main = (page: Page) => page.locator('[data-pane="main"]');
+  main = (page: Page) => {
+    return page.locator('[data-pane="main"]');
+  };
 
 // De gauche à droite : valider une section mène à sa première prise. La stack ouvre sur
 // sa première techno, et non sur la ligne de commande, qui est plus loin dans le volet.
@@ -36,10 +38,9 @@ test("should keep the focus outline inside the result, down to the last column",
   const debord = await page.evaluate(() => {
     const box = document.querySelector<HTMLElement>("[data-result]")!.getBoundingClientRect();
 
-    return [...document.querySelectorAll<HTMLElement>("[data-tech]")].reduce(
-      (pire, node) => Math.max(pire, node.getBoundingClientRect().right + 4 - box.right),
-      -999,
-    );
+    return [...document.querySelectorAll<HTMLElement>("[data-tech]")].reduce((pire, node) => {
+      return Math.max(pire, node.getBoundingClientRect().right + 4 - box.right);
+    }, -999);
   });
 
   expect(debord, "four pixels of outline fit on the right").toBeLessThanOrEqual(0);
@@ -159,7 +160,11 @@ test("should walk the section list with the up and down arrows", async ({ page }
   await boot(page);
   await page.locator('[data-ctl="nav"]').first().focus();
 
-  const focused = () => page.evaluate(() => document.activeElement!.textContent.trim()),
+  const focused = () => {
+      return page.evaluate(() => {
+        return document.activeElement!.textContent.trim();
+      });
+    },
     first = await focused();
 
   await page.keyboard.press("ArrowDown");
@@ -199,15 +204,18 @@ test("should measure one section when enter is held down", async ({ page }) => {
   await press(false);
 
   // Dix répétitions du système, comme une touche tenue une seconde.
-  await Array.from({ length: 10 }).reduce<Promise<unknown>>(
-    (chain) => chain.then(() => press(true)),
-    Promise.resolve(),
-  );
+  await Array.from({ length: 10 }).reduce<Promise<unknown>>((chain) => {
+    return chain.then(() => {
+      return press(true);
+    });
+  }, Promise.resolve());
   await cdp.send("Input.dispatchKeyEvent", { ...key, type: "keyUp" });
 
-  const sections = await page.evaluate(
-    () => globalThis.hits.filter((name) => name === "section").length,
-  );
+  const sections = await page.evaluate(() => {
+    return globalThis.hits.filter((name) => {
+      return name === "section";
+    }).length;
+  });
 
   expect(sections, "one gesture, one measure").toBe(1);
 });

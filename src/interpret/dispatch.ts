@@ -47,10 +47,12 @@ export const interpret = (raw: string, context: Context): Outcome => {
 
   const echo = echoed(input),
     marked = track("commande", { cmd: command }),
-    out = (lines: Line[], effects: Effect[] = []): Outcome => ({
-      effects: [marked, ...effects],
-      lines: [echo, ...lines],
-    });
+    out = (lines: Line[], effects: Effect[] = []): Outcome => {
+      return {
+        effects: [marked, ...effects],
+        lines: [echo, ...lines],
+      };
+    };
 
   // Retaper la commande de la section en cours la rejoue : les commandes ne s'empilent pas.
   if (input === context.current.cmd) {
@@ -58,9 +60,9 @@ export const interpret = (raw: string, context: Context): Outcome => {
   }
 
   const sections = [...context.sections, ...context.details],
-    target = sections.find(
-      (entry) => entry.id === command || (NAVIGATORS.has(command) && entry.id === argument),
-    );
+    target = sections.find((entry) => {
+      return entry.id === command || (NAVIGATORS.has(command) && entry.id === argument);
+    });
 
   // Sept lignes ne tiennent pas dans le journal d'un ecran large. La reponse va donc dans
   // le resultat, et le journal ne garde que l'echo.
@@ -68,7 +70,9 @@ export const interpret = (raw: string, context: Context): Outcome => {
     return {
       ...out([], [say("essaie « /joke »", "happy")]),
       result: [
-        ...helpLines(context.model).map((text) => ({ m: "·", t: text })),
+        ...helpLines(context.model).map((text) => {
+          return { m: "·", t: text };
+        }),
         { m: "›", mc: "acc", t: KEYBOARD, tone: "fg2" },
       ],
     };
@@ -78,10 +82,20 @@ export const interpret = (raw: string, context: Context): Outcome => {
     return out([
       line({
         marker: "·",
-        text: context.sections.map((entry) => entry.id).join("   "),
+        text: context.sections
+          .map((entry) => {
+            return entry.id;
+          })
+          .join("   "),
         tone: "acc",
       }),
-      muted(context.details.map((entry) => entry.id).join("   ")),
+      muted(
+        context.details
+          .map((entry) => {
+            return entry.id;
+          })
+          .join("   "),
+      ),
     ]);
   }
 
@@ -93,7 +107,9 @@ export const interpret = (raw: string, context: Context): Outcome => {
   }
 
   if (NAVIGATORS.has(command)) {
-    const ids = sections.map((entry) => entry.id),
+    const ids = sections.map((entry) => {
+        return entry.id;
+      }),
       usage = offer(`${command} <section>`, ids);
 
     return out(argument === "" ? [usage] : [failed(`section inconnue : ${argument}`), usage]);
@@ -158,9 +174,9 @@ export const interpret = (raw: string, context: Context): Outcome => {
       said = rest.trim();
 
     return out(
-      cowsay(said, { columns: context.columns, mode }).map((row) =>
-        line({ text: row, tone: "fg" }),
-      ),
+      cowsay(said, { columns: context.columns, mode }).map((row) => {
+        return line({ text: row, tone: "fg" });
+      }),
       [track("easter_egg", { nom: command })],
     );
   }
@@ -218,7 +234,9 @@ export const interpret = (raw: string, context: Context): Outcome => {
   }
 
   if (command === "share") {
-    const targets = (context.share?.targets ?? []).map((entry) => entry.id);
+    const targets = (context.share?.targets ?? []).map((entry) => {
+      return entry.id;
+    });
 
     if (argument === "") {
       return out([offer("share <cible>", targets)], [{ type: "shareMenu" }]);

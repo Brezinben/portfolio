@@ -9,8 +9,12 @@ const boot = async (page: Page) => {
 
     return page.getByLabel("Commande");
   },
-  couper = (page: Page) => page.context().setOffline(true),
-  mascot = (page: Page) => page.locator("[data-mascot]");
+  couper = (page: Page) => {
+    return page.context().setOffline(true);
+  },
+  mascot = (page: Page) => {
+    return page.locator("[data-mascot]");
+  };
 
 test("should announce the network cut in the status bar, then forget it on return", async ({
   page,
@@ -54,9 +58,15 @@ test("should still share the link without network", async ({ page, context }) =>
 
   await expect(page.locator("[data-journal]")).toContainText("partage vers");
 
-  const ici = await page.evaluate(() => globalThis.location.origin + globalThis.location.pathname);
+  const ici = await page.evaluate(() => {
+    return globalThis.location.origin + globalThis.location.pathname;
+  });
 
-  expect(await page.evaluate(() => navigator.clipboard.readText())).toContain(ici);
+  expect(
+    await page.evaluate(() => {
+      return navigator.clipboard.readText();
+    }),
+  ).toContain(ici);
 });
 
 test("should put the mascot to sleep while the network is cut", async ({ page }) => {
@@ -99,10 +109,11 @@ test("should ignore clicks and drags while the mascot sleeps", async ({ page }) 
 
   const avant = (await mascot(page).boundingBox())!;
 
-  await Array.from({ length: 5 }).reduce<Promise<unknown>>(
-    (chain) => chain.then(() => mascot(page).click({ force: true })),
-    Promise.resolve(),
-  );
+  await Array.from({ length: 5 }).reduce<Promise<unknown>>((chain) => {
+    return chain.then(() => {
+      return mascot(page).click({ force: true });
+    });
+  }, Promise.resolve());
 
   await expect(mascot(page), "five clicks no longer blow the mascot up").toHaveClass(
     /slime--sleep/u,
