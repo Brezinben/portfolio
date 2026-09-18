@@ -53,9 +53,9 @@ const HEAT_FLOOR = 0.02;
 const HEAT_START = 0.26;
 const HEAT_DECAY = 0.2;
 const WAVE_FLOOR = 0.45;
-// Treize vagues sur la duree : assez pour que l'intensite respire, assez peu pour qu'on
-// voie le texte redevenir lisible entre deux.
-const WAVE_COUNT = 13;
+// Treize radians sur la duree, soit deux vagues : assez pour que l'intensite respire,
+// assez peu pour qu'on voie le texte redevenir lisible entre les deux.
+const WAVE_SPAN = 13;
 const HALF = 0.5;
 
 export const pick = (glyphs: string) => glyphs[Math.floor(Math.random() * glyphs.length)] ?? "";
@@ -63,7 +63,7 @@ export const pick = (glyphs: string) => glyphs[Math.floor(Math.random() * glyphs
 // L'intensite decroit par vagues : tres cassee au debut, presque lisible a la fin. Une
 // decroissance droite se lisait comme un fondu, et le texte n'avait plus l'air en panne.
 export const heatAt = (progress: number) => {
-  const wave = HALF + HALF * Math.sin(progress * WAVE_COUNT);
+  const wave = HALF + HALF * Math.sin(progress * WAVE_SPAN);
 
   return Math.max(HEAT_FLOOR, (HEAT_START - HEAT_DECAY * progress) * (WAVE_FLOOR + wave));
 };

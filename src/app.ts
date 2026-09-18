@@ -657,7 +657,11 @@ document.addEventListener("alpine:init", () => {
         // Cinq appuis sur Shift corrompent l'affichage. La garde ci-dessus laisse deja
         // passer la majuscule tapee dans la ligne de commande : elle ne compte pas.
         if (event.key === "Shift") {
-          this.glitchShift();
+          // Le systeme repete une touche maintenue : sans cette sortie, garder Shift
+          // enfonce armait l'egg tout seul en une fraction de seconde.
+          if (!event.repeat) {
+            this.glitchShift();
+          }
 
           return;
         }

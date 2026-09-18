@@ -343,16 +343,59 @@ test("should add the katakana rain on matrix", async ({ page }) => {
   await expect(page.locator("[data-glitch-column]").first()).toBeVisible();
 });
 
-// Le refus de sudo doit se lire avant que l'ecran parte. Les deux lignes d'abord, le
-// silence, puis la panne.
+// Le refus de sudo doit se lire avant que l'ecran parte. Le compte se lit sans attendre :
+// une assertion qui reessaie passerait aussi bien si la panne partait tout de suite.
 test("should let the sudo refusal be read before the glitch", async ({ page }) => {
   const cli = await boot(page);
 
   await run(cli, "/sudo");
-
   await expect(page.locator("[data-journal]")).toContainText("sudoers");
-  await expect(page.locator("[data-glitch-layer]")).toHaveCount(0);
+
+  expect(await layer(page).count(), "the glitch must wait for the refusal to be read").toBe(0);
   await expect(layer(page)).toHaveCount(1, { timeout: 5000 });
+});
+
+// La permutation des couleurs passe par une variable, parce que le conteneur des volets
+// porte un style en ligne qui bat la feuille. Elle est partie une fois sans que rien ne le
+// signale : ce test lit l'animation reellement calculee.
+test("should really run the theme permutation on the panes", async ({ page }) => {
+  const cli = await boot(page);
+
+  await run(cli, "/matrix");
+
+  await expect
+    .poll(() =>
+      page.locator("[data-panes]").evaluate((node) => getComputedStyle(node).animationName),
+    )
+    .toBe("glitch-theme");
+});
+
+// Une touche maintenue se repete. Sans garde, garder Shift enfonce armait l'egg tout seul,
+// et « il ne se declenche jamais tout seul » cessait d'etre vrai.
+test("should not arm the glitch when Shift is held down", async ({ page }) => {
+  await boot(page);
+  await page.locator("[data-journal]").focus();
+
+  await page.keyboard.down("Shift");
+  await page.waitForTimeout(1200);
+  await page.keyboard.up("Shift");
+
+  expect(await layer(page).count(), "holding Shift must not corrupt the display").toBe(0);
+});
+
+// Une panne chasse la precedente, minuteur compris : sans cela le glitch de sudo repartait
+// au milieu de celui de matrix, et emportait la pluie avec lui.
+test("should drop the pending sudo glitch when another one starts", async ({ page }) => {
+  const cli = await boot(page);
+
+  await run(cli, "/sudo");
+  await run(cli, "/matrix");
+  await expect(page.locator("[data-panes]")).toHaveAttribute("data-glitch", "matrix");
+
+  await page.waitForTimeout(1500);
+
+  await expect(page.locator("[data-panes]")).toHaveAttribute("data-glitch", "matrix");
+  await expect(page.locator("[data-glitch-column]").first()).toBeVisible();
 });
 
 // Le texte d'origine est mis en cache, et rendu tel quel a la fin : cinq secondes de

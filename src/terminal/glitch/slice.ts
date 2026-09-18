@@ -9,8 +9,9 @@ import { type Shell, slice } from "../shell.ts";
 type Beat = ReturnType<typeof setInterval>;
 type Delay = ReturnType<typeof setTimeout>;
 
-// Cinq secondes : assez pour croire a la panne, trop court pour inquieter. Cinq appuis
-// dans une fenetre d'une seconde et demie : personne n'y arrive par hasard.
+// Cinq secondes : assez pour croire a la panne, trop court pour inquieter. La fenetre
+// separe deux appuis, elle ne borne pas la serie : un rythme regulier arme, une hesitation
+// remet a zero.
 const GLITCH_MS = 5000;
 
 export const SHIFT_COUNT = 5;
@@ -152,6 +153,9 @@ export const glitchSlice = () =>
     glitchStop(this: Shell) {
       clearInterval(this.glitchBeat);
       clearTimeout(this.glitchEnd);
+      // Le minuteur de « sudo » part aussi : sans lui, un /matrix tape dans la seconde qui
+      // suit se faisait couper par une panne qu'on croyait annulee.
+      clearTimeout(this.glitchWait);
 
       for (const entry of this.glitchCache) {
         entry.node.nodeValue = entry.text;

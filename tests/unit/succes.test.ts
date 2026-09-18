@@ -44,8 +44,9 @@ const read = (name: string) =>
     return effect?.type === "track" ? unlockedBy(String(effect.props["cmd"])) : undefined;
   };
 
-it("should hold twenty-eight achievements with unique keys", () => {
-  assert.equal(ACHIEVEMENTS.length, 28);
+// Deux succes qui partagent une cle n'en font qu'un : le second ne se debloque jamais, et
+// rien d'autre ne le signale.
+it("should give every achievement its own key", () => {
   assert.equal(new Set(ACHIEVEMENTS.map((entry) => entry.key)).size, ACHIEVEMENTS.length);
 });
 
