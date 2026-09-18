@@ -40,10 +40,11 @@ const SCRIPT = ["java", "script:"].join(""),
       url: "https://exemple.test/",
     },
   },
-  serve = (page: Page, body: ContenuServi) =>
-    page.route("**/content.json", (route) =>
-      route.fulfill({ body: JSON.stringify(body), contentType: "application/json" }),
-    ),
+  serve = (page: Page, body: ContenuServi) => {
+    return page.route("**/content.json", (route) => {
+      return route.fulfill({ body: JSON.stringify(body), contentType: "application/json" });
+    });
+  },
   boot = async (page: Page) => {
     await page.goto("/");
     await expect(page.locator("[data-boot]")).toHaveCount(0, { timeout: 10_000 });
@@ -92,8 +93,12 @@ test("should never open a share target that carries a script URL", async ({ page
   await cli.press("Enter");
   await page.waitForTimeout(400);
 
-  // SAFETY: « opened » vient d'etre pose par le faux « open » installe ci-dessus.
-  expect(await page.evaluate(() => (globalThis as { opened?: string }).opened)).toBe("aucune");
+  expect(
+    await page.evaluate(() => {
+      // SAFETY: « opened » vient d'etre pose par le faux « open » installe ci-dessus.
+      return (globalThis as { opened?: string }).opened;
+    }),
+  ).toBe("aucune");
   await expect(page.locator("[data-journal]")).toContainText("cible inconnue");
 });
 
@@ -101,7 +106,9 @@ test("should never open a share target that carries a script URL", async ({ page
 test("should raise no exception on a badly encoded URL", async ({ page }) => {
   const errors: string[] = [];
 
-  page.on("pageerror", (error) => errors.push(error.message));
+  page.on("pageerror", (error) => {
+    return errors.push(error.message);
+  });
 
   await serve(page, {
     ...HOSTILE,

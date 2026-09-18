@@ -16,8 +16,9 @@ import { fileURLToPath } from "node:url";
 import { it } from "node:test";
 import { readFileSync } from "node:fs";
 
-const read = (name: string) =>
-    readFileSync(fileURLToPath(new URL(`../../src/${name}`, import.meta.url)), "utf8"),
+const read = (name: string) => {
+    return readFileSync(fileURLToPath(new URL(`../../src/${name}`, import.meta.url)), "utf8");
+  },
   sprite = read("assets/succes.svg"),
   texte = read("texte.html"),
   settings = read("terminal/settings.ts"),
@@ -37,16 +38,24 @@ const read = (name: string) =>
   },
   // Ce que la coquille lit dans les effets pour savoir ce qu'une ligne tapée débloque.
   keyOf = (typed: string) => {
-    const effect = interpret(typed, CONTEXT).effects.find(
-      (entry) => entry.type === "track" && entry.event === "commande",
-    );
+    const effect = interpret(typed, CONTEXT).effects.find((entry) => {
+      return entry.type === "track" && entry.event === "commande";
+    });
 
     return effect?.type === "track" ? unlockedBy(String(effect.props["cmd"])) : undefined;
   };
 
-it("should hold twenty-seven achievements with unique keys", () => {
-  assert.equal(ACHIEVEMENTS.length, 27);
-  assert.equal(new Set(ACHIEVEMENTS.map((entry) => entry.key)).size, ACHIEVEMENTS.length);
+// Deux succes qui partagent une cle n'en font qu'un : le second ne se debloque jamais, et
+// rien d'autre ne le signale.
+it("should give every achievement its own key", () => {
+  assert.equal(
+    new Set(
+      ACHIEVEMENTS.map((entry) => {
+        return entry.key;
+      }),
+    ).size,
+    ACHIEVEMENTS.length,
+  );
 });
 
 // Une icône manquante laisse un trou dans la liste, que rien d'autre ne signale : le

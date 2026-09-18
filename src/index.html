@@ -68,7 +68,8 @@
     >
       <main
         data-panes
-        :style="`flex:1;min-height:0;display:flex;flex-wrap:nowrap;gap:10px;align-items:stretch;overflow:var(--panes-overflow,hidden);max-width:2400px;width:100%;margin:0;animation:${power === 'fade' ? 'revealUp .62s cubic-bezier(.2,.7,.3,1) both' : 'none'}`"
+        :data-glitch="glitchMode || false"
+        :style="`flex:1;min-height:0;display:flex;flex-wrap:nowrap;gap:10px;align-items:stretch;overflow:var(--panes-overflow,hidden);max-width:2400px;width:100%;margin:0;animation:var(--panes-animation,${power === 'fade' ? 'revealUp .62s cubic-bezier(.2,.7,.3,1) both' : 'none'})`"
       >
         <h1 class="titre">Benjamin David — Développeur IA et Full Stack</h1>
 
@@ -509,6 +510,16 @@
                   ><span data-glyph="edge" x-text="compactBar.hollow"></span></span></template
               ><span data-tone="fg2" x-text="`] ${ctxPct}`"></span
             ></span>
+            <!-- La jauge des appuis sur Shift. Elle n'entre qu'au deuxieme : au premier
+               elle trahirait l'easter egg. -->
+            <template x-if="shiftArming">
+              <span data-shift aria-hidden="true">
+                <span data-tone="fg2">shift [</span>
+                <span data-tone="acc" x-text="shiftBar.filled"></span>
+                <span data-glyph="edge" x-text="shiftBar.hollow"></span>
+                <span data-tone="fg2" x-text="shiftTail"></span>
+              </span>
+            </template>
           </p>
         </section>
 
@@ -659,6 +670,21 @@
             </template>
           </div>
         </aside>
+
+        <!-- Le calque du glitch. Il est decoratif de bout en bout : « data-no-glitch » le
+           garde hors du parcours de corruption, qui le trouverait sinon en s'appliquant a
+           ses propres colonnes de pluie. -->
+        <template x-if="glitchMode">
+          <div data-glitch-layer data-no-glitch aria-hidden="true">
+            <span data-glitch-band></span>
+            <span data-glitch-band></span>
+            <span data-glitch-band></span>
+            <span data-glitch-band></span>
+            <template x-for="(column, index) in glitchRain" :key="index">
+              <span data-glitch-column :style="column.style" x-text="column.glyphs"></span>
+            </template>
+          </div>
+        </template>
       </main>
 
       <template x-if="optsOpen">

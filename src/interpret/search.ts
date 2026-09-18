@@ -64,13 +64,16 @@ const VIDES = new Set([
 ]);
 // Une recherche ne doit pas dependre des accents ni de la casse : « éco-conception » se
 // cherche « eco conception ».
-const words = (text: string): string[] =>
-  text
+const words = (text: string): string[] => {
+  return text
     .normalize("NFD")
     .replaceAll(/\p{Diacritic}/gu, "")
     .toLowerCase()
     .split(/[^\p{Letter}\p{Number}]+/u)
-    .filter((mot) => mot.length > 1 && !VIDES.has(mot));
+    .filter((mot) => {
+      return mot.length > 1 && !VIDES.has(mot);
+    });
+};
 
 // Un score par recouvrement de mots, sans index ni modele. Le corpus fait dix passages
 // ecrits a la main : tout ce qui serait plus savant couterait plus qu'il ne rapporte.;
@@ -85,21 +88,31 @@ const search = (query: string, entries: Entry[]) => {
   }
 
   return entries
-    .filter((entry) => (entry.ask ?? "") !== "")
+    .filter((entry) => {
+      return (entry.ask ?? "") !== "";
+    })
     .map((entry) => {
       const body = words(entry.ask ?? ""),
         title = new Set(words(entry.label)),
-        shared = body.filter((word) => wanted.has(word)),
+        shared = body.filter((word) => {
+          return wanted.has(word);
+        }),
         hitCount = shared.length,
         distinct = new Set(shared).size,
-        inTitle = [...wanted].filter((word) => title.has(word)).length;
+        inTitle = [...wanted].filter((word) => {
+          return title.has(word);
+        }).length;
 
       // Le nombre de mots distincts touches prime sur les repetitions : un passage qui
       // repond a toute la question vaut mieux qu'un qui martele un seul de ses mots.
       return { entry, score: distinct * 10 + hitCount + inTitle * 30 };
     })
-    .filter((hit) => hit.score > 0)
-    .toSorted((one, other) => other.score - one.score);
+    .filter((hit) => {
+      return hit.score > 0;
+    })
+    .toSorted((one, other) => {
+      return other.score - one.score;
+    });
 };
 
 // La reponse est toujours le texte du corpus, jamais un texte produit. Un modele, quand il
@@ -120,11 +133,19 @@ export const answer = (query: string, entries: Entry[], options: { model: boolea
 
   const hits = search(query, entries),
     [best] = hits,
-    others = hits.slice(1, 4).map((hit) => hit.entry.label),
+    others = hits.slice(1, 4).map((hit) => {
+      return hit.entry.label;
+    }),
     // Le modele voit tous les passages, pas seulement ceux qui partagent un mot avec la
     // question. Lui donner la liste du recouvrement le reduirait a reclasser ce que la
     // recherche lexicale a deja trouve, et « comment tu bosses » ne trouve rien du tout.
-    answerable = entries.filter((entry) => (entry.ask ?? "") !== "").map((entry) => entry.id),
+    answerable = entries
+      .filter((entry) => {
+        return (entry.ask ?? "") !== "";
+      })
+      .map((entry) => {
+        return entry.id;
+      }),
     lexical = best
       ? [
           done(best.entry.label),

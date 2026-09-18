@@ -749,6 +749,14 @@ html[data-vt-theme]::view-transition-new(root) {
   white-space: pre;
 }
 
+/* La jauge des appuis sur Shift. Elle est en flex, et non en « white-space: pre » comme
+ celle du contexte : entre deux elements flex, une fin de ligne ne dessine pas d'espace,
+ et le balisage peut donc s'ecrire une balise par ligne. */
+.tm [data-shift] {
+  flex: none;
+  display: flex;
+}
+
 /* Le volet de sortie : la valeur d'une paire, et la fiche d'une techno. */
 .tm [data-pane="out"] dd {
   overflow-wrap: anywhere;
@@ -2341,5 +2349,195 @@ html[data-vt-theme]::view-transition-new(root) {
 
   100% {
     opacity: 1;
+  }
+}
+
+/* Le glitch : cinq secondes d'affichage corrompu. Rien de ce bloc n'est pose en ligne
+ par le script, qui ne fait que poser « data-glitch » sur les volets. */
+
+/* Les alias des couleurs du theme courant, lus par « gVars ». Ils vivent sur l'ancetre
+ qui porte les variables de theme, jamais sur l'element anime : var() y deviendrait
+ circulaire, et la permutation ne rendrait plus aucune couleur. */
+.tm {
+  --held-acc: var(--acc);
+  --held-ok: var(--ok);
+  --held-warn: var(--warn);
+  --held-fg2: var(--fg2);
+}
+
+/* La permutation ne tire que dans les quatre alias : on reste toujours dans les couleurs
+ du theme choisi, et jamais dans un arc-en-ciel. */
+/* Le conteneur des volets porte un « style » en ligne, qui bat toute regle de la feuille :
+ l'animation passe donc par une variable, que la ligne lit en repli. Meme detour que
+ « --panes-overflow ». Sans lui la permutation ne tournait pas, en silence. */
+.tm [data-panes][data-glitch] {
+  position: relative;
+  --panes-animation: glitch-theme 5000ms steps(1, end) both;
+}
+
+.tm [data-glitch] [data-pane="main"] {
+  animation: glitch-chroma 0.7s steps(1, end) infinite;
+}
+
+.tm [data-glitch-layer] {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.tm [data-glitch-band] {
+  position: absolute;
+  left: 0;
+  right: 0;
+  animation: glitch-band 1.1s steps(1, end) infinite;
+}
+
+/* Quatre tranches, quatre hauteurs, quatre rythmes. Les decaler toutes pareil se lisait
+ comme un volet qui glisse, pas comme une image qui se dechire. */
+.tm [data-glitch-band]:nth-child(1) {
+  top: 14%;
+  height: 6%;
+  backdrop-filter: invert(1) hue-rotate(70deg);
+}
+
+.tm [data-glitch-band]:nth-child(2) {
+  top: 38%;
+  height: 3%;
+  backdrop-filter: invert(1) saturate(4);
+  animation-duration: 0.83s;
+  animation-delay: 0.22s;
+}
+
+.tm [data-glitch-band]:nth-child(3) {
+  top: 57%;
+  height: 9%;
+  backdrop-filter: hue-rotate(180deg) contrast(1.6);
+  animation-duration: 1.37s;
+  animation-delay: 0.48s;
+}
+
+.tm [data-glitch-band]:nth-child(4) {
+  top: 79%;
+  height: 2%;
+  backdrop-filter: invert(1);
+  animation-duration: 0.67s;
+  animation-delay: 0.31s;
+}
+
+/* La pluie de « matrix ». Le rang place la colonne, mais sa chute est tiree : la tranche
+ pose « --fall » et « --delay », parce que trente durees derivees du rang tombaient en
+ cascade reguliere au lieu de tomber en pluie. */
+.tm [data-glitch-column] {
+  position: absolute;
+  top: 0;
+  left: calc(var(--i) * 3.4%);
+  writing-mode: vertical-rl;
+  font-size: 13px;
+  letter-spacing: 0.24em;
+  color: var(--ok);
+  opacity: 0.6;
+  animation: rain var(--fall) linear var(--delay) infinite;
+}
+
+@keyframes glitch-theme {
+  0%,
+  19% {
+    --acc: var(--held-ok);
+    --ok: var(--held-warn);
+  }
+
+  20%,
+  39% {
+    --acc: var(--held-warn);
+    --ok: var(--held-acc);
+  }
+
+  40%,
+  59% {
+    --acc: var(--held-fg2);
+    --ok: var(--held-ok);
+    --fg2: var(--held-acc);
+  }
+
+  60%,
+  79% {
+    --acc: var(--held-ok);
+    --warn: var(--held-acc);
+    --edge: var(--held-fg2);
+  }
+
+  80%,
+  100% {
+    --acc: var(--held-warn);
+    --ok: var(--held-fg2);
+  }
+}
+
+/* L'aberration chromatique porte sur le texte du volet central, et sur lui seul : posee
+ sur les trois volets elle devenait un flou, plus un defaut de canal. */
+@keyframes glitch-chroma {
+  0%,
+  100% {
+    text-shadow: none;
+  }
+
+  12% {
+    text-shadow:
+      2px 0 rgba(255, 0, 72, 0.8),
+      -2px 0 rgba(0, 238, 255, 0.62);
+  }
+
+  28% {
+    text-shadow:
+      -3px 0 rgba(255, 0, 72, 0.72),
+      3px 0 rgba(0, 238, 255, 0.55);
+  }
+
+  44% {
+    text-shadow:
+      1px 0 rgba(255, 0, 72, 0.6),
+      -1px 0 rgba(0, 238, 255, 0.5);
+  }
+
+  61% {
+    text-shadow:
+      4px 0 rgba(255, 0, 72, 0.62),
+      -4px 0 rgba(0, 238, 255, 0.46);
+  }
+
+  78% {
+    text-shadow:
+      -1px 0 rgba(255, 0, 72, 0.55),
+      2px 0 rgba(0, 238, 255, 0.4);
+  }
+}
+
+/* Une tranche est visible un cinquieme du temps. Toujours la, elle se lisait comme une
+ bande de couleur collee sur la page. */
+@keyframes glitch-band {
+  0% {
+    opacity: 0;
+    transform: translateX(0);
+  }
+
+  6% {
+    opacity: 1;
+    transform: translateX(-22px);
+  }
+
+  13% {
+    opacity: 1;
+    transform: translateX(15px);
+  }
+
+  19% {
+    opacity: 0;
+    transform: translateX(0);
+  }
+
+  100% {
+    opacity: 0;
   }
 }

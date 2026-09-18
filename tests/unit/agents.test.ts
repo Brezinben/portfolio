@@ -7,7 +7,9 @@ import { it } from "node:test";
 import { readFileSync } from "node:fs";
 
 const SOURCE = new URL("../../src/", import.meta.url),
-  read = (name: string) => readFileSync(fileURLToPath(new URL(name, SOURCE)), "utf8"),
+  read = (name: string) => {
+    return readFileSync(fileURLToPath(new URL(name, SOURCE)), "utf8");
+  },
   ORIGINE = "https://me.brezinben.dpdns.org",
   sitemap = read("sitemap.xml"),
   robots = read("robots.txt"),
@@ -16,7 +18,9 @@ const SOURCE = new URL("../../src/", import.meta.url),
   texte = read("texte.html"),
   errorSheet = read("404.css"),
   styles = read("styles.css"),
-  locs = [...sitemap.matchAll(/<loc>(?<url>[^<]+)<\/loc>/gu)].map((found) => found.groups?.url);
+  locs = [...sitemap.matchAll(/<loc>(?<url>[^<]+)<\/loc>/gu)].map((found) => {
+    return found.groups?.url;
+  });
 
 it("should keep the sitemap balanced and declare the expected namespace", () => {
   assert.match(sitemap, /^<\?xml version="1\.0" encoding="UTF-8"\?>/u);
@@ -40,7 +44,9 @@ it("should point every sitemap address at a served file", () => {
   for (const loc of locs) {
     const name = loc.slice(ORIGINE.length + 1) || "index.html";
 
-    assert.doesNotThrow(() => read(name), `${loc} matches no file in src/`);
+    assert.doesNotThrow(() => {
+      return read(name);
+    }, `${loc} matches no file in src/`);
   }
 });
 
@@ -178,8 +184,9 @@ it("should carry all of content.json in the text version and in the full content
       techNotes: Record<string, { note: string; where: string }>;
       timeline: { org: string }[];
     },
-    absent = (valeur: string) =>
-      !texte.includes(valeur.replaceAll("&", "&amp;")) || !llmsFull.includes(valeur);
+    absent = (valeur: string) => {
+      return !texte.includes(valeur.replaceAll("&", "&amp;")) || !llmsFull.includes(valeur);
+    };
 
   assert.deepEqual(
     Object.keys(contenu.techNotes).filter(absent),
@@ -187,12 +194,20 @@ it("should carry all of content.json in the text version and in the full content
     "some tech notes are missing",
   );
   assert.deepEqual(
-    contenu.stack.flatMap((groupe) => groupe.kids).filter(absent),
+    contenu.stack
+      .flatMap((groupe) => {
+        return groupe.kids;
+      })
+      .filter(absent),
     [],
     "some stack technologies are missing",
   );
   assert.deepEqual(
-    contenu.timeline.map((entree) => entree.org).filter(absent),
+    contenu.timeline
+      .map((entree) => {
+        return entree.org;
+      })
+      .filter(absent),
     [],
     "some timeline entries are missing",
   );

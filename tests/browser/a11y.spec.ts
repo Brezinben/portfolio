@@ -16,19 +16,26 @@ const THEMES = ["dark", "light", "noctis", "azureus", "uva", "bordo", "lux", "hi
   // Sans les regles de bonne pratique, le scan laissait passer une page sans « main » et
   // sans titre de niveau un. Elles ne sont pas des echecs WCAG, mais la section impact
   // annonce « structure semantique » : le scan doit tenir la promesse, pas la contourner.
-  scan = (page: Page) => new AxeBuilder({ page }).analyze(),
+  scan = (page: Page) => {
+    return new AxeBuilder({ page }).analyze();
+  },
   // Le scan mesure la couleur telle qu'elle est peinte. Lancé pendant le fondu d'entrée, il
   // lit des valeurs à mi-opacité et rapporte des écarts qui n'existent pas. On attend donc
   // les animations qui finissent ; le curseur et la mascotte, eux, ne finissent jamais.
-  settled = (page: Page) =>
-    page.evaluate(() =>
-      Promise.all(
+  settled = (page: Page) => {
+    return page.evaluate(() => {
+      return Promise.all(
         document
           .getAnimations()
-          .filter((animation) => animation.effect?.getComputedTiming().iterations !== Infinity)
-          .map((animation) => animation.finished),
-      ),
-    );
+          .filter((animation) => {
+            return animation.effect?.getComputedTiming().iterations !== Infinity;
+          })
+          .map((animation) => {
+            return animation.finished;
+          }),
+      );
+    });
+  };
 
 for (const theme of THEMES) {
   test(`should report no accessibility violation on the ${theme} theme`, async ({ page }) => {
@@ -36,7 +43,11 @@ for (const theme of THEMES) {
 
     const { violations } = await scan(page);
 
-    expect(violations.map((entry) => `${entry.id}: ${entry.nodes.length}`)).toEqual([]);
+    expect(
+      violations.map((entry) => {
+        return `${entry.id}: ${entry.nodes.length}`;
+      }),
+    ).toEqual([]);
   });
 }
 
@@ -55,7 +66,11 @@ for (const theme of THEMES) {
 
     const { violations } = await scan(page);
 
-    expect(violations.map((entry) => `${entry.id}: ${entry.nodes.length}`)).toEqual([]);
+    expect(
+      violations.map((entry) => {
+        return `${entry.id}: ${entry.nodes.length}`;
+      }),
+    ).toEqual([]);
   });
 }
 
@@ -72,7 +87,11 @@ for (const theme of THEMES) {
 
     const { violations } = await scan(page);
 
-    expect(violations.map((entry) => `${entry.id}: ${entry.nodes.length}`)).toEqual([]);
+    expect(
+      violations.map((entry) => {
+        return `${entry.id}: ${entry.nodes.length}`;
+      }),
+    ).toEqual([]);
   });
 }
 
@@ -80,12 +99,11 @@ test("should stop every animation when reduced motion is on", async ({ page }) =
   await page.emulateMedia({ reducedMotion: "reduce" });
   await boot(page);
 
-  const animated = await page.evaluate(
-    () =>
-      [...document.querySelectorAll<HTMLElement>("*")].filter(
-        (node) => getComputedStyle(node).animationName !== "none",
-      ).length,
-  );
+  const animated = await page.evaluate(() => {
+    return [...document.querySelectorAll<HTMLElement>("*")].filter((node) => {
+      return getComputedStyle(node).animationName !== "none";
+    }).length;
+  });
 
   expect(animated).toBe(0);
 });
@@ -96,19 +114,25 @@ test("should stop every animation when reduced motion is on", async ({ page }) =
 test("should give every interactive target at least 44 pixels", async ({ page }) => {
   await boot(page);
 
-  const small = await page.evaluate(() =>
-    [
+  const small = await page.evaluate(() => {
+    return [
       ...document.querySelectorAll<HTMLElement>(
         'button:not([data-suggestion]):not([data-tech]):not([data-ctl="tl"]):not([data-ctl="ach"])',
       ),
     ]
-      .filter((node) => node.offsetParent !== null)
-      .map((node) => ({
-        h: node.getBoundingClientRect().height,
-        t: node.textContent.trim().slice(0, 20),
-      }))
-      .filter((entry) => entry.h < 44),
-  );
+      .filter((node) => {
+        return node.offsetParent !== null;
+      })
+      .map((node) => {
+        return {
+          h: node.getBoundingClientRect().height,
+          t: node.textContent.trim().slice(0, 20),
+        };
+      })
+      .filter((entry) => {
+        return entry.h < 44;
+      });
+  });
 
   expect(small).toEqual([]);
 });
@@ -116,12 +140,13 @@ test("should give every interactive target at least 44 pixels", async ({ page })
 test("should keep the whole interface reachable by keyboard", async ({ page }) => {
   await boot(page);
 
-  const reachable = await page.evaluate(
-    () =>
-      [...document.querySelectorAll<HTMLElement>("button, input, a[href], [tabindex='0']")].filter(
-        (node) => node.offsetParent !== null && node.tabIndex >= 0,
-      ).length,
-  );
+  const reachable = await page.evaluate(() => {
+    return [
+      ...document.querySelectorAll<HTMLElement>("button, input, a[href], [tabindex='0']"),
+    ].filter((node) => {
+      return node.offsetParent !== null && node.tabIndex >= 0;
+    }).length;
+  });
 
   expect(reachable).toBeGreaterThan(10);
 });
@@ -177,7 +202,9 @@ test("should lead to the text version from the first focusable element", async (
 
   // Hors écran au repos, dans la fenêtre une fois focalisé. Un « toBeVisible » ne le dirait
   // pas : un élément posé à left:-9999px reste visible au sens de Playwright.
-  const dedans = await skip.evaluate((node) => node.getBoundingClientRect().left >= 0);
+  const dedans = await skip.evaluate((node) => {
+    return node.getBoundingClientRect().left >= 0;
+  });
 
   expect(dedans, "the link must enter the window when it receives the focus").toBe(true);
 

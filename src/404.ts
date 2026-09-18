@@ -30,8 +30,12 @@ const CHEER_MS = 1400;
 // Le chemin de la racine ne mène jamais ici : l'afficher dirait que « / » est introuvable.
 const UNKNOWN_PATH = "/route-inconnue";
 const root = document.documentElement;
-const pick = () => BUBBLES[Math.floor(Math.random() * BUBBLES.length)] ?? "";
-const systemTheme = () => (matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark");
+const pick = () => {
+  return BUBBLES[Math.floor(Math.random() * BUBBLES.length)] ?? "";
+};
+const systemTheme = () => {
+  return matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+};
 
 const saved = (): SavedOpts => {
   try {
@@ -54,15 +58,17 @@ const decode = (raw: string) => {
   }
 };
 
-const shorten = (path: string) =>
-  path.length > PATH_MAX ? `${path.slice(0, PATH_MAX - 1)}…` : path;
+const shorten = (path: string) => {
+  return path.length > PATH_MAX ? `${path.slice(0, PATH_MAX - 1)}…` : path;
+};
 
 // Sans mouvement, la piste de la mascotte est retirée. Un élément non rendu ne prend pas
 // le focus : l'inclure figerait les flèches sur lui, silencieusement.
-const reachable = () =>
-  [...document.querySelectorAll<HTMLElement>("[data-slime], [data-ctl]")].filter(
-    (node) => node.offsetParent !== null,
-  );
+const reachable = () => {
+  return [...document.querySelectorAll<HTMLElement>("[data-slime], [data-ctl]")].filter((node) => {
+    return node.offsetParent !== null;
+  });
+};
 
 // Une seule sortie est mise en avant, et elle suit le pointeur comme le clavier. C'est la
 // sélection d'une liste, pas une décoration sur la première ligne.
@@ -102,8 +108,12 @@ const ready = () => {
   });
 
   for (const exit of exits) {
-    exit.addEventListener("pointerenter", () => highlight(exits, exit));
-    exit.addEventListener("focus", () => highlight(exits, exit));
+    exit.addEventListener("pointerenter", () => {
+      return highlight(exits, exit);
+    });
+    exit.addEventListener("focus", () => {
+      return highlight(exits, exit);
+    });
   }
 
   // Les flèches parcourent les contrôles du volet, comme moveInPane sur la version
@@ -138,7 +148,9 @@ const opts = saved();
 // Un thème inconnu vaut un thème absent : la préférence du système tranche, comme sur la
 // version terminal. Sans ce filtre, « data-theme » ne correspondrait à aucun bloc et la
 // page perdrait ses couleurs.
-root.dataset.theme = THEMES.some((entry) => entry.id === opts.theme)
+root.dataset.theme = THEMES.some((entry) => {
+  return entry.id === opts.theme;
+})
   ? String(opts.theme)
   : systemTheme();
 

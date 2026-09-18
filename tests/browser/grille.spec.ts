@@ -13,18 +13,26 @@ const LARGEUR = 1280,
   },
   // Une cellule dont la colonne n'existe pas sur la ligne d'en dessous : c'est le cas qui
   // faisait partir le curseur en diagonale.
-  celluleSansSuiteDansSaColonne = (page: Page) =>
-    page.evaluate(() => {
+  celluleSansSuiteDansSaColonne = (page: Page) => {
+    return page.evaluate(() => {
       const cellules = [...document.querySelectorAll<HTMLElement>("[data-tech]")].map(
-          (node, rang) => ({
-            gauche: node.getBoundingClientRect().left,
-            haut: node.getBoundingClientRect().top,
-            rang,
-          }),
+          (node, rang) => {
+            return {
+              gauche: node.getBoundingClientRect().left,
+              haut: node.getBoundingClientRect().top,
+              rang,
+            };
+          },
         ),
-        lignes = [...new Set(cellules.map((cellule) => Math.round(cellule.haut)))].toSorted(
-          (une, autre) => une - autre,
-        );
+        lignes = [
+          ...new Set(
+            cellules.map((cellule) => {
+              return Math.round(cellule.haut);
+            }),
+          ),
+        ].toSorted((une, autre) => {
+          return une - autre;
+        });
 
       for (const [index, haut] of lignes.entries()) {
         const suivante = lignes[index + 1];
@@ -32,14 +40,19 @@ const LARGEUR = 1280,
         if (suivante !== undefined) {
           const colonnesEnDessous = new Set(
               cellules
-                .filter((cellule) => Math.round(cellule.haut) === suivante)
-                .map((cellule) => Math.round(cellule.gauche)),
+                .filter((cellule) => {
+                  return Math.round(cellule.haut) === suivante;
+                })
+                .map((cellule) => {
+                  return Math.round(cellule.gauche);
+                }),
             ),
-            orpheline = cellules.find(
-              (cellule) =>
+            orpheline = cellules.find((cellule) => {
+              return (
                 Math.round(cellule.haut) === haut &&
-                !colonnesEnDessous.has(Math.round(cellule.gauche)),
-            );
+                !colonnesEnDessous.has(Math.round(cellule.gauche))
+              );
+            });
 
           if (orpheline) {
             return orpheline.rang;
@@ -49,6 +62,7 @@ const LARGEUR = 1280,
 
       return -1;
     });
+  };
 
 test("should keep the column on the down arrow when the next row is shorter", async ({ page }) => {
   await boot(page);
@@ -62,7 +76,9 @@ test("should keep the column on the down arrow when the next row is shorter", as
 
   await depart.focus();
 
-  const avant = await depart.evaluate((node) => node.getBoundingClientRect().left);
+  const avant = await depart.evaluate((node) => {
+    return node.getBoundingClientRect().left;
+  });
 
   await page.keyboard.press("ArrowDown");
 
@@ -83,7 +99,9 @@ test("should keep the column on the down arrow when the next row is full", async
 
   await cellules.first().focus();
 
-  const avant = await cellules.first().evaluate((node) => node.getBoundingClientRect().left);
+  const avant = await cellules.first().evaluate((node) => {
+    return node.getBoundingClientRect().left;
+  });
 
   await page.keyboard.press("ArrowDown");
 

@@ -33,19 +33,29 @@ test("should keep the first load inside the weight budget", async ({ page }) => 
           "navigation",
         ) as PerformanceNavigationTiming[],
         resources = performance.getEntriesByType("resource") as PerformanceResourceTiming[],
-        local = resources.filter((entry) => new URL(entry.name).origin === location.origin);
+        local = resources.filter((entry) => {
+          return new URL(entry.name).origin === location.origin;
+        });
 
       return {
-        détail: local.map((entry) => ({
-          ko: Math.round(entry.transferSize / 102.4) / 10,
-          url: entry.name.replace(location.origin, ""),
-        })),
+        détail: local.map((entry) => {
+          return {
+            ko: Math.round(entry.transferSize / 102.4) / 10,
+            url: entry.name.replace(location.origin, ""),
+          };
+        }),
         tiers: resources
-          .filter((entry) => new URL(entry.name).origin !== location.origin)
-          .map((entry) => entry.name),
+          .filter((entry) => {
+            return new URL(entry.name).origin !== location.origin;
+          })
+          .map((entry) => {
+            return entry.name;
+          }),
         total:
           (navigation?.transferSize ?? 0) +
-          local.reduce((sum, entry) => sum + entry.transferSize, 0),
+          local.reduce((sum, entry) => {
+            return sum + entry.transferSize;
+          }, 0),
       };
     }),
     totalKo = Math.round(measured.total / 102.4) / 10;
@@ -54,7 +64,9 @@ test("should keep the first load inside the weight budget", async ({ page }) => 
 
   // Une absence est normale : la mesure d'audience échoue en silence quand elle est bloquée.
   // Une présence inattendue ne l'est pas.
-  const inconnus = measured.tiers.filter((url) => !HORS_MESURE.has(url));
+  const inconnus = measured.tiers.filter((url) => {
+    return !HORS_MESURE.has(url);
+  });
 
   expect(inconnus, `third parties seen: ${JSON.stringify(measured.tiers)}`).toEqual([]);
 });
@@ -72,7 +84,9 @@ for (const [forme, plafond] of Object.entries(SPRITES_KO)) {
           return octets.byteLength;
         }),
       ),
-      total = poids.reduce((somme, octets) => somme + octets, 0);
+      total = poids.reduce((somme, octets) => {
+        return somme + octets;
+      }, 0);
 
     expect(Math.round(total / 102.4) / 10, `${feuilles.length} sheets`).toBeLessThanOrEqual(
       plafond,
@@ -92,11 +106,15 @@ test("should pull only one mascot image on the first load", async ({ page }) => 
     const resources = performance.getEntriesByType("resource") as PerformanceResourceTiming[];
 
     return resources
-      .filter((entry) => new URL(entry.name).pathname.includes("-sheets"))
-      .map((entry) => ({
-        ko: Math.round(entry.transferSize / 102.4) / 10,
-        url: new URL(entry.name).pathname,
-      }));
+      .filter((entry) => {
+        return new URL(entry.name).pathname.includes("-sheets");
+      })
+      .map((entry) => {
+        return {
+          ko: Math.round(entry.transferSize / 102.4) / 10,
+          url: new URL(entry.name).pathname,
+        };
+      });
   });
 
   expect(images).toHaveLength(1);
@@ -115,8 +133,12 @@ test("should not send the other shapes on the first load", async ({ page }) => {
     const resources = performance.getEntriesByType("resource") as PerformanceResourceTiming[];
 
     return resources
-      .map((entry) => new URL(entry.name).pathname)
-      .filter((path) => path.includes("cube-sheets") || path.includes("pingouin-sheets"));
+      .map((entry) => {
+        return new URL(entry.name).pathname;
+      })
+      .filter((path) => {
+        return path.includes("cube-sheets") || path.includes("pingouin-sheets");
+      });
   });
 
   expect(tirees).toEqual([]);
@@ -129,12 +151,16 @@ test("should load no sheet when reduced motion is on", async ({ page }) => {
   await page.goto("/");
   await expect(page.locator("[data-boot]")).toHaveCount(0, { timeout: 10_000 });
 
-  const feuilles = await page.evaluate(() =>
-    performance
+  const feuilles = await page.evaluate(() => {
+    return performance
       .getEntriesByType("resource")
-      .map((entry) => new URL(entry.name).pathname)
-      .filter((chemin) => chemin.includes("-sheets")),
-  );
+      .map((entry) => {
+        return new URL(entry.name).pathname;
+      })
+      .filter((chemin) => {
+        return chemin.includes("-sheets");
+      });
+  });
 
   expect(feuilles).toEqual([]);
 });
@@ -144,7 +170,9 @@ test("should load no sheet when reduced motion is on", async ({ page }) => {
 // seconde police ou une image entrerait dans la page de repli sans que personne ne le voie.
 test("should keep the text version inside its weight budget", async ({ page }) => {
   await page.goto("/texte.html");
-  await page.evaluate(() => document.fonts.ready);
+  await page.evaluate(() => {
+    return document.fonts.ready;
+  });
 
   const measured = await page.evaluate(() => {
       // SAFETY: la specification garantit PerformanceNavigationTiming pour l'entree
@@ -155,14 +183,20 @@ test("should keep the text version inside its weight budget", async ({ page }) =
         resources = performance.getEntriesByType("resource") as PerformanceResourceTiming[];
 
       return {
-        détail: resources.map((entry) => ({
-          ko: Math.round(entry.transferSize / 102.4) / 10,
-          url: entry.name.replace(location.origin, ""),
-        })),
-        tiers: resources.filter((entry) => new URL(entry.name).origin !== location.origin).length,
+        détail: resources.map((entry) => {
+          return {
+            ko: Math.round(entry.transferSize / 102.4) / 10,
+            url: entry.name.replace(location.origin, ""),
+          };
+        }),
+        tiers: resources.filter((entry) => {
+          return new URL(entry.name).origin !== location.origin;
+        }).length,
         total:
           (navigation?.transferSize ?? 0) +
-          resources.reduce((sum, entry) => sum + entry.transferSize, 0),
+          resources.reduce((sum, entry) => {
+            return sum + entry.transferSize;
+          }, 0),
       };
     }),
     totalKo = Math.round(measured.total / 102.4) / 10;
@@ -178,7 +212,9 @@ test("should keep the text version inside its weight budget", async ({ page }) =
 // deux deja en cache depuis le reste du site. Ce plafond garde la mesure a froid.
 test("should keep the error page inside its weight budget", async ({ page }) => {
   await page.goto("/une/route/qui-n-existe-pas");
-  await page.evaluate(() => document.fonts.ready);
+  await page.evaluate(() => {
+    return document.fonts.ready;
+  });
 
   const measured = await page.evaluate(() => {
       // SAFETY: la specification garantit PerformanceNavigationTiming pour l'entree
@@ -189,14 +225,20 @@ test("should keep the error page inside its weight budget", async ({ page }) => 
         resources = performance.getEntriesByType("resource") as PerformanceResourceTiming[];
 
       return {
-        detail: resources.map((entry) => ({
-          ko: Math.round(entry.transferSize / 102.4) / 10,
-          url: entry.name.replace(location.origin, ""),
-        })),
-        tiers: resources.filter((entry) => new URL(entry.name).origin !== location.origin).length,
+        detail: resources.map((entry) => {
+          return {
+            ko: Math.round(entry.transferSize / 102.4) / 10,
+            url: entry.name.replace(location.origin, ""),
+          };
+        }),
+        tiers: resources.filter((entry) => {
+          return new URL(entry.name).origin !== location.origin;
+        }).length,
         total:
           (navigation?.transferSize ?? 0) +
-          resources.reduce((sum, entry) => sum + entry.transferSize, 0),
+          resources.reduce((sum, entry) => {
+            return sum + entry.transferSize;
+          }, 0),
       };
     }),
     totalKo = Math.round(measured.total / 102.4) / 10;

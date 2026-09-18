@@ -49,7 +49,11 @@ const edgeFor = (index: number, count: number) => {
   return EDGES.middle;
 };
 const bubble = (lines: string[]): string[] => {
-  const width = Math.max(...lines.map((entry) => entry.length)),
+  const width = Math.max(
+      ...lines.map((entry) => {
+        return entry.length;
+      }),
+    ),
     top = ` ${"_".repeat(width + 2)}`,
     bottom = ` ${"-".repeat(width + 2)}`;
 

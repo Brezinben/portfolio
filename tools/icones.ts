@@ -26,15 +26,29 @@ const SOURCE = new URL(
   EXTRA = ["trophy", "locked"],
   // Un rectangle par bloc coûte le double d'un chemin. Les cases d'une teinte tiennent
   // dans un seul « d », et la compression y gagne encore.
-  pathOf = (blocks: Block[]) =>
-    blocks.map(([x, y, width, height]) => `M${x} ${y}h${width}v${height}h-${width}z`).join(""),
-  layerOf = ([tint, blocks]: Layer) => `<path fill="var(--t-${tint})" d="${pathOf(blocks)}"/>`;
+  pathOf = (blocks: Block[]) => {
+    return blocks
+      .map(([x, y, width, height]) => {
+        return `M${x} ${y}h${width}v${height}h-${width}z`;
+      })
+      .join("");
+  },
+  layerOf = ([tint, blocks]: Layer) => {
+    return `<path fill="var(--t-${tint})" d="${pathOf(blocks)}"/>`;
+  };
 
 // SAFETY: le fichier est un export du design, versionné à côté. Une forme inattendue fait
 // tomber l'outil, qui se lance à la main : personne ne sert cette sortie sans la relire.
 const design = JSON.parse(await readFile(SOURCE, "utf8")) as Design,
-  wanted = [...EXTRA, ...ACHIEVEMENTS.map((entry) => entry.icon)],
-  missing = wanted.filter((icon) => !Object.hasOwn(design.icones, icon));
+  wanted = [
+    ...EXTRA,
+    ...ACHIEVEMENTS.map((entry) => {
+      return entry.icon;
+    }),
+  ],
+  missing = wanted.filter((icon) => {
+    return !Object.hasOwn(design.icones, icon);
+  });
 
 if (missing.length > 0) {
   throw new Error(`le design ne dessine pas : ${missing.join(", ")}`);

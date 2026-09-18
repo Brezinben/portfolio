@@ -13,23 +13,27 @@ export const ASK = "ask";
 export const ASK_MODEL = "ask✨";
 // L'etincelle occupe deux colonnes dans une police a chasse fixe. Sans ce comptage, la
 // ligne d'aide qui la porte decalerait son tiret d'une colonne.
-const displayWidth = (text: string) => text.length + (text.includes("✨") ? 1 : 0);
+const displayWidth = (text: string) => {
+  return text.length + (text.includes("✨") ? 1 : 0);
+};
 const askLine = (model: boolean) => {
   const shown = `${model ? ASK_MODEL : ASK} <question>`;
 
   return `${shown}${" ".repeat(Math.max(1, 34 - displayWidth(shown)))}— chercher dans le site`;
 };
 
-export const helpLines = (model: boolean) => [
-  "ls · cd <section> · bd <section>  — naviguer",
-  askLine(model),
-  "theme <nom> · clear · options     — affichage",
-  "cv · email · send-mail            — CV et contact",
-  "share <cible>                     — LinkedIn, GitHub, lien",
-  "/propose [-y] <idée>              — suggérer un ajout",
-  "/joke · /cowsay                   — le reste",
-  "/slime · /matrix · shutdown       — à vos risques",
-];
+export const helpLines = (model: boolean) => {
+  return [
+    "ls · cd <section> · bd <section>  — naviguer",
+    askLine(model),
+    "theme <nom> · clear · options     — affichage",
+    "cv · email · send-mail            — CV et contact",
+    "share <cible>                     — LinkedIn, GitHub, lien",
+    "/propose [-y] <idée>              — suggérer un ajout",
+    "/joke · /cowsay                   — le reste",
+    "/slime · /matrix · shutdown       — à vos risques",
+  ];
+};
 export const KEYBOARD =
   "Clavier : / cible la saisie · j / k changent de section · Tab complète · ↑ ↓ rappellent l'historique.";
 
@@ -102,9 +106,16 @@ const PLAIN = [
   "sleep",
   "theme",
 ];
-const VERBS = [...PLAIN, ...[...SLASH_ONLY].map((egg) => `/${egg}`)];
+const VERBS = [
+  ...PLAIN,
+  ...[...SLASH_ONLY].map((egg) => {
+    return `/${egg}`;
+  }),
+];
 
 // Les deux noms de la recherche ne s'offrent jamais ensemble : le vocabulaire ne porte
 // que celui qui correspond a l'etat du modele. Le tri decide de ce que la fenetre montre
 // en premier, la ou la liste depasse desormais dix noms.
-export const vocabulary = (model: boolean) => [model ? ASK_MODEL : ASK, ...VERBS].toSorted();
+export const vocabulary = (model: boolean) => {
+  return [model ? ASK_MODEL : ASK, ...VERBS].toSorted();
+};

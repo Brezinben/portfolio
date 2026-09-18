@@ -62,6 +62,8 @@ const dropped = await Promise.all(
       return stripped.dropped;
     }),
   ),
-  total = dropped.reduce((sum, bytes) => sum + bytes, 0);
+  total = dropped.reduce((sum, bytes) => {
+    return sum + bytes;
+  }, 0);
 
 console.log(`${files.length} fichiers lus, ${Math.round(total / 102.4) / 10} Ko retires`);

@@ -28,17 +28,26 @@ const MAX_DIGITS = 15;
 const ZERO_CLOCK = "0:00";
 // Les chiffres se groupent par trois au repos : une seed se dicte a voix haute, et
 // « 8 093 451 772 146 » se recopie, « 8093451772146 » non.
-const grouped = (seed: number) => String(seed).replaceAll(/\B(?=(?:\d{3})+(?!\d))/gu, " ");
+const grouped = (seed: number) => {
+  return String(seed).replaceAll(/\B(?=(?:\d{3})+(?!\d))/gu, " ");
+};
 
-const clock = (seconds: number) =>
-  `${Math.floor(seconds / SECONDS_PER_MINUTE)}:${String(seconds % SECONDS_PER_MINUTE).padStart(2, "0")}`;
+const clock = (seconds: number) => {
+  return `${Math.floor(seconds / SECONDS_PER_MINUTE)}:${String(seconds % SECONDS_PER_MINUTE).padStart(2, "0")}`;
+};
 
-const barNodes = () => document.querySelectorAll<HTMLElement>("[data-radio-bar]");
-const outPane = () => document.querySelector('[data-pane="out"]');
+const barNodes = () => {
+  return document.querySelectorAll<HTMLElement>("[data-radio-bar]");
+};
+const outPane = () => {
+  return document.querySelector('[data-pane="out"]');
+};
 const MEDIA_ACTIONS = ["nexttrack", "pause", "play", "stop"] as const;
 // Le nombre de barres suit la largeur du volet. Il se recalcule au redimensionnement : la
 // bande doit rester lisible quand la fenetre change, pas seulement a l'ouverture.
-const barCount = () => ((outPane()?.clientWidth ?? 0) >= WIDE_PX ? BARS_WIDE : BARS_NARROW);
+const barCount = () => {
+  return (outPane()?.clientWidth ?? 0) >= WIDE_PX ? BARS_WIDE : BARS_NARROW;
+};
 
 // Les touches media du clavier et l'ecran de verrouillage pilotent la radio. Le systeme
 // n'affiche que ce qu'on lui donne : sans metadonnees, les commandes restent muettes.
@@ -168,7 +177,12 @@ const members: RadioApi & ThisType<Shell> = {
 
       const levels = this.radioEngine.levels(this.radioBars.length);
 
-      if (!levels || !levels.some((height) => height > SILENT_LEVEL)) {
+      if (
+        !levels ||
+        !levels.some((height) => {
+          return height > SILENT_LEVEL;
+        })
+      ) {
         return;
       }
 
@@ -195,8 +209,12 @@ const members: RadioApi & ThisType<Shell> = {
       return;
     }
 
-    this.radioBars = Array.from({ length: count }, (_unused, at) => at);
-    this.radioPeaks = this.radioBars.map(() => 0);
+    this.radioBars = Array.from({ length: count }, (_unused, at) => {
+      return at;
+    });
+    this.radioPeaks = this.radioBars.map(() => {
+      return 0;
+    });
     this.radioSilhouette();
   },
 
@@ -219,10 +237,18 @@ const members: RadioApi & ThisType<Shell> = {
     }
 
     const press = {
-      " ": () => this.radioToggle(),
-      m: () => this.radioMute(),
-      q: () => this.radioClose(),
-      r: () => this.radioReseed(undefined),
+      " ": () => {
+        return this.radioToggle();
+      },
+      m: () => {
+        return this.radioMute();
+      },
+      q: () => {
+        return this.radioClose();
+      },
+      r: () => {
+        return this.radioReseed(undefined);
+      },
     }[event.key.toLowerCase()];
 
     if (!press) {
@@ -295,22 +321,36 @@ const members: RadioApi & ThisType<Shell> = {
     // Le volet vient d'etre demande : sa largeur ne se mesure qu'une fois qu'il est pose.
     // Mesurer avant laissait seize barres sur un grand ecran, quand le reglage « out »
     // etait eteint et que le volet valait donc zero pixel.
-    navigator.mediaSession.setActionHandler("play", () => this.radioToggle());
-    navigator.mediaSession.setActionHandler("pause", () => this.radioToggle());
-    navigator.mediaSession.setActionHandler("stop", () => this.radioClose());
-    navigator.mediaSession.setActionHandler("nexttrack", () => this.radioReseed(undefined));
+    navigator.mediaSession.setActionHandler("play", () => {
+      return this.radioToggle();
+    });
+    navigator.mediaSession.setActionHandler("pause", () => {
+      return this.radioToggle();
+    });
+    navigator.mediaSession.setActionHandler("stop", () => {
+      return this.radioClose();
+    });
+    navigator.mediaSession.setActionHandler("nexttrack", () => {
+      return this.radioReseed(undefined);
+    });
 
     this.$nextTick(() => {
       const pane = outPane();
 
-      this.radioBars = Array.from({ length: barCount() }, (_unused, at) => at);
-      this.radioPeaks = this.radioBars.map(() => 0);
+      this.radioBars = Array.from({ length: barCount() }, (_unused, at) => {
+        return at;
+      });
+      this.radioPeaks = this.radioBars.map(() => {
+        return 0;
+      });
       this.radioReseed(undefined);
       this.radioToggle();
 
       // La bande doit rester lisible quand la fenetre change, pas seulement a l'ouverture.
       if (pane) {
-        this.radioSizer = new ResizeObserver(() => this.radioFit());
+        this.radioSizer = new ResizeObserver(() => {
+          return this.radioFit();
+        });
         this.radioSizer.observe(pane);
       }
     });
@@ -321,7 +361,9 @@ const members: RadioApi & ThisType<Shell> = {
   radioReseed(this: Shell, seed: number | undefined) {
     this.radioSeconds = 0;
     this.radioClock = ZERO_CLOCK;
-    this.radioPeaks = this.radioBars.map(() => 0);
+    this.radioPeaks = this.radioBars.map(() => {
+      return 0;
+    });
     this.radioSeeds += 1;
     this.radioShow(derive(seed ?? newSeed()));
 
@@ -438,4 +480,6 @@ const members: RadioApi & ThisType<Shell> = {
   },
 };
 
-export const radioSlice = (): RadioApi => members;
+export const radioSlice = (): RadioApi => {
+  return members;
+};

@@ -14,7 +14,9 @@ test("should reach the terminal with a valid content", async ({ page }) => {
 test("should show the panic screen instead of an empty terminal when the content is missing", async ({
   page,
 }) => {
-  await page.route("**/content.json", (route) => route.fulfill({ status: 404 }));
+  await page.route("**/content.json", (route) => {
+    return route.fulfill({ status: 404 });
+  });
   await page.goto("/");
 
   await expect(page.locator("[data-boot]")).toContainText(PANIC, { timeout: 10_000 });
@@ -25,9 +27,9 @@ test("should show the panic screen instead of an empty terminal when the content
 });
 
 test("should detect and name a malformed content", async ({ page }) => {
-  await page.route("**/content.json", (route) =>
-    route.fulfill({ body: '{"profile":{}}', contentType: "application/json" }),
-  );
+  await page.route("**/content.json", (route) => {
+    return route.fulfill({ body: '{"profile":{}}', contentType: "application/json" });
+  });
   await page.goto("/");
 
   await expect(page.locator("[data-boot]")).toContainText(PANIC, { timeout: 10_000 });
@@ -55,9 +57,9 @@ test("should keep the boot screen on while the content is slow", async ({ page }
 test("should offer retry and the text version on the panic screen", async ({ page }) => {
   let broken = true;
 
-  await page.route("**/content.json", (route) =>
-    broken ? route.fulfill({ status: 500 }) : route.continue(),
-  );
+  await page.route("**/content.json", (route) => {
+    return broken ? route.fulfill({ status: 500 }) : route.continue();
+  });
   await page.goto("/");
 
   await expect(page.locator("[data-boot]")).toContainText(PANIC, { timeout: 15_000 });

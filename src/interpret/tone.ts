@@ -5,7 +5,12 @@ export const TONES = ["acc", "fg", "fg2", "ok", "warn"] as const;
 
 export type Tone = (typeof TONES)[number];
 
-const isTone = (value: string): value is Tone => TONES.some((tone) => tone === value);
+const isTone = (value: string): value is Tone => {
+  return TONES.some((tone) => {
+    return tone === value;
+  });
+};
 
-export const safeTone = (tone: string | undefined, fallback: Tone = "fg"): Tone =>
-  tone !== undefined && isTone(tone) ? tone : fallback;
+export const safeTone = (tone: string | undefined, fallback: Tone = "fg"): Tone => {
+  return tone !== undefined && isTone(tone) ? tone : fallback;
+};
