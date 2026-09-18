@@ -15,6 +15,7 @@ const SOURCE = new URL("../../src/", import.meta.url),
   llmsFull = read("llms-full.txt"),
   texte = read("texte.html"),
   errorSheet = read("404.css"),
+  styles = read("styles.css"),
   locs = [...sitemap.matchAll(/<loc>(?<url>[^<]+)<\/loc>/gu)].map((found) => found.groups?.url);
 
 it("should keep the sitemap balanced and declare the expected namespace", () => {
@@ -115,8 +116,8 @@ it("should give the same contact in llms.txt and in the text version", () => {
 // test paie la duplication : une couleur qui change d'un côté doit changer des deux autres.
 const CLES = ["--bg", "--panel", "--edge", "--fg", "--fg2", "--acc"],
   // Un thème peut s'écrire en plusieurs blocs, qui se fondent sous le même nom sinon le
-  // dernier efface le premier. La casse tombe aussi : oxfmt écrit 404.css en minuscules, là où
-  // les pages HTML lui échappent ; ce test surveille une dérive de valeur, pas de graphie.
+  // dernier efface le premier. La casse tombe aussi : ce test surveille une dérive de
+  // valeur, pas de graphie.
   themes = (html: string, prefixe: string) => {
     const releve: Record<string, Record<string, string>> = {};
 
@@ -139,10 +140,10 @@ const CLES = ["--bg", "--panel", "--edge", "--fg", "--fg2", "--acc"],
   };
 
 it("should copy the terminal version colors into the eight themes of the other pages", () => {
-  const source = themes(read("index.html"), String.raw`\.tm`),
+  const source = themes(styles, String.raw`\.tm`),
     noms = Object.keys(source);
 
-  assert.equal(noms.length, 8, "index.html no longer declares eight themes");
+  assert.equal(noms.length, 8, "styles.css no longer declares eight themes");
 
   for (const [page, copy] of [
     ["texte.html", themes(texte, ":root")],

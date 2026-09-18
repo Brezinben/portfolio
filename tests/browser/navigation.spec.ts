@@ -1,6 +1,13 @@
 import { expect, test } from "@playwright/test";
 import type { Page } from "@playwright/test";
 
+// La mesure d'audience est un script tiers : le test la remplace par un compteur. Seul
+// « hits » se déclare ici, « umami » portant déjà son contrat dans src/app.ts.
+declare global {
+  // eslint-disable-next-line no-var, vars-on-top
+  var hits: string[];
+}
+
 const boot = async (page: Page, hash = "") => {
     await page.goto(`/${hash}`);
     await expect(page.locator("[data-boot]")).toHaveCount(0, { timeout: 10_000 });
@@ -160,4 +167,47 @@ test("should walk the section list with the up and down arrows", async ({ page }
 
   await page.keyboard.press("ArrowUp");
   expect(await focused()).toBe(first);
+});
+
+// Le système répète une touche maintenue, et le navigateur fabrique un clic par répétition.
+// Valider au clavier envoyait alors une mesure par répétition, pour un seul geste.
+test("should measure one section when enter is held down", async ({ page }) => {
+  await page.addInitScript(() => {
+    globalThis.hits = [];
+    globalThis.umami = {
+      track: (name) => {
+        globalThis.hits.push(name);
+      },
+    };
+  });
+  await page.goto("/");
+  await expect(page.locator("[data-boot]")).toHaveCount(0, { timeout: 10_000 });
+  await page.evaluate(() => {
+    globalThis.hits = [];
+  });
+  await page.locator('[data-ctl="nav"]').nth(2).focus();
+
+  const key = { code: "Enter", key: "Enter", nativeVirtualKeyCode: 13, windowsVirtualKeyCode: 13 },
+    cdp = await page.context().newCDPSession(page);
+
+  // Le clic naît du couple « rawKeyDown » puis « char » : sans le second, rien ne s'active.
+  const press = async (autoRepeat: boolean) => {
+    await cdp.send("Input.dispatchKeyEvent", { ...key, autoRepeat, type: "rawKeyDown" });
+    await cdp.send("Input.dispatchKeyEvent", { ...key, autoRepeat, text: "\r", type: "char" });
+  };
+
+  await press(false);
+
+  // Dix répétitions du système, comme une touche tenue une seconde.
+  await Array.from({ length: 10 }).reduce<Promise<unknown>>(
+    (chain) => chain.then(() => press(true)),
+    Promise.resolve(),
+  );
+  await cdp.send("Input.dispatchKeyEvent", { ...key, type: "keyUp" });
+
+  const sections = await page.evaluate(
+    () => globalThis.hits.filter((name) => name === "section").length,
+  );
+
+  expect(sections, "one gesture, one measure").toBe(1);
 });

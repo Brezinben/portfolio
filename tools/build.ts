@@ -32,7 +32,19 @@ const ROOT = fileURLToPath(new URL("../", import.meta.url)),
   LEGACY = join(ROOT, ".versions", `${OUTPUT}.reprise`),
   KEPT_VERSIONS = 3,
   CONTENT = "content.json",
-  TRANSFORMED = new Set([CONTENT, "404.css", "404.html", "index.html", "texte.html"]),
+  STYLES = "styles.css",
+  // La feuille n'est pas copiée : elle entre dans la page, et la page entière est minifiée
+  // d'un bloc. Servie à part, elle coûterait une requête bloquante au premier rendu, pour
+  // un fichier que le budget compte déjà.
+  TRANSFORMED = new Set([
+    CONTENT,
+    STYLES,
+    "404.css",
+    "404.html",
+    "assets/succes.svg",
+    "index.html",
+    "texte.html",
+  ]),
   // Ces noms sont des contrats avec l'extérieur : iOS demande /apple-touch-icon.png sans
   // balise, la page charge content.json par une URL relative, et les robots lisent llms.txt.
   FIXED_NAMES = new Set([
@@ -49,7 +61,11 @@ const ROOT = fileURLToPath(new URL("../", import.meta.url)),
   // son nom dans le bundle en ligne, qui fait partie du texte de la page.
   RADIO_CHUNK = "radio.js",
   MODULE_TAG = '<script type="module" src="app.ts"></script>',
-  STYLE_TAG = '<link rel="stylesheet" href="404.css">',
+  // Les icônes des succès partent en ligne dans la page. Un « use » vers un SVG externe
+  // n'hérite pas des variables CSS du document, et les cinq teintes suivent le thème.
+  SPRITE_TAG = "<!--succes.svg-->",
+  ERROR_STYLE_TAG = '<link rel="stylesheet" href="404.css" />',
+  STYLE_TAG = `<link rel="stylesheet" href="${STYLES}" />`,
   SCRIPT_TAG = '<script src="404.ts"></script>',
   // Une case de mascotte fait 32 px natifs et s'affiche à x2. Voir l'ADR 0004.
   FRAME = 32,
@@ -74,13 +90,15 @@ const ROOT = fileURLToPath(new URL("../", import.meta.url)),
   // La 404 est servie sur une adresse quelconque : elle écrit des chemins absolus, là où
   // index.html les écrit relatifs. Le plan, lui, ne connaît que la forme relative.
   LEADING_SLASH = /^\//u,
-  // La règle de base d'une forme porte la position de départ. Elle reçoit l'image fusionnée,
-  // que les règles d'état ne déclarent plus. Le slime est la forme par défaut, sans attribut.
+  // La règle de base d'une forme porte la position de départ, et reçoit l'image fusionnée.
+  // Le point-virgule est facultatif : le formateur le pose, la feuille s'écrivait sans lui.
+  // L'ancre sur le sélecteur évite qu'une règle placée avant reçoive l'image en silence.
   BASE_RULE = {
-    cube: /(?<head>\.slime\[data-form="cube"\] \{\n)(?<indent>[^\S\n]*)background-position: 0 0\n/u,
+    cube: /(?<head>\.slime\[data-form="cube"\] \{\n)(?<indent>[^\S\n]*)background-position: 0 0;?\n/u,
     pingouin:
-      /(?<head>\.slime\[data-form="pingouin"\] \{\n)(?<indent>[^\S\n]*)background-position: 0 0\n/u,
-    slime: /(?<head>)(?<indent>[^\S\n]*)background-position: 0 0;\n/u,
+      /(?<head>\.slime\[data-form="pingouin"\] \{\n)(?<indent>[^\S\n]*)background-position: 0 0;?\n/u,
+    slime:
+      /(?<head>\.slime(?:::before)? \{\n(?:[^}]*\n)??)(?<indent>[^\S\n]*)background-position: 0 0;?\n/u,
   },
   // MinifyJS reste absent. Rolldown a déjà minifié les deux scripts en ligne du projet.
   // RemoveAttributeQuotes et removeOptionalTags rendent le balisage déroutant pour 0,3 Ko.
@@ -307,17 +325,17 @@ const unfilter = (filter: number, value: number, around: Around) => {
   },
   // Une seule requête au lieu d'une par état : un seul flux deflate exploite la ressemblance
   // entre les feuilles, que src/ garde separees pour rester lisibles une par une. Le plan
-  // sort d'un seul balayage de index.html, donc feuilles et bandes ne peuvent pas diverger.
+  // sort d'un seul balayage de la feuille, donc feuilles et bandes ne peuvent pas diverger.
   planSheets = async (staging: string) => {
-    const page = await readFile(join(SOURCE, "index.html"), "utf8"),
-      declared = page.match(SHEET_URL) ?? [],
+    const sheet = await readFile(join(SOURCE, STYLES), "utf8"),
+      declared = sheet.match(SHEET_URL) ?? [],
       // Les trente-deux etats communs ne sont ecrits qu'une fois, sous le slime : les trois
       // formes portent les memes, dans le meme ordre, avec le meme nombre de cases. Les
       // autres formes les deduisent par leur prefixe, et n'ecrivent que leurs transitions.
       common = declared.filter((file) => dirOf(file) === "slime");
 
     if (common.length === 0) {
-      throw new Error("index.html ne déclare plus de feuille de mascotte");
+      throw new Error(`${STYLES} ne déclare plus de feuille de mascotte`);
     }
 
     // Une transition suit les trente-deux etats communs de la feuille ou elle vit :
@@ -410,21 +428,27 @@ const unfilter = (filter: number, value: number, around: Around) => {
     }, folded);
   },
   buildIndex = async (staging: string, plan: SheetPlan) => {
-    const page = await readFile(join(SOURCE, "index.html"), "utf8");
+    const page = await readFile(join(SOURCE, "index.html"), "utf8"),
+      sprite = await readFile(join(SOURCE, "assets", "succes.svg"), "utf8"),
+      sheet = await readFile(join(SOURCE, STYLES), "utf8");
 
-    if (!page.includes(MODULE_TAG)) {
-      throw new Error(`index.html ne porte plus ${MODULE_TAG}`);
+    for (const tag of [MODULE_TAG, SPRITE_TAG, STYLE_TAG]) {
+      if (!page.includes(tag)) {
+        throw new Error(`index.html ne porte plus ${tag}`);
+      }
     }
 
     const folded = foldPage(
-        page,
+        page.replace(STYLE_TAG, () => `<style>\n${sheet}</style>`),
         plan,
         FORMS.map(({ dir }) => dir),
       ),
       bundled = await bundle("app.ts", "esm"),
       // Une fonction de remplacement, car un remplacement littéral interprète les motifs en
       // dollar. Le code source porte « $$ » dans les yeux de cowsay.
-      replaced = folded.replace(MODULE_TAG, () => `<script type="module">${bundled.code}</script>`);
+      replaced = folded
+        .replace(MODULE_TAG, () => `<script type="module">${bundled.code}</script>`)
+        .replace(SPRITE_TAG, () => sprite);
 
     // Le chunk paresseux s'écrit à la racine, comme la page : un spécificateur relatif dans
     // un module en ligne se résout contre l'adresse du document, pas contre un fichier.
@@ -440,7 +464,7 @@ const unfilter = (filter: number, value: number, around: Around) => {
     const page = await readFile(join(SOURCE, "404.html"), "utf8"),
       sheet = await readFile(join(SOURCE, "404.css"), "utf8");
 
-    for (const tag of [STYLE_TAG, SCRIPT_TAG]) {
+    for (const tag of [ERROR_STYLE_TAG, SCRIPT_TAG]) {
       if (!page.includes(tag)) {
         throw new Error(`404.html ne porte plus ${tag}`);
       }
@@ -450,7 +474,7 @@ const unfilter = (filter: number, value: number, around: Around) => {
       bundled = await bundle("404.ts", "iife"),
       // Deux fonctions de remplacement : un littéral interpréterait les motifs en dollar.
       inlined = page
-        .replace(STYLE_TAG, () => `<style>${folded}</style>`)
+        .replace(ERROR_STYLE_TAG, () => `<style>${folded}</style>`)
         .replace(SCRIPT_TAG, () => `<script>${bundled.code}</script>`);
 
     // La page d'erreur est servie sur une adresse quelconque : un spécificateur relatif n'y

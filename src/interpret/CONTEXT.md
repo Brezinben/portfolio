@@ -35,7 +35,7 @@ _Avoid_: routeur, aiguilleur, contrôleur.
 | Rang | Modules | Ce qu'ils importent |
 |---|---|---|
 | 0 | `lookup` · `tone` · `vocabulary` · `share` | rien |
-| 1 | `lines` | `tone` |
+| 1 | `lines` · `achievements` | `tone` pour l'un, `lookup` pour l'autre |
 | 2 | `content` | `tone`, `lookup` |
 | 3 | `effects` · `context` | des types seulement |
 | 4 | `mascot` · `eggs` · `cowsay` | les rangs 0 à 3 |
@@ -56,6 +56,12 @@ descendre dans la complétion forcerait l'arête inverse, seul cycle possible du
 **`candidates` ne tronque pas sa liste.** Elle rend tout ce qui correspond, et la coquille
 n'en montre que dix. Tronquer ici faisait mentir `commonPrefix` : la tabulation complétait
 au-delà du préfixe réel dès que la onzième proposition existait.
+
+**Le catalogue des succès vit ici, et il ne décrit aucune commande.** `achievements.ts`
+porte des libellés et une table de noms, là où le reste du dossier transforme une ligne
+tapée. Il y est quand même, pour une raison : c'est une donnée pure, et le seam de
+l'interpréteur est le seul qui la couvre sans navigateur. Un déclencheur qui ne correspond
+à aucune commande laisse un succès inatteignable, et rien d'autre ne le signalerait.
 
 **Il n'y a pas de `types.ts` central.** `verbatimModuleSyntax` efface les `import type` :
 ils ne produisent aucune arête d'exécution, donc un hub n'achèterait rien et coûterait un

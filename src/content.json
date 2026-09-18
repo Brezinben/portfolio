@@ -12,7 +12,7 @@
     }
   },
   "share": {
-    "title": "Benjamin David — Développeur IA & Full Stack",
+    "title": "Benjamin David · Développeur IA & Full Stack",
     "text": "Serveurs MCP, Specification-Driven Development, accessibilité et numérique responsable.",
     "targets": [
       {
@@ -231,27 +231,27 @@
         {
           "m": "✓",
           "mc": "ok",
-          "t": "Accessibilité — contrastes vérifiés, navigation clavier complète, focus visibles, structure sémantique."
+          "t": "Accessibilité : contrastes vérifiés, navigation clavier complète, focus visibles, structure sémantique."
         },
         {
           "m": "✓",
           "mc": "ok",
-          "t": "Sobriété — aucune vidéo, aucune image, une seule police, animations désactivables."
+          "t": "Sobriété : aucune vidéo, aucune image, une seule police, animations désactivables."
         },
         {
           "m": "✓",
           "mc": "ok",
-          "t": "Mesure — l'impact environnemental d'une application se constate, il ne se déclare pas."
+          "t": "Mesure : l'impact environnemental d'une application se constate, il ne se déclare pas."
         },
         {
           "m": "✓",
           "mc": "ok",
-          "t": "Arbitrage — chaque fonctionnalité a un coût ; certaines ne valent pas leur empreinte."
+          "t": "Arbitrage : chaque fonctionnalité a un coût ; certaines ne valent pas leur empreinte."
         },
         {
           "m": "›",
           "mc": "acc",
-          "t": "Le numérique responsable n'est pas un supplément : c'est une contrainte de conception, au même titre que la sécurité.",
+          "t": "Le numérique responsable est une contrainte de conception, au même titre que la sécurité.",
           "w": "500"
         },
         {
@@ -318,7 +318,7 @@
         },
         {
           "m": "│",
-          "t": "Veille continue, certifications, expérimentations — d'autant plus à l'ère de l'IA.",
+          "t": "Veille continue, certifications et expérimentations, d'autant plus à l'ère de l'IA.",
           "tone": "fg2"
         },
         {
@@ -541,7 +541,7 @@
       "cmd": "bd show mission/kereis",
       "lines": [
         {
-          "t": "Kereis — pôle DSI",
+          "t": "Kereis · pôle DSI",
           "size": "clamp(22px,2.6vw,30px)",
           "w": "700",
           "ls": "-.02em"
@@ -619,7 +619,7 @@
       "cmd": "bd show mission/assist-engare",
       "lines": [
         {
-          "t": "SNCF Gares & Connexions — Assist'enGare",
+          "t": "SNCF Gares & Connexions · Assist'enGare",
           "size": "clamp(22px,2.6vw,30px)",
           "w": "700",
           "ls": "-.02em"
@@ -719,7 +719,7 @@
       "cmd": "bd show mission/run-d4b",
       "lines": [
         {
-          "t": "digital4better — équipe RUN",
+          "t": "digital4better · équipe RUN",
           "size": "clamp(22px,2.6vw,30px)",
           "w": "700",
           "ls": "-.02em"
@@ -805,7 +805,7 @@
       "cmd": "bd show mission/transway",
       "lines": [
         {
-          "t": "Transway — mobilité durable",
+          "t": "Transway · mobilité durable",
           "size": "clamp(22px,2.6vw,30px)",
           "w": "700",
           "ls": "-.02em"
@@ -1094,7 +1094,7 @@
     },
     "API REST": {
       "where": "toutes les missions",
-      "note": "Contrats documentés en OpenAPI avant l'implémentation — la spec précède le code."
+      "note": "Contrats documentés en OpenAPI avant l'implémentation : la spec précède le code."
     },
     "OpenAPI": {
       "where": "toutes les missions",
@@ -1218,7 +1218,7 @@
     },
     "Cypress": {
       "where": "Transway",
-      "note": "Tests de bout en bout sur les parcours critiques — réservation, authentification."
+      "note": "Tests de bout en bout sur les parcours critiques : réservation, authentification."
     },
     "ESLint": {
       "where": "toutes les missions",

@@ -96,3 +96,28 @@ test("should make no external request apart from the audience measurement", asyn
 
   expect(external).toEqual([]);
 });
+
+// Le style calculé fait foi, et non les pixels : un navigateur ne peint pas le curseur
+// dans un instantané. L'ambre textuel, car le décoratif tient 2,1:1 en thème clair.
+for (const [theme, amber] of [
+  ["dark", "rgb(245, 184, 59)"],
+  ["light", "rgb(143, 95, 0)"],
+]) {
+  test(`should give the command line a block caret in accent on the ${theme} theme`, async ({
+    page,
+  }) => {
+    await page.addInitScript((choisi) => {
+      localStorage["bd-term-opts"] = JSON.stringify({ anim: true, out: true, theme: choisi });
+    }, theme);
+    await page.goto("/");
+    await expect(page.locator("[data-boot]")).toHaveCount(0, { timeout: 10_000 });
+
+    const drawn = await page.getByLabel("Commande").evaluate((node) => {
+      const style = getComputedStyle(node);
+
+      return [style.caretColor, style.getPropertyValue("caret-shape")];
+    });
+
+    expect(drawn).toEqual([amber, "block"]);
+  });
+}

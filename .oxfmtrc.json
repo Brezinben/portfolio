@@ -8,7 +8,6 @@
     "design/**",
     "dist*/**",
     ".versions/**",
-    "src/**/*.html",
     "src/content.json",
     "src/vendor/**",
     "tests/**/*-snapshots/**",

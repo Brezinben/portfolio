@@ -135,6 +135,33 @@ test("should keep only one bar on screen during the compaction", async ({ page }
   expect(status.trim(), "nothing is added after the gauge").toMatch(/ctx \[.{10}\] \d+%$/u);
 });
 
+// La jauge mesure ce qu'une commande a produit. Un clic dans le volet gauche ouvre la même
+// section, et il ne coûte rien : sinon un visiteur qui n'a rien tapé la remplissait en
+// parcourant les onglets, et elle cessait de dire ce qu'elle mesure.
+test("should leave the gauge empty when the panes are only clicked", async ({ page }) => {
+  const cli = await boot(page),
+    gauge = () =>
+      page
+        .locator("[data-gauge]")
+        .evaluate((node) => (node.textContent ?? "").split("█").length - 1);
+
+  const nav = page.locator('[data-ctl="nav"]'),
+    entries = await nav.count();
+
+  // Les six sections et les quatre missions, une par une : les ouvrir en parallèle ne
+  // navigue pas. La première est déjà ouverte au démarrage.
+  for (let at = 1; at < entries; at += 1) {
+    // eslint-disable-next-line no-await-in-loop
+    await nav.nth(at).click();
+  }
+
+  expect(await gauge(), "clicking costs nothing").toBe(0);
+
+  await run(cli, "help");
+
+  expect(await gauge(), "a typed command costs").toBeGreaterThan(0);
+});
+
 // Pleine, la jauge compacte avec un resume ironique, puis repart a zero.
 test("should start a compaction and empty itself when the gauge is full", async ({ page }) => {
   const cli = await boot(page),
