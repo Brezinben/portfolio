@@ -485,11 +485,11 @@ it("should return its own mode for shutdown and for reboot", () => {
   assert.equal(effectOf(interpret("reboot", CONTEXT), "power")?.mode, "reboot");
 });
 
-it("should wake Neo up and scare the mascot on matrix", () => {
+it("should wake Neo up and skip the expression on matrix", () => {
   const result = interpret("/matrix", CONTEXT);
 
   assert.match(result.lines[1]?.t ?? "", /Néo/u);
-  assert.equal(effectOf(result, "emote")?.expression, "scared");
+  assert.equal(effectOf(result, "emote"), undefined);
 });
 
 // Un easter egg annoncé sans son slash est refusé quand on le recopie. L'aide est le
@@ -692,8 +692,8 @@ it("should no longer accept slime jump as a second name for drop", () => {
   );
 });
 
-it("should emit its expression and the glitch on matrix", () => {
-  assert.deepEqual(kinds(interpret("/matrix", CONTEXT)), ["track", "track", "emote", "glitch"]);
+it("should emit the glitch on matrix", () => {
+  assert.deepEqual(kinds(interpret("/matrix", CONTEXT)), ["track", "track", "glitch"]);
 });
 
 // Le journal ne doit pas annoncer un geste que la coquille avale. La mascotte est absente
