@@ -11,7 +11,6 @@ Domaine cible : `https://me.brezinben.dpdns.org/`
 |---|---|
 | `src/` | La source. Lisible, sans dépendance, servable telle quelle. |
 | `dist/` | L'artefact compact, produit par `bun run build`. Hors de git. |
-| `design/` | Le canvas Claude Design, **gelé**. Référence visuelle et de comportement, plus une source de code. |
 | `docs/adr/` | Décisions d'architecture. |
 | `.scratch/` | Spec et tickets. |
 

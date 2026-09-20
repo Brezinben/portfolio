@@ -157,7 +157,6 @@
   "ignorePatterns": [
     ".agents/**",
     ".claude/**",
-    "design/**",
     "dist*/**",
     ".versions/**",
     "node_modules/**",

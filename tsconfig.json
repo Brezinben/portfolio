@@ -20,13 +20,6 @@
     "types": ["node", "dom-chromium-ai"],
     "verbatimModuleSyntax": true
   },
-  "exclude": [
-    "node_modules",
-    "dist*",
-    ".versions",
-    "design",
-    "src/vendor",
-    "tools/oxlint/anti-slop"
-  ],
+  "exclude": ["node_modules", "dist*", ".versions", "src/vendor", "tools/oxlint/anti-slop"],
   "include": ["src/**/*.ts", "tests/**/*.ts", "tools/**/*.ts", "playwright.config.ts"]
 }
