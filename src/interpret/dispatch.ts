@@ -150,11 +150,9 @@ export const interpret = (raw: string, context: Context): Outcome => {
   if (command === "matrix") {
     return out(
       [line({ marker: "·", text: "Réveille-toi, Néo.", tone: "ok" })],
-      [
-        track("easter_egg", { nom: "matrix" }),
-        { expression: "scared", type: "emote" },
-        { mode: "matrix", type: "glitch" },
-      ],
+      // Pas d'expression avant la panne : « glitchStart » fait exploser la mascotte, et la
+      // tete effrayee partirait sans jamais se voir.
+      [track("easter_egg", { nom: "matrix" }), { mode: "matrix", type: "glitch" }],
     );
   }
 
