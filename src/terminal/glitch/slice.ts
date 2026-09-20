@@ -35,7 +35,8 @@ const RAIN_SPREAD_MS = 900;
 // Les regions vivantes sont ecartees : les corrompre ferait lire du charabia a un lecteur
 // d'ecran quatorze fois par seconde. Les champs de saisie le sont aussi, sinon la commande
 // en cours part avec le reste.
-const SPARED = "input,textarea,[contenteditable],[aria-live],[data-no-glitch]";
+const SPARED =
+  'input,textarea,[contenteditable],[aria-live],[role="status"],[role="alert"],[data-no-glitch]';
 const stage = () => {
   return document.querySelector("[data-panes]");
 };
