@@ -485,8 +485,6 @@ it("should return its own mode for shutdown and for reboot", () => {
   assert.equal(effectOf(interpret("reboot", CONTEXT), "power")?.mode, "reboot");
 });
 
-// La panne fait exploser la mascotte : une expression posee avant elle ne se verrait
-// jamais.
 it("should wake Neo up and skip the expression on matrix", () => {
   const result = interpret("/matrix", CONTEXT);
 
