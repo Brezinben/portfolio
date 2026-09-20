@@ -465,3 +465,29 @@ test("should corrupt nothing when reduced motion is on", async ({ page }) => {
   await expect(page.locator("[data-glitch-layer]")).toHaveCount(0);
   await expect(pane).toHaveText(before ?? "");
 });
+
+// « role="status" » porte la meme semantique qu'« aria-live ». Le texte est echantillonne
+// au rythme du glitch : une assertion qui reessaie passerait aussi bien une fois la panne
+// finie.
+test("should spare the live region marked with a role", async ({ page }) => {
+  const cli = await boot(page),
+    live = page.locator("[data-ach-live]");
+
+  await run(cli, "/sudo");
+  await expect(live).toContainText("succès débloqué");
+
+  const said = await live.textContent();
+
+  await expect(layer(page)).toHaveCount(1);
+
+  const seen = await Array.from({ length: 20 }).reduce<Promise<Set<string>>>(async (chain) => {
+    const texts = await chain;
+
+    texts.add((await live.textContent()) ?? "");
+    await page.waitForTimeout(70);
+
+    return texts;
+  }, Promise.resolve(new Set<string>()));
+
+  expect([...seen], "the live region must not change during the glitch").toEqual([said]);
+});

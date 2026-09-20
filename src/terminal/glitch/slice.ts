@@ -13,6 +13,9 @@ type Delay = ReturnType<typeof setTimeout>;
 // separe deux appuis, elle ne borne pas la serie : un rythme regulier arme, une hesitation
 // remet a zero.
 const GLITCH_MS = 5000;
+// La feuille fige le theme permute sur sa derniere image (« both »). Sans cette variable,
+// allonger la panne laissait les couleurs permutees apres son retour, sans une erreur.
+const GLITCH_VAR = "--glitch-ms";
 
 export const SHIFT_COUNT = 5;
 // La jauge n'apparait qu'au deuxieme appui : au premier elle trahirait l'egg a quiconque
@@ -35,7 +38,8 @@ const RAIN_SPREAD_MS = 900;
 // Les regions vivantes sont ecartees : les corrompre ferait lire du charabia a un lecteur
 // d'ecran quatorze fois par seconde. Les champs de saisie le sont aussi, sinon la commande
 // en cours part avec le reste.
-const SPARED = "input,textarea,[contenteditable],[aria-live],[data-no-glitch]";
+const SPARED =
+  'input,textarea,[contenteditable],[aria-live],[role="status"],[role="alert"],[data-no-glitch]';
 const stage = () => {
   return document.querySelector("[data-panes]");
 };
@@ -122,6 +126,7 @@ export const glitchSlice = () => {
       }
 
       this.glitchStop();
+      document.documentElement.style.setProperty(GLITCH_VAR, `${GLITCH_MS}ms`);
       this.glitchMode = mode;
       this.glitchRain = mode === "matrix" ? rainColumns() : [];
       this.blowUp(mode === "shift" ? "interface" : "commande");

@@ -70,8 +70,9 @@ export const heatAt = (progress: number) => {
   return Math.max(HEAT_FLOOR, (HEAT_START - HEAT_DECAY * progress) * (WAVE_FLOOR + wave));
 };
 
-// Les espaces ne sont jamais touches : la mise en page tient, et seules les lettres
-// partent. Sans cette exception, chaque passe redessinait la largeur de tous les volets.
+// Les espaces ne sont jamais touches : les mots gardent leurs coupures, et le texte reste
+// lisible comme un texte casse. La largeur, elle, bouge : le mojibake rend deux octets la
+// ou il en lit un.
 export const corrupt = (text: string, heat: number) => {
   let out = "";
 

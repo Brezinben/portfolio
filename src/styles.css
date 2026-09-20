@@ -2372,7 +2372,7 @@ html[data-vt-theme]::view-transition-new(root) {
  « --panes-overflow ». Sans lui la permutation ne tournait pas, en silence. */
 .tm [data-panes][data-glitch] {
   position: relative;
-  --panes-animation: glitch-theme 5000ms steps(1, end) both;
+  --panes-animation: glitch-theme var(--glitch-ms) steps(1, end) both;
 }
 
 .tm [data-glitch] [data-pane="main"] {
