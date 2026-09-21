@@ -60,7 +60,7 @@ test("should announce what leaves and wait for the confirmation on propose", asy
   const journal = page.locator("[data-journal]");
 
   await expect(journal).toContainText("ajouter une section veille");
-  await expect(journal).toContainText("umami.brezinben.dpdns.org");
+  await expect(journal).toContainText("analytics.brezinben.dpdns.org");
   await expect(journal).toContainText("Votre texte, et rien d'autre");
   await expect(journal).toContainText("Aucune adresse IP");
   await expect(journal).toContainText("oui ou non");
@@ -106,9 +106,9 @@ test("should set no cookie", async ({ page, context }) => {
   expect(await context.cookies()).toEqual([]);
 });
 
-// Umami bloque ou absent ne doit rien casser : le helper est silencieux.
+// GoatCounter bloque ou absent ne doit rien casser : le helper est silencieux.
 test("should not break the page when the audience measurement is blocked", async ({ page }) => {
-  await page.route("**/umami.brezinben.dpdns.org/**", (route) => {
+  await page.route("**/analytics.brezinben.dpdns.org/**", (route) => {
     return route.abort();
   });
 

@@ -48,13 +48,11 @@
     ]
   },
   "feedback": {
-    "tool": "Umami",
-    "event": "proposition",
-    "umamiHost": "https://umami.brezinben.dpdns.org",
-    "websiteId": "0afaa975-9528-4eac-84a2-9452a9ee607c",
+    "tool": "GoatCounter",
+    "host": "https://analytics.brezinben.dpdns.org",
     "fallbackEmail": "benjamin.david1@hotmail.fr",
     "sent": "Votre texte, et rien d'autre.",
-    "notSent": "Aucune adresse IP, aucun cookie, aucun identifiant, aucune page visitée. Umami ne pose pas de cookie et n'identifie personne."
+    "notSent": "Aucune adresse IP, aucun cookie, aucun identifiant, aucune page visitée. GoatCounter ne pose pas de cookie et n'identifie personne."
   },
   "sections": [
     {
@@ -256,7 +254,7 @@
         },
         {
           "m": "·",
-          "t": "Fréquentation mesurée par Umami auto-hébergé : aucun cookie, aucun identifiant, aucune donnée revendue.",
+          "t": "Fréquentation mesurée par GoatCounter auto-hébergé : aucun cookie, aucun identifiant, aucune donnée revendue.",
           "tone": "fg2"
         },
         {
@@ -292,7 +290,7 @@
           ],
           [
             "mesure",
-            "Umami auto-hébergé, sans cookie"
+            "GoatCounter auto-hébergé, sans cookie"
           ],
           [
             "mouvement",

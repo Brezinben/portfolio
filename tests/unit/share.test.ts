@@ -17,10 +17,10 @@ const SHARE = {
     url: "https://exemple.test/",
   },
   FEEDBACK = {
+    host: "https://analytics.test",
     notSent: "Aucun cookie.",
     sent: "Votre texte, et rien d'autre.",
-    tool: "Umami",
-    umamiHost: "https://umami.test",
+    tool: "GoatCounter",
   },
   CONTEXT = {
     columns: 60,
@@ -94,7 +94,7 @@ it("should announce what is sent, where, and what is not sent", () => {
       .join("\n");
 
   assert.match(body, /« ajouter une section »/u);
-  assert.match(body, /umami\.test/u);
+  assert.match(body, /analytics\.test/u);
   assert.match(body, /Votre texte, et rien d'autre/u);
   assert.match(body, /Aucun cookie/u);
   assert.match(body, /oui ou non/u);
