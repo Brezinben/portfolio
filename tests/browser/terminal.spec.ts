@@ -93,7 +93,7 @@ test("should not send the key that cuts the boot short into the command line", a
 // Une police distante ou un CDN trahiraient la promesse en premier.
 test("should make no external request apart from the audience measurement", async ({ page }) => {
   const external: string[] = [],
-    allowed = ["http://127.0.0.1", "https://umami.brezinben.dpdns.org"];
+    allowed = ["http://127.0.0.1", "https://analytics.brezinben.dpdns.org"];
 
   page.on("request", (request) => {
     if (

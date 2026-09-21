@@ -15,7 +15,7 @@ interface ContenuServi {
 
 const SCRIPT = ["java", "script:"].join(""),
   HOSTILE = {
-    feedback: { fallbackEmail: "a@b.c", tool: "Umami", umamiHost: "https://u.test" },
+    feedback: { fallbackEmail: "a@b.c", host: "https://a.test", tool: "GoatCounter" },
     jokes: ["x"],
     profile: { email: "a@b.c" },
     sections: [

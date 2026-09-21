@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 import type { Page } from "@playwright/test";
 
 // La mesure d'audience est un script tiers : le test la remplace par un compteur. Seul
-// « hits » se déclare ici, « umami » portant déjà son contrat dans src/app.ts.
+// « hits » se déclare ici, « goatcounter » portant déjà son contrat dans src/app.ts.
 declare global {
   // eslint-disable-next-line no-var, vars-on-top
   var hits: string[];
@@ -177,11 +177,16 @@ test("should walk the section list with the up and down arrows", async ({ page }
 // Le système répète une touche maintenue, et le navigateur fabrique un clic par répétition.
 // Valider au clavier envoyait alors une mesure par répétition, pour un seul geste.
 test("should measure one section when enter is held down", async ({ page }) => {
+  // Count.js remplace window.goatcounter.count par le sien : sans ce blocage, le
+  // compteur du test disparait au chargement du script.
+  await page.route("**/analytics.brezinben.dpdns.org/**", (route) => {
+    return route.abort();
+  });
   await page.addInitScript(() => {
     globalThis.hits = [];
-    globalThis.umami = {
-      track: (name) => {
-        globalThis.hits.push(name);
+    globalThis.goatcounter = {
+      count: (vars) => {
+        globalThis.hits.push(vars.path);
       },
     };
   });
@@ -211,9 +216,11 @@ test("should measure one section when enter is held down", async ({ page }) => {
   }, Promise.resolve());
   await cdp.send("Input.dispatchKeyEvent", { ...key, type: "keyUp" });
 
+  // GoatCounter ne porte pas de propriete : « section » arrive suivi de son id et de
+  // sa provenance, dans le nom meme de l'evenement.
   const sections = await page.evaluate(() => {
     return globalThis.hits.filter((name) => {
-      return name === "section";
+      return name.startsWith("section:");
     }).length;
   });
 
