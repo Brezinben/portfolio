@@ -12,9 +12,8 @@ const BUDGET_KO = 150,
   // navigateur. Le poids de ces ressources est invisible, pas nul. Les nommer ici empêche
   // qu'un nouveau tiers entre dans la page et échappe au budget sans que personne ne le voie.
   HORS_MESURE = new Set([
-    "https://umami.brezinben.dpdns.org/api/heartbeat",
-    "https://umami.brezinben.dpdns.org/api/send",
-    "https://umami.brezinben.dpdns.org/script.js",
+    "https://analytics.brezinben.dpdns.org/count",
+    "https://analytics.brezinben.dpdns.org/count.js",
   ]);
 
 // Le budget est un test, pas un commentaire : il se mesure sur ce qui traverse

@@ -126,10 +126,10 @@ declare const Alpine: {
   data: (name: string, factory: () => State) => void;
 };
 
-// Umami est charge par une balise script tierce. Son contrat se declare ici, une fois :
-// « absent » est un cas normal, un bloqueur suffit a le produire.
-interface Umami {
-  track?: (name: string, data?: Record<string, TrackValue>) => void;
+// GoatCounter est charge par une balise script tierce. Son contrat se declare ici, une
+// fois : « absent » est un cas normal, un bloqueur suffit a le produire.
+interface GoatCounter {
+  count?: (vars: { event?: boolean; path: string; title?: string }) => void;
 }
 
 // L'API Prompt du navigateur, proposee par le W3C, n'existe que dans Chrome et derriere un contexte securise : « absent » est donc le cas majoritaire, pas une erreur.
@@ -137,7 +137,7 @@ interface Umami {
 // « topK », « temperature » et « samplingMode » restent hors du contrat : chrome-only ou en essai d'origine.
 declare global {
   // eslint-disable-next-line no-var, vars-on-top
-  var umami: Umami | undefined;
+  var goatcounter: GoatCounter | undefined;
 }
 
 // « responseConstraint » fait rendre du JSON : un identifiant en sort entre guillemets. Le
@@ -2181,11 +2181,15 @@ document.addEventListener("alpine:init", () => {
         this.unlockFrom(effects);
       },
 
-      // Marquage silencieux : Umami absent, bloqué ou en erreur ne casse rien et
-      // n'écrit rien en console.
+      // Marquage silencieux : GoatCounter absent ou bloqué ne casse rien.
+      // GoatCounter ne transporte aucune donnée libre : les valeurs des propriétés
+      // entrent dans le nom de l'événement, sinon « commande » n'aurait qu'un compteur.
       track(event: string, props?: Record<string, TrackValue>) {
+        const values = Object.values(props ?? {});
+        const path = values.length > 0 ? `${event}:${values.join(",")}` : event;
+
         try {
-          globalThis.umami?.track?.(event, props);
+          globalThis.goatcounter?.count?.({ event: true, path });
         } catch {
           // Un bloqueur a mange le script : ce n'est pas une panne du portfolio.
         }
@@ -2246,14 +2250,16 @@ document.addEventListener("alpine:init", () => {
         this.say("copié");
       },
 
-      // Trois chemins dans l'ordre : marquage Umami, puis POST, puis mailto.
+      // Trois chemins dans l'ordre : marquage GoatCounter, puis appel direct, puis
+      // mailto. Le texte est le nom de l'événement : GoatCounter ne transporte aucune
+      // donnée libre.
       async send(text: string) {
         this.pending = undefined;
 
         const feedback = this.feedback ?? {};
 
-        if (globalThis.umami?.track) {
-          this.track(feedback.event ?? "proposition", { message: text });
+        if (globalThis.goatcounter?.count) {
+          this.track(text);
           this.journal = [
             ...this.journal,
             { c: "ok", m: "✓", mc: "ok", t: "proposition envoyée. merci." },
@@ -2263,18 +2269,9 @@ document.addEventListener("alpine:init", () => {
         }
 
         try {
-          const response = await fetch(`${feedback.umamiHost}/api/send`, {
-            body: JSON.stringify({
-              payload: {
-                data: { message: text },
-                name: feedback.event,
-                website: feedback.websiteId,
-              },
-              type: "event",
-            }),
-            headers: { "content-type": "application/json" },
-            method: "POST",
-          });
+          const response = await fetch(
+            `${feedback.host}/count?p=${encodeURIComponent(text)}&e=true`,
+          );
 
           if (!response.ok) {
             throw new Error(String(response.status));

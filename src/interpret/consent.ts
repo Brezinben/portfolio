@@ -32,7 +32,7 @@ export const proposalPrompt = (text: string, feedback: Record<string, string>): 
     line({ marker: "›", markerTone: "acc", text: `« ${text} »`, tone: "fg" }),
     line({
       marker: "·",
-      text: `Destination : ${feedback.tool}, ${feedback.umamiHost}.`,
+      text: `Destination : ${feedback.tool}, ${feedback.host}.`,
       tone: "fg2",
     }),
     line({ marker: "·", text: `Ce qui part : ${feedback.sent}`, tone: "fg2" }),
