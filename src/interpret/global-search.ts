@@ -177,6 +177,18 @@ const rank = (query: string, item: GlobalEntry): number => {
   return elsewhere === -1 ? -1 : 3 + elsewhere / 1000;
 };
 
+const groupAt = (kind: GlobalKind) => {
+  return GLOBAL_GROUPS.findIndex((group) => {
+    return group.kind === kind;
+  });
+};
+
+// Les trouvailles sortent groupees, parce que la zone les affiche ainsi : rendre l'ordre du
+// classement ferait marcher les fleches autrement que l'oeil.
+//
+// C'est la meilleure trouvaille d'un groupe qui place le groupe. Un ordre de groupes fige
+// aurait enterre un match exact : « theme » nomme une commande, et les huit themes ne la
+// portent que dans leurs mots-cles.
 export const rankHits = (raw: string, index: GlobalEntry[], limit: number): GlobalEntry[] => {
   const query = fold(globalQuery(raw));
 
@@ -184,17 +196,38 @@ export const rankHits = (raw: string, index: GlobalEntry[], limit: number): Glob
     return [];
   }
 
-  return index
-    .map((item) => {
-      return { item, rank: rank(query, item) };
-    })
-    .filter((hit) => {
-      return hit.rank >= 0;
-    })
+  const kept = index
+      .map((item) => {
+        return { item, rank: rank(query, item) };
+      })
+      .filter((hit) => {
+        return hit.rank >= 0;
+      })
+      .toSorted((one, other) => {
+        return one.rank - other.rank;
+      })
+      .slice(0, limit),
+    best = (kind: GlobalKind) => {
+      return Math.min(
+        ...kept
+          .filter((hit) => {
+            return hit.item.kind === kind;
+          })
+          .map((hit) => {
+            return hit.rank;
+          }),
+      );
+    };
+
+  // Le tri est stable : le classement departage encore deux trouvailles du meme groupe, et
+  // l'ordre declare departage deux groupes a egalite.
+  return kept
     .toSorted((one, other) => {
-      return one.rank - other.rank;
+      return (
+        best(one.item.kind) - best(other.item.kind) ||
+        groupAt(one.item.kind) - groupAt(other.item.kind)
+      );
     })
-    .slice(0, limit)
     .map((hit) => {
       return hit.item;
     });

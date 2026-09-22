@@ -44,7 +44,11 @@ const THEMES = ["dark", "light", "noctis", "azureus", "uva", "bordo", "lux", "hi
             return animation.effect?.getComputedTiming().iterations !== Infinity;
           })
           .map((animation) => {
-            return animation.finished;
+            // Une frappe annule l'animation d'entrée des lignes, et « finished » rejette
+            // alors avec AbortError. Une animation annulée ne peint plus : elle est posée.
+            return animation.finished.catch(() => {
+              return animation;
+            });
           }),
       );
     });

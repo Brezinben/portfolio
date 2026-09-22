@@ -86,6 +86,23 @@ it("should search the keywords a row never shows", () => {
   assert.ok(labels("composition api").includes("Vue.js"));
 });
 
+// Sans le second tri, la flèche du bas sautait d'un groupe à l'autre puis revenait.
+it("should hand the hits back in the order the groups show them", () => {
+  const order = globalHits("sta").map((hit) => {
+    return GLOBAL_GROUPS.findIndex((group) => {
+      return group.kind === hit.kind;
+    });
+  });
+
+  assert.deepEqual(
+    order,
+    order.toSorted((one, other) => {
+      return one - other;
+    }),
+    "the arrows walk the list the eye reads",
+  );
+});
+
 it("should ignore the accents and the case on both sides", () => {
   assert.ok(labels("eco").includes("Éco-conception"));
   assert.ok(labels("ÉCO-CON").includes("Éco-conception"));

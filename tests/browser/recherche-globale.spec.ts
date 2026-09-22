@@ -147,3 +147,20 @@ test("should walk the hits with the arrows", async ({ page }) => {
   await expect(rows.first()).toHaveAttribute("aria-selected", "false");
   await expect(rows.nth(1)).toHaveAttribute("aria-selected", "true");
 });
+
+// La zone montre ses trouvailles par groupe, et les flèches suivaient l'ordre du classement.
+// Deux flèches vers le bas sautaient alors une ligne visible pour en prendre une plus loin.
+test("should walk the rows in the order the eye reads them", async ({ page }) => {
+  await boot(page);
+  await open(page);
+  await field(page).fill("sta");
+  await page.keyboard.press("Tab");
+
+  const rows = page.locator("[data-global-row]");
+
+  await page.keyboard.press("ArrowDown");
+  await page.keyboard.press("ArrowDown");
+
+  await expect(rows.nth(2)).toHaveAttribute("aria-selected", "true");
+  await expect(rows.nth(2)).toContainText("whoami");
+});

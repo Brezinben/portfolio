@@ -149,7 +149,7 @@
   "ligne-non-selectionnee": {
     "align-content": "normal",
     "align-items": "center",
-    "animation-delay": "0.036s",
+    "animation-delay": "0.018s",
     "animation-duration": "0.22s",
     "animation-name": "globalRow",
     "background-color": "rgba(0, 0, 0, 0)",
