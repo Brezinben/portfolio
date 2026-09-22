@@ -4,8 +4,8 @@
 
 ## Le problème
 
-Les succès demandent vingt-neuf icônes en pixel art : une par succès, la coupe du badge et
-le cadenas des verrouillés. Elles sont dessinées sur la même grille que la mascotte, seize
+Les succès demandent trente-et-une icônes en pixel art : une par succès, la coupe du badge
+et le cadenas des verrouillés. Elles sont dessinées sur la même grille que la mascotte, seize
 unités de côté.
 
 La mascotte est déjà résolue : les ADR 0004 et 0006 en font des feuilles PNG fusionnées,

@@ -29,6 +29,14 @@ export type { Context } from "./interpret/context.ts";
 export { COW_HEAD_MODES, cowsay } from "./interpret/cowsay.ts";
 export { ACTIVITIES } from "./interpret/mascot.ts";
 export { candidates, commonPrefix, hintFor } from "./interpret/completion.ts";
+export {
+  GLOBAL_GROUPS,
+  type GlobalEntry,
+  type GlobalSource,
+  ghostFor,
+  globalIndex,
+  rankHits,
+} from "./interpret/global-search.ts";
 export { proposalPrompt } from "./interpret/consent.ts";
 export { MAX_SUGGESTIONS, type Line } from "./interpret/lines.ts";
 export { TONES, type Tone, safeTone } from "./interpret/tone.ts";

@@ -5,6 +5,7 @@ import { ASK, ASK_MODEL } from "./vocabulary.ts";
 import { type Effect, track } from "./effects.ts";
 import { done, failed, info, line, muted } from "./lines.ts";
 import type { Entry } from "./context.ts";
+import { fold } from "./fold.ts";
 
 // Les mots trop frequents pour departager deux passages. La liste est courte a dessein :
 // une question posee a un portfolio tient en quelques mots, et en retirer trop la vide.
@@ -62,13 +63,8 @@ const VIDES = new Set([
   "vous",
   "y",
 ]);
-// Une recherche ne doit pas dependre des accents ni de la casse : « éco-conception » se
-// cherche « eco conception ».
 const words = (text: string): string[] => {
-  return text
-    .normalize("NFD")
-    .replaceAll(/\p{Diacritic}/gu, "")
-    .toLowerCase()
+  return fold(text)
     .split(/[^\p{Letter}\p{Number}]+/u)
     .filter((mot) => {
       return mot.length > 1 && !VIDES.has(mot);

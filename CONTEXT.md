@@ -12,7 +12,7 @@ dans le code.
 ### Les trois zones
 
 **Zone** (`zone`) :
-Un conteneur encadré : les deux cartes du volet gauche, les trois volets, les deux
+Un conteneur encadré : les deux cartes du volet gauche, les trois volets, les trois
 modales, le cadre de démarrage. Une zone porte un coin arrondi et ne prend jamais le focus.
 _Avoid_: bloc, panneau, boîte, carte.
 
@@ -89,7 +89,7 @@ ensemble : l'étincelle est la seule chose qui dise au visiteur qu'un modèle es
 _Avoid_: icône, emoji, marqueur.
 
 **Succès** (`achievement`) :
-Ce qu'un visiteur débloque par une action qu'il a voulue. Vingt-huit. Rien ne se débloque
+Ce qu'un visiteur débloque par une action qu'il a voulue. Vingt-neuf. Rien ne se débloque
 en arrivant sur la page, rien ne se débloque au bout d'un délai : c'est ce qui sépare une
 récompense d'une décoration. Acquis et vu sont deux états distincts, et la relance du badge
 vit entre les deux. La clé d'un succès est stable : renommer son titre ne le re-verrouille
@@ -107,6 +107,26 @@ succès : deux déblocages rapprochés font la queue au lieu de s'écraser. Elle
 moment du déblocage, et ne rejoue jamais une clé posée par une autre page. Le volet fermé,
 elle n'existe pas, et le badge porte seul le signal.
 _Avoid_: notification, toast, bandeau, popup.
+
+**Recherche globale** (`globalSearch`) :
+La troisième modale, ouverte par `⌘K`. Elle cherche dans le contenu structuré — sections,
+missions, briques de stack, thèmes, succès, commandes — et rend une commande. `ask` cherche
+dans la prose du corpus et rend un passage : les deux ne répondent pas à la même question.
+Elle n'exécute rien elle-même. Une trouvaille pose sa commande sur la ligne de saisie et la
+soumet, donc le volet central reste le seul endroit qui affiche un résultat.
+_Avoid_: palette, command palette, spotlight, ⌘K.
+
+**Trouvaille** (`hit`) :
+Une entrée rendue par la recherche globale. Son rang est celui de la liste entière, jamais
+celui de son groupe : c'est ce rang que les flèches déplacent.
+_Avoid_: résultat, proposition, suggestion, match.
+
+**Complétion fantôme** (`ghost`) :
+La fin de la première trouvaille, affichée en retrait derrière la saisie, et acceptée par
+`Tab`. Elle n'apparaît que si cette trouvaille **commence** par la saisie : compléter vers
+un libellé sans rapport se lirait comme une erreur de frappe. Sans fantôme, `Tab` garde son
+rôle de navigation.
+_Avoid_: autocomplétion, suggestion, aperçu.
 
 **Fiche techno** (`techNote`) :
 Texte attaché à une technologie de la stack, en trois parties : où, quoi, pourquoi.

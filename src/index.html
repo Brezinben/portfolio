@@ -802,6 +802,115 @@
         </div>
       </template>
 
+      <template x-if="globalOpen">
+        <div @click="closeGlobal()" data-veil>
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label="Recherche globale"
+            data-global
+            @click.stop
+            @keydown="globalKey($event)"
+            class="zone"
+          >
+            <div data-global-head>
+              <span data-tone="acc" aria-hidden="true">&rsaquo;</span>
+              <div data-global-field>
+                <input
+                  type="text"
+                  x-ref="globalField"
+                  x-model="globalQuery"
+                  @input="globalAt = 0"
+                  aria-label="Recherche globale"
+                  placeholder="Vous cherchez quelque chose ?"
+                  autocomplete="off"
+                  spellcheck="false"
+                  role="combobox"
+                  aria-autocomplete="both"
+                  :aria-controls="globalHits.length > 0 ? 'global-list' : null"
+                  :aria-expanded="globalHits.length > 0"
+                  :aria-activedescendant="globalHits.length > 0 ? `global-row-${globalAt}` : null"
+                  data-global-input
+                />
+                <span data-global-ghost aria-hidden="true"
+                  ><span data-global-typed x-text="globalGhost ? globalQuery : ''"></span
+                  ><span data-global-rest x-text="globalGhost"></span
+                ></span>
+              </div>
+              <template x-if="globalGhost">
+                <span data-tone="fg" data-global-kbd>tab</span>
+              </template>
+            </div>
+
+            <div data-global-body>
+              <!-- Le listbox n'existe qu'avec des options : un « role="listbox" » vide fait
+                 tomber « aria-required-children ». -->
+              <template x-if="globalHits.length > 0">
+                <div id="global-list" role="listbox" aria-label="Trouvailles" data-global-list>
+                  <template x-for="group in globalGroups" :key="group.kind">
+                    <div role="group" :aria-label="group.label">
+                      <p data-tone="fg2" data-global-group>
+                        <span x-text="group.label"></span><span x-text="group.rows.length"></span>
+                      </p>
+                      <template x-for="row in group.rows" :key="row.at">
+                        <button
+                          type="button"
+                          role="option"
+                          data-global-row
+                          :id="`global-row-${row.at}`"
+                          :aria-selected="row.at === globalAt"
+                          :style="`--at:${row.at}`"
+                          tabindex="-1"
+                          @pointerdown.prevent="globalAt = row.at"
+                          @click="runGlobal(row.hit)"
+                        >
+                          <span data-global-caret aria-hidden="true">&rsaquo;</span
+                          ><span data-global-label x-text="row.hit.label"></span
+                          ><span data-global-desc x-text="row.hit.desc"></span
+                          ><span data-global-tag x-text="group.tag"></span>
+                        </button>
+                      </template>
+                    </div>
+                  </template>
+                </div>
+              </template>
+
+              <template x-if="globalQuery.trim() === ''">
+                <div data-global-idle>
+                  <svg class="icon" aria-hidden="true"><use href="#i-glass" /></svg>
+                  <p data-tone="fg2">Tapez pour chercher dans tout le portfolio.</p>
+                </div>
+              </template>
+
+              <template x-if="globalQuery.trim() !== '' && globalHits.length === 0">
+                <p data-tone="fg2" data-global-idle>
+                  aucune trouvaille &mdash; <span data-tone="acc">ask</span> pose la question
+                  autrement.
+                </p>
+              </template>
+            </div>
+
+            <div data-modal-foot>
+              <p data-tone="fg2" data-modal-hint data-global-hint>
+                <span><span data-tone="acc">&uarr; &darr;</span> parcourir</span>
+                <span><span data-tone="acc">tab</span> compléter</span>
+                <span><span data-tone="acc">&crarr;</span> lancer</span>
+                <span><span data-tone="acc">esc</span> close</span>
+              </p>
+              <button
+                type="button"
+                data-ctl="opt"
+                x-ref="globalClose"
+                @click="closeGlobal()"
+                data-tone="fg"
+              >
+                close
+              </button>
+            </div>
+          </div>
+        </div>
+      </template>
+
       <template x-if="booting">
         <!-- Le clic abrege le boot comme la touche. « skipBoot » refuse quand la panique est
            affichee : le bouton retry garde ses gestes. -->

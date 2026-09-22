@@ -221,6 +221,30 @@ for (const theme of THEMES) {
   });
 }
 
+// La recherche globale reprend le chassis des modales, et porte ses propres lignes : le
+// rang selectionne, sa pastille de genre, et la complétion fantôme.
+for (const theme of THEMES) {
+  test(`should keep the global search unchanged on the ${theme} theme`, async ({ page }) => {
+    await boot(page, theme);
+
+    await page.keyboard.press("Control+k");
+    await expect(page.locator("[data-global]")).toBeVisible();
+    await page.locator("[data-global-input]").fill("sta");
+    await expect(page.locator("[data-global-rest]")).toHaveText("ck");
+
+    await fige(page, `recherche-globale-${theme}`, {
+      champ: "[data-global-input]",
+      fantome: "[data-global-rest]",
+      "groupe-entete": "[data-global-group]",
+      "ligne-non-selectionnee": '[data-global-row][aria-selected="false"]',
+      "ligne-selectionnee": '[data-global-row][aria-selected="true"]',
+      liste: "[data-global-list]",
+      pastille: '[data-global-row][aria-selected="true"] [data-global-tag]',
+      zone: "[data-global]",
+    });
+  });
+}
+
 // Le reglage d'animation n'a jamais touche le demarrage, et il ne le doit pas : la
 // coupure figerait un splash dont les minuteries, elles, ne raccourcissent pas.
 for (const theme of THEMES) {

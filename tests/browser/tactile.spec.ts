@@ -73,12 +73,12 @@ test.describe("on touch", () => {
   });
 
   // Le journal tenait dans 120 px : une réponse de 490 px n'en montrait que trois lignes.
-  // « aide » réclame maintenant le résultat, et c'est là que la réponse doit tenir entière.
+  // « help » réclame maintenant le résultat, et c'est là que la réponse doit tenir entière.
   test("should show the whole answer of a command in the result", async ({ page }) => {
     await boot(page);
     const cli = page.getByLabel("Commande");
 
-    await cli.fill("aide");
+    await cli.fill("help");
     await cli.press("Enter");
 
     const result = page.locator("[data-result]");
@@ -171,7 +171,7 @@ test.describe("on desktop", () => {
     await boot(page);
     const cli = page.getByLabel("Commande");
 
-    await cli.fill("aide");
+    await cli.fill("help");
     await cli.press("Enter");
 
     expect(await height(page, "[data-journal]")).toBeLessThanOrEqual(120);

@@ -9,10 +9,11 @@
 
 import type { AchievementsApi, AchievementsState } from "./achievements/slice.ts";
 import type { GlitchApi, GlitchState } from "./glitch/slice.ts";
+import type { GlobalEntry, TrackValue } from "../interpret.ts";
+import type { GlobalSearchApi, GlobalSearchState } from "./global-search/slice.ts";
 import type { RadioApi, RadioState } from "./radio/slice.ts";
 import type { MascotApi } from "./mascot/slice.ts";
 import type { Section } from "./format.ts";
-import type { TrackValue } from "../interpret.ts";
 
 // Alpine pose ses magies sur le composant apres l'avoir construit : elles ne sont pas dans
 // le litteral, mais « this » les voit a l'execution.
@@ -32,9 +33,22 @@ export type TrackSource = "commande" | "interface";
 export interface Shared {
   anim: boolean;
   blowUp(via: TrackSource): void;
+  details: Section[];
+  // Les deux accesseurs de la recherche globale. Ils vivent dans app.ts : aucune tranche n'en
+  // porte, et une tranche qui les recalculerait classerait l'index une seconde fois.
+  globalGhost: string;
+  globalHits: GlobalEntry[];
+  input: string;
+  missions: { id: string; state?: string }[];
+  modelState: string;
   out: boolean;
   reduced: boolean;
   sections: Section[];
+  // « typed » distingue une commande tapee d'une commande lancee a la souris : le succes de
+  // la premiere commande dit « tapee, pas cliquee ».
+  submit(options?: { typed?: boolean }): void;
+  tech: string;
+  techNotes: Record<string, { note?: string; where?: string }>;
   track(event: string, props?: Record<string, TrackValue>): void;
 }
 
@@ -46,6 +60,8 @@ export interface Terminal
     AchievementsState,
     GlitchApi,
     GlitchState,
+    GlobalSearchApi,
+    GlobalSearchState,
     MascotApi,
     RadioApi,
     RadioState,

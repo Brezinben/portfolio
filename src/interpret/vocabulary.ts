@@ -35,7 +35,7 @@ export const helpLines = (model: boolean) => {
   ];
 };
 export const KEYBOARD =
-  "Clavier : / cible la saisie · j / k changent de section · Tab complète · ↑ ↓ rappellent l'historique.";
+  "Clavier : / cible la saisie · ⌘K ou Ctrl+K ouvre la recherche globale · j / k changent de section · Tab complète · ↑ ↓ rappellent l'historique.";
 
 // Les easter eggs ne repondent qu'au prefixe slash, pour ne pas melanger une vraie
 // commande et un raccourci du portfolio. L'ordre d'ecriture ne decide de rien : le
@@ -56,7 +56,6 @@ export const SLASH_ONLY = new Set([
 
 export const ALIASES = {
   "?": "help",
-  aide: "help",
   [ASK_MODEL]: ASK,
   brezinben: "benjamin",
   cat: "slime",
@@ -86,7 +85,6 @@ export const NAVIGATORS = new Set(["bd", "cd", "open"]);
 // slash : sinon l'autocompletion propose ce que le dispatcher refuse.
 const PLAIN = [
   "?",
-  "aide",
   "bd",
   "cd",
   "clear",

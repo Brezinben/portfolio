@@ -2262,6 +2262,214 @@ html[data-vt-theme]::view-transition-new(root) {
   font-size: 12px;
 }
 
+/* La recherche globale. Le châssis vient de « data-veil » et de « zone » : seules la liste,
+ la complétion fantôme et le rang des lignes lui appartiennent. */
+.tm [data-global] {
+  width: min(560px, 100%);
+  /* La zone loge GLOBAL_LIMIT lignes et leurs en-têtes de groupe. Plus courte, la dernière
+   ligne se coupe en deux au lieu de manquer franchement. */
+  height: min(84dvh, 620px);
+  box-sizing: border-box;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  animation: popIn 0.24s cubic-bezier(0.34, 1.4, 0.64, 1) both;
+}
+
+.tm [data-global-head] {
+  display: grid;
+  grid-template-columns: 12px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 0 12px;
+  border-bottom: 1px solid var(--edge);
+}
+
+.tm [data-global-field] {
+  position: relative;
+  min-width: 0;
+}
+
+.tm [data-global-input] {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  min-height: 46px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--fg);
+  font: inherit;
+  font-size: 15px;
+}
+
+.tm [data-global-input]:focus {
+  outline: 0;
+}
+
+.tm [data-global-input]::placeholder {
+  color: var(--fg2);
+}
+
+/* La part déjà tapée est rendue transparente : la suite tombe à la bonne colonne sans que
+ rien ne mesure le texte. */
+.tm [data-global-ghost] {
+  position: absolute;
+  inset: 0 auto 0 0;
+  display: flex;
+  align-items: center;
+  font-size: 15px;
+  white-space: pre;
+  pointer-events: none;
+}
+
+.tm [data-global-typed] {
+  color: transparent;
+}
+
+.tm [data-global-rest] {
+  color: var(--fg2);
+}
+
+.tm [data-global-kbd] {
+  padding: 1px 6px;
+  border: 1px solid var(--edge);
+  font-size: 11px;
+}
+
+/* Le défilement reste sur le listbox, jamais sur l'enveloppe : axe refuse une zone qui
+ défile sans être atteignable au clavier, et le listbox l'est par son combobox. */
+.tm [data-global-body] {
+  display: grid;
+  min-height: 0;
+}
+
+.tm [data-global-list] {
+  overflow: auto;
+  padding: 4px 0;
+}
+
+.tm [data-global-group] {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 12px 4px;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+}
+
+.tm [data-global-row] {
+  display: grid;
+  grid-template-columns: 12px minmax(0, auto) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 44px;
+  padding: 5px 12px;
+  border: 0;
+  border-left: 2px solid transparent;
+  background: transparent;
+  color: var(--fg);
+  font: inherit;
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+  animation: globalRow 0.22s ease both;
+  animation-delay: calc(var(--at, 0) * 18ms);
+}
+
+.tm [data-global-row]:hover,
+.tm [data-global-row][aria-selected="true"] {
+  background: var(--acc-soft);
+}
+
+.tm [data-global-row][aria-selected="true"] {
+  border-left-color: var(--acc);
+}
+
+.tm [data-global-caret] {
+  color: var(--acc);
+  visibility: hidden;
+}
+
+.tm [data-global-row][aria-selected="true"] [data-global-caret] {
+  visibility: visible;
+}
+
+.tm [data-global-label],
+.tm [data-global-desc] {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tm [data-global-desc] {
+  color: var(--fg2);
+  font-size: 13px;
+}
+
+.tm [data-global-tag] {
+  padding: 1px 6px;
+  border: 1px solid var(--edge);
+  color: var(--fg2);
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.tm [data-global-row][aria-selected="true"] [data-global-tag] {
+  border-color: var(--acc);
+}
+
+/* Sur le fond d'accent, l'encre en retrait tombe sous le rapport de contraste : la ligne
+ sélectionnée est justement celle qui doit se lire. */
+.tm [data-global-row][aria-selected="true"] [data-global-desc],
+.tm [data-global-row][aria-selected="true"] [data-global-tag] {
+  color: var(--fg);
+}
+
+.tm [data-global-idle] {
+  min-height: 100%;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 18px;
+  padding: 18px;
+  font-size: 13px;
+  text-align: center;
+  text-wrap: pretty;
+}
+
+.tm [data-global-idle] .icon {
+  width: 96px;
+  height: 96px;
+}
+
+.tm [data-global] [data-modal-foot] {
+  padding: 9px 12px;
+  border-top: 1px solid var(--edge);
+}
+
+/* Sur une seule ligne, le rappel clavier passe sous le bouton de fermeture, qui prend sa
+ largeur à droite. */
+.tm [data-global-hint] {
+  display: grid;
+  grid-template-columns: repeat(2, auto);
+  gap: 2px 14px;
+  max-width: none;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+@keyframes globalRow {
+  from {
+    opacity: 0;
+    transform: translateX(-6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
 /* L'alerte de déblocage, en bas du volet de sortie. Le centre de la page recouvrirait
  la session qu'on est en train de lire. Angle droit en haut, et aucune ombre portée :
  il n'y en a nulle part ailleurs dans le terminal. */
