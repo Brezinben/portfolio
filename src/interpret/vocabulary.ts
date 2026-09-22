@@ -56,7 +56,6 @@ export const SLASH_ONLY = new Set([
 
 export const ALIASES = {
   "?": "help",
-  aide: "help",
   [ASK_MODEL]: ASK,
   brezinben: "benjamin",
   cat: "slime",
@@ -86,7 +85,6 @@ export const NAVIGATORS = new Set(["bd", "cd", "open"]);
 // slash : sinon l'autocompletion propose ce que le dispatcher refuse.
 const PLAIN = [
   "?",
-  "aide",
   "bd",
   "cd",
   "clear",

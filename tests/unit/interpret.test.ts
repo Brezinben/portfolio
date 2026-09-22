@@ -123,13 +123,8 @@ it("should leave the result to the section on an ordinary command", () => {
   assert.equal(interpret("ls", CONTEXT).result, undefined);
 });
 
-it("should treat aide and the question mark as aliases of help", () => {
-  for (const alias of ["aide", "?"]) {
-    assert.deepEqual(
-      resultTexts(interpret(alias, CONTEXT)),
-      resultTexts(interpret("help", CONTEXT)),
-    );
-  }
+it("should treat the question mark as an alias of help", () => {
+  assert.deepEqual(resultTexts(interpret("?", CONTEXT)), resultTexts(interpret("help", CONTEXT)));
 });
 
 it("should navigate to a section named alone", () => {
@@ -349,7 +344,6 @@ it("should list the activities when slime activity gets no known name", () => {
 it("should make each alias behave like its command", () => {
   const pairs: [string, string][] = [
     ["?", "help"],
-    ["aide", "help"],
     ["/brezinben", "/benjamin"],
     ["/cat", "/slime"],
     ["cls", "clear"],
