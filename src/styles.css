@@ -550,6 +550,24 @@ html[data-vt-theme]::view-transition-new(root) {
   overflow: hidden;
 }
 
+.tm [data-result] {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 4px;
+  align-content: start;
+  display: grid;
+  gap: 2px;
+  line-height: 1.6;
+}
+
+/* Pendant une commande, le résultat périmé disparaît, mais la zone reste visible : un
+ élément invisible perd le focus, et la tabulation suivante repartirait du haut de la
+ page. */
+.tm [data-result][aria-busy="true"] > * {
+  visibility: hidden;
+}
+
 /* x-show d'Alpine appelle style.removeProperty("display") à chaque affichage. Un
  « display » posé en ligne sur un élément qu'il pilote ne survit donc pas au premier
  affichage. Trois éléments sont dans ce cas : ce volet, la liste de la sortie et la
@@ -1617,7 +1635,7 @@ html[data-vt-theme]::view-transition-new(root) {
 /* Un contrôle prend l'ambre décoratif, une région de texte prend l'ambre textuel. La
  feuille porte déjà cette distinction pour les liens, et l'ambre décoratif du thème
  clair ne tient pas les 3:1 qu'un indicateur de focus demande.
- Le journal et la poignée y entrent : sans eux, les deux seuls éléments focalisables
+ Le journal, la poignée et le résultat y entrent : sans eux, les éléments focalisables
  du volet central retombaient sur l'anneau du navigateur, invisible sur un fond
  sombre. */
 .tm [data-ctl]:focus-visible,
@@ -1627,6 +1645,7 @@ html[data-vt-theme]::view-transition-new(root) {
 }
 
 .tm [data-journal]:focus-visible,
+.tm [data-result]:focus-visible,
 .tm [data-pane="out"] [tabindex="0"]:focus-visible,
 .tm footer a:focus-visible,
 .tm [data-boot] a[href="texte.html"]:focus-visible {
