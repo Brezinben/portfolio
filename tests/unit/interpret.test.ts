@@ -109,6 +109,8 @@ it("should list the commands and recall the keyboard in the result of help", () 
 
   assert.match(body, /ls · cd <section>/);
   assert.match(body, /Clavier/);
+  // Rien d'autre n'annonce la recherche globale : la ligne clavier est sa seule affiche.
+  assert.match(body, /⌘K ou Ctrl\+K ouvre la recherche globale/u);
   assert.deepEqual(texts(result), ["help"]);
   assert.ok(
     result.effects.some((effect) => {
@@ -121,13 +123,8 @@ it("should leave the result to the section on an ordinary command", () => {
   assert.equal(interpret("ls", CONTEXT).result, undefined);
 });
 
-it("should treat aide and the question mark as aliases of help", () => {
-  for (const alias of ["aide", "?"]) {
-    assert.deepEqual(
-      resultTexts(interpret(alias, CONTEXT)),
-      resultTexts(interpret("help", CONTEXT)),
-    );
-  }
+it("should treat the question mark as an alias of help", () => {
+  assert.deepEqual(resultTexts(interpret("?", CONTEXT)), resultTexts(interpret("help", CONTEXT)));
 });
 
 it("should navigate to a section named alone", () => {
@@ -347,7 +344,6 @@ it("should list the activities when slime activity gets no known name", () => {
 it("should make each alias behave like its command", () => {
   const pairs: [string, string][] = [
     ["?", "help"],
-    ["aide", "help"],
     ["/brezinben", "/benjamin"],
     ["/cat", "/slime"],
     ["cls", "clear"],

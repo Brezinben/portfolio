@@ -19,6 +19,19 @@ const THEMES = ["dark", "light", "noctis", "azureus", "uva", "bordo", "lux", "hi
   scan = (page: Page) => {
     return new AxeBuilder({ page }).analyze();
   },
+  typedIsClean = async (page: Page, typed: string) => {
+    await page.locator("[data-global-input]").fill(typed);
+    await settled(page);
+
+    const { violations } = await scan(page);
+
+    expect(
+      violations.map((entry) => {
+        return `${entry.id}: ${entry.nodes.length}`;
+      }),
+      `the global search is clean with « ${typed} » typed`,
+    ).toEqual([]);
+  },
   // Le scan mesure la couleur telle qu'elle est peinte. Lancé pendant le fondu d'entrée, il
   // lit des valeurs à mi-opacité et rapporte des écarts qui n'existent pas. On attend donc
   // les animations qui finissent ; le curseur et la mascotte, eux, ne finissent jamais.
@@ -31,7 +44,11 @@ const THEMES = ["dark", "light", "noctis", "azureus", "uva", "bordo", "lux", "hi
             return animation.effect?.getComputedTiming().iterations !== Infinity;
           })
           .map((animation) => {
-            return animation.finished;
+            // Une frappe annule l'animation d'entrée des lignes, et « finished » rejette
+            // alors avec AbortError. Une animation annulée ne peint plus : elle est posée.
+            return animation.finished.catch(() => {
+              return animation;
+            });
           }),
       );
     });
@@ -216,6 +233,21 @@ test("should lead to the text version from the first focusable element", async (
 
   expect(dehors, "the link must stay off screen without focus").toBe(true);
 });
+
+// Fermée, la recherche globale échappe au scan de la page.
+for (const theme of THEMES) {
+  test(`should report no accessibility violation in the global search on the ${theme} theme`, async ({
+    page,
+  }) => {
+    await withTheme(page, theme);
+    await page.keyboard.press("Control+k");
+    await expect(page.locator("[data-global]")).toBeVisible();
+
+    await typedIsClean(page, "");
+    await typedIsClean(page, "zzzzzz");
+    await typedIsClean(page, "sta");
+  });
+}
 
 // Le lien doit survivre à un échec du script : c'est le repli de la page, pas une de ses
 // fonctions. Il vit donc hors du composant Alpine et ne porte aucune variable de thème.

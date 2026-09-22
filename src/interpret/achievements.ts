@@ -67,6 +67,12 @@ export const ACHIEVEMENTS: Achievement[] = [
   { icon: "envelope", key: "email", title: "adresse en poche", trigger: "email" },
   { icon: "bulb", key: "propose", title: "une idée en l'air", trigger: "/propose" },
   { icon: "share", key: "share", title: "bonne parole", trigger: "share" },
+  {
+    icon: "glass",
+    key: "global-search",
+    title: "j'ai trouvé plus court",
+    trigger: "une commande lancée depuis la recherche globale",
+  },
 ];
 
 // Le dispatcher rend toujours « track("commande", { cmd }) », alias déjà résolus. La

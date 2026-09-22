@@ -1,0 +1,199 @@
+import { expect, test } from "@playwright/test";
+import type { Page } from "@playwright/test";
+
+// La recherche globale ne s'ouvre qu'après le démarrage : le cadre de boot mange la touche.
+const boot = async (page: Page) => {
+    await page.emulateMedia({ colorScheme: "dark" });
+    await page.goto("/");
+    await expect(page.locator("[data-boot]")).toHaveCount(0, { timeout: 10_000 });
+  },
+  zone = (page: Page) => {
+    return page.locator("[data-global]");
+  },
+  field = (page: Page) => {
+    return page.locator("[data-global-input]");
+  },
+  open = async (page: Page) => {
+    await page.keyboard.press("Control+k");
+    await expect(zone(page)).toBeVisible();
+  },
+  saved = async (page: Page) => {
+    return page.evaluate(() => {
+      // SAFETY: la page vient d'écrire ce tableau elle-même. Un JSON illisible ferait tomber
+      // le test ici, ce qui est le bon endroit.
+      const marks = JSON.parse(localStorage["bd-term-achievements"] ?? "[]") as string[];
+
+      return marks;
+    });
+  };
+
+test("should open on the shortcut and close on escape", async ({ page }) => {
+  await boot(page);
+  await open(page);
+
+  await expect(field(page)).toBeFocused();
+
+  await page.keyboard.press("Escape");
+  await expect(zone(page)).toHaveCount(0);
+});
+
+// Le focus revient là où il était : sans ce retour, la tabulation repart du corps de la page.
+test("should give the focus back to the command line", async ({ page }) => {
+  await boot(page);
+  await page.locator("[data-cli] input").focus();
+  await open(page);
+  await page.keyboard.press("Escape");
+
+  await expect(page.locator("[data-cli] input")).toBeFocused();
+});
+
+test("should rank the sections the typing points at", async ({ page }) => {
+  await boot(page);
+  await open(page);
+  await field(page).fill("sta");
+
+  await expect(page.locator("[data-global-row]").first()).toContainText("stack");
+});
+
+// Les accents ne départagent rien : l'index est francophone, et « eco » doit trouver.
+test("should find a stack brick without its accents", async ({ page }) => {
+  await boot(page);
+  await open(page);
+  await field(page).fill("eco-conception");
+
+  await expect(page.locator("[data-global-row]")).toContainText([/Éco-conception/u]);
+});
+
+test("should complete towards the first hit on tab", async ({ page }) => {
+  await boot(page);
+  await open(page);
+  await field(page).fill("sta");
+  await expect(page.locator("[data-global-rest]")).toHaveText("ck");
+
+  await page.keyboard.press("Tab");
+  await expect(field(page)).toHaveValue("stack");
+});
+
+const OPENS: [string, string][] = [
+  ["whoami", "Concepteur orchestrateur IA"],
+  ["parcours", "2026"],
+  ["contact", "Nantes"],
+  ["kereis", "Kereis"],
+];
+
+for (const [typed, shown] of OPENS) {
+  test(`should submit a command the dispatcher accepts for ${typed}`, async ({ page }) => {
+    await boot(page);
+    await open(page);
+    await field(page).fill(typed);
+    await page.keyboard.press("Enter");
+
+    await expect(zone(page)).toHaveCount(0);
+    await expect(page.locator("[data-pane='main']")).toContainText(shown);
+    await expect(page.locator("[data-journal]")).not.toContainText("inconnue");
+    await expect(page.locator("[data-journal]")).not.toContainText("introuvable");
+  });
+}
+
+// La zone est modale : la tabulation boucle entre le champ et le bouton de fermeture. Sans
+// cela le focus part dans la page derrière, comme il le ferait sans zone du tout.
+test("should keep the tabulation inside the zone", async ({ page }) => {
+  await boot(page);
+  await open(page);
+  await page.keyboard.press("Tab");
+
+  await expect(page.locator("[data-global] [data-ctl='opt']")).toBeFocused();
+
+  await page.keyboard.press("Tab");
+  await expect(field(page)).toBeFocused();
+});
+
+test("should unlock its own achievement and leave the first command alone", async ({ page }) => {
+  await boot(page);
+  await open(page);
+  await field(page).fill("whoami");
+  await page.keyboard.press("Enter");
+  await expect(zone(page)).toHaveCount(0);
+
+  const marks = await saved(page);
+
+  expect(marks).toContain("global-search");
+  expect(marks).not.toContain("first-command");
+});
+
+// Une zone lancée depuis la recherche globale a capturé un nœud que la fermeture détache.
+// Sans garde, le focus tombe sur le corps de la page au lieu de revenir à un contrôle.
+test("should give the focus to a real control after a zone opened from the search", async ({
+  page,
+}) => {
+  await boot(page);
+  await open(page);
+  await field(page).fill("options");
+  await page.keyboard.press("Enter");
+  await expect(page.locator("[data-opts]")).toBeVisible();
+
+  await page.keyboard.press("Escape");
+  await expect(page.locator("[data-opts]")).toHaveCount(0);
+  await expect(page.locator("[data-ctl='opts']")).toBeFocused();
+});
+
+test("should only fill the line for a command that wants an argument", async ({ page }) => {
+  await boot(page);
+  await open(page);
+  await field(page).fill("theme");
+  await page.keyboard.press("Enter");
+
+  await expect(zone(page)).toHaveCount(0);
+  await expect(page.locator("[data-cli] input")).toHaveValue("theme ");
+});
+
+test("should walk the hits with the arrows", async ({ page }) => {
+  await boot(page);
+  await open(page);
+  await field(page).fill("s");
+
+  const rows = page.locator("[data-global-row]");
+
+  await expect(rows.first()).toHaveAttribute("aria-selected", "true");
+  await page.keyboard.press("ArrowDown");
+  await expect(rows.first()).toHaveAttribute("aria-selected", "false");
+  await expect(rows.nth(1)).toHaveAttribute("aria-selected", "true");
+});
+
+// Le rang d'une ligne doit suivre sa place à l'écran. Les deux se sont déjà séparés : la zone
+// dessinait ses groupes dans un ordre, les flèches parcouraient l'autre.
+for (const typed of ["sta", "theme", "b", "d", "h"]) {
+  test(`should number the rows in the order they are drawn for ${typed}`, async ({ page }) => {
+    await boot(page);
+    await open(page);
+    await field(page).fill(typed);
+
+    const drawn = await page.locator("[data-global-row]").evaluateAll((nodes) => {
+      return nodes.map((node) => {
+        return Number(node.id.replace("global-row-", ""));
+      });
+    });
+
+    expect(drawn.length).toBeGreaterThan(1);
+    expect(drawn).toEqual(
+      drawn.map((_, at) => {
+        return at;
+      }),
+    );
+  });
+}
+
+test("should walk the rows in the order the eye reads them", async ({ page }) => {
+  await boot(page);
+  await open(page);
+  await field(page).fill("sta");
+  await page.keyboard.press("Tab");
+
+  const rows = page.locator("[data-global-row]");
+
+  await page.keyboard.press("ArrowDown");
+  await page.keyboard.press("ArrowDown");
+
+  await expect(rows.nth(2)).toHaveAttribute("aria-selected", "true");
+  await expect(rows.nth(2)).toContainText("whoami");
+});

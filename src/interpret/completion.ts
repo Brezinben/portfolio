@@ -48,7 +48,6 @@ const HINTS = {
     "/sudo": "non.",
     "/vim": "le piège classique",
     "?": "la liste des commandes",
-    aide: "la liste des commandes",
     ask: "cherche dans le texte du site",
     "ask✨": "un modèle local choisit la réponse",
     bd: "ouvre une section",

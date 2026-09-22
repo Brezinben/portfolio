@@ -5,15 +5,19 @@ import {
   type Context,
   type Effect,
   type Expression,
+  GLOBAL_GROUPS,
+  type GlobalEntry,
   type Line,
   MAX_SUGGESTIONS,
   type Tone,
   type TrackValue,
   candidates,
   commonPrefix,
+  ghostFor,
   hintFor,
   interpret,
   keepKnown,
+  rankHits,
   safeTone,
   seenCount,
   wonCount,
@@ -32,6 +36,7 @@ import {
   EMPTY,
   EXEC_MS,
   FADE_MS,
+  GLOBAL_LIMIT,
   OPTS_KEY,
   PANES,
   PANE_GAP_PX,
@@ -61,6 +66,7 @@ import {
 } from "./terminal/mascot/constants.ts";
 import { type AchievementsState, achievementsSlice } from "./terminal/achievements/slice.ts";
 import { GAUGE_AT, type GlitchState, SHIFT_COUNT, glitchSlice } from "./terminal/glitch/slice.ts";
+import { type GlobalSearchState, globalSearchSlice } from "./terminal/global-search/slice.ts";
 import type { Magics, TrackSource } from "./terminal/shell.ts";
 import type { RadioApi, RadioState } from "./terminal/radio/slice.ts";
 import { type Section, barParts, printed, section } from "./terminal/format.ts";
@@ -181,7 +187,7 @@ type Beat = ReturnType<typeof setInterval>;
 
 // Ce que la page tient en memoire. Les minuteurs en font partie : les declarer les rend
 // visibles. « RadioState » vient de la tranche qui l'emploie, pour ne pas deriver.
-interface State extends AchievementsState, GlitchState, RadioState {
+interface State extends AchievementsState, GlitchState, GlobalSearchState, RadioState {
   asker: AbortController | undefined;
   bubbleTimer: Delay | undefined;
   compactor: Delay | undefined;
@@ -291,7 +297,7 @@ interface State extends AchievementsState, GlitchState, RadioState {
 //
 // L'etalement est sur ici : une tranche ne porte jamais d'accesseur.
 const slices = () => {
-  return { ...achievementsSlice(), ...glitchSlice(), ...mascotSlice() };
+  return { ...achievementsSlice(), ...glitchSlice(), ...globalSearchSlice(), ...mascotSlice() };
 };
 
 // « RadioApi » n'est pas dans « slices » : sa tranche arrive par import dynamique, une fois
@@ -328,6 +334,11 @@ document.addEventListener("alpine:init", () => {
       glitchMode: "",
       glitchRain: [],
       glitchTap: undefined,
+      globalAt: 0,
+      globalIndexed: [],
+      globalOpen: false,
+      globalQuery: "",
+      globalReturn: undefined,
       glitchWait: undefined,
       alertCells: [],
       alertLeaving: false,
@@ -638,6 +649,20 @@ document.addEventListener("alpine:init", () => {
       },
 
       onKey(event: KeyboardEvent) {
+        // Le raccourci de la recherche globale passe avant la sortie sur les modificateurs,
+        // qui l'avalerait. Ctrl et Cmd ouvrent tous les deux : la page sert les deux systemes.
+        if ((event.metaKey || event.ctrlKey) && (event.key === "k" || event.key === "K")) {
+          event.preventDefault();
+
+          if (this.globalOpen) {
+            this.closeGlobal();
+          } else if (!this.booting) {
+            this.openGlobal();
+          }
+
+          return;
+        }
+
         if (event.altKey || event.ctrlKey || event.metaKey) {
           return;
         }
@@ -661,7 +686,7 @@ document.addEventListener("alpine:init", () => {
 
         // Une modale a son propre clavier. Sans cette garde, les deux gestionnaires
         // traitent la même flèche et le focus s'échappe de la modale.
-        if (this.optsOpen || this.achievementsOpen) {
+        if (this.optsOpen || this.achievementsOpen || this.globalOpen) {
           return;
         }
 
@@ -1875,6 +1900,52 @@ document.addEventListener("alpine:init", () => {
         });
       },
 
+      get globalHits() {
+        return rankHits(this.globalQuery, this.globalIndexed, GLOBAL_LIMIT);
+      },
+
+      get globalGhost() {
+        return ghostFor(this.globalQuery, this.globalHits);
+      },
+
+      // Les groupes se decoupent dans l'ordre des trouvailles, jamais dans l'ordre declare :
+      // sinon la fleche du bas et l'oeil ne parcourent pas la meme liste. « GLOBAL_GROUPS »
+      // n'apporte plus ici que le libelle et l'etiquette.
+      get globalGroups() {
+        // L'annotation casse la circularite : sans elle, TypeScript deduit l'accesseur depuis
+        // le litteral qui le contient, et rend « any ».
+        const found: GlobalEntry[] = this.globalHits,
+          groups: {
+            kind: string;
+            label: string;
+            rows: { at: number; hit: GlobalEntry }[];
+            tag: string;
+          }[] = [];
+
+        found.forEach((hit, at) => {
+          const open = groups.at(-1);
+
+          if (open?.kind === hit.kind) {
+            open.rows.push({ at, hit });
+
+            return;
+          }
+
+          const declared = GLOBAL_GROUPS.find((group) => {
+            return group.kind === hit.kind;
+          });
+
+          groups.push({
+            kind: hit.kind,
+            label: declared?.label ?? hit.kind,
+            rows: [{ at, hit }],
+            tag: declared?.tag ?? hit.kind,
+          });
+        });
+
+        return groups;
+      },
+
       restore() {
         let saved: SavedOpts = {};
 
@@ -1948,10 +2019,13 @@ document.addEventListener("alpine:init", () => {
 
       closeOpts() {
         this.optsOpen = false;
+        // « isConnected » : « options » lancé depuis la recherche globale a capturé le champ
+        // de la zone, que la fermeture détache. Un nœud détaché reste vrai, et le focus
+        // tombait alors sur le corps de la page. Même garde que les deux autres modales.
         this.$nextTick(() => {
-          return (
-            this.optsReturn ?? document.querySelector<HTMLElement>("[data-ctl='opts']")
-          )?.focus();
+          const back = this.optsReturn?.isConnected === true ? this.optsReturn : undefined;
+
+          (back ?? document.querySelector<HTMLElement>("[data-ctl='opts']"))?.focus();
         });
 
         if (!this.morphHeld) {
@@ -2121,7 +2195,7 @@ document.addEventListener("alpine:init", () => {
         });
       },
 
-      submit() {
+      submit(options: { typed?: boolean } = {}) {
         const raw = this.input;
 
         if (!raw.trim()) {
@@ -2178,7 +2252,7 @@ document.addEventListener("alpine:init", () => {
         }
 
         this.apply(effects);
-        this.unlockFrom(effects);
+        this.unlockFrom(effects, { typed: options.typed ?? true });
       },
 
       // Marquage silencieux : GoatCounter absent ou bloqué ne casse rien.
@@ -2403,6 +2477,9 @@ document.addEventListener("alpine:init", () => {
 
         try {
           this.modelState = await LanguageModel.availability();
+          // Le vocabulaire porte « ask » ou « ask✨ », jamais les deux. L'index se refait, sinon
+          // la recherche globale garderait le nom d'avant la detection.
+          this.reindexGlobal();
         } catch {
           // Un refus au demarrage laisse « unknown » : « ask » repond alors sans modele,
           // ce qui est le comportement sans API.
@@ -2740,6 +2817,7 @@ document.addEventListener("alpine:init", () => {
               state: raw.state ?? "",
             };
           });
+          this.reindexGlobal();
         } catch (error) {
           // Le boot reste affiché : la page ne se rabat jamais sur un contenu figé.
           this.errDetail = `caused by: ${error instanceof Error ? error.message : String(error)}`;

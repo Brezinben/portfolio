@@ -165,7 +165,7 @@ la navigation suivante. La barre d'état affiche `~/help` tant que la réponse o
 résultat.
 
 **`help` est la seule commande de cette spec qui réclame le résultat.** Le mécanisme est
-générique, l'usage ne l'est pas. `aide` est un alias, il suit.
+générique, l'usage ne l'est pas. `?` est un alias, il suit.
 
 **Le déplacement du résultat se fait dans la coquille, sur la colonne empilée seulement.**
 Après un choix de section ou de mission, la coquille amène le résultat à l'écran. Elle ne
