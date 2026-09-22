@@ -109,6 +109,8 @@ it("should list the commands and recall the keyboard in the result of help", () 
 
   assert.match(body, /ls · cd <section>/);
   assert.match(body, /Clavier/);
+  // Rien d'autre n'annonce la recherche globale : la ligne clavier est sa seule affiche.
+  assert.match(body, /⌘K ouvre la recherche globale/u);
   assert.deepEqual(texts(result), ["help"]);
   assert.ok(
     result.effects.some((effect) => {

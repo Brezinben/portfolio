@@ -1,0 +1,318 @@
+/* palette de commandes — feuille de style complète du composant.
+   Le moteur crée tout son DOM : les classes ci-dessous suffisent, aucune
+   règle n'est injectée en ligne par le script (sauf couleurs de données).
+   Les variables sont celles du site hôte, avec repli si absentes. */
+
+.pal-back {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(10, 10, 18, .62);
+  animation: pal-back .16s ease both;
+}
+
+.pal-panel {
+  width: min(560px, 100%);
+  height: min(84dvh, 470px);
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--edge, #33344a);
+  border-radius: var(--radius, 5px);
+  background: var(--panel, #242538);
+  color: var(--fg, #fff6f6);
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.6;
+  animation: pal-in .22s cubic-bezier(.2, .9, .3, 1) both;
+}
+.pal-panel * { box-sizing: border-box; }
+.pal-back.is-closing { animation: pal-back-out .14s ease both; }
+.pal-back.is-closing .pal-panel { animation: pal-out .14s ease both; }
+
+/* ── barre de saisie ─────────────────────────────────────────────── */
+
+.pal-head {
+  flex: none;
+  position: relative;
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  padding: 0 12px;
+  border-bottom: 1px solid var(--edge, #33344a);
+}
+.pal-glyph { color: var(--acc, #f5b83b); }
+.pal-field { position: relative; min-width: 0; }
+.pal-input {
+  width: 100%;
+  min-height: 46px;
+  border: 0;
+  background: transparent;
+  color: var(--fg, #fff6f6);
+  font-family: inherit;
+  font-size: 15px;
+  padding: 0;
+  position: relative;
+  z-index: 1;
+}
+.pal-input:focus { outline: 0; }
+.pal-input::placeholder { color: var(--fg2, #9b9db8); opacity: .75; }
+.pal-panel.is-run .pal-input { color: var(--fg2, #9b9db8); }
+
+/* complétion fantôme : calquée sous le champ, la partie déjà tapée est
+   rendue transparente pour que le reste tombe exactement au bon endroit */
+.pal-ghost {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 46px;
+  display: flex;
+  align-items: center;
+  font-size: 15px;
+  white-space: pre;
+  pointer-events: none;
+  z-index: 0;
+}
+.pal-ghost-typed { color: transparent; }
+.pal-ghost-rest { color: var(--fg2, #9b9db8); opacity: .55; }
+
+.pal-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--fg2, #9b9db8);
+  white-space: nowrap;
+}
+.pal-kbd {
+  border: 1px solid var(--edge, #33344a);
+  padding: 1px 6px;
+  color: var(--fg, #fff6f6);
+}
+.pal-meta .pal-kbd[hidden] { display: none; }
+
+/* ── liste de résultats ──────────────────────────────────────────── */
+
+.pal-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 4px 0;
+  animation: pal-list .2s cubic-bezier(.2, .9, .3, 1) both;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.pal-list::-webkit-scrollbar { width: 0; height: 0; }
+
+.pal-group { display: grid; gap: 0; padding-bottom: 2px; }
+.pal-group-label {
+  margin: 0;
+  padding: 8px 12px 4px;
+  font-size: 11px;
+  letter-spacing: .12em;
+  color: var(--fg2, #9b9db8);
+  display: flex;
+  justify-content: space-between;
+}
+
+.pal-row {
+  width: 100%;
+  min-height: 44px;
+  display: grid;
+  grid-template-columns: 16px minmax(0, auto) minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  text-align: left;
+  padding: 5px 12px;
+  border: 0;
+  border-left: 2px solid transparent;
+  background: transparent;
+  color: var(--fg, #fff6f6);
+  font-family: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  animation: pal-row .22s ease both;
+}
+.pal-row:hover { background: var(--acc-soft, rgba(245, 184, 59, .14)); }
+.pal-row:focus-visible { outline: 2px solid var(--acc, #f5b83b); outline-offset: -2px; }
+.pal-row.is-sel {
+  border-left-color: var(--acc, #f5b83b);
+  background: var(--acc-soft, rgba(245, 184, 59, .14));
+}
+.pal-row-caret { color: var(--acc, #f5b83b); visibility: hidden; }
+.pal-row.is-sel .pal-row-caret { visibility: visible; }
+.pal-row-name {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  white-space: nowrap;
+}
+.pal-row.is-sel .pal-row-name { font-weight: 500; }
+.pal-row-label { overflow: hidden; text-overflow: ellipsis; }
+.pal-row-label b { color: var(--acc, #f5b83b); font-weight: inherit; }
+.pal-sw { flex: none; width: 11px; height: 11px; }
+.pal-row-desc {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+  color: var(--fg2, #9b9db8);
+}
+.pal-row-tag {
+  flex: none;
+  font-size: 11px;
+  color: var(--fg2, #9b9db8);
+  border: 1px solid var(--edge, #33344a);
+  padding: 1px 6px;
+  white-space: nowrap;
+}
+.pal-row.is-sel .pal-row-tag { border-color: var(--acc, #f5b83b); }
+
+/* repli : proposition « modèle local » quand rien ne sort */
+.pal-row.is-offer {
+  border-left-color: var(--acc, #f5b83b);
+  background: var(--acc-soft, rgba(245, 184, 59, .14));
+}
+.pal-row.is-offer .pal-row-caret { visibility: visible; }
+.pal-row.is-offer .pal-row-tag { border-color: var(--acc, #f5b83b); }
+
+.pal-find {
+  width: 100%;
+  min-height: 44px;
+  display: grid;
+  grid-template-columns: 16px minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  text-align: left;
+  margin-top: 4px;
+  padding: 5px 12px;
+  border: 0;
+  background: transparent;
+  color: var(--fg2, #9b9db8);
+  font-family: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+.pal-find:hover { color: var(--fg, #fff6f6); background: var(--acc-soft, rgba(245, 184, 59, .14)); }
+.pal-find:focus-visible { outline: 2px solid var(--acc, #f5b83b); outline-offset: -2px; }
+.pal-find-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pal-find-tag { flex: none; font-size: 11px; border: 1px solid var(--edge, #33344a); padding: 1px 6px; white-space: nowrap; }
+
+/* état au repos : loupe en pixels, dessinée en box-shadow par le script */
+.pal-idle {
+  min-height: 100%;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 18px;
+  padding: 18px;
+}
+.pal-glass { position: relative; width: 63px; height: 72px; }
+.pal-glass span { position: absolute; left: 0; top: 0; width: 4.5px; height: 4.5px; }
+.pal-idle p { margin: 0; font-size: 13px; color: var(--fg2, #9b9db8); text-align: center; }
+
+/* ── volet d'exécution ───────────────────────────────────────────── */
+
+.pal-run {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 12px 12px 14px;
+  display: grid;
+  gap: 5px;
+  align-content: start;
+  scrollbar-width: none;
+}
+.pal-run::-webkit-scrollbar { width: 0; height: 0; }
+.pal-echo {
+  margin: 0;
+  display: grid;
+  grid-template-columns: 16px minmax(0, 1fr);
+  gap: 10px;
+  font-size: 14px;
+}
+.pal-echo > span:first-child { color: var(--acc, #f5b83b); }
+.pal-echo-text { white-space: pre-wrap; }
+.pal-caret { color: var(--acc, #f5b83b); animation: pal-caret 1s step-end infinite; }
+
+.pal-busy {
+  margin: 0;
+  display: grid;
+  grid-template-columns: 16px minmax(0, 1fr);
+  gap: 10px;
+  font-size: 13px;
+  color: var(--fg2, #9b9db8);
+}
+.pal-busy-dot { color: var(--acc, #f5b83b); animation: pal-dot 1s ease-in-out infinite; }
+.pal-busy-body { display: flex; align-items: center; gap: 10px; }
+.pal-bar { position: relative; white-space: pre; color: var(--edge, #33344a); }
+.pal-bar span { position: absolute; top: 0; left: 0; color: var(--acc, #f5b83b); }
+
+.pal-out { display: grid; gap: 4px; animation: pal-line .26s cubic-bezier(.2, .9, .3, 1) both; }
+.pal-out-title {
+  margin: 2px 0 6px;
+  font-size: 11px;
+  letter-spacing: .12em;
+  color: var(--fg2, #9b9db8);
+  border-bottom: 1px solid var(--edge, #33344a);
+  padding-bottom: 6px;
+}
+.pal-out-line {
+  margin: 0;
+  display: grid;
+  grid-template-columns: minmax(96px, auto) minmax(0, 1fr);
+  gap: 12px;
+  font-size: 13px;
+  animation: pal-row .2s ease both;
+}
+.pal-out-k { color: var(--fg2, #9b9db8); white-space: nowrap; }
+.pal-out-v { color: var(--fg, #fff6f6); overflow-wrap: anywhere; text-wrap: pretty; }
+
+/* ── pied ────────────────────────────────────────────────────────── */
+
+.pal-foot {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 9px 12px;
+  font-size: 11px;
+  color: var(--fg2, #9b9db8);
+  white-space: nowrap;
+}
+.pal-foot b { color: var(--acc, #f5b83b); font-weight: inherit; }
+
+.pal-hidden { display: none !important; }
+
+/* ── animations ──────────────────────────────────────────────────── */
+
+@keyframes pal-back { from { opacity: 0 } to { opacity: 1 } }
+@keyframes pal-back-out { from { opacity: 1 } to { opacity: 0 } }
+@keyframes pal-in { 0% { opacity: 0; transform: translateY(-10px) scale(.985) } 100% { opacity: 1; transform: none } }
+@keyframes pal-out { 0% { opacity: 1; transform: none } 100% { opacity: 0; transform: translateY(-6px) scale(.99) } }
+@keyframes pal-list { from { opacity: 0; transform: scaleY(.9); transform-origin: top } to { opacity: 1; transform: none } }
+@keyframes pal-row { from { opacity: 0; transform: translateX(-6px) } to { opacity: 1; transform: none } }
+@keyframes pal-line { from { opacity: 0; transform: translateY(6px) } to { opacity: 1; transform: none } }
+@keyframes pal-caret { 0%, 49% { opacity: 1 } 50%, 100% { opacity: 0 } }
+@keyframes pal-dot { 0%, 100% { opacity: 1 } 50% { opacity: .25 } }
+@keyframes pal-fill {
+  0%   { clip-path: inset(0 100% 0 0) }
+  22%  { clip-path: inset(0 75% 0 0) }
+  48%  { clip-path: inset(0 50% 0 0) }
+  72%  { clip-path: inset(0 25% 0 0) }
+  100% { clip-path: inset(0 0 0 0) }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pal-back, .pal-panel, .pal-list, .pal-row, .pal-out, .pal-out-line,
+  .pal-caret, .pal-busy-dot, .pal-bar span { animation: none !important; }
+  .pal-bar span { clip-path: none; }
+}
