@@ -307,18 +307,21 @@ for (const [theme, controle, texte] of [
     await fill(cli);
 
     const marks = await page.evaluate(() => {
-      return ["[data-handle]", "[data-journal]", '[data-pane="out"] [tabindex="0"]'].map(
-        (selector) => {
-          const node = document.querySelector<HTMLElement>(selector);
+      return [
+        "[data-handle]",
+        "[data-journal]",
+        "[data-result]",
+        '[data-pane="out"] [tabindex="0"]',
+      ].map((selector) => {
+        const node = document.querySelector<HTMLElement>(selector);
 
-          node?.focus();
+        node?.focus();
 
-          return node ? getComputedStyle(node).outlineColor : "absent";
-        },
-      );
+        return node ? getComputedStyle(node).outlineColor : "absent";
+      });
     });
 
-    expect(marks).toEqual([controle, texte, texte]);
+    expect(marks).toEqual([controle, texte, texte, texte]);
   });
 }
 
@@ -418,4 +421,15 @@ test("should never shrink the log below 44 px", async ({ page }) => {
   // On lit le réglage lui-même, pas la hauteur rendue : le rendu arrondit au sous-pixel,
   // et la colonne empilée remplace la hauteur par un jeton.
   expect(await handle.getAttribute("aria-valuenow")).toBe("44");
+});
+
+// Le résultat garde le focus pendant qu'une commande tourne. Masquer la zone elle-même
+// rendrait le focus au « body », et la tabulation suivante repartirait du haut de la page.
+test("should keep the focus on the result while a command runs", async ({ page }) => {
+  await boot(page);
+
+  await page.locator("[data-result]").focus();
+  await page.keyboard.press("j");
+
+  await expect(page.locator("[data-result]")).toBeFocused();
 });

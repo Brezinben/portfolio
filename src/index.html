@@ -6,7 +6,7 @@
     <title>Benjamin David · Développeur IA &amp; Full Stack</title>
     <meta
       name="description"
-      content="Benjamin David, développeur IA et Full Stack à Nantes. Serveurs MCP, Specification-Driven Development, accessibilité et numérique responsable."
+      content="Benjamin David, développeur IA et Full Stack à Nantes. Des outils internes utilisables par les humains comme par les agents."
     />
     <meta name="author" content="Benjamin David" />
     <link rel="canonical" href="https://me.brezinben.dpdns.org/" />
@@ -17,7 +17,7 @@
     <meta property="og:title" content="Benjamin David — Développeur IA &amp; Full Stack" />
     <meta
       property="og:description"
-      content="Serveurs MCP, Specification-Driven Development, accessibilité et numérique responsable. Portfolio en interface terminal."
+      content="Des outils internes utilisables par les humains comme par les agents. Portfolio en interface terminal."
     />
     <meta property="og:url" content="https://me.brezinben.dpdns.org/" />
     <meta property="og:locale" content="fr_FR" />
@@ -32,7 +32,7 @@
     <meta name="twitter:title" content="Benjamin David — Développeur IA &amp; Full Stack" />
     <meta
       name="twitter:description"
-      content="Serveurs MCP, SDD, accessibilité, numérique responsable."
+      content="Des outils internes utilisables par les humains comme par les agents."
     />
     <meta name="twitter:image" content="https://me.brezinben.dpdns.org/assets/share.png" />
     <!-- Mesure d'audience auto-hébergée, sans cookie ni identifiant. Différée, et hors du
@@ -170,10 +170,7 @@
               ><span :style="`animation:dotPulse 1.2s ease-in-out infinite`">exécution…</span>
             </p>
           </template>
-          <div
-            data-result
-            :style="`flex:1 1 auto;min-height:0;overflow-y:auto;padding-right:4px;align-content:start;display:grid;gap:2px;line-height:1.6;visibility:${running ? 'hidden' : 'visible'}`"
-          >
+          <div data-result tabindex="0" role="region" aria-label="Résultat" :aria-busy="running">
             <template x-if="current.view === 'timeline'">
               <div
                 data-timeline

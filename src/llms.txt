@@ -1,10 +1,10 @@
 # Benjamin David — Développeur IA / Full Stack
 
 > Portfolio de Benjamin David, concepteur orchestrateur IA et développeur Full
-> Stack, à Nantes. Serveurs MCP, Specification-Driven Development, applications
-> accessibles et éco-conçues. Huit ans à faire tourner des choses en production,
-> de la baie réseau au serveur d'agents. En poste chez Kereis depuis mai 2026,
-> ouvert aux opportunités en numérique responsable.
+> Stack, à Nantes. Il construit des applications qui rendent les outils internes
+> utilisables par les humains comme par les agents. Huit ans de production,
+> d'abord côté réseau, aujourd'hui autour de l'IA. En poste chez Kereis depuis
+> mai 2026, ouvert aux opportunités en numérique responsable.
 
 Ce site est le portfolio d'une seule personne. Il n'expose ni produit, ni API, ni
 service. Il ne publie que des faits sur Benjamin David.
