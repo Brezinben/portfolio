@@ -97,7 +97,8 @@ export const globalIndex = (source: GlobalSource): GlobalEntry[] => {
     ...details.map((detail) => {
       return entry({
         cmd: open(detail.id),
-        desc: detail.sub ?? stateOf(detail.id),
+        // « || » et non « ?? » : la coquille pose une chaine vide, jamais « undefined ».
+        desc: detail.sub || stateOf(detail.id),
         keys: `${detail.id} ${detail.ask ?? ""}`,
         kind: "mission",
         label: detail.label,
@@ -153,9 +154,8 @@ const globalQuery = (raw: string): string => {
   return raw.replace(/^[/:]/u, "").replaceAll(/\s+/gu, " ").trim();
 };
 
-// Le classement tient au genre du match, jamais a un score flou : l'ordre reste previsible
-// a la frappe. Un libelle qui commence par la saisie passe devant tout, puis la commande,
-// puis le libelle qui la contient, puis le reste, departage par la position.
+// Le classement tient au genre de la trouvaille, jamais a un score flou : l'ordre reste
+// previsible a la frappe.
 const rank = (query: string, item: GlobalEntry): number => {
   const label = fold(item.label),
     inLabel = label.indexOf(query);
@@ -177,18 +177,12 @@ const rank = (query: string, item: GlobalEntry): number => {
   return elsewhere === -1 ? -1 : 3 + elsewhere / 1000;
 };
 
-const groupAt = (kind: GlobalKind) => {
-  return GLOBAL_GROUPS.findIndex((group) => {
-    return group.kind === kind;
-  });
-};
-
-// Les trouvailles sortent groupees, parce que la zone les affiche ainsi : rendre l'ordre du
-// classement ferait marcher les fleches autrement que l'oeil.
+// Les trouvailles sortent regroupees par genre, parce que la zone les affiche ainsi : sans
+// ce regroupement, une fleche sauterait d'un groupe a l'autre puis reviendrait.
 //
-// C'est la meilleure trouvaille d'un groupe qui place le groupe. Un ordre de groupes fige
-// aurait enterre un match exact : « theme » nomme une commande, et les huit themes ne la
-// portent que dans leurs mots-cles.
+// C'est la meilleure trouvaille d'un genre qui place le genre, jamais un ordre declare. Un
+// ordre fige aurait enterre une trouvaille exacte : « theme » nomme une commande, et les
+// huit themes ne la portent que dans leurs mots-cles.
 export const rankHits = (raw: string, index: GlobalEntry[], limit: number): GlobalEntry[] => {
   const query = fold(globalQuery(raw));
 
@@ -207,26 +201,16 @@ export const rankHits = (raw: string, index: GlobalEntry[], limit: number): Glob
         return one.rank - other.rank;
       })
       .slice(0, limit),
-    best = (kind: GlobalKind) => {
-      return Math.min(
-        ...kept
-          .filter((hit) => {
-            return hit.item.kind === kind;
-          })
-          .map((hit) => {
-            return hit.rank;
-          }),
-      );
-    };
+    // La liste est deja triee par rang, donc la premiere apparition d'un genre porte son
+    // meilleur rang. Le tri est stable : le rang departage encore deux trouvailles du meme
+    // genre.
+    firstOf = kept.map((hit) => {
+      return hit.item.kind;
+    });
 
-  // Le tri est stable : le classement departage encore deux trouvailles du meme groupe, et
-  // l'ordre declare departage deux groupes a egalite.
   return kept
     .toSorted((one, other) => {
-      return (
-        best(one.item.kind) - best(other.item.kind) ||
-        groupAt(one.item.kind) - groupAt(other.item.kind)
-      );
+      return firstOf.indexOf(one.item.kind) - firstOf.indexOf(other.item.kind);
     })
     .map((hit) => {
       return hit.item;

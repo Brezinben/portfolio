@@ -1908,25 +1908,42 @@ document.addEventListener("alpine:init", () => {
         return ghostFor(this.globalQuery, this.globalHits);
       },
 
-      // Les groupes vides ne se dessinent pas. Le rang d'une trouvaille reste celui de la
-      // liste entiere : c'est lui que les fleches deplacent, pas sa place dans son groupe.
+      // Les groupes se decoupent dans l'ordre des trouvailles, jamais dans l'ordre declare :
+      // sinon la fleche du bas et l'oeil ne parcourent pas la meme liste. « GLOBAL_GROUPS »
+      // n'apporte plus ici que le libelle et l'etiquette.
       get globalGroups() {
         // L'annotation casse la circularite : sans elle, TypeScript deduit l'accesseur depuis
         // le litteral qui le contient, et rend « any ».
-        const found: GlobalEntry[] = this.globalHits;
+        const found: GlobalEntry[] = this.globalHits,
+          groups: {
+            kind: string;
+            label: string;
+            rows: { at: number; hit: GlobalEntry }[];
+            tag: string;
+          }[] = [];
 
-        return GLOBAL_GROUPS.map((group) => {
-          return {
-            kind: group.kind,
-            label: group.label,
-            rows: found.flatMap((hit, at) => {
-              return hit.kind === group.kind ? [{ at, hit }] : [];
-            }),
-            tag: group.tag,
-          };
-        }).filter((group) => {
-          return group.rows.length > 0;
+        found.forEach((hit, at) => {
+          const open = groups.at(-1);
+
+          if (open?.kind === hit.kind) {
+            open.rows.push({ at, hit });
+
+            return;
+          }
+
+          const declared = GLOBAL_GROUPS.find((group) => {
+            return group.kind === hit.kind;
+          });
+
+          groups.push({
+            kind: hit.kind,
+            label: declared?.label ?? hit.kind,
+            rows: [{ at, hit }],
+            tag: declared?.tag ?? hit.kind,
+          });
         });
+
+        return groups;
       },
 
       restore() {
@@ -2002,10 +2019,13 @@ document.addEventListener("alpine:init", () => {
 
       closeOpts() {
         this.optsOpen = false;
+        // « isConnected » : « options » lancé depuis la recherche globale a capturé le champ
+        // de la zone, que la fermeture détache. Un nœud détaché reste vrai, et le focus
+        // tombait alors sur le corps de la page. Même garde que les deux autres modales.
         this.$nextTick(() => {
-          return (
-            this.optsReturn ?? document.querySelector<HTMLElement>("[data-ctl='opts']")
-          )?.focus();
+          const back = this.optsReturn?.isConnected === true ? this.optsReturn : undefined;
+
+          (back ?? document.querySelector<HTMLElement>("[data-ctl='opts']"))?.focus();
         });
 
         if (!this.morphHeld) {
@@ -2789,7 +2809,6 @@ document.addEventListener("alpine:init", () => {
           this.timeline = content.timeline ?? [];
           this.stack = content.stack ?? [];
           this.techNotes = content.techNotes ?? {};
-          this.reindexGlobal();
           this.missions = (content.missions ?? []).map((raw: Record<string, string>) => {
             return {
               dot: safeTone(raw.dot, "ok"),
@@ -2798,6 +2817,7 @@ document.addEventListener("alpine:init", () => {
               state: raw.state ?? "",
             };
           });
+          this.reindexGlobal();
         } catch (error) {
           // Le boot reste affiché : la page ne se rabat jamais sur un contenu figé.
           this.errDetail = `caused by: ${error instanceof Error ? error.message : String(error)}`;

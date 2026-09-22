@@ -9,7 +9,8 @@ import assert from "node:assert/strict";
 import { it } from "node:test";
 
 const SOURCE: GlobalSource = {
-    details: [{ cmd: "bd show mission/kereis", id: "m-kereis", label: "kereis" }],
+    // « sub » vide, comme « section() » le rend : la coquille n'envoie jamais « undefined ».
+    details: [{ cmd: "bd show mission/kereis", id: "m-kereis", label: "kereis", sub: "" }],
     missions: [{ id: "m-kereis", state: "en cours · MCP" }],
     model: false,
     sections: [
@@ -50,8 +51,8 @@ it("should derive every searchable entry from the content", () => {
   }
 });
 
-// Le classement tient au genre du match. Un libelle qui commence par la saisie passe devant
-// une commande qui la contient : sans cet ordre, taper « st » ouvrait autre chose que stack.
+// Le classement tient au genre de la trouvaille : sans cet ordre, taper « st » ouvre autre
+// chose que stack.
 it("should rank a label prefix before anything else", () => {
   const [first] = labels("st");
 
@@ -64,8 +65,6 @@ it("should rank a command prefix before a label that only contains the query", (
   assert.ok(found.includes("stack"), "the section answers its own command");
 });
 
-// Le champ « cmd » du contenu est un écho décoratif : « bd log --graph » n'ouvre rien, et le
-// répartiteur répond « section inconnue : log ». Seul l'identifiant se soumet.
 it("should open a section by its identifier, never by the decorative echo", () => {
   const [section] = globalHits("whoami"),
     [mission] = globalHits("kereis");
@@ -86,21 +85,19 @@ it("should search the keywords a row never shows", () => {
   assert.ok(labels("composition api").includes("Vue.js"));
 });
 
-// Sans le second tri, la flèche du bas sautait d'un groupe à l'autre puis revenait.
-it("should hand the hits back in the order the groups show them", () => {
-  const order = globalHits("sta").map((hit) => {
-    return GLOBAL_GROUPS.findIndex((group) => {
-      return group.kind === hit.kind;
-    });
-  });
+// La zone dessine un groupe par genre. Un genre qui reviendrait plus bas ouvrirait un second
+// groupe du meme nom, et la fleche sauterait de l'un a l'autre.
+it("should hand every kind back in a single run", () => {
+  for (const query of ["a", "b", "d", "e", "g", "h", "s", "sta", "theme"]) {
+    const kinds = globalHits(query).map((hit) => {
+        return hit.kind;
+      }),
+      runs = kinds.filter((kind, at) => {
+        return kind !== kinds[at - 1];
+      });
 
-  assert.deepEqual(
-    order,
-    order.toSorted((one, other) => {
-      return one - other;
-    }),
-    "the arrows walk the list the eye reads",
-  );
+    assert.equal(runs.length, new Set(kinds).size, `« ${query} » splits a kind into two runs`);
+  }
 });
 
 it("should ignore the accents and the case on both sides", () => {

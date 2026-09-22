@@ -2266,8 +2266,8 @@ html[data-vt-theme]::view-transition-new(root) {
  la complétion fantôme et le rang des lignes lui appartiennent. */
 .tm [data-global] {
   width: min(560px, 100%);
-  /* Hauteur arrêtée sur le pire cas de GLOBAL_LIMIT : sept lignes et les six en-têtes de
-   groupe. Plus court, la dernière ligne se coupait en deux. */
+  /* La zone loge GLOBAL_LIMIT lignes et leurs en-têtes de groupe. Plus courte, la dernière
+   ligne se coupe en deux au lieu de manquer franchement. */
   height: min(84dvh, 620px);
   box-sizing: border-box;
   display: grid;
@@ -2447,8 +2447,8 @@ html[data-vt-theme]::view-transition-new(root) {
   border-top: 1px solid var(--edge);
 }
 
-/* Le rappel clavier se range en deux colonnes sur deux rangs. Sur une seule ligne il
- passait sous le bouton de fermeture, qui prend sa largeur a droite. */
+/* Sur une seule ligne, le rappel clavier passe sous le bouton de fermeture, qui prend sa
+ largeur à droite. */
 .tm [data-global-hint] {
   display: grid;
   grid-template-columns: repeat(2, auto);

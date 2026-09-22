@@ -74,8 +74,6 @@ test("should complete towards the first hit on tab", async ({ page }) => {
   await expect(field(page)).toHaveValue("stack");
 });
 
-// Le contenu écrit « bd log --graph » et « bd show mission/kereis » : deux échos décoratifs
-// que le répartiteur refuse. Seul l'identifiant ouvre la zone.
 const OPENS: [string, string][] = [
   ["whoami", "Concepteur orchestrateur IA"],
   ["parcours", "2026"],
@@ -110,8 +108,6 @@ test("should keep the tabulation inside the zone", async ({ page }) => {
   await expect(field(page)).toBeFocused();
 });
 
-// « une commande tapée, pas cliquée » : lancer depuis la zone débloque son succès, et ne
-// débloque pas celui de la première commande.
 test("should unlock its own achievement and leave the first command alone", async ({ page }) => {
   await boot(page);
   await open(page);
@@ -123,6 +119,22 @@ test("should unlock its own achievement and leave the first command alone", asyn
 
   expect(marks).toContain("global-search");
   expect(marks).not.toContain("first-command");
+});
+
+// Une zone lancée depuis la recherche globale a capturé un nœud que la fermeture détache.
+// Sans garde, le focus tombe sur le corps de la page au lieu de revenir à un contrôle.
+test("should give the focus to a real control after a zone opened from the search", async ({
+  page,
+}) => {
+  await boot(page);
+  await open(page);
+  await field(page).fill("options");
+  await page.keyboard.press("Enter");
+  await expect(page.locator("[data-opts]")).toBeVisible();
+
+  await page.keyboard.press("Escape");
+  await expect(page.locator("[data-opts]")).toHaveCount(0);
+  await expect(page.locator("[data-ctl='opts']")).toBeFocused();
 });
 
 test("should only fill the line for a command that wants an argument", async ({ page }) => {
@@ -148,8 +160,29 @@ test("should walk the hits with the arrows", async ({ page }) => {
   await expect(rows.nth(1)).toHaveAttribute("aria-selected", "true");
 });
 
-// La zone montre ses trouvailles par groupe, et les flèches suivaient l'ordre du classement.
-// Deux flèches vers le bas sautaient alors une ligne visible pour en prendre une plus loin.
+// Le rang d'une ligne doit suivre sa place à l'écran. Les deux se sont déjà séparés : la zone
+// dessinait ses groupes dans un ordre, les flèches parcouraient l'autre.
+for (const typed of ["sta", "theme", "b", "d", "h"]) {
+  test(`should number the rows in the order they are drawn for ${typed}`, async ({ page }) => {
+    await boot(page);
+    await open(page);
+    await field(page).fill(typed);
+
+    const drawn = await page.locator("[data-global-row]").evaluateAll((nodes) => {
+      return nodes.map((node) => {
+        return Number(node.id.replace("global-row-", ""));
+      });
+    });
+
+    expect(drawn.length).toBeGreaterThan(1);
+    expect(drawn).toEqual(
+      drawn.map((_, at) => {
+        return at;
+      }),
+    );
+  });
+}
+
 test("should walk the rows in the order the eye reads them", async ({ page }) => {
   await boot(page);
   await open(page);

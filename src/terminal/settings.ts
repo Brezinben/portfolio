@@ -57,8 +57,8 @@ export const COMPACT_MS = 5200;
 export const COMPACT_TICK_MS = 130;
 // Le demarrage dessine sa barre sur vingt-quatre cases, comme le canvas.
 export const BOOT_CELLS = 24;
-// Ce que la recherche globale montre, tous groupes confondus. Sept lignes entieres tiennent
-// dans la hauteur de la zone ; la huitieme s'y coupe en deux.
+// Ce que la recherche globale montre, tous groupes confondus. Au-dela, la liste demande un
+// defilement, et la selection quitte la vue au lieu de se lire d'un coup.
 export const GLOBAL_LIMIT = 7;
 // Le journal ne prend jamais la place du resultat : celui-ci garde ce plancher.
 export const RESULT_MIN_PX = 120;

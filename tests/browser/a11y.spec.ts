@@ -19,9 +19,6 @@ const THEMES = ["dark", "light", "noctis", "azureus", "uva", "bordo", "lux", "hi
   scan = (page: Page) => {
     return new AxeBuilder({ page }).analyze();
   },
-  // Le scan mesure la couleur telle qu'elle est peinte. Lancé pendant le fondu d'entrée, il
-  // lit des valeurs à mi-opacité et rapporte des écarts qui n'existent pas. On attend donc
-  // les animations qui finissent ; le curseur et la mascotte, eux, ne finissent jamais.
   typedIsClean = async (page: Page, typed: string) => {
     await page.locator("[data-global-input]").fill(typed);
     await settled(page);
@@ -35,6 +32,9 @@ const THEMES = ["dark", "light", "noctis", "azureus", "uva", "bordo", "lux", "hi
       `the global search is clean with « ${typed} » typed`,
     ).toEqual([]);
   },
+  // Le scan mesure la couleur telle qu'elle est peinte. Lancé pendant le fondu d'entrée, il
+  // lit des valeurs à mi-opacité et rapporte des écarts qui n'existent pas. On attend donc
+  // les animations qui finissent ; le curseur et la mascotte, eux, ne finissent jamais.
   settled = (page: Page) => {
     return page.evaluate(() => {
       return Promise.all(
@@ -234,8 +234,7 @@ test("should lead to the text version from the first focusable element", async (
   expect(dehors, "the link must stay off screen without focus").toBe(true);
 });
 
-// Fermée, la recherche globale échappe au scan de la page. Les trois états se mesurent : le
-// repos, la liste vide, et la liste pleine — un « listbox » sans option est un défaut ARIA.
+// Fermée, la recherche globale échappe au scan de la page.
 for (const theme of THEMES) {
   test(`should report no accessibility violation in the global search on the ${theme} theme`, async ({
     page,
@@ -244,8 +243,6 @@ for (const theme of THEMES) {
     await page.keyboard.press("Control+k");
     await expect(page.locator("[data-global]")).toBeVisible();
 
-    // Au repos, sans trouvaille, puis avec : un « listbox » sans option est un défaut ARIA,
-    // et seul l'état plein se mesurait.
     await typedIsClean(page, "");
     await typedIsClean(page, "zzzzzz");
     await typedIsClean(page, "sta");

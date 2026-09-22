@@ -35,7 +35,7 @@ export const helpLines = (model: boolean) => {
   ];
 };
 export const KEYBOARD =
-  "Clavier : / cible la saisie · ⌘K ouvre la recherche globale · j / k changent de section · Tab complète · ↑ ↓ rappellent l'historique.";
+  "Clavier : / cible la saisie · ⌘K ou Ctrl+K ouvre la recherche globale · j / k changent de section · Tab complète · ↑ ↓ rappellent l'historique.";
 
 // Les easter eggs ne repondent qu'au prefixe slash, pour ne pas melanger une vraie
 // commande et un raccourci du portfolio. L'ordre d'ecriture ne decide de rien : le
