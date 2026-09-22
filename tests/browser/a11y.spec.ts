@@ -217,6 +217,28 @@ test("should lead to the text version from the first focusable element", async (
   expect(dehors, "the link must stay off screen without focus").toBe(true);
 });
 
+// La recherche globale est une modale : elle porte un combobox, une liste d'options et un
+// focus capturé. Fermée, le scan de la page ne la voit pas du tout.
+for (const theme of THEMES) {
+  test(`should report no accessibility violation in the global search on the ${theme} theme`, async ({
+    page,
+  }) => {
+    await withTheme(page, theme);
+    await page.keyboard.press("Control+k");
+    await expect(page.locator("[data-global]")).toBeVisible();
+    await page.locator("[data-global-input]").fill("sta");
+    await settled(page);
+
+    const { violations } = await scan(page);
+
+    expect(
+      violations.map((entry) => {
+        return `${entry.id}: ${entry.nodes.length}`;
+      }),
+    ).toEqual([]);
+  });
+}
+
 // Le lien doit survivre à un échec du script : c'est le repli de la page, pas une de ses
 // fonctions. Il vit donc hors du composant Alpine et ne porte aucune variable de thème.
 test("should keep the text version reachable without script", async ({ browser }) => {

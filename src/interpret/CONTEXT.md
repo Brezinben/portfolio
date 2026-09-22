@@ -34,13 +34,13 @@ _Avoid_: routeur, aiguilleur, contrôleur.
 
 | Rang | Modules | Ce qu'ils importent |
 |---|---|---|
-| 0 | `lookup` · `tone` · `vocabulary` · `share` | rien |
+| 0 | `lookup` · `tone` · `vocabulary` · `share` · `fold` | rien |
 | 1 | `lines` · `achievements` | `tone` pour l'un, `lookup` pour l'autre |
 | 2 | `content` | `tone`, `lookup` |
 | 3 | `effects` · `context` | des types seulement |
 | 4 | `mascot` · `eggs` · `cowsay` | les rangs 0 à 3 |
 | 5 | `completion` · `search` · `consent` | les rangs 0 à 4 |
-| 6 | `dispatch` | tout ce qui précède |
+| 6 | `dispatch` · `global-search` | tout ce qui précède |
 
 ## Trois placements qui ne vont pas de soi
 

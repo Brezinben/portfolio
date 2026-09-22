@@ -2457,6 +2457,9 @@ document.addEventListener("alpine:init", () => {
 
         try {
           this.modelState = await LanguageModel.availability();
+          // Le vocabulaire porte « ask » ou « ask✨ », jamais les deux. L'index se refait, sinon
+          // la recherche globale garderait le nom d'avant la detection.
+          this.reindexGlobal();
         } catch {
           // Un refus au demarrage laisse « unknown » : « ask » repond alors sans modele,
           // ce qui est le comportement sans API.

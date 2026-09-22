@@ -94,6 +94,13 @@ export const globalSearchSlice = () => {
       }
 
       this.globalAt = (this.globalAt + step + found) % found;
+      // La selection doit rester visible. « nearest » ne bouge que le conteneur qui defile :
+      // la page, elle, ne defile pas, donc rien d'autre ne se deplace sous les yeux.
+      this.$nextTick(() => {
+        document
+          .querySelector(`#global-row-${this.globalAt}`)
+          ?.scrollIntoView({ block: "nearest" });
+      });
     },
 
     openGlobal(this: Shell, via: string) {
