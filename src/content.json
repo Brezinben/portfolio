@@ -13,7 +13,7 @@
   },
   "share": {
     "title": "Benjamin David · Développeur IA & Full Stack",
-    "text": "Serveurs MCP, Specification-Driven Development, accessibilité et numérique responsable.",
+    "text": "Des outils internes utilisables par les humains comme par les agents.",
     "targets": [
       {
         "id": "linkedin",
@@ -78,15 +78,19 @@
         },
         {
           "m": "·",
-          "t": "Serveurs MCP, Specification-Driven Development, applications accessibles et éco-conçues."
+          "t": "Je construis des applications qui rendent les outils internes vraiment utilisables, par les humains comme par les agents."
         },
         {
           "m": "·",
-          "t": "Huit ans à faire tourner des choses en production, de la baie réseau au serveur d'agents."
+          "t": "Je conçois, j'orchestre, je livre. La spécification avant le code : les agents produisent dans les contraintes que je pose."
         },
         {
           "m": "·",
-          "t": "Quelqu'un qui adore apprendre et approfondir tout un tas de trucs."
+          "t": "Huit ans de production, d'abord côté réseau, aujourd'hui autour de l'IA. Le métier bouge trop vite pour se reposer sur l'an dernier."
+        },
+        {
+          "m": "·",
+          "t": "L'accessibilité, la performance et la qualité du code sont des contraintes de départ, pas une checklist de fin de projet."
         },
         {
           "m": "›",
@@ -130,7 +134,7 @@
           ]
         ]
       },
-      "ask": "Benjamin David, concepteur orchestrateur IA et développeur Full Stack à Nantes. Serveurs MCP, Specification-Driven Development, accessibilité et éco-conception. Huit ans en production, du réseau au serveur d'agents. En poste chez Kereis depuis mai 2026, ouvert aux opportunités en numérique responsable."
+      "ask": "Benjamin David, concepteur orchestrateur IA et développeur Full Stack à Nantes. Il construit des applications qui rendent les outils internes utilisables par les humains comme par les agents. Huit ans de production, d'abord côté réseau, aujourd'hui autour de l'IA. L'accessibilité, la performance et la qualité du code sont des contraintes de départ. En poste chez Kereis depuis mai 2026, ouvert aux opportunités en numérique responsable."
     },
     {
       "id": "parcours",

@@ -14,6 +14,24 @@ Rien ne s'écrit dans `content.json` sans se trouver ici d'abord.
 - **Périmètre public** : tout sauf les noms de produits internes des clients.
 - **Règle** : aucun fait inventé. Ce qui n'est pas dit ne s'écrit pas.
 
+## Résumé de CV
+
+> Je construis des applications qui rendent les outils internes vraiment utilisables, par les
+> humains comme par les agents. Je conçois, j'orchestre, je livre : je travaille en
+> spec-driven development, la spécification avant le code, et les agents produisent dans les
+> contraintes que je pose.
+>
+> Huit ans de production, d'abord côté réseau, aujourd'hui autour de l'IA. C'est ma veille qui
+> m'a permis de faire évoluer mon métier. Il bouge trop vite pour se reposer sur ce qu'on
+> savait l'an dernier, alors j'apprends en permanence.
+>
+> Je suis attaché au numérique responsable. L'accessibilité, la performance et la qualité du
+> code font partie de mes valeurs, pas d'une checklist de fin de projet : je les pose comme
+> contraintes de développement dès le départ.
+
+Texte déjà écrit, donné tel quel par Benjamin, et préféré à la présentation qui était en
+ligne. Il remplace le bloc `whoami`, `share.text` et les métadonnées de description.
+
 ## Kereis · 2026 → …
 
 > En fait, on m'a demandé de venir là-bas pour réaliser des PoC, des preuves de concept
