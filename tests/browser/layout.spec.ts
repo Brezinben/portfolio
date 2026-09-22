@@ -422,3 +422,14 @@ test("should never shrink the log below 44 px", async ({ page }) => {
   // et la colonne empilée remplace la hauteur par un jeton.
   expect(await handle.getAttribute("aria-valuenow")).toBe("44");
 });
+
+// Le résultat garde le focus pendant qu'une commande tourne. Masquer la zone elle-même
+// rendrait le focus au « body », et la tabulation suivante repartirait du haut de la page.
+test("should keep the focus on the result while a command runs", async ({ page }) => {
+  await boot(page);
+
+  await page.locator("[data-result]").focus();
+  await page.keyboard.press("j");
+
+  await expect(page.locator("[data-result]")).toBeFocused();
+});

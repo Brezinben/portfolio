@@ -550,6 +550,24 @@ html[data-vt-theme]::view-transition-new(root) {
   overflow: hidden;
 }
 
+.tm [data-result] {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 4px;
+  align-content: start;
+  display: grid;
+  gap: 2px;
+  line-height: 1.6;
+}
+
+/* Pendant une commande, le résultat périmé disparaît, mais la zone reste visible : un
+ élément invisible perd le focus, et la tabulation suivante repartirait du haut de la
+ page. */
+.tm [data-result][aria-busy="true"] > * {
+  visibility: hidden;
+}
+
 /* x-show d'Alpine appelle style.removeProperty("display") à chaque affichage. Un
  « display » posé en ligne sur un élément qu'il pilote ne survit donc pas au premier
  affichage. Trois éléments sont dans ce cas : ce volet, la liste de la sortie et la

@@ -170,13 +170,7 @@
               ><span :style="`animation:dotPulse 1.2s ease-in-out infinite`">exécution…</span>
             </p>
           </template>
-          <div
-            data-result
-            tabindex="0"
-            role="region"
-            aria-label="Résultat"
-            :style="`flex:1 1 auto;min-height:0;overflow-y:auto;padding-right:4px;align-content:start;display:grid;gap:2px;line-height:1.6;visibility:${running ? 'hidden' : 'visible'}`"
-          >
+          <div data-result tabindex="0" role="region" aria-label="Résultat" :aria-busy="running">
             <template x-if="current.view === 'timeline'">
               <div
                 data-timeline
