@@ -307,18 +307,21 @@ for (const [theme, controle, texte] of [
     await fill(cli);
 
     const marks = await page.evaluate(() => {
-      return ["[data-handle]", "[data-journal]", '[data-pane="out"] [tabindex="0"]'].map(
-        (selector) => {
-          const node = document.querySelector<HTMLElement>(selector);
+      return [
+        "[data-handle]",
+        "[data-journal]",
+        "[data-result]",
+        '[data-pane="out"] [tabindex="0"]',
+      ].map((selector) => {
+        const node = document.querySelector<HTMLElement>(selector);
 
-          node?.focus();
+        node?.focus();
 
-          return node ? getComputedStyle(node).outlineColor : "absent";
-        },
-      );
+        return node ? getComputedStyle(node).outlineColor : "absent";
+      });
     });
 
-    expect(marks).toEqual([controle, texte, texte]);
+    expect(marks).toEqual([controle, texte, texte, texte]);
   });
 }
 

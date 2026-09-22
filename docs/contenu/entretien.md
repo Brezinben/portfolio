@@ -29,8 +29,7 @@ Rien ne s'écrit dans `content.json` sans se trouver ici d'abord.
 > code font partie de mes valeurs, pas d'une checklist de fin de projet : je les pose comme
 > contraintes de développement dès le départ.
 
-Texte déjà écrit, donné tel quel par Benjamin, et préféré à la présentation qui était en
-ligne. Il remplace le bloc `whoami`, `share.text` et les métadonnées de description.
+Texte déjà écrit, donné tel quel par Benjamin, et préféré à ce qui était en ligne.
 
 ## Kereis · 2026 → …
 
