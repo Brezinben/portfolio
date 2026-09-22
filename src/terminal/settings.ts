@@ -57,6 +57,9 @@ export const COMPACT_MS = 5200;
 export const COMPACT_TICK_MS = 130;
 // Le demarrage dessine sa barre sur vingt-quatre cases, comme le canvas.
 export const BOOT_CELLS = 24;
+// Ce que la recherche globale montre, tous groupes confondus. Au-dela, la zone deborde
+// l'ecran d'un portable et la selection quitte la vue.
+export const GLOBAL_LIMIT = 8;
 // Le journal ne prend jamais la place du resultat : celui-ci garde ce plancher.
 export const RESULT_MIN_PX = 120;
 export const PANE_GAP_PX = 10;

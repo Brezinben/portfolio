@@ -57,7 +57,7 @@ export interface AchievementsApi {
   markTheme(id: string): void;
   openAchievements(via: string): void;
   unlock(key: string): void;
-  unlockFrom(effects: Effect[]): void;
+  unlockFrom(effects: Effect[], source: { typed: boolean }): void;
 }
 
 // Une case bascule en « steps(1) » : aucune fonction de temps ne s'applique à elle, et le
@@ -242,7 +242,7 @@ export const achievementsSlice = () => {
     // Le seul point d'accroche des commandes. Le nom canonique se lit dans l'effet de
     // mesure, alias déjà résolus par le répartiteur. Les quatre succès de la mascotte se
     // lisent sur le type des effets, sans analyser la ligne une seconde fois.
-    unlockFrom(this: Shell, effects: Effect[]) {
+    unlockFrom(this: Shell, effects: Effect[], source: { typed: boolean }) {
       const measured = effects.find((effect) => {
           return effect.type === "track" && effect.event === "commande";
         }),
@@ -257,7 +257,10 @@ export const achievementsSlice = () => {
         return;
       }
 
-      this.unlock("first-command");
+      // « une commande tapee, pas cliquee » : une trouvaille lancee a la souris ne compte pas.
+      if (source.typed) {
+        this.unlock("first-command");
+      }
 
       const found = unlockedBy(command);
 

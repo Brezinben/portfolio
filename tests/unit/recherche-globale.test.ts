@@ -2,8 +2,8 @@ import {
   GLOBAL_GROUPS,
   type GlobalSource,
   ghostFor,
-  globalHits,
   globalIndex,
+  rankHits,
 } from "../../src/interpret.ts";
 import assert from "node:assert/strict";
 import { it } from "node:test";
@@ -31,7 +31,7 @@ const SOURCE: GlobalSource = {
   },
   INDEX = globalIndex(SOURCE),
   labels = (query: string) => {
-    return globalHits(query, INDEX, 20).map((hit) => {
+    return rankHits(query, INDEX, 20).map((hit) => {
       return hit.label;
     });
   };
@@ -78,16 +78,16 @@ it("should read the slash that targets the command line", () => {
 });
 
 it("should return nothing for an empty query", () => {
-  assert.deepEqual(globalHits("   ", INDEX, 20), []);
+  assert.deepEqual(rankHits("   ", INDEX, 20), []);
 });
 
 it("should stop at the limit", () => {
-  assert.equal(globalHits("e", INDEX, 3).length, 3);
+  assert.equal(rankHits("e", INDEX, 3).length, 3);
 });
 
 // Une brique n'a pas de commande a elle : elle ouvre la stack, et la coquille pose sa fiche.
 it("should send a stack brick to the stack section", () => {
-  const [brick] = globalHits("Vue.js", INDEX, 1);
+  const [brick] = rankHits("Vue.js", INDEX, 1);
 
   assert.equal(brick?.cmd, "bd stack");
   assert.equal(brick?.tech, "Vue.js");
@@ -123,11 +123,7 @@ it("should mark the commands that want an argument", () => {
 });
 
 it("should complete only towards a label that starts with the query", () => {
-  assert.equal(ghostFor("sta", globalHits("sta", INDEX, 5)), "ck");
-  assert.equal(
-    ghostFor("api", globalHits("api", INDEX, 5)),
-    "",
-    "a keyword match completes nothing",
-  );
+  assert.equal(ghostFor("sta", rankHits("sta", INDEX, 5)), "ck");
+  assert.equal(ghostFor("api", rankHits("api", INDEX, 5)), "", "a keyword match completes nothing");
   assert.equal(ghostFor("", INDEX), "");
 });

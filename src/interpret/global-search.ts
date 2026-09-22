@@ -163,7 +163,7 @@ const rank = (query: string, item: GlobalEntry): number => {
   return elsewhere === -1 ? -1 : 3 + elsewhere / 1000;
 };
 
-export const globalHits = (raw: string, index: GlobalEntry[], limit: number): GlobalEntry[] => {
+export const rankHits = (raw: string, index: GlobalEntry[], limit: number): GlobalEntry[] => {
   const query = fold(globalQuery(raw));
 
   if (query === "") {

@@ -5,15 +5,18 @@ import {
   type Context,
   type Effect,
   type Expression,
+  GLOBAL_GROUPS,
   type Line,
   MAX_SUGGESTIONS,
   type Tone,
   type TrackValue,
   candidates,
   commonPrefix,
+  ghostFor,
   hintFor,
   interpret,
   keepKnown,
+  rankHits,
   safeTone,
   seenCount,
   wonCount,
@@ -32,6 +35,7 @@ import {
   EMPTY,
   EXEC_MS,
   FADE_MS,
+  GLOBAL_LIMIT,
   OPTS_KEY,
   PANES,
   PANE_GAP_PX,
@@ -61,6 +65,7 @@ import {
 } from "./terminal/mascot/constants.ts";
 import { type AchievementsState, achievementsSlice } from "./terminal/achievements/slice.ts";
 import { GAUGE_AT, type GlitchState, SHIFT_COUNT, glitchSlice } from "./terminal/glitch/slice.ts";
+import { type GlobalSearchState, globalSearchSlice } from "./terminal/global-search/slice.ts";
 import type { Magics, TrackSource } from "./terminal/shell.ts";
 import type { RadioApi, RadioState } from "./terminal/radio/slice.ts";
 import { type Section, barParts, printed, section } from "./terminal/format.ts";
@@ -181,7 +186,7 @@ type Beat = ReturnType<typeof setInterval>;
 
 // Ce que la page tient en memoire. Les minuteurs en font partie : les declarer les rend
 // visibles. « RadioState » vient de la tranche qui l'emploie, pour ne pas deriver.
-interface State extends AchievementsState, GlitchState, RadioState {
+interface State extends AchievementsState, GlitchState, GlobalSearchState, RadioState {
   asker: AbortController | undefined;
   bubbleTimer: Delay | undefined;
   compactor: Delay | undefined;
@@ -291,7 +296,7 @@ interface State extends AchievementsState, GlitchState, RadioState {
 //
 // L'etalement est sur ici : une tranche ne porte jamais d'accesseur.
 const slices = () => {
-  return { ...achievementsSlice(), ...glitchSlice(), ...mascotSlice() };
+  return { ...achievementsSlice(), ...glitchSlice(), ...globalSearchSlice(), ...mascotSlice() };
 };
 
 // « RadioApi » n'est pas dans « slices » : sa tranche arrive par import dynamique, une fois
@@ -315,6 +320,7 @@ document.addEventListener("alpine:init", () => {
     // eslint-disable-next-line sort-keys
     const component = withMagics({
       ACHIEVEMENTS,
+      GLOBAL_GROUPS,
       THEMES,
       TOGGLES,
       achievements: [],
@@ -328,6 +334,11 @@ document.addEventListener("alpine:init", () => {
       glitchMode: "",
       glitchRain: [],
       glitchTap: undefined,
+      globalAt: 0,
+      globalIndexed: [],
+      globalOpen: false,
+      globalQuery: "",
+      globalReturn: undefined,
       glitchWait: undefined,
       alertCells: [],
       alertLeaving: false,
@@ -638,6 +649,20 @@ document.addEventListener("alpine:init", () => {
       },
 
       onKey(event: KeyboardEvent) {
+        // Le raccourci de la recherche globale passe avant la sortie sur les modificateurs,
+        // qui l'avalerait. Ctrl et Cmd ouvrent tous les deux : la page sert les deux systemes.
+        if ((event.metaKey || event.ctrlKey) && (event.key === "k" || event.key === "K")) {
+          event.preventDefault();
+
+          if (this.globalOpen) {
+            this.closeGlobal();
+          } else if (!this.booting) {
+            this.openGlobal("clavier");
+          }
+
+          return;
+        }
+
         if (event.altKey || event.ctrlKey || event.metaKey) {
           return;
         }
@@ -661,7 +686,7 @@ document.addEventListener("alpine:init", () => {
 
         // Une modale a son propre clavier. Sans cette garde, les deux gestionnaires
         // traitent la même flèche et le focus s'échappe de la modale.
-        if (this.optsOpen || this.achievementsOpen) {
+        if (this.optsOpen || this.achievementsOpen || this.globalOpen) {
           return;
         }
 
@@ -1875,6 +1900,35 @@ document.addEventListener("alpine:init", () => {
         });
       },
 
+      get globalHits() {
+        return rankHits(this.globalQuery, this.globalIndexed, GLOBAL_LIMIT);
+      },
+
+      get globalGhost() {
+        return ghostFor(this.globalQuery, this.globalHits);
+      },
+
+      // Les groupes vides ne se dessinent pas. Le rang d'une trouvaille reste celui de la
+      // liste entiere : c'est lui que les fleches deplacent, pas sa place dans son groupe.
+      get globalGroups() {
+        // « rankHits » et non « this.globalHits » : l'accesseur se lit dans le meme litteral,
+        // et TypeScript ne peut pas en deduire le type sans tourner en rond.
+        const found = rankHits(this.globalQuery, this.globalIndexed, GLOBAL_LIMIT);
+
+        return GLOBAL_GROUPS.map((group) => {
+          return {
+            kind: group.kind,
+            label: group.label,
+            rows: found.flatMap((hit, at) => {
+              return hit.kind === group.kind ? [{ at, hit }] : [];
+            }),
+            tag: group.tag,
+          };
+        }).filter((group) => {
+          return group.rows.length > 0;
+        });
+      },
+
       restore() {
         let saved: SavedOpts = {};
 
@@ -2121,7 +2175,7 @@ document.addEventListener("alpine:init", () => {
         });
       },
 
-      submit() {
+      submit(options: { typed?: boolean } = {}) {
         const raw = this.input;
 
         if (!raw.trim()) {
@@ -2178,7 +2232,7 @@ document.addEventListener("alpine:init", () => {
         }
 
         this.apply(effects);
-        this.unlockFrom(effects);
+        this.unlockFrom(effects, { typed: options.typed ?? true });
       },
 
       // Marquage silencieux : GoatCounter absent ou bloqué ne casse rien.
@@ -2732,6 +2786,7 @@ document.addEventListener("alpine:init", () => {
           this.timeline = content.timeline ?? [];
           this.stack = content.stack ?? [];
           this.techNotes = content.techNotes ?? {};
+          this.reindexGlobal();
           this.missions = (content.missions ?? []).map((raw: Record<string, string>) => {
             return {
               dot: safeTone(raw.dot, "ok"),

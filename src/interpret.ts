@@ -34,8 +34,8 @@ export {
   type GlobalEntry,
   type GlobalSource,
   ghostFor,
-  globalHits,
   globalIndex,
+  rankHits,
 } from "./interpret/global-search.ts";
 export { proposalPrompt } from "./interpret/consent.ts";
 export { MAX_SUGGESTIONS, type Line } from "./interpret/lines.ts";
