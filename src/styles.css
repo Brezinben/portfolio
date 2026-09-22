@@ -2266,7 +2266,9 @@ html[data-vt-theme]::view-transition-new(root) {
  la complétion fantôme et le rang des lignes lui appartiennent. */
 .tm [data-global] {
   width: min(560px, 100%);
-  height: min(84dvh, 470px);
+  /* Hauteur arrêtée sur le pire cas de GLOBAL_LIMIT : sept lignes et les six en-têtes de
+   groupe. Plus court, la dernière ligne se coupait en deux. */
+  height: min(84dvh, 620px);
   box-sizing: border-box;
   display: grid;
   grid-template-rows: auto minmax(0, 1fr) auto;
