@@ -9,19 +9,18 @@ import assert from "node:assert/strict";
 import { it } from "node:test";
 
 const SOURCE: GlobalSource = {
-    details: [
-      { cmd: "bd show mission/kereis", id: "m-kereis", label: "kereis", sub: "mai 2026 →" },
-    ],
+    details: [{ cmd: "bd show mission/kereis", id: "m-kereis", label: "kereis" }],
+    missions: [{ id: "m-kereis", state: "en cours · MCP" }],
     model: false,
     sections: [
       {
         ask: "je suis développeur",
-        cmd: "bd whoami",
+        cmd: "bd log --graph --since=2018",
         id: "whoami",
         label: "whoami",
         sub: "identité",
       },
-      { cmd: "bd stack", id: "stack", label: "stack", sub: "les outils" },
+      { cmd: "bd stack --tree", id: "stack", label: "stack", sub: "les outils" },
     ],
     techNotes: {
       "Vue.js": { note: "Composition API, stores", where: "Transway" },
@@ -30,8 +29,11 @@ const SOURCE: GlobalSource = {
     themes: [{ id: "noctis", label: "noctis" }],
   },
   INDEX = globalIndex(SOURCE),
+  globalHits = (query: string) => {
+    return rankHits(query, INDEX, 20);
+  },
   labels = (query: string) => {
-    return rankHits(query, INDEX, 20).map((hit) => {
+    return globalHits(query).map((hit) => {
       return hit.label;
     });
   };
@@ -62,7 +64,23 @@ it("should rank a command prefix before a label that only contains the query", (
   assert.ok(found.includes("stack"), "the section answers its own command");
 });
 
-// Les mots-cles se cherchent sans s'afficher : le resume « ask » d'une section y entre.
+// Le champ « cmd » du contenu est un écho décoratif : « bd log --graph » n'ouvre rien, et le
+// répartiteur répond « section inconnue : log ». Seul l'identifiant se soumet.
+it("should open a section by its identifier, never by the decorative echo", () => {
+  const [section] = globalHits("whoami"),
+    [mission] = globalHits("kereis");
+
+  assert.equal(section?.cmd, "bd whoami");
+  assert.equal(mission?.cmd, "bd m-kereis");
+});
+
+// Une fiche de mission ne porte pas de sous-titre : son état vient du volet gauche.
+it("should describe a mission with the state the left pane shows", () => {
+  const [mission] = globalHits("kereis");
+
+  assert.equal(mission?.desc, "en cours · MCP");
+});
+
 it("should search the keywords a row never shows", () => {
   assert.ok(labels("développeur").includes("whoami"));
   assert.ok(labels("composition api").includes("Vue.js"));
@@ -85,7 +103,6 @@ it("should stop at the limit", () => {
   assert.equal(rankHits("e", INDEX, 3).length, 3);
 });
 
-// Une brique n'a pas de commande a elle : elle ouvre la stack, et la coquille pose sa fiche.
 it("should send a stack brick to the stack section", () => {
   const [brick] = rankHits("Vue.js", INDEX, 1);
 
@@ -93,7 +110,6 @@ it("should send a stack brick to the stack section", () => {
   assert.equal(brick?.tech, "Vue.js");
 });
 
-// Un succes s'ouvre, il ne se lance pas.
 it("should leave an achievement without a command", () => {
   const found = INDEX.filter((hit) => {
     return hit.kind === "achievement";
@@ -124,6 +140,11 @@ it("should mark the commands that want an argument", () => {
 
 it("should complete only towards a label that starts with the query", () => {
   assert.equal(ghostFor("sta", rankHits("sta", INDEX, 5)), "ck");
+  assert.equal(
+    ghostFor("sta ", rankHits("sta ", INDEX, 5)),
+    "",
+    "a query with spaces around it would paint the ghost one column off",
+  );
   assert.equal(ghostFor("api", rankHits("api", INDEX, 5)), "", "a keyword match completes nothing");
   assert.equal(ghostFor("", INDEX), "");
 });

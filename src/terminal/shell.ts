@@ -34,9 +34,12 @@ export interface Shared {
   anim: boolean;
   blowUp(via: TrackSource): void;
   details: Section[];
-  // Les trouvailles affichees. L'accesseur vit dans app.ts : aucune tranche n'en porte.
+  // Les deux accesseurs de la recherche globale. Ils vivent dans app.ts : aucune tranche n'en
+  // porte, et une tranche qui les recalculerait classerait l'index une seconde fois.
+  globalGhost: string;
   globalHits: GlobalEntry[];
   input: string;
+  missions: { id: string; state?: string }[];
   modelState: string;
   out: boolean;
   reduced: boolean;

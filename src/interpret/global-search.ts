@@ -8,6 +8,7 @@
 
 import { ASK, ASK_MODEL, vocabulary } from "./vocabulary.ts";
 import { ACHIEVEMENTS } from "./achievements.ts";
+import type { Entry } from "./context.ts";
 import { fold } from "./fold.ts";
 import { hintFor } from "./completion.ts";
 
@@ -21,7 +22,6 @@ export interface GlobalEntry {
   keys: string;
   kind: GlobalKind;
   label: string;
-  // La commande attend un argument : la ligne se remplit, et le visiteur finit de taper.
   needsArgument: boolean;
   // La fiche techno a ouvrir une fois la section stack affichee. Vide ailleurs.
   tech: string;
@@ -53,12 +53,14 @@ const NEEDS_ARGUMENT = new Set([
   "theme",
 ]);
 
-// Ce que la coquille sait et que l'interpreteur ne peut pas deviner. Les formes sont celles
-// de content.json, moins ce qui ne se cherche pas.
+// Ce que la coquille apprend a la recherche globale. « Entry » est le contrat que
+// « context » declare deja : le redeclarer ici ferait un troisieme contrat.
 export interface GlobalSource {
-  details: { ask?: string; cmd?: string; id: string; label: string; sub?: string }[];
+  details: (Entry & { sub?: string })[];
+  // L'etat d'une mission, tel que le volet gauche l'affiche. Les fiches ne le portent pas.
+  missions: { id: string; state?: string }[];
   model: boolean;
-  sections: { ask?: string; cmd?: string; id: string; label: string; sub?: string }[];
+  sections: (Entry & { sub?: string })[];
   techNotes: Record<string, { note?: string; where?: string }>;
   themes: { id: string; label: string }[];
 }
@@ -66,14 +68,26 @@ export interface GlobalSource {
 const entry = (partial: Omit<GlobalEntry, "needsArgument" | "tech"> & Partial<GlobalEntry>) => {
   return { needsArgument: false, tech: "", ...partial } satisfies GlobalEntry;
 };
+// Le champ « cmd » du contenu est l'echo decoratif d'une section : « bd log --graph » n'ouvre
+// rien, le repartiteur n'accepte que l'identifiant. Seul « bd <id> » se soumet.
+const open = (id: string) => {
+  return `bd ${id}`;
+};
 
 export const globalIndex = (source: GlobalSource): GlobalEntry[] => {
-  const { details, model, sections, techNotes, themes } = source;
+  const { details, missions, model, sections, techNotes, themes } = source,
+    stateOf = (id: string) => {
+      return (
+        missions.find((mission) => {
+          return mission.id === id;
+        })?.state ?? ""
+      );
+    };
 
   return [
     ...sections.map((section) => {
       return entry({
-        cmd: section.cmd ?? `bd ${section.id}`,
+        cmd: open(section.id),
         desc: section.sub ?? "",
         keys: `${section.id} ${section.ask ?? ""}`,
         kind: "section",
@@ -82,8 +96,8 @@ export const globalIndex = (source: GlobalSource): GlobalEntry[] => {
     }),
     ...details.map((detail) => {
       return entry({
-        cmd: detail.cmd ?? `bd ${detail.id}`,
-        desc: detail.sub ?? "",
+        cmd: open(detail.id),
+        desc: detail.sub ?? stateOf(detail.id),
         keys: `${detail.id} ${detail.ask ?? ""}`,
         kind: "mission",
         label: detail.label,
@@ -133,9 +147,9 @@ export const globalIndex = (source: GlobalSource): GlobalEntry[] => {
   ];
 };
 
-// La saisie telle que le classement la lit : sans le slash qui cible la ligne de commande,
-// sans les espaces en trop.
-export const globalQuery = (raw: string): string => {
+// La saisie telle que le classement la lit : sans le prefixe qui cible la ligne de
+// commande, « / » ou « : », et sans les espaces en trop.
+const globalQuery = (raw: string): string => {
   return raw.replace(/^[/:]/u, "").replaceAll(/\s+/gu, " ").trim();
 };
 
@@ -186,16 +200,19 @@ export const rankHits = (raw: string, index: GlobalEntry[], limit: number): Glob
     });
 };
 
-// La fin du premier resultat, affichee derriere la saisie et acceptee par Tab. Elle
-// n'apparait que si ce resultat commence par la saisie : completer vers un mot sans rapport
-// se lirait comme une erreur de frappe.
+// La fin de la premiere trouvaille, affichee derriere la saisie et acceptee par Tab. Elle
+// n'apparait que si cette trouvaille commence par la saisie : completer vers un libelle sans
+// rapport se lirait comme une erreur de frappe.
+//
+// Une saisie bordee d'espaces n'en produit aucune : le calque peint la saisie telle quelle,
+// donc la suite tomberait une colonne trop loin.
 export const ghostFor = (raw: string, hits: GlobalEntry[]): string => {
   const query = globalQuery(raw),
     [first] = hits;
 
-  if (query === "" || !first || !fold(first.label).startsWith(fold(query))) {
+  if (query === "" || raw.trim() !== raw || !first) {
     return "";
   }
 
-  return first.label.slice(query.length);
+  return fold(first.label).startsWith(fold(query)) ? first.label.slice(query.length) : "";
 };

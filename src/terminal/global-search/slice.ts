@@ -4,14 +4,12 @@
 // l'echo, le resultat, le journal et les succes restent ceux du terminal. Ce qui n'est pas
 // une commande ouvre la zone qui lui correspond.
 
-import { type GlobalEntry, ghostFor, globalIndex } from "../../interpret.ts";
+import { type GlobalEntry, globalIndex } from "../../interpret.ts";
 import type { Shell } from "../shell.ts";
 import { THEMES } from "../settings.ts";
 
 export interface GlobalSearchState {
-  // Le rang de la trouvaille selectionnee, dans la liste affichee.
   globalAt: number;
-  // L'index cherchable, calcule une fois le contenu charge.
   globalIndexed: GlobalEntry[];
   globalOpen: boolean;
   globalQuery: string;
@@ -23,7 +21,7 @@ export interface GlobalSearchApi {
   globalComplete(): void;
   globalKey(event: KeyboardEvent): void;
   globalMove(step: number): void;
-  openGlobal(via: string): void;
+  openGlobal(): void;
   reindexGlobal(): void;
   runGlobal(entry: GlobalEntry | undefined): void;
 }
@@ -41,16 +39,12 @@ export const globalSearchSlice = () => {
       });
     },
 
-    // Tab accepte la complétion fantôme, et rien d'autre : compléter vers un libellé qui ne
-    // commence pas par la saisie se lirait comme une erreur de frappe.
     globalComplete(this: Shell) {
-      const ghost = ghostFor(this.globalQuery, this.globalHits);
-
-      if (ghost === "") {
+      if (this.globalGhost === "") {
         return;
       }
 
-      this.globalQuery = `${this.globalQuery.trim()}${ghost}`;
+      this.globalQuery = `${this.globalQuery}${this.globalGhost}`;
       this.globalAt = 0;
     },
 
@@ -69,13 +63,20 @@ export const globalSearchSlice = () => {
         return;
       }
 
-      // Sans fantôme, Tab garde son rôle de navigation : le retenir piégerait le focus dans
-      // un champ qui ne propose rien.
-      if (event.key === "Tab" && !event.shiftKey) {
-        if (ghostFor(this.globalQuery, this.globalHits) !== "") {
-          event.preventDefault();
+      // Tab accepte le fantôme quand il y en a un. Sans fantôme, le focus reste enfermé : la
+      // zone est modale, et les deux autres bouclent déjà de la même façon.
+      if (event.key === "Tab") {
+        event.preventDefault();
+
+        if (!event.shiftKey && this.globalGhost !== "") {
           this.globalComplete();
+
+          return;
         }
+
+        const close = this.$refs["globalClose"];
+
+        (document.activeElement === close ? this.$refs["globalField"] : close)?.focus();
 
         return;
       }
@@ -103,8 +104,8 @@ export const globalSearchSlice = () => {
       });
     },
 
-    openGlobal(this: Shell, via: string) {
-      this.track("recherche_globale", { via });
+    openGlobal(this: Shell) {
+      this.track("recherche_globale");
       this.globalReturn =
         document.activeElement instanceof HTMLElement ? document.activeElement : undefined;
       this.globalQuery = "";
@@ -118,6 +119,7 @@ export const globalSearchSlice = () => {
     reindexGlobal(this: Shell) {
       this.globalIndexed = globalIndex({
         details: this.details,
+        missions: this.missions,
         model: this.modelState === "available",
         sections: this.sections,
         techNotes: this.techNotes,
@@ -130,7 +132,6 @@ export const globalSearchSlice = () => {
         return;
       }
 
-      // Un succès s'ouvre, il ne se lance pas : le catalogue n'a pas de commande.
       if (entry.kind === "achievement") {
         this.closeGlobal();
         this.openAchievements("recherche");
@@ -138,8 +139,6 @@ export const globalSearchSlice = () => {
         return;
       }
 
-      // Un nom qui attend un argument ne veut rien dire seul. La ligne se remplit, et le
-      // visiteur finit de taper : le soumettre rendrait une erreur ou l'aide.
       if (entry.needsArgument) {
         this.input = `${entry.cmd} `;
         this.closeGlobal();
@@ -152,8 +151,7 @@ export const globalSearchSlice = () => {
       this.submit({ typed: false });
       this.unlock("global-search");
 
-      // La brique n'a pas de commande à elle : la section stack s'ouvre, puis sa fiche se
-      // pose. Sans le tick, la grille n'existe pas encore et la fiche se perd.
+      // Sans le tick, la grille de la stack n'existe pas encore et la fiche se perd.
       if (entry.tech !== "") {
         this.$nextTick(() => {
           this.tech = entry.tech;

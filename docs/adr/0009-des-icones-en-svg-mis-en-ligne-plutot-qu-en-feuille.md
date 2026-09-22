@@ -4,7 +4,7 @@
 
 ## Le problème
 
-Les succès demandent vingt-neuf icônes en pixel art : une par succès, la coupe du badge et
+Les succès demandent trente icônes en pixel art : une par succès, la coupe du badge et
 le cadenas des verrouillés. Elles sont dessinées sur la même grille que la mascotte, seize
 unités de côté.
 

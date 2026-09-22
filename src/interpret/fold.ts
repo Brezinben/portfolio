@@ -1,6 +1,4 @@
-// Le pliage d'un texte pour la comparaison : sans accents, sans casse. « Élève », « eleve »
-// et « ELEVE » doivent se trouver l'un l'autre, ce qui est indispensable sur un corpus
-// francophone.
+// Un corpus francophone se cherche sans accents et sans casse.
 
 export const fold = (text: string): string => {
   return text

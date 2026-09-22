@@ -74,17 +74,40 @@ test("should complete towards the first hit on tab", async ({ page }) => {
   await expect(field(page)).toHaveValue("stack");
 });
 
-// Le cœur de la zone : elle n'exécute rien. La commande part dans le terminal, et c'est lui
-// qui l'affiche. Sans cela, il faudrait écrire une seconde fois la sortie de chaque commande.
-test("should submit the real command into the terminal", async ({ page }) => {
+// Le contenu écrit « bd log --graph » et « bd show mission/kereis » : deux échos décoratifs
+// que le répartiteur refuse. Seul l'identifiant ouvre la zone.
+const OPENS: [string, string][] = [
+  ["whoami", "Concepteur orchestrateur IA"],
+  ["parcours", "2026"],
+  ["contact", "Nantes"],
+  ["kereis", "Kereis"],
+];
+
+for (const [typed, shown] of OPENS) {
+  test(`should submit a command the dispatcher accepts for ${typed}`, async ({ page }) => {
+    await boot(page);
+    await open(page);
+    await field(page).fill(typed);
+    await page.keyboard.press("Enter");
+
+    await expect(zone(page)).toHaveCount(0);
+    await expect(page.locator("[data-pane='main']")).toContainText(shown);
+    await expect(page.locator("[data-journal]")).not.toContainText("inconnue");
+    await expect(page.locator("[data-journal]")).not.toContainText("introuvable");
+  });
+}
+
+// La zone est modale : la tabulation boucle entre le champ et le bouton de fermeture. Sans
+// cela le focus part dans la page derrière, comme il le ferait sans zone du tout.
+test("should keep the tabulation inside the zone", async ({ page }) => {
   await boot(page);
   await open(page);
-  await field(page).fill("whoami");
-  await page.keyboard.press("Enter");
+  await page.keyboard.press("Tab");
 
-  await expect(zone(page)).toHaveCount(0);
-  await expect(page.locator("[data-pane='main']")).toContainText("bd whoami --verbose");
-  await expect(page.locator("[data-pane='main']")).toContainText("Concepteur orchestrateur IA");
+  await expect(page.locator("[data-global] [data-ctl='opt']")).toBeFocused();
+
+  await page.keyboard.press("Tab");
+  await expect(field(page)).toBeFocused();
 });
 
 // « une commande tapée, pas cliquée » : lancer depuis la zone débloque son succès, et ne
@@ -102,7 +125,6 @@ test("should unlock its own achievement and leave the first command alone", asyn
   expect(marks).not.toContain("first-command");
 });
 
-// Un nom qui attend un argument ne veut rien dire seul : la ligne se remplit, et rien ne part.
 test("should only fill the line for a command that wants an argument", async ({ page }) => {
   await boot(page);
   await open(page);

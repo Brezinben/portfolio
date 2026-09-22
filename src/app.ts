@@ -6,6 +6,7 @@ import {
   type Effect,
   type Expression,
   GLOBAL_GROUPS,
+  type GlobalEntry,
   type Line,
   MAX_SUGGESTIONS,
   type Tone,
@@ -320,7 +321,6 @@ document.addEventListener("alpine:init", () => {
     // eslint-disable-next-line sort-keys
     const component = withMagics({
       ACHIEVEMENTS,
-      GLOBAL_GROUPS,
       THEMES,
       TOGGLES,
       achievements: [],
@@ -657,7 +657,7 @@ document.addEventListener("alpine:init", () => {
           if (this.globalOpen) {
             this.closeGlobal();
           } else if (!this.booting) {
-            this.openGlobal("clavier");
+            this.openGlobal();
           }
 
           return;
@@ -1911,9 +1911,9 @@ document.addEventListener("alpine:init", () => {
       // Les groupes vides ne se dessinent pas. Le rang d'une trouvaille reste celui de la
       // liste entiere : c'est lui que les fleches deplacent, pas sa place dans son groupe.
       get globalGroups() {
-        // « rankHits » et non « this.globalHits » : l'accesseur se lit dans le meme litteral,
-        // et TypeScript ne peut pas en deduire le type sans tourner en rond.
-        const found = rankHits(this.globalQuery, this.globalIndexed, GLOBAL_LIMIT);
+        // L'annotation casse la circularite : sans elle, TypeScript deduit l'accesseur depuis
+        // le litteral qui le contient, et rend « any ».
+        const found: GlobalEntry[] = this.globalHits;
 
         return GLOBAL_GROUPS.map((group) => {
           return {

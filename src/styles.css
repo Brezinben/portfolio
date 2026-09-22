@@ -2308,7 +2308,7 @@ html[data-vt-theme]::view-transition-new(root) {
   color: var(--fg2);
 }
 
-/* La part deja tapee est rendue transparente : la suite tombe a la bonne colonne sans que
+/* La part déjà tapée est rendue transparente : la suite tombe à la bonne colonne sans que
  rien ne mesure le texte. */
 .tm [data-global-ghost] {
   position: absolute;
@@ -2332,6 +2332,13 @@ html[data-vt-theme]::view-transition-new(root) {
   padding: 1px 6px;
   border: 1px solid var(--edge);
   font-size: 11px;
+}
+
+/* Le défilement reste sur le listbox, jamais sur l'enveloppe : axe refuse une zone qui
+ défile sans être atteignable au clavier, et le listbox l'est par son combobox. */
+.tm [data-global-body] {
+  display: grid;
+  min-height: 0;
 }
 
 .tm [data-global-list] {
@@ -2410,7 +2417,7 @@ html[data-vt-theme]::view-transition-new(root) {
 }
 
 /* Sur le fond d'accent, l'encre en retrait tombe sous le rapport de contraste : la ligne
- selectionnee est justement celle qui doit se lire. */
+ sélectionnée est justement celle qui doit se lire. */
 .tm [data-global-row][aria-selected="true"] [data-global-desc],
 .tm [data-global-row][aria-selected="true"] [data-global-tag] {
   color: var(--fg);

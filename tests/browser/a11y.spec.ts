@@ -22,6 +22,19 @@ const THEMES = ["dark", "light", "noctis", "azureus", "uva", "bordo", "lux", "hi
   // Le scan mesure la couleur telle qu'elle est peinte. Lancé pendant le fondu d'entrée, il
   // lit des valeurs à mi-opacité et rapporte des écarts qui n'existent pas. On attend donc
   // les animations qui finissent ; le curseur et la mascotte, eux, ne finissent jamais.
+  typedIsClean = async (page: Page, typed: string) => {
+    await page.locator("[data-global-input]").fill(typed);
+    await settled(page);
+
+    const { violations } = await scan(page);
+
+    expect(
+      violations.map((entry) => {
+        return `${entry.id}: ${entry.nodes.length}`;
+      }),
+      `the global search is clean with « ${typed} » typed`,
+    ).toEqual([]);
+  },
   settled = (page: Page) => {
     return page.evaluate(() => {
       return Promise.all(
@@ -217,8 +230,8 @@ test("should lead to the text version from the first focusable element", async (
   expect(dehors, "the link must stay off screen without focus").toBe(true);
 });
 
-// La recherche globale est une modale : elle porte un combobox, une liste d'options et un
-// focus capturé. Fermée, le scan de la page ne la voit pas du tout.
+// Fermée, la recherche globale échappe au scan de la page. Les trois états se mesurent : le
+// repos, la liste vide, et la liste pleine — un « listbox » sans option est un défaut ARIA.
 for (const theme of THEMES) {
   test(`should report no accessibility violation in the global search on the ${theme} theme`, async ({
     page,
@@ -226,16 +239,12 @@ for (const theme of THEMES) {
     await withTheme(page, theme);
     await page.keyboard.press("Control+k");
     await expect(page.locator("[data-global]")).toBeVisible();
-    await page.locator("[data-global-input]").fill("sta");
-    await settled(page);
 
-    const { violations } = await scan(page);
-
-    expect(
-      violations.map((entry) => {
-        return `${entry.id}: ${entry.nodes.length}`;
-      }),
-    ).toEqual([]);
+    // Au repos, sans trouvaille, puis avec : un « listbox » sans option est un défaut ARIA,
+    // et seul l'état plein se mesurait.
+    await typedIsClean(page, "");
+    await typedIsClean(page, "zzzzzz");
+    await typedIsClean(page, "sta");
   });
 }
 
