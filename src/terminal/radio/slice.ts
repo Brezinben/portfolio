@@ -110,8 +110,8 @@ const members: RadioApi & ThisType<Shell> = {
       return;
     }
 
-    // Le volet retire ses boutons : le focus qu'ils portaient tomberait sur le corps de la
-    // page. Il passe au contenu de la sortie, qui reparait a leur place.
+    // La radio retire ses boutons. Sans cette garde, le focus tombe sur le corps de la page.
+    // Le focus passe a la sortie, qui reparait a la place de la radio.
     if (document.querySelector(".radio")?.contains(document.activeElement) === true) {
       this.$nextTick(() => {
         (
@@ -233,7 +233,7 @@ const members: RadioApi & ThisType<Shell> = {
   // focus sur la ligne de commande, ou « espace » et « r » se tapent legitimement. Le
   // champ de seed est exclu pour la meme raison.
   radioKey(this: Shell, event: KeyboardEvent) {
-    // Une modale a son propre clavier : « q » y fermait la radio derriere elle.
+    // Une modale a son propre clavier. La bascule des raccourcis coupe aussi ces touches.
     if (event.altKey || event.ctrlKey || event.metaKey || this.modalOpen || !this.shortcuts) {
       return;
     }

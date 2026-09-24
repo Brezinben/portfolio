@@ -40,7 +40,7 @@ export interface Shared {
   globalHits: GlobalEntry[];
   input: string;
   missions: { id: string; state?: string }[];
-  // Vrai tant qu'une des trois modales est ouverte : le reste de la page se tait.
+  // Vrai tant qu'une des trois modales est ouverte : le reste de la page devient inerte.
   modalOpen: boolean;
   modelState: string;
   out: boolean;

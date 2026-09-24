@@ -65,8 +65,7 @@ export const interpret = (raw: string, context: Context): Outcome => {
     });
 
   // Sept lignes ne tiennent pas dans le journal d'un ecran large. La reponse va donc dans
-  // le resultat. Le journal, seule region live, dit ou elle est : sinon un lecteur d'ecran
-  // n'entend que l'echo.
+  // le resultat. Le resultat n'est pas une region live : le journal dit ou lire la reponse.
   if (command === "help") {
     return {
       ...out([muted("aide affichée dans le résultat")], [say("essaie « /joke »", "happy")]),

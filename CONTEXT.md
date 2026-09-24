@@ -244,7 +244,7 @@ _Avoid_: hotkey, touche rapide, binding.
 
 ### Le focus et le clavier
 
-Ces règles valent pour tout élément intérieur. `tests/browser/clavier.spec.ts` les vérifie.
+Ces règles valent pour tout élément intérieur. `tests/browser/clavier.spec.ts` vérifie les règles 1 à 7 et 10, et la règle 9 dans les options. `layout.spec.ts` vérifie la règle 8.
 
 1. Tab et Shift+Tab ne sont jamais avalés. Seule exception : une proposition existe, et Tab
    la complète. Shift+Tab n'est jamais une complétion.
@@ -255,7 +255,7 @@ Ces règles valent pour tout élément intérieur. `tests/browser/clavier.spec.t
 5. Retirer un élément qui a le focus déplace d'abord le focus vers un élément connu. Le
    focus ne tombe jamais sur le corps de la page.
 6. Une seule modale à la fois. Tant qu'elle est ouverte, le reste de la page est inerte.
-   Un contrôle désactivé sort de toute boucle de tabulation.
+   Un élément intérieur désactivé sort de toute boucle de tabulation.
 7. Entrée appartient à l'élément qui a le focus.
 8. Un contour de focus prend `--acc-text`, jamais `--acc`, et tient 3:1 contre le fond.
 9. Une liste parcourue aux flèches n'a qu'un arrêt de tabulation.

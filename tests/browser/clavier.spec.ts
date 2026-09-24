@@ -23,6 +23,20 @@ for (const key of ["Tab", "Shift+Tab"]) {
   });
 }
 
+// Une ligne vidée garde tout le vocabulaire en réserve : Tab ne doit pas en tirer une commande.
+test("should leave the command line on Tab once the line is cleared", async ({ page }) => {
+  await boot(page);
+
+  const cli = page.locator("#cli");
+
+  await cli.pressSequentially("a");
+  await cli.press("Backspace");
+  await cli.press("Tab");
+
+  expect(await focusedId(page)).not.toBe("cli");
+  await expect(cli).toHaveValue("");
+});
+
 test("should never keep Shift+Tab in the command line, even with a proposal", async ({ page }) => {
   await boot(page);
   await page.locator("#cli").pressSequentially("/sl");
@@ -75,8 +89,8 @@ test("should scroll the result with the down arrow", async ({ page }) => {
     .toBeGreaterThan(0);
 });
 
-// Sous mouvement réduit, la bascule des animations est désactivée. Le piège de Tab la
-// visait quand même, et le focus restait sur place.
+// Sous mouvement réduit, la bascule des animations est désactivée. Le piège de Tab doit la
+// sauter, sinon le focus reste sur place.
 test("should move the focus on every Tab in the options under reduced motion", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await boot(page);
@@ -147,8 +161,9 @@ test("should only close the global search on Enter over its close button", async
     .focus();
   await page.keyboard.press("Enter");
 
+  // Une trouvaille lancée changerait de section dans le même geste.
   await expect(page.locator("[data-global]")).toHaveCount(0);
-  await expect(page.locator("[data-pane='main']")).not.toContainText("bd stack");
+  await expect(page.locator('[data-ctl="nav"][aria-current="true"]')).toContainText("whoami");
 });
 
 // Une modale à la fois, et la page derrière elle ne prend plus le focus.
@@ -169,7 +184,8 @@ test("should ignore the single-key shortcuts once they are turned off", async ({
   await boot(page);
   await page.locator("body").press("j");
 
-  await expect(page.locator("[data-pane='main']")).not.toContainText("bd log --graph");
+  // La section change dans le gestionnaire de touche : l'état se lit dès que la touche rend.
+  await expect(page.locator('[data-ctl="nav"][aria-current="true"]')).toContainText("whoami");
 });
 
 // Une annonce passe par une région toujours montée : insérée déjà remplie, elle se tait.
@@ -179,4 +195,17 @@ test("should announce the number of hits of the global search", async ({ page })
   await page.getByRole("combobox", { name: "Recherche globale" }).fill("zzzzzz");
 
   await expect(page.getByRole("dialog").getByRole("status")).toHaveText("aucune trouvaille");
+});
+
+// La grille des thèmes se parcourt aux flèches : Tab la traverse en un seul pas.
+test("should cross the theme grid with a single Tab", async ({ page }) => {
+  await boot(page);
+  await page.getByRole("button", { name: "options" }).click();
+
+  const dialog = page.getByRole("dialog", { name: "Options d'affichage" });
+
+  await dialog.locator("[data-theme-choice]").first().focus();
+  await dialog.press("Tab");
+
+  await expect(dialog.locator("[data-toggle]").first()).toBeFocused();
 });

@@ -22,9 +22,9 @@
   top: 0;
 }
 
-/* Le titre de la page. Le bandeau de whoami est une image de points : il ne porte pas
- le niveau un. Masqué à l'œil, jamais au lecteur d'écran, et hors du flux pour ne pas
- peser sur la mise en page des volets. */
+/* Masqué à l'œil, jamais au lecteur d'écran, et hors du flux. Le titre : le bandeau de
+ whoami est une image de points, qui ne porte pas le niveau un. Le décompte des
+ trouvailles : seul un lecteur d'écran en a besoin. */
 .titre,
 .tm [data-said] {
   position: absolute;
@@ -1615,10 +1615,8 @@ a:hover {
  bloc et non par la couronne. */
 
 /* Tout contour de focus prend l'ambre textuel. L'ambre décoratif du thème clair tient
- 2:1 contre le panneau, sous les 3:1 qu'un indicateur de focus demande (WCAG 1.4.11).
- Le journal, la poignée et le résultat y entrent : sans eux, les éléments focalisables
- du volet central retombaient sur l'anneau du navigateur, invisible sur un fond
- sombre. */
+ 2:1 contre le fond d'une zone, sous les 3:1 de WCAG 1.4.11. Sans cette règle, un
+ élément de la liste prend l'anneau du navigateur, invisible sur fond sombre. */
 .tm [data-ctl]:focus-visible,
 .tm [data-handle]:focus-visible,
 .tm [data-cli]:focus-within,

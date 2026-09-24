@@ -986,7 +986,10 @@
       <footer data-tone="fg2" :inert="modalOpen">
         <p data-footer-keys>
           <span data-glyph="acc">←→</span> volet · <span data-glyph="acc">↑↓</span> parcourir ·
-          <span data-tone="acc">j/k</span> section · <span data-glyph="acc">/</span> saisie ·
+          <span x-show="shortcuts"
+            ><span data-tone="acc">j/k</span> section · <span data-glyph="acc">/</span> saisie
+            ·</span
+          >
           <span data-tone="acc">help</span>
         </p>
         <p data-footer-links>

@@ -521,8 +521,8 @@ document.addEventListener("alpine:init", () => {
         }
       },
 
-      // Le volet courant se lit sur le focus : Tab et la souris le deplacent sans
-      // passer par focusPane, et le volet memorise devenait faux.
+      // Le volet courant se lit sur le focus : Tab et la souris deplacent le focus sans
+      // passer par focusPane.
       moveInPane(step: number) {
         const pane = paneOf(document.activeElement) ?? this.pane,
           entries = this.items(pane);
@@ -669,7 +669,7 @@ document.addEventListener("alpine:init", () => {
 
           if (this.globalOpen) {
             this.closeGlobal();
-          } else if (!this.booting && !this.optsOpen && !this.achievementsOpen) {
+          } else if (!this.booting && !this.modalOpen) {
             this.openGlobal();
           }
 
@@ -677,7 +677,7 @@ document.addEventListener("alpine:init", () => {
         }
 
         // Un element qui traite sa touche l'a deja consommee. Sans cette sortie, la
-        // fleche qui redimensionne le journal changeait aussi le focus de volet.
+        // fleche de la poignee deplace aussi le focus de volet.
         if (event.altKey || event.ctrlKey || event.metaKey || event.defaultPrevented) {
           return;
         }
@@ -800,7 +800,7 @@ document.addEventListener("alpine:init", () => {
       },
 
       // Une grille à flèches n'a qu'un arrêt de tabulation : la brique suivie, sinon la
-      // première. Cinquante-sept arrêts rendaient la stack interminable au clavier.
+      // première.
       get techStop() {
         const names = this.stack.flatMap((root: Brick) => {
           return root.kids;
@@ -1811,16 +1811,23 @@ document.addEventListener("alpine:init", () => {
           return;
         }
 
+        // La grille des thèmes se parcourt aux flèches : Tab n'y garde qu'un arrêt, le thème
+        // qui a le focus, sinon le thème choisi.
         if (event.key === "Tab") {
-          const focusable = [
+          const active = document.activeElement,
+            inThemes = active instanceof HTMLElement && active.matches("[data-theme-choice]"),
+            focusable = [
               ...document.querySelectorAll<HTMLElement>(
                 "[data-opts] [data-ctl='opt']:not(:disabled)",
               ),
-            ],
-            at =
-              document.activeElement instanceof HTMLElement
-                ? focusable.indexOf(document.activeElement)
-                : -1,
+            ].filter((node) => {
+              if (!node.matches("[data-theme-choice]")) {
+                return true;
+              }
+
+              return inThemes ? node === active : node.getAttribute("aria-pressed") === "true";
+            }),
+            at = active instanceof HTMLElement ? focusable.indexOf(active) : -1,
             next = (at + (event.shiftKey ? -1 : 1) + focusable.length) % focusable.length;
 
           event.preventDefault();
@@ -2790,10 +2797,11 @@ document.addEventListener("alpine:init", () => {
         this.complete();
       },
 
-      // Sans proposition, Tab garde son role de navigation : l'avaler enfermait le
-      // visiteur dans la ligne. Shift+Tab n'est jamais une completion.
+      // Sans proposition, Tab garde son role de navigation : avaler Tab enferme le visiteur
+      // dans la ligne. Une ligne vide garde tout le vocabulaire en reserve, et n'en propose
+      // rien. Shift+Tab n'est jamais une completion.
       tab(event: KeyboardEvent) {
-        if (event.shiftKey || this.sugg.length === 0) {
+        if (event.shiftKey || this.input === "" || this.sugg.length === 0) {
           return;
         }
 

@@ -46,3 +46,10 @@ Type: task
 
 Chaque correctif a un test Playwright qui échoue avant et passe après. Les modales
 passent en `<dialog>` avec `showModal()`. Les règles de focus vont dans CONTEXT.md.
+
+## Comments
+
+2026-09-24 : les modales restent des `div`. `inert` sur `main` et le pied de page, avec
+une garde sur Ctrl+K, règle l'empilement et l'arrière-plan actif. Passer les trois modales
+en `<dialog>` réécrivait leur style pour le même gain. L'en-tête hors du composant, avec le
+lien d'évitement, reste hors de `inert`.
