@@ -57,3 +57,9 @@ gardent `var(--acc)`. Les régions de texte — le journal et la sortie — pren
 `tests/browser/layout.spec.ts` lit la couleur du contour sur les trois éléments, en
 sombre et en clair. En sombre les deux ambres coïncident ; c'est le clair qui prouve la
 règle.
+
+## Comments
+
+2026-09-24 : la conclusion sur `[data-ctl]` est annulée. En thème clair, `var(--acc)`
+donne 1,9 à 2,1:1 contre le fond, sous le 3:1 d'un indicateur de focus. Tous les
+contours prennent `var(--acc-text)`. Voir `.scratch/revue-critique/issues/01`.
