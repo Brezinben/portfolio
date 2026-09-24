@@ -378,12 +378,12 @@
         humains comme par les agents.
       </p>
       <p>
-        Je conçois, j'orchestre, je livre. La spécification avant le code : les agents produisent
+        Je conçois, j'orchestre, je livre. La spécification avant le code : les agents produisent
         dans les contraintes que je pose.
       </p>
       <p>
         Huit ans de production, d'abord côté réseau, aujourd'hui autour de l'IA. Le métier bouge
-        trop vite pour se reposer sur l'an dernier.
+        trop vite pour se reposer sur ce qu'on savait l'an dernier.
       </p>
       <p>
         L'accessibilité, la performance et la qualité du code sont des contraintes de départ, pas
@@ -435,8 +435,8 @@
             pôle <abbr title="Direction des systèmes d'information">DSI</abbr> · via digital4better
           </p>
           <p>
-            Kereis construit plutôt qu'il n'achète. On me demande de prouver par le code ce qu'une
-            licence coûteuse ne ferait qu'à moitié.
+            Kereis construit plutôt qu'elle n'achète : on me demande de tester par le code avant de
+            payer une licence très chère pour une fonction peu utilisée.
           </p>
           <ul>
             <li>
@@ -444,12 +444,12 @@
               : l'IA produit sous contrainte, un humain relit.
             </li>
             <li>
-              Serveurs MCP : les outils internes s'ouvrent aux agents. Le point dur est
-              l'autorisation, pas l'exposition.
+              Serveurs MCP : les outils internes s'ouvrent aux agents. La partie la plus délicate
+              est l'autorisation.
             </li>
             <li>
-              Simulateur de tarif d'assurance de prêt. L'utilisateur décrit son projet en langage
-              naturel, le MCP répond un tarif.
+              Plugin ChatGPT de simulation de tarif d'assurance de prêt : l'utilisateur décrit son
+              projet en langage naturel, un serveur MCP propose un premier tarif.
             </li>
             <li>
               Cartographie du <abbr title="système d'information">SI</abbr> sous Backstage. Sources
@@ -459,10 +459,7 @@
               Application de compte rendu. Le texte dicté est nettoyé, l'e-mail rédigé, la réunion
               suivante préparée.
             </li>
-            <li>
-              Revue de spécification par l'IA : ~20 min là où un humain passerait une journée. Étape
-              obligatoire à chaque fonctionnalité.
-            </li>
+            <li>Revue de spécification par l'IA, étape obligatoire à chaque fonctionnalité.</li>
           </ul>
           <dl>
             <dt>Statut</dt>
@@ -487,43 +484,40 @@
             Développeur Full Stack · via digital4better
           </p>
           <p>
-            Réservation de prestations d'assistance pour les personnes en situation de handicap
-            (PSH/PMR) souhaitant accéder à leur train.
+            Réservation de prestations d'assistance pour les personnes handicapées ou à mobilité
+            réduite (PSH/PMR) souhaitant accéder à leur train.
           </p>
           <ul>
             <li>
               Front grand public de Gares &amp; Connexions. La déclaration d'accessibilité affiche
-              96 % de conformité moyenne au
+              96 % de conformité moyenne au
               <abbr title="Référentiel général d'amélioration de l'accessibilité">RGAA</abbr> 4.1,
               sous audits successifs.
             </li>
+            <li>Règles axe au linter, essais au lecteur d'écran sous NVDA et TalkBack.</li>
             <li>
-              Règles axe au linter, essais au lecteur d'écran sous NVDA et TalkBack. Le critère
-              d'accessibilité entre dans la spécification, pas dans le correctif.
+              Au-delà du RGAA, des aides pour tous : copie automatique des références, vocalisation
+              correcte des marques.
             </li>
             <li>
-              MUI ne couvre pas tout le référentiel. Le reste s'écrit à la main : copie des
-              références, vocalisation correcte des marques.
-            </li>
-            <li>
-              La brique parle à tout le SI SNCF. Le spécifique devient générique : ActiveMQ réécrit
+              La brique parle à tout le SI SNCF. Le spécifique devient générique : ActiveMQ réécrit
               d'AMQP vers STOMP, routage dynamique par entité métier.
             </li>
             <li>
-              Voyage en deux segments SNCF et Trenitalia : chaque transporteur ne reçoit que le
+              Voyage en deux segments SNCF et Trenitalia : chaque transporteur ne reçoit que le
               segment qui le concerne.
             </li>
             <li>
-              Validation automatique des dossiers d'assistance. Environ 3 000 dossiers par jour, une
+              Validation automatique des dossiers d'assistance. Environ 3 000 dossiers par jour, une
               dizaine de notifications chacun, et davantage en vacances.
             </li>
             <li>Ce volume impose des instances multiples et une observabilité Datadog.</li>
             <li>
-              Le code était bon, mais rien n'empêchait le mauvais code. J'ai posé les règles :
+              Le code était bon, mais rien n'empêchait le mauvais code. J'ai posé les règles :
               Oxlint et oxfmt à la place d'ESLint et Prettier.
             </li>
             <li>
-              Appui aux autres équipes du pôle : migrations JavaScript vers TypeScript, et Vue 2
+              Appui aux autres équipes du pôle : migrations JavaScript vers TypeScript, et Vue 2
               vers Vue 3.
             </li>
           </ul>
@@ -539,9 +533,9 @@
             <dt>Public</dt>
             <dd>voyageurs PSH / PMR</dd>
             <dt>Volume</dt>
-            <dd>~3 000 dossiers / jour</dd>
+            <dd>~3 000 dossiers / jour</dd>
             <dt>RGAA 4.1</dt>
-            <dd>96 % · déclaration publique</dd>
+            <dd>96 % · déclaration publique</dd>
             <dt>Pile</dt>
             <dd>React, MUI, NestJS, PostgreSQL</dd>
           </dl>
@@ -554,12 +548,13 @@
             Développeur Full Stack / IA
           </p>
           <p>
-            Quatre projets clients en parallèle : Body Nature, Dorval AM, PiLeJe et Servier. Quatre
-            piles, quatre historiques. Le RUN oblige à entrer vite dans du code qu'on n'a pas écrit.
+            Quatre projets clients en parallèle : Body Nature, Dorval AM, PiLeJe et Servier. Chaque
+            client a sa pile et son historique : le RUN oblige à entrer vite dans du code qu'on n'a
+            pas écrit.
           </p>
           <ul>
             <li>
-              Supervision : monitoring des performances, détection et analyse des anomalies avant la
+              Supervision : monitoring des performances, détection et analyse des anomalies avant la
               remontée utilisateur.
             </li>
             <li>
@@ -567,13 +562,10 @@
               provisionnés par Ansible.
             </li>
             <li>Évolutions produit sur Body Nature, en échange direct avec l'équipe produit.</li>
-            <li>
-              Éco-conception mesurée avec fruggr, l'outil maison. L'impact d'une application se
-              constate, il ne se déclare pas.
-            </li>
+            <li>Éco-conception mesurée avec fruggr, l'outil maison.</li>
             <li>
               Optimisation des pipelines
-              <abbr title="intégration et livraison continues">CI/CD</abbr> : moins de temps de
+              <abbr title="intégration et livraison continues">CI/CD</abbr> : moins de temps de
               calcul, donc moins de gaspillage.
             </li>
           </ul>
@@ -602,33 +594,33 @@
           <p class="meta">
             <time datetime="2021-09">sept. 2021</time> →
             <time datetime="2023-09">sept. 2023</time> · Full Stack, puis
-            <span lang="en">Technical Lead Developer</span>
+            <span lang="en">tech lead</span>
           </p>
           <p>
-            Première mission hors alternance. Deux produits d'incitation à la mobilité durable :
+            Première mission hors alternance. Deux produits d'incitation à la mobilité durable :
             WeFlo Pro pour les entreprises, IREBY pour les collectivités.
           </p>
           <ul>
             <li>
-              WeFlo Pro : déclaration des trajets au titre du forfait mobilité durable. Laravel, PHP
+              WeFlo Pro : déclaration des trajets au titre du forfait mobilité durable. Laravel, PHP
               et Vue.js.
             </li>
             <li>
-              IREBY : l'usager gagne des points en tram, en bus, à pied ou à vélo, puis les dépense
+              IREBY : l'usager gagne des points en tram, en bus, à pied ou à vélo, puis les dépense
               en boutique. NestJS et Vue 3.
             </li>
             <li>
-              Migration de la V1 vers la V3 : plus de 300 000 utilisateurs transférés, avec leurs
+              Migration de la V1 vers la V3 : plus de 300 000 utilisateurs transférés, avec leurs
               offres et leurs images. Script de transformation écrit et mené seul.
             </li>
-            <li>Branchements aux systèmes des réseaux partenaires : TCL à Lyon, STAR à Rennes.</li>
+            <li>Branchements aux systèmes des réseaux partenaires : TCL à Lyon, STAR à Rennes.</li>
             <li>
               L'interface se configure depuis l'administration. La page reste générique, la vue du
               client se paramètre.
             </li>
             <li>
-              Passage au rôle de lead technique : encadrement de quatre à six développeurs, et la
-              main sur les choix techniques.
+              Passage au rôle de tech lead : encadrement de quatre à six développeurs, et la main
+              sur les choix techniques.
             </li>
             <li>
               Migration Vue 2 vers Vue 3, montées de version Node, renforcements de sécurité après
@@ -645,7 +637,7 @@
             <dt>Encadrement</dt>
             <dd>4 à 6 développeurs</dd>
             <dt>Migration</dt>
-            <dd>+300 000 utilisateurs</dd>
+            <dd>+300 000 utilisateurs</dd>
             <dt>Pile</dt>
             <dd>Laravel, NestJS, Vue 3</dd>
           </dl>
@@ -655,9 +647,9 @@
           <h3>LDC Services</h3>
           <p class="meta">
             <time datetime="2020">2020</time> → <time datetime="2021">2021</time> · Concepteur
-            Développeur d'Application · alternance
+            Développeur d'Applications · alternance
           </p>
-          <p>Développement logiciel classique et qualité du code.</p>
+          <p>En parallèle du Titre Professionnel Concepteur Développeur d'Applications.</p>
         </article>
 
         <article>
@@ -666,7 +658,7 @@
             <time datetime="2018">2018</time> → <time datetime="2020">2020</time> · Technicien
             réseau · alternance
           </p>
-          <p>Comprendre le problème de l'utilisateur avant de le réparer. Tout part de là.</p>
+          <p>En parallèle du BTS SIO option SISR.</p>
         </article>
       </section>
 
@@ -675,23 +667,25 @@
 
         <ul>
           <li>
-            Accessibilité — contrastes vérifiés, navigation clavier complète, focus visibles,
+            Accessibilité : contrastes vérifiés, navigation clavier complète, focus visibles,
             structure sémantique.
           </li>
           <li>
-            Sobriété — aucune vidéo, aucune image, une seule police, animations désactivables.
+            Sobriété : aucune vidéo, aucune photo, une seule police, animations désactivables.
+          </li>
+          <li>Mesure : l'impact environnemental se chiffre avec un outil, fruggr par exemple.</li>
+          <li>Arbitrage : une fonctionnalité qui coûte plus qu'elle n'apporte sort.</li>
+          <li>
+            Fréquentation mesurée par GoatCounter auto-hébergé : aucun cookie, aucun identifiant,
+            aucune donnée revendue.
           </li>
           <li>
-            Mesure — l'impact environnemental d'une application se constate, il ne se déclare pas.
-          </li>
-          <li>
-            Arbitrage — chaque fonctionnalité a un coût ; certaines ne valent pas leur empreinte.
+            Cette page suit vos réglages système : animations réduites, thème clair ou sombre.
           </li>
         </ul>
 
         <p class="dispo">
-          Le numérique responsable n'est pas un supplément : c'est une contrainte de conception, au
-          même titre que la sécurité.
+          Le numérique responsable est une contrainte de conception, au même titre que la sécurité.
         </p>
       </section>
 
@@ -729,7 +723,7 @@
             <dt>MUI</dt>
             <dd>
               <span class="ou">Assist'enGare</span> — Base de composants React. Elle ne couvre pas
-              tout le RGAA : le reste s'écrit à la main.
+              tout le RGAA : le reste s'écrit à la main.
             </dd>
             <dt>TypeScript</dt>
             <dd>
@@ -738,9 +732,9 @@
             </dd>
             <dt>Vue.js</dt>
             <dd>
-              <span class="ou">Transway, Kereis, appui SNCF</span> — Framework principal sur la
-              majorité des interfaces livrées. <span lang="en">Composition API</span>, stores,
-              routage. Migration Vue 2 vers Vue 3 faite deux fois.
+              <span class="ou">Transway, appui SNCF</span> — Framework principal sur la majorité des
+              interfaces livrées. <span lang="en">Composition API</span>, stores, routage. Migration
+              Vue 2 vers Vue 3 faite deux fois.
             </dd>
             <dt>React</dt>
             <dd>
@@ -754,8 +748,8 @@
             </dd>
             <dt>Pinia</dt>
             <dd>
-              <span class="ou">Transway, Kereis</span> — Gestion d'état des applications Vue :
-              sessions, réservations, cache local.
+              <span class="ou">Transway</span> — Gestion d'état des applications Vue : sessions,
+              cache local.
             </dd>
             <dt>RxJS</dt>
             <dd>
@@ -775,8 +769,8 @@
           <dl>
             <dt>Laravel</dt>
             <dd>
-              <span class="ou">LDC Services, digital4better</span> — API et back-offices : Eloquent,
-              files de traitement, authentification.
+              <span class="ou">LDC Services, Transway (WeFlo Pro), digital4better</span> — API et
+              back-offices : Eloquent, files de traitement, authentification.
             </dd>
             <dt>NestJS</dt>
             <dd>
@@ -791,7 +785,7 @@
             <dt>API REST</dt>
             <dd>
               <span class="ou">toutes les missions</span> — Contrats documentés en OpenAPI avant
-              l'implémentation — la spec précède le code.
+              l'implémentation : la spec précède le code.
             </dd>
             <dt>OpenAPI</dt>
             <dd>
@@ -805,7 +799,7 @@
             </dd>
             <dt>PostgreSQL</dt>
             <dd>
-              <span class="ou">Transway, SNCF</span> — Base de référence : requêtes analytiques,
+              <span class="ou">Transway, SNCF</span> — Base de référence : requêtes analytiques,
               index, migrations versionnées.
             </dd>
             <dt>MySQL</dt>
@@ -831,24 +825,24 @@
           <dl>
             <dt>Serveurs MCP</dt>
             <dd>
-              <span class="ou">Kereis, 2026</span> — Exposition des outils internes aux agents :
+              <span class="ou">Kereis, 2026</span> — Exposition des outils internes aux agents :
               tools, resources, prompts, avec les garde-fous d'accès.
             </dd>
             <dt>SpecKit</dt>
             <dd>
-              <span class="ou">Kereis, 2026</span> — spec-it, plan, tasks. La spécification devient
+              <span class="ou">Kereis, 2026</span> — specify, plan, tasks. La spécification devient
               l'artefact de référence, le code en découle.
             </dd>
             <dt><abbr title="Specification-Driven Development">SDD</abbr></dt>
             <dd>
               <span class="ou">Kereis</span> —
-              <span lang="en">Specification-Driven Development</span> : décrire l'intention, faire
+              <span lang="en">Specification-Driven Development</span> : décrire l'intention, faire
               valider, puis générer et vérifier.
             </dd>
             <dt>Claude</dt>
             <dd>
-              <span class="ou">Kereis, 2026</span> — Toute la gamme Anthropic : l'agent en terminal
-              pour le code, l'application pour la spec. Le cadrage vient des règles du dépôt, qui
+              <span class="ou">Kereis, 2026</span> — Toute la gamme Anthropic : Claude Code pour le
+              code, Claude Design pour les maquettes. Le cadrage vient des règles du dépôt, qui
               survivent à la session.
             </dd>
             <dt>herdr</dt>
@@ -873,14 +867,13 @@
             </dd>
             <dt>Agents</dt>
             <dd>
-              <span class="ou">Kereis</span> — Revue automatisée de spécification : ~20 min contre
-              une journée humaine, à chaque fonctionnalité.
+              <span class="ou">Kereis</span> — Revue automatisée de spécification, à chaque
+              fonctionnalité.
             </dd>
             <dt><span lang="en">Harness engineering</span></dt>
             <dd>
-              <span class="ou">Kereis, 2026</span> — Construire la machinerie autour du modèle :
-              nettoyage de l'entrée, enchaînement des étapes, contrôle de la sortie. C'est cette
-              machinerie qui rend le résultat livrable.
+              <span class="ou">Kereis, 2026</span> — Construire la machinerie autour du modèle :
+              nettoyage de l'entrée, enchaînement des étapes, contrôle de la sortie.
             </dd>
             <dt>Évaluation</dt>
             <dd>
@@ -920,7 +913,7 @@
             </dd>
             <dt>GitHub Actions</dt>
             <dd>
-              <span class="ou">projets personnels</span> — Mêmes étapes que GitLab CI : tests,
+              <span class="ou">projets personnels</span> — Mêmes étapes que GitLab CI : tests,
               construction, publication.
             </dd>
             <dt>AWS</dt>
@@ -931,7 +924,6 @@
             <dt>Linux</dt>
             <dd>
               <span class="ou">depuis FPEE, 2018</span> — Administration, scripts Bash, accès SSH.
-              Le socle du reste.
             </dd>
             <dt>Bash</dt>
             <dd>
@@ -945,7 +937,7 @@
             </dd>
             <dt>Datadog</dt>
             <dd>
-              <span class="ou">Assist'enGare</span> — Observabilité d'un service à fort volume :
+              <span class="ou">Assist'enGare</span> — Observabilité d'un service à fort volume :
               traces, alertes, dimensionnement des instances.
             </dd>
             <dt>Monitoring</dt>
@@ -972,13 +964,13 @@
             </dd>
             <dt>Cypress</dt>
             <dd>
-              <span class="ou">Transway</span> — Tests de bout en bout sur les parcours critiques —
-              réservation, authentification.
+              <span class="ou">Transway</span> — Tests de bout en bout sur les parcours critiques,
+              dont l'authentification.
             </dd>
             <dt>ESLint</dt>
             <dd>
-              <span class="ou">toutes les missions</span> — Règles partagées : la revue humaine se
-              concentre sur le fond, pas sur la forme.
+              <span class="ou">toutes les missions</span> — Règles partagées : la revue humaine n'a
+              plus à discuter de la forme.
             </dd>
             <dt>Oxlint</dt>
             <dd>
@@ -987,8 +979,8 @@
             </dd>
             <dt>Prettier</dt>
             <dd>
-              <span class="ou">missions jusqu'en 2025</span> — Mise en forme automatique. La revue
-              humaine porte sur le fond.
+              <span class="ou">missions jusqu'en 2025</span> — Mise en forme automatique, remplacée
+              depuis par oxfmt.
             </dd>
             <dt>oxfmt</dt>
             <dd>
@@ -1008,7 +1000,7 @@
             </dd>
             <dt>RGAA</dt>
             <dd>
-              <span class="ou">Assist'enGare</span> — 96 % de conformité moyenne à la déclaration
+              <span class="ou">Assist'enGare</span> — 96 % de conformité moyenne à la déclaration
               publique. Essais au lecteur d'écran sous NVDA et TalkBack.
             </dd>
             <dt><span lang="en">Pair-programming</span></dt>
@@ -1025,15 +1017,15 @@
 
         <ul>
           <li>
-            <time datetime="2021">2021</time> → aujourd'hui — On n'arrête jamais d'apprendre. Veille
-            continue, certifications, expérimentations, d'autant plus à l'ère de l'IA.
+            <time datetime="2021">2021</time> → aujourd'hui : veille sur l'IA et les nouvelles
+            technologies, bêta-testeur de GitHub Copilot à ses débuts.
           </li>
           <li>
-            <time datetime="2020">2020</time> – <time datetime="2021">2021</time> — Titre
+            <time datetime="2020">2020</time> → <time datetime="2021">2021</time> : Titre
             Professionnel Concepteur Développeur d'Applications.
           </li>
           <li>
-            <time datetime="2018">2018</time> – <time datetime="2020">2020</time> —
+            <time datetime="2018">2018</time> → <time datetime="2020">2020</time> :
             <abbr title="brevet de technicien supérieur, services informatiques aux organisations"
               >BTS SIO</abbr
             >
@@ -1041,7 +1033,7 @@
             alternance.
           </li>
           <li>
-            <time datetime="2016">2016</time> – <time datetime="2018">2018</time> — Baccalauréat
+            <time datetime="2016">2016</time> → <time datetime="2018">2018</time> : baccalauréat
             <abbr title="sciences et technologies de l'industrie et du développement durable"
               >STI2D</abbr
             >.

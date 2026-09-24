@@ -44,7 +44,7 @@ const HINTS = {
     "/matrix": "réveille-toi, Néo",
     "/propose": "suggérez un ajout à ce portfolio",
     "/radio": "une musique fabriquée par une seed",
-    "/slime": "commande la mascotte",
+    "/slime": "commande le slime",
     "/sudo": "non.",
     "/vim": "le piège classique",
     "?": "la liste des commandes",
@@ -66,7 +66,7 @@ const HINTS = {
     "send-mail": "ouvre votre logiciel de courrier",
     share: "partage ce portfolio",
     shutdown: "éteint le terminal",
-    sleep: "endort la mascotte",
+    sleep: "endort le slime",
     theme: "change de thème",
   },
   slime: {

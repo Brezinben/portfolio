@@ -273,6 +273,27 @@ Sources publiques données par Benjamin : <https://digital4better.com/>,
 de mesure d'impact, pas la société. Toutes les mentions « via fruggr » du portfolio
 sont à revoir, y compris sur Kereis et la SNCF.
 
+## Réponses du 2026-09-24
+
+Réponses de Benjamin aux questions de fidélité de la revue critique
+(`.scratch/revue-critique/issues/04-texte-fidele.md`).
+
+- **Revue de spec par l'IA** : pas de durée chiffrée. Le « ~20 min » part.
+- **RUN chez digital4better** : supervision, Ansible et optimisation CI/CD sont vrais.
+- **LDC Services et FPEE Industries** : un seul fait sûr, l'alternance en parallèle du
+  BTS SIO SISR. Rien d'autre tant que la dictée manque.
+- **IREBY** : le tram, le bus, la marche et le vélo sont vrais.
+- **Vue.js et Pinia** : chez Transway, pas chez Kereis.
+- **Pair-programming** : chez Kereis.
+- **Cypress** : chez Transway. Aucune mission n'a de parcours de réservation.
+- **Kereis en 2026** : des preuves de concept, pas de production.
+- **Mascotte** : « le slime » dans les messages, « la mascotte » dans les réglages. Le
+  terminal vouvoie, le slime aussi.
+- **Rôle chez Transway** : « Full Stack, puis tech lead ».
+- **Titre du site** : « Benjamin David · Développeur IA & Full Stack ».
+- **Libellés de l'interface** : ils restent en anglais, comme un terminal. Ils portent
+  `lang="en"`.
+
 ## LDC Services · 2020 → 2021
 
 À recueillir. Aucune fiche mission aujourd'hui.
@@ -284,8 +305,6 @@ sont à revoir, y compris sur Kereis et la SNCF.
 ## Reste à faire
 
 - Les sections `parcours` et `stack` n'ont aucune ligne dans le volet central.
-- Fiches techno absentes : HTML, CSS, Sass, Vite, PHP, OpenAPI, JWT, MySQL, Évaluation,
-  Prompting, Compose, GitHub Actions, Bash, Tests unitaires, E2E, Prettier.
 - Reporter tout le contenu révisé dans `src/texte.html` et `src/llms.txt`. Ces deux
   artefacts écrivent les mêmes faits en dur et portent encore « via fruggr »,
   « équipe Urbanisme » et les anciennes fiches mission.

@@ -68,7 +68,7 @@ export const interpret = (raw: string, context: Context): Outcome => {
   // le resultat. Le resultat n'est pas une region live : le journal dit ou lire la reponse.
   if (command === "help") {
     return {
-      ...out([muted("aide affichée dans le résultat")], [say("essaie « /joke »", "happy")]),
+      ...out([muted("aide affichée dans le résultat")], [say("essayez « /joke »", "happy")]),
       result: [
         ...helpLines(context.model).map((text) => {
           return { m: "·", t: text };
@@ -144,7 +144,7 @@ export const interpret = (raw: string, context: Context): Outcome => {
   }
 
   if (command === "sleep") {
-    return out([muted("Mise en veille de la mascotte.")], [say("zzz…", "sleep")]);
+    return out([muted("Mise en veille du slime.")], [say("zzz…", "sleep")]);
   }
 
   if (command === "matrix") {

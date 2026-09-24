@@ -14,7 +14,7 @@
     <link rel="icon" href="assets/icons/favicon-32.png" sizes="32x32" />
     <link rel="apple-touch-icon" href="apple-touch-icon.png" />
     <meta property="og:type" content="profile" />
-    <meta property="og:title" content="Benjamin David — Développeur IA &amp; Full Stack" />
+    <meta property="og:title" content="Benjamin David · Développeur IA &amp; Full Stack" />
     <meta
       property="og:description"
       content="Des outils internes utilisables par les humains comme par les agents. Portfolio en interface terminal."
@@ -29,7 +29,7 @@
       content="Portfolio de Benjamin David en interface terminal : sections, parcours et sortie système."
     />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Benjamin David — Développeur IA &amp; Full Stack" />
+    <meta name="twitter:title" content="Benjamin David · Développeur IA &amp; Full Stack" />
     <meta
       name="twitter:description"
       content="Des outils internes utilisables par les humains comme par les agents."
@@ -73,7 +73,7 @@
         :aria-busy="glitchMode ? 'true' : null"
         :style="`flex:1;min-height:0;display:flex;flex-wrap:nowrap;gap:10px;align-items:stretch;overflow:var(--panes-overflow,hidden);max-width:2400px;width:100%;margin:0;animation:var(--panes-animation,${power === 'fade' ? 'revealUp .62s cubic-bezier(.2,.7,.3,1) both' : 'none'})`"
       >
-        <h1 class="titre">Benjamin David — Développeur IA et Full Stack</h1>
+        <h1 class="titre">Benjamin David · Développeur IA &amp; Full Stack</h1>
 
         <nav data-pane="nav" aria-label="Sections">
           <button
@@ -748,7 +748,7 @@
                   :disabled="lockedToggle(toggle.key)"
                   @click="flip(toggle.key)"
                 >
-                  <span x-text="toggle.label"></span
+                  <span lang="en" x-text="toggle.label"></span
                   ><span
                     data-toggle-value
                     x-text="lockedToggle(toggle.key) ? 'système' : (value(toggle.key) ? toggle.on : toggle.off)"
@@ -758,11 +758,11 @@
             </div>
 
             <div data-modal-foot>
-              <p data-tone="fg2" data-modal-hint>
+              <p data-tone="fg2" data-modal-hint lang="en">
                 <span data-tone="acc">← →</span> value · <span data-tone="acc">↑ ↓</span> setting ·
                 <span data-tone="acc">esc</span> close · kept on this device
               </p>
-              <button type="button" data-ctl="opt" @click="closeOpts()" data-tone="fg">
+              <button type="button" data-ctl="opt" @click="closeOpts()" data-tone="fg" lang="en">
                 close
               </button>
             </div>
@@ -805,10 +805,16 @@
 
             <div data-modal-foot>
               <p data-tone="fg2" data-modal-hint>
-                <span data-tone="acc">↑ ↓</span> parcourir · <span data-tone="acc">esc</span> close
-                · kept on this device
+                <span data-tone="acc">↑ ↓</span> parcourir ·
+                <span lang="en"><span data-tone="acc">esc</span> close · kept on this device</span>
               </p>
-              <button type="button" data-ctl="opt" @click="closeAchievements()" data-tone="fg">
+              <button
+                type="button"
+                data-ctl="opt"
+                @click="closeAchievements()"
+                data-tone="fg"
+                lang="en"
+              >
                 close
               </button>
             </div>
@@ -911,7 +917,7 @@
                 <span><span data-tone="acc">&uarr; &darr;</span> parcourir</span>
                 <span><span data-tone="acc">tab</span> compléter</span>
                 <span><span data-tone="acc">&crarr;</span> lancer</span>
-                <span><span data-tone="acc">esc</span> close</span>
+                <span lang="en"><span data-tone="acc">esc</span> close</span>
               </p>
               <button
                 type="button"
@@ -919,6 +925,7 @@
                 x-ref="globalClose"
                 @click="closeGlobal()"
                 data-tone="fg"
+                lang="en"
               >
                 close
               </button>

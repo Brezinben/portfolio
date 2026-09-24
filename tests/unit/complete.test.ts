@@ -178,9 +178,17 @@ it("should give each search name its own description", () => {
 // La liste ne montre que des noms. « goal » ou « bd » ne s'apprennent pas d'un nom :
 // une ligne sous la liste dit ce que fait la proposition choisie.
 it("should give each first word suggestion a description", () => {
-  assert.equal(hintFor("", "bd"), "ouvre une section");
-  assert.equal(hintFor("", "/slime"), "commande la mascotte");
-  assert.equal(hintFor("", "cls"), "vide le journal");
+  const hints = ["bd", "/slime", "cls"].map((word) => {
+    return hintFor("", word);
+  });
+
+  assert.ok(
+    hints.every((hint) => {
+      return hint !== "";
+    }),
+    "every word has a description",
+  );
+  assert.equal(new Set(hints).size, hints.length, "each word has its own description");
 });
 
 it("should give each slime subcommand its own description, at every level", () => {

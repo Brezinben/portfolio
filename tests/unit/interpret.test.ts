@@ -650,7 +650,7 @@ it("should refuse the command instead of lying when the mascot is away", () => {
   ]) {
     const result = interpret(command, away);
 
-    assert.match(texts(result)[1] ?? "", /le slime n'est pas la/u, command);
+    assert.match(texts(result)[1] ?? "", /le slime n'est pas là/u, command);
     assert.equal(effectOf(result, "emote"), undefined, command);
     assert.equal(effectOf(result, "blowUp"), undefined, command);
     assert.equal(effectOf(result, "drop"), undefined, command);
