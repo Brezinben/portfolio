@@ -9,6 +9,7 @@ import {
   type GlobalEntry,
   type Line,
   MAX_SUGGESTIONS,
+  type PowerMode,
   type Tone,
   type TrackValue,
   candidates,
@@ -65,11 +66,12 @@ import {
   TYPE_REST_MS,
 } from "./terminal/mascot/constants.ts";
 import { type AchievementsState, achievementsSlice } from "./terminal/achievements/slice.ts";
+import type { Beat, Delay, Magics, TrackSource } from "./terminal/shell.ts";
 import { GAUGE_AT, type GlitchState, SHIFT_COUNT, glitchSlice } from "./terminal/glitch/slice.ts";
 import { type GlobalSearchState, globalSearchSlice } from "./terminal/global-search/slice.ts";
-import type { Magics, TrackSource } from "./terminal/shell.ts";
 import type { RadioApi, RadioState } from "./terminal/radio/slice.ts";
 import { type Section, barParts, printed, section } from "./terminal/format.ts";
+import { knownTheme, readOpts } from "./terminal/opts.ts";
 import { readMarks, writeMarks } from "./terminal/achievements/store.ts";
 
 import { dragState } from "./terminal/mascot/drag.ts";
@@ -174,23 +176,11 @@ const askFailure = (cause: unknown) => {
 
 // Ce que le stockage rend. Rien n'y est garanti : c'est une entree exterieure, et le canvas
 // injectait dans l'etat tout ce qu'il y trouvait.
-interface SavedOpts {
-  anim?: unknown;
-  logH?: unknown;
-  out?: unknown;
-  shortcuts?: unknown;
-  theme?: unknown;
-}
-
 // Une position, ou un pas : deux nombres qui vont toujours ensemble.
 interface Point {
   x: number;
   y: number;
 }
-
-type Delay = ReturnType<typeof setTimeout>;
-
-type Beat = ReturnType<typeof setInterval>;
 
 // Ce que la page tient en memoire. Les minuteurs en font partie : les declarer les rend
 // visibles. « RadioState » vient de la tranche qui l'emploie, pour ne pas deriver.
@@ -214,6 +204,7 @@ interface State extends AchievementsState, GlitchState, GlobalSearchState, Radio
   walker: Beat | undefined;
   anim: boolean;
   at: number;
+  reducedMotion: boolean;
   bubble: string;
   clicks: number;
   commands: string[];
@@ -258,7 +249,7 @@ interface State extends AchievementsState, GlitchState, GlobalSearchState, Radio
   out: boolean;
   pane: string;
   pending: string | undefined;
-  power: string;
+  power: "boot" | "fade" | "off" | "on";
   profileEmail: string;
   // La tranche de la radio arrive par import dynamique : ce drapeau dit si elle a rejoint
   // le composant, et « radioOn » ne peut valoir vrai qu'apres.
@@ -370,6 +361,7 @@ document.addEventListener("alpine:init", () => {
       walker: undefined,
       anim: true,
       at: 0,
+      reducedMotion: globalThis.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false,
       bubble: "",
       clicks: 0,
       commands: [],
@@ -475,19 +467,20 @@ document.addEventListener("alpine:init", () => {
       },
 
       init() {
+        // La préférence peut changer en cours de visite. Sans cette écoute, la mascotte et
+        // le glitch l'ignoraient jusqu'au rechargement.
+        globalThis
+          .matchMedia?.("(prefers-reduced-motion: reduce)")
+          .addEventListener("change", (event) => {
+            this.reducedMotion = event.matches;
+          });
         this.restore();
         this.ticker = setInterval(() => {
           this.bootTick += 1;
         }, COMPACT_TICK_MS);
         this.startMascot();
-        globalThis.addEventListener("popstate", () => {
-          this.fromHash();
-        });
         this.watchNetwork();
         void this.learnModel();
-        globalThis.addEventListener("resize", () => {
-          this.setLogHeight(this.logHeight);
-        });
         void this.load();
       },
 
@@ -1114,7 +1107,7 @@ document.addEventListener("alpine:init", () => {
       },
 
       // Extinction facon CRT, puis la sequence de boot complete.
-      powerDown(mode: string) {
+      powerDown(mode: PowerMode) {
         this.stopCompacting();
         this.radioStop();
         this.power = "off";
@@ -1586,8 +1579,8 @@ document.addEventListener("alpine:init", () => {
         return true;
       },
 
-      get reduced() {
-        return globalThis.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
+      get reduced(): boolean {
+        return this.reducedMotion;
       },
 
       // Le meme seuil que la requete de media qui empile les volets. Les deux doivent
@@ -1603,12 +1596,6 @@ document.addEventListener("alpine:init", () => {
         this.twitcher = setInterval(() => {
           this.twitch();
         }, TWITCH_MS);
-        // La piste bouge avec la mise en page, la mascotte non : sans cette reprise, une
-        // fenetre redimensionnee la laisserait hors champ.
-        globalThis.addEventListener("resize", () => {
-          this.place(this.at);
-        });
-
         for (const event of ["pointermove", "keydown", "wheel"]) {
           globalThis.addEventListener(
             event,
@@ -1983,15 +1970,7 @@ document.addEventListener("alpine:init", () => {
       },
 
       restore() {
-        let saved: SavedOpts = {};
-
-        try {
-          // SAFETY: la forme du stockage n'est pas garantie. L'affirmation ne promet rien :
-          // SavedOpts ne declare que des « unknown », et chaque cle est verifiee plus bas.
-          saved = JSON.parse(globalThis.localStorage.getItem(OPTS_KEY) ?? "{}") as SavedOpts;
-        } catch {
-          // Un stockage illisible ou refusé ne doit pas empêcher la page de démarrer.
-        }
+        const saved = readOpts();
 
         // Cinq clés, et cinq seulement, chacune verifiee avant d'entrer dans l'etat.
         if (saved.anim === true || saved.anim === false) {
@@ -2010,12 +1989,7 @@ document.addEventListener("alpine:init", () => {
           this.logH = Number(saved.logH);
         }
 
-        // Un thème inconnu vaut un thème absent : la préférence du système tranche.
-        this.theme = THEMES.some((entry) => {
-          return entry.id === saved.theme;
-        })
-          ? String(saved.theme)
-          : this.preferredTheme();
+        this.theme = knownTheme(saved);
 
         // Le catalogue bouge, le stockage non : une clé retirée disparaît sans laisser
         // d'orphelin. Les pages annexes écrivent ici, depuis un autre onglet.
@@ -2028,12 +2002,6 @@ document.addEventListener("alpine:init", () => {
         if (this.achievements.length !== stored.length) {
           writeMarks(this.achievements);
         }
-      },
-
-      // Première visite : la page suit la préférence du système. Sans préférence, elle
-      // reste sombre, comme un terminal.
-      preferredTheme() {
-        return globalThis.matchMedia?.("(prefers-color-scheme: light)").matches ? "light" : "dark";
       },
 
       persist() {
@@ -2538,19 +2506,24 @@ document.addEventListener("alpine:init", () => {
       // « hors ligne » sans se tromper, et « en ligne » avec optimisme : c'est le sens
       // utile ici, puisque la page ne sert qu'a refuser une commande vouee a l'echec.
       watchNetwork() {
-        this.online = globalThis.navigator?.onLine ?? true;
-        globalThis.addEventListener("online", () => {
-          this.online = true;
-          this.rouse();
-        });
-        globalThis.addEventListener("offline", () => {
-          this.online = false;
-          this.doze();
-        });
+        this.setOnline(globalThis.navigator?.onLine ?? true);
+      },
 
-        if (!this.online) {
+      setOnline(online: boolean) {
+        this.online = online;
+
+        if (online) {
+          this.rouse();
+        } else {
           this.doze();
         }
+      },
+
+      // La piste bouge avec la mise en page, la mascotte non : sans cette reprise, une
+      // fenetre redimensionnee la laisserait hors champ. Le journal recale sa hauteur.
+      onResize() {
+        this.setLogHeight(this.logHeight);
+        this.place(this.at);
       },
 
       // Le site entier tient en memoire une fois charge : seules les commandes qui partent

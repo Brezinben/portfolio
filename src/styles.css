@@ -82,7 +82,8 @@ a:hover {
   border-bottom-color: var(--acc);
 }
 
-.tm[data-theme="dark"] {
+.tm[data-theme="dark"],
+.tm [data-swatch][data-theme="dark"] {
   --bg: #1c1d2b;
   --panel: #242538;
   --edge: #33344a;
@@ -94,7 +95,8 @@ a:hover {
   --warn: #e2914c;
 }
 
-.tm[data-theme="light"] {
+.tm[data-theme="light"],
+.tm [data-swatch][data-theme="light"] {
   --bg: #f3ecec;
   --panel: #fff6f6;
   --edge: #ded2d2;
@@ -109,7 +111,8 @@ a:hover {
 /* L'accent et le succes portaient le meme #49e9a6 : la cle d'une paire JSON ne se
  distinguait plus de sa valeur. Le succes prend le cyan « support » de la palette
  Noctis d'origine, #49d6e9, mesure a 8,5:1 sur le fond. */
-.tm[data-theme="noctis"] {
+.tm[data-theme="noctis"],
+.tm [data-swatch][data-theme="noctis"] {
   --bg: #04252a;
   --panel: #052c33;
   --edge: #0d4148;
@@ -121,7 +124,8 @@ a:hover {
   --warn: #e4b781;
 }
 
-.tm[data-theme="azureus"] {
+.tm[data-theme="azureus"],
+.tm [data-swatch][data-theme="azureus"] {
   --bg: #061f2c;
   --panel: #07273b;
   --edge: #0f3b52;
@@ -133,7 +137,8 @@ a:hover {
   --warn: #e4b781;
 }
 
-.tm[data-theme="uva"] {
+.tm[data-theme="uva"],
+.tm [data-swatch][data-theme="uva"] {
   --bg: #191634;
   --panel: #211d40;
   --edge: #332d5c;
@@ -145,7 +150,8 @@ a:hover {
   --warn: #e4a06a;
 }
 
-.tm[data-theme="bordo"] {
+.tm[data-theme="bordo"],
+.tm [data-swatch][data-theme="bordo"] {
   --bg: #23151d;
   --panel: #2d1b26;
   --edge: #452a39;
@@ -157,7 +163,8 @@ a:hover {
   --warn: #e0a35c;
 }
 
-.tm[data-theme="lux"] {
+.tm[data-theme="lux"],
+.tm [data-swatch][data-theme="lux"] {
   --bg: #f2ecdd;
   --panel: #fdf6e7;
   --edge: #ddd2ba;
@@ -169,7 +176,8 @@ a:hover {
   --warn: #9a6218;
 }
 
-.tm[data-theme="hibernus"] {
+.tm[data-theme="hibernus"],
+.tm [data-swatch][data-theme="hibernus"] {
   --bg: #eaf1f3;
   --panel: #f7fbfc;
   --edge: #cfdde1;
@@ -582,6 +590,65 @@ a:hover {
   display: grid;
   gap: 1px;
   min-width: 0;
+}
+
+/* La pastille dit l'état de l'entrée. Seule celle en cours bat. */
+/* Le rail relie les domaines de la stack. Le dernier n'a plus rien à relier. */
+.tm [data-ctl="tl"][aria-selected="true"] [data-tl-org] {
+  font-weight: 700;
+}
+
+.tm [data-cue] {
+  font-size: 12px;
+}
+
+.tm [data-branch-rail] {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  margin-left: 4px;
+  border-left: 1px solid var(--edge);
+}
+
+.tm [data-branch-row]:last-of-type > [data-branch-rail] {
+  border-left-color: transparent;
+}
+
+.tm [data-dot] {
+  width: 8px;
+  height: 8px;
+  background: var(--fg2);
+}
+
+.tm [data-dot="acc"] {
+  background: var(--acc);
+  animation: dotPulse 1.2s ease-in-out infinite;
+}
+
+.tm [data-dot="ok"] {
+  background: var(--ok);
+}
+
+.tm [data-dot="warn"] {
+  background: var(--warn);
+}
+
+.tm [data-dot="fg"] {
+  background: var(--fg);
+}
+
+.tm [data-ctl="nav"][aria-current="true"] [data-nav-label] {
+  font-weight: 700;
+}
+
+.tm [data-nav-note] {
+  font-size: 12px;
+  color: var(--fg2);
+  overflow-wrap: anywhere;
+}
+
+.tm [data-ctl="nav"][aria-current="true"] [data-nav-note] {
+  color: var(--fg);
 }
 
 .tm [data-nav-sub] {
@@ -1065,6 +1132,97 @@ a:hover {
   opacity: 0.5;
 }
 
+/* Les volets entrent d'un fondu quand la page s'allume. Le glitch prend la même prise
+ par « --panes-animation ». */
+.tm [data-panes] {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 10px;
+  align-items: stretch;
+  overflow: var(--panes-overflow, hidden);
+  max-width: 2400px;
+  width: 100%;
+  margin: 0;
+  animation: var(--panes-animation, none);
+}
+
+.tm[data-power="fade"] [data-panes] {
+  animation: var(--panes-animation, revealUp 0.62s cubic-bezier(0.2, 0.7, 0.3, 1) both);
+}
+
+.tm [data-boot] {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  padding: 18px clamp(12px, 2.5vw, 26px) 26px;
+  background: var(--bg);
+}
+
+.tm[data-power="fade"] [data-boot] {
+  animation: bootOut 0.62s ease forwards;
+}
+
+/* « --log-h » porte la hauteur choisie à la poignée. La colonne empilée la remplace. */
+.tm [data-journal] {
+  flex: none;
+  display: grid;
+  gap: 2px;
+  align-content: start;
+  height: var(--log-height, var(--log-h));
+  overflow-y: var(--log-overflow, auto);
+  padding-top: 8px;
+  border-top: 1px solid var(--edge);
+}
+
+.tm [data-bubble] {
+  position: absolute;
+  bottom: 52px;
+  padding: 2px 8px;
+  border: 1px solid var(--edge);
+  background: var(--panel);
+  color: var(--fg);
+  font-size: 12px;
+  white-space: nowrap;
+  pointer-events: none;
+  animation: lineIn 0.24s ease both;
+}
+
+.tm [data-spark] {
+  position: absolute;
+  bottom: 14px;
+  color: var(--warn);
+  font-size: 15px;
+  animation: spark 0.6s ease-out both;
+}
+
+.tm [data-spark][data-dir="right"] {
+  right: 2px;
+}
+
+.tm [data-spark][data-dir="left"] {
+  left: 2px;
+}
+
+.tm [data-scan] {
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--acc), transparent);
+  opacity: 0.16;
+  animation: scan 9s linear infinite;
+}
+
+.tm [data-technote] {
+  display: grid;
+  gap: 4px;
+  padding-top: 8px;
+  border-top: 1px solid var(--edge);
+  animation: lineIn 0.26s ease both;
+}
+
 .tm [data-pane="out"] [role="region"] {
   overflow-y: auto;
   align-content: start;
@@ -1188,6 +1346,41 @@ a:hover {
  des dessins faits de caractères, et le contraste d'un dessin n'est pas celui d'un mot. */
 .tm [data-glyph="acc"] {
   color: var(--acc);
+}
+
+/* La pastille d'un thème porte l'attribut de son thème : elle lit ses propres variables,
+ sans copie des couleurs dans le script. */
+.tm [data-swatch] {
+  position: relative;
+  flex: none;
+  width: 18px;
+  height: 18px;
+  overflow: hidden;
+  border: 1px solid var(--edge);
+  background: var(--panel);
+}
+
+.tm [data-swatch] > span {
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 7px;
+  background: var(--acc);
+}
+
+.tm [data-glyph="fg"] {
+  color: var(--fg);
+}
+
+.tm [data-glyph="fg2"] {
+  color: var(--fg2);
+}
+
+.tm [data-glyph="ok"] {
+  color: var(--ok);
+}
+
+.tm [data-glyph="warn"] {
+  color: var(--warn);
 }
 
 .tm [data-glyph="edge"] {
@@ -1643,6 +1836,21 @@ a:hover {
   gap: 14px;
 }
 
+/* Une ligne de résultat : le repère, puis le texte. « --pad » vient du contenu. */
+.tm [data-line] {
+  display: grid;
+  grid-template-columns: 18px 1fr;
+  gap: 8px;
+  align-items: baseline;
+  margin: 0;
+  padding-left: var(--pad);
+}
+
+.tm [data-line][data-contact] {
+  padding: 5px 8px 5px calc(10px + var(--pad));
+  border-left: 2px solid var(--row-acc, transparent);
+}
+
 .tm [data-pane="main"] p[data-contact]:not([data-edge]):hover {
   --row-acc: var(--acc);
   background: var(--acc-soft);
@@ -1750,8 +1958,6 @@ a:hover {
   font-size: 13px;
 }
 
-/* La pastille de couleur garde ses trois valeurs en ligne : elles décrivent un thème
- qui n'est pas appliqué, et le CSS ne sait pas lire les variables d'un autre thème. */
 .tm [data-theme-choice] {
   display: flex;
   align-items: center;

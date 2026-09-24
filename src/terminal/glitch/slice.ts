@@ -3,11 +3,9 @@
 // La tranche ne porte aucun accesseur : elle ecrit dans l'etat, et le balisage lit l'etat.
 // Le texte corrompu fait exception, et pour une raison — voir « glitchStart ».
 
+import { type Beat, type Delay, type Shell, slice } from "../shell.ts";
 import { RAIN, corrupt, heatAt, pick } from "./corrupt.ts";
-import { type Shell, slice } from "../shell.ts";
-
-type Beat = ReturnType<typeof setInterval>;
-type Delay = ReturnType<typeof setTimeout>;
+import type { GlitchMode } from "../../interpret.ts";
 
 // Cinq secondes : assez pour croire a la panne, trop court pour inquieter. La fenetre
 // separe deux appuis, elle ne borne pas la serie : un rythme regulier arme, une hesitation
@@ -72,16 +70,16 @@ export interface GlitchState {
   glitchEnd: Delay | undefined;
   // « shift », « matrix » ou « sudo » pendant la panne, vide au repos : un seul champ dit
   // a la fois que le glitch court et ce qui l'a declenche.
-  glitchMode: string;
+  glitchMode: GlitchMode | "";
   glitchRain: { glyphs: string; style: string }[];
   glitchTap: Delay | undefined;
   glitchWait: Delay | undefined;
 }
 
 export interface GlitchApi {
-  glitchLater(mode: string): void;
+  glitchLater(mode: GlitchMode): void;
   glitchShift(): void;
-  glitchStart(mode: string): void;
+  glitchStart(mode: GlitchMode): void;
   glitchStop(): void;
 }
 
@@ -89,7 +87,7 @@ export const glitchSlice = () => {
   return slice<GlitchApi>({
     // « sudo » refuse, puis tombe en panne. L'interpreteur ne pose aucun minuteur : il dit
     // que le glitch vient, la coquille tient le silence entre les deux.
-    glitchLater(this: Shell, mode: string) {
+    glitchLater(this: Shell, mode: GlitchMode) {
       clearTimeout(this.glitchWait);
       this.glitchWait = setTimeout(() => {
         this.glitchStart(mode);
@@ -120,7 +118,7 @@ export const glitchSlice = () => {
     // Animations coupees ou mouvement reduit : rien ne se corrompt, comme la mascotte
     // disparait au lieu de se figer. Un lecteur d'ecran relirait sinon cinq secondes de
     // charabia sans avoir rien demande.
-    glitchStart(this: Shell, mode: string) {
+    glitchStart(this: Shell, mode: GlitchMode) {
       if (!this.anim || this.reduced) {
         return;
       }

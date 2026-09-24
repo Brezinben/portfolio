@@ -5,17 +5,9 @@
 // script différé laisserait voir l'ambre nuit à qui a choisi l'ambre jour. Le reste attend
 // le DOM.
 
-import { OPTS_KEY, THEMES } from "./terminal/settings.ts";
+import { knownTheme, readOpts } from "./terminal/opts.ts";
+import type { Delay } from "./terminal/shell.ts";
 import { addMark } from "./terminal/achievements/store.ts";
-
-// Ce que le stockage rend. Rien n'y est garanti : c'est une entrée extérieure, écrite par
-// une autre page.
-interface SavedOpts {
-  anim?: unknown;
-  theme?: unknown;
-}
-
-type Delay = ReturnType<typeof setTimeout>;
 
 const BUBBLES = [
   "le slime cherche encore",
@@ -33,21 +25,6 @@ const root = document.documentElement;
 const pick = () => {
   return BUBBLES[Math.floor(Math.random() * BUBBLES.length)] ?? "";
 };
-const systemTheme = () => {
-  return matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
-};
-
-const saved = (): SavedOpts => {
-  try {
-    // SAFETY: la forme du stockage n'est pas garantie. L'affirmation ne promet rien :
-    // SavedOpts ne déclare que des « unknown », et chaque clé est vérifiée ensuite.
-    return JSON.parse(localStorage.getItem(OPTS_KEY) ?? "{}") as SavedOpts;
-  } catch {
-    // Un stockage illisible ou refusé ne doit pas empêcher la page de se dessiner.
-    return {};
-  }
-};
-
 // Un chemin mal encodé arrive ici plus souvent qu'ailleurs : c'est une adresse que
 // personne n'a écrite à la main. Il s'affiche alors tel quel.
 const decode = (raw: string) => {
@@ -143,16 +120,9 @@ const ready = () => {
   });
 };
 
-const opts = saved();
+const opts = readOpts();
 
-// Un thème inconnu vaut un thème absent : la préférence du système tranche, comme sur la
-// version terminal. Sans ce filtre, « data-theme » ne correspondrait à aucun bloc et la
-// page perdrait ses couleurs.
-root.dataset.theme = THEMES.some((entry) => {
-  return entry.id === opts.theme;
-})
-  ? String(opts.theme)
-  : systemTheme();
+root.dataset.theme = knownTheme(opts);
 
 if (opts.anim === false) {
   root.dataset.anim = "false";

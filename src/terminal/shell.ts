@@ -27,9 +27,12 @@ export interface Magics {
 // evenements qui la distinguent.
 export type TrackSource = "commande" | "interface";
 
-// Ce que toute tranche peut lire de l'etat, en plus du sien. « reduced » est un accesseur
-// vivant : le copier le figerait a « false » chez qui demande moins de mouvement, sans
-// casser un seul test.
+// Les deux minuteurs de la plateforme. Chaque tranche en garde, et aucune ne les redéclare.
+export type Delay = ReturnType<typeof setTimeout>;
+export type Beat = ReturnType<typeof setInterval>;
+
+// Ce que toute tranche peut lire de l'etat, en plus du sien. « reduced » suit la preference
+// du systeme en cours de visite : une tranche le lit, elle ne le copie jamais.
 export interface Shared {
   anim: boolean;
   blowUp(via: TrackSource): void;
