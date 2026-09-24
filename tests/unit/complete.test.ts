@@ -196,3 +196,13 @@ it("should return an empty string for a suggestion without a description", () =>
   assert.equal(hintFor("share", "linkedin"), "");
   assert.equal(hintFor("xyzzy", "xyzzy"), "");
 });
+
+// Une ligne faite d'espaces n'est pas une ligne vide : la barre d'espace n'ouvre rien.
+it("should suggest nothing for a line made of spaces", () => {
+  assert.deepEqual(hits("   "), []);
+});
+
+// Au second mot, le filtre porte sur le début du mot tapé.
+it("should filter the second word by its start", () => {
+  assert.deepEqual(hits("theme no"), ["noctis"]);
+});

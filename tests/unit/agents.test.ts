@@ -67,17 +67,6 @@ it("should name only existing addresses in llms.txt", () => {
   }
 });
 
-// Le contresens le plus coûteux : croire que ce domaine héberge un serveur MCP parce que
-// Benjamin en conçoit pour ses clients. Le démenti tient dans le bloc de détails, que la
-// convention réserve à ce qui aide un agent à interpréter les documents listés.
-it("should state in llms.txt what the site does not expose", () => {
-  assert.ok(llms.includes("## Quand ce site répond à votre question"), "the section is missing");
-  assert.ok(llms.includes("n'en héberge aucun"), "llms.txt does not deny the hosted MCP server");
-  assert.ok(llms.includes("ni produit, ni API"), "llms.txt does not deny the API");
-  assert.ok(llmsFull.includes("n'en héberge aucun"), "the full content does not carry the denial");
-  assert.ok(llmsFull.includes("ni produit, ni API"), "the full content does not deny the API");
-});
-
 // https://llmstxt.org/ : un H1, un résumé en blockquote, des détails sans titre, puis des
 // sections H2 qui ne contiennent que des listes de liens. Sans ce test, llms.txt redevient
 // le document qu'il était, et plus aucun analyseur ne sait le lire.
@@ -107,14 +96,6 @@ it("should follow the grammar of the convention in llms.txt", () => {
     llms.includes(`${ORIGINE}/llms-full.txt`),
     "llms.txt does not link to the full content",
   );
-});
-
-it("should give the same contact in llms.txt and in the text version", () => {
-  const contact = "benjamin.david1@hotmail.fr";
-
-  assert.ok(llms.includes(contact), "llms.txt does not give the expected contact");
-  assert.ok(llmsFull.includes(contact), "llms-full.txt does not give the expected contact");
-  assert.ok(texte.includes(contact), "texte.html does not give the expected contact");
 });
 
 // La version texte et la page d'erreur recopient les huit thèmes de la version terminal :

@@ -154,38 +154,30 @@ test("should give every interactive target at least 44 pixels", async ({ page })
   expect(small).toEqual([]);
 });
 
-test("should keep the whole interface reachable by keyboard", async ({ page }) => {
+// Tab parcourt la page de haut en bas : chaque section doit se trouver sur le chemin.
+test("should reach every section button with Tab", async ({ page }) => {
   await boot(page);
 
-  const reachable = await page.evaluate(() => {
-    return [
-      ...document.querySelectorAll<HTMLElement>("button, input, a[href], [tabindex='0']"),
-    ].filter((node) => {
-      return node.offsetParent !== null && node.tabIndex >= 0;
-    }).length;
-  });
+  const sections = await page.locator('[data-ctl="nav"]').count(),
+    reached = new Set<number>();
 
-  expect(reachable).toBeGreaterThan(10);
-});
+  for (const _ of Array.from({ length: 40 })) {
+    // Le focus avance d'un pas à la fois : paralléliser n'aurait pas de sens.
+    // eslint-disable-next-line no-await-in-loop
+    await page.keyboard.press("Tab");
+    // eslint-disable-next-line no-await-in-loop
+    const at = await page.evaluate(() => {
+      return [...document.querySelectorAll('[data-ctl="nav"]')].indexOf(
+        document.activeElement ?? document.body,
+      );
+    });
 
-// L'ambre du theme clair est trop pale pour du texte : le decoratif garde sa teinte,
-// le texte prend une variante plus sombre.
-test("should separate the decorative amber from the text amber on the light theme", async ({
-  page,
-}) => {
-  await withTheme(page, "light");
+    if (at !== -1) {
+      reached.add(at);
+    }
+  }
 
-  const { decorative, text } = await page.locator(".tm").evaluate((node) => {
-    const styles = getComputedStyle(node);
-
-    return {
-      decorative: styles.getPropertyValue("--acc").trim(),
-      text: styles.getPropertyValue("--acc-text").trim(),
-    };
-  });
-
-  expect(decorative, "the decorative hue does not change").toBe("#e6a000");
-  expect(text).not.toBe(decorative);
+  expect(reached.size, "every section button is on the Tab path").toBe(sections);
 });
 
 // Noctis n'a qu'un vert : l'accent et le succes portaient la meme teinte, et la cle

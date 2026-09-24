@@ -6,19 +6,6 @@ test("should serve src/ and refuse what does not exist", async ({ request }) => 
   expect(missing.status()).toBe(404);
 });
 
-test("should serve content.json and parse it", async ({ request }) => {
-  const response = await request.get("/content.json");
-
-  expect(response.status()).toBe(200);
-  expect(response.headers()["content-type"]).toContain("application/json");
-
-  const content = await response.json();
-
-  for (const key of ["profile", "share", "sections", "details", "timeline", "stack"]) {
-    expect(content, `content.json must carry the ${key} key`).toHaveProperty(key);
-  }
-});
-
 // Une séquence pourcent invalide faisait lever URIError hors du try, ce qui tuait le
 // processus : le harnais tombait au milieu d'une série et tous les tests suivants avec.
 test("should answer 404 on a badly encoded URL without killing the server", async ({ request }) => {

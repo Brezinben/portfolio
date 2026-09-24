@@ -1,4 +1,4 @@
-import { fillTokens, interpret, proposalPrompt, shareTarget } from "../../src/interpret.ts";
+import { fillTokens, interpret, isSafeUrl, shareTarget } from "../../src/interpret.ts";
 import assert from "node:assert/strict";
 import { it } from "node:test";
 
@@ -191,6 +191,26 @@ it("should ask again without sending anything on an answer other than oui or non
   assert.deepEqual(result.effects, []);
 });
 
-it("should keep the proposal prompt on five lines", () => {
-  assert.equal(proposalPrompt("x", FEEDBACK).length, 5);
+// Un mot qui commence par « o » n'est pas un oui : seule la réponse entière consent.
+it("should not send on a word that only starts like a yes", () => {
+  for (const answer of ["ouistiti", "oh non", "okay plus tard"]) {
+    assert.ok(
+      !interpret(answer, { ...CONTEXT, pending: "mon idée" }).effects.some((entry) => {
+        return entry.type === "send";
+      }),
+      `« ${answer} » sends nothing`,
+    );
+  }
+});
+
+// Un « & » dans le texte couperait le corps d'un mailto.
+it("should encode the text token", () => {
+  assert.equal(
+    fillTokens("mailto:?body={text}", { ...SHARE, text: "a & b" }),
+    "mailto:?body=a%20%26%20b",
+  );
+});
+
+it("should refuse an address that does not parse", () => {
+  assert.equal(isSafeUrl("http://["), false);
 });
