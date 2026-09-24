@@ -37,7 +37,7 @@ const focusedText = (page: Page) => {
 
 const setOptions = (page: Page, opts: string) => {
   return page.addInitScript((value) => {
-    return localStorage.setItem("bd-term-opts", value);
+    localStorage.setItem("bd-term-opts", value);
   }, opts);
 };
 

@@ -19,19 +19,6 @@ const THEMES = ["dark", "light", "noctis", "azureus", "uva", "bordo", "lux", "hi
   scan = (page: Page) => {
     return new AxeBuilder({ page }).analyze();
   },
-  typedIsClean = async (page: Page, typed: string) => {
-    await page.locator("[data-global-input]").fill(typed);
-    await settled(page);
-
-    const { violations } = await scan(page);
-
-    expect(
-      violations.map((entry) => {
-        return `${entry.id}: ${entry.nodes.length}`;
-      }),
-      `the global search is clean with « ${typed} » typed`,
-    ).toEqual([]);
-  },
   // Le scan mesure la couleur telle qu'elle est peinte. Lancé pendant le fondu d'entrée, il
   // lit des valeurs à mi-opacité et rapporte des écarts qui n'existent pas. On attend donc
   // les animations qui finissent ; le curseur et la mascotte, eux, ne finissent jamais.
@@ -52,6 +39,19 @@ const THEMES = ["dark", "light", "noctis", "azureus", "uva", "bordo", "lux", "hi
           }),
       );
     });
+  },
+  typedIsClean = async (page: Page, typed: string) => {
+    await page.locator("[data-global-input]").fill(typed);
+    await settled(page);
+
+    const { violations } = await scan(page);
+
+    expect(
+      violations.map((entry) => {
+        return `${entry.id}: ${entry.nodes.length}`;
+      }),
+      `the global search is clean with « ${typed} » typed`,
+    ).toEqual([]);
   };
 
 for (const theme of THEMES) {
@@ -175,8 +175,8 @@ test("should separate the decorative amber from the text amber on the light them
 }) => {
   await withTheme(page, "light");
 
-  const { decorative, text } = await page.evaluate(() => {
-    const styles = getComputedStyle(document.querySelector<HTMLElement>(".tm")!);
+  const { decorative, text } = await page.locator(".tm").evaluate((node) => {
+    const styles = getComputedStyle(node);
 
     return {
       decorative: styles.getPropertyValue("--acc").trim(),
@@ -193,8 +193,8 @@ test("should separate the decorative amber from the text amber on the light them
 test("should separate the key from the value on the noctis theme", async ({ page }) => {
   await withTheme(page, "noctis");
 
-  const { key, value } = await page.evaluate(() => {
-    const styles = getComputedStyle(document.querySelector<HTMLElement>(".tm")!);
+  const { key, value } = await page.locator(".tm").evaluate((node) => {
+    const styles = getComputedStyle(node);
 
     return {
       key: styles.getPropertyValue("--acc-text").trim(),

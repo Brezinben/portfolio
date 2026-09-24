@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 import type { Page } from "@playwright/test";
+import { boxOf } from "../helpers/box.ts";
 
 const boot = async (page: Page) => {
     await page.goto("/");
@@ -37,7 +38,7 @@ const boot = async (page: Page) => {
   // La saisie passe par de vrais evenements de pointeur : la mascotte capture le pointeur
   // au pointerdown, et sans capture les deplacements n'iraient nulle part.
   attraper = async (page: Page) => {
-    const box = (await mascot(page).boundingBox())!;
+    const box = await boxOf(mascot(page));
 
     await page.mouse.move(box.x + 32, box.y + 32);
     await page.mouse.down();
@@ -94,7 +95,7 @@ test("should hide the mascot and load no sheet under reduced motion", async ({ p
 
 test("should hide the mascot and load no sheet when animations are off", async ({ page }) => {
   await page.addInitScript(() => {
-    return localStorage.setItem("bd-term-opts", JSON.stringify({ anim: false }));
+    localStorage.setItem("bd-term-opts", JSON.stringify({ anim: false }));
   });
 
   const asked = watchSheets(page);
@@ -324,7 +325,7 @@ test("should load no sheet when the theme changes without a mascot", async ({ pa
 // reprendre son repos, pas rester sur la mue d'un theme deja applique.
 test("should return to idle when animations come back after a theme change", async ({ page }) => {
   await page.addInitScript(() => {
-    return localStorage.setItem("bd-term-opts", JSON.stringify({ anim: false }));
+    localStorage.setItem("bd-term-opts", JSON.stringify({ anim: false }));
   });
 
   await boot(page);
@@ -341,9 +342,16 @@ test("should return to idle when animations come back after a theme change", asy
 test("should rotate the hue on dark themes and leave light themes alone", async ({ page }) => {
   const filtre = (theme: string) => {
     return page.evaluate((chosen) => {
-      document.querySelector<HTMLElement>(".tm")!.dataset.theme = chosen;
+      const shell = document.querySelector<HTMLElement>(".tm"),
+        node = document.querySelector<HTMLElement>("[data-mascot]");
 
-      return getComputedStyle(document.querySelector<HTMLElement>("[data-mascot]")!)!.filter;
+      if (!shell || !node) {
+        throw new Error("no terminal or no mascot");
+      }
+
+      shell.dataset.theme = chosen;
+
+      return getComputedStyle(node).filter;
     }, theme);
   };
 
@@ -516,10 +524,10 @@ test("should remove the mascot when animations are turned off", async ({ page })
 test("should give the mascot a clickable target, not a pixel", async ({ page }) => {
   await boot(page);
 
-  const box = await mascot(page).boundingBox();
+  const box = await boxOf(mascot(page));
 
-  expect(box!.width).toBe(64);
-  expect(box!.height).toBe(64);
+  expect(box.width).toBe(64);
+  expect(box.height).toBe(64);
   expect(
     await mascot(page).evaluate((node) => {
       return getComputedStyle(node).cursor;
@@ -543,7 +551,7 @@ test("should splat the mascot against the edge the cursor leaves the track by", 
 }) => {
   await boot(page);
 
-  const piste = (await page.locator("[data-track]").boundingBox())!,
+  const piste = await boxOf(page.locator("[data-track]")),
     milieuX = piste.x + piste.width / 2,
     milieuY = piste.y + piste.height / 2,
     // La marge verticale figée vaut 24 px : on la dépasse franchement.
@@ -572,7 +580,7 @@ test("should splat the mascot against the edge the cursor leaves the track by", 
 test("should keep the last frame of a splat that is held long", async ({ page }) => {
   await boot(page);
 
-  const piste = (await page.locator("[data-track]").boundingBox())!;
+  const piste = await boxOf(page.locator("[data-track]"));
 
   await attraper(page);
   await pousser(page, piste.x - 40, piste.y + piste.height / 2);
@@ -595,7 +603,7 @@ test("should keep the last frame of a splat that is held long", async ({ page })
 test("should splat the mascot into the corner when the cursor goes diagonal", async ({ page }) => {
   await boot(page);
 
-  const piste = (await page.locator("[data-track]").boundingBox())!,
+  const piste = await boxOf(page.locator("[data-track]")),
     dehors = 40,
     gauche = piste.x - dehors,
     droite = piste.x + piste.width + dehors,
@@ -625,8 +633,8 @@ test("should splat the mascot into the corner when the cursor goes diagonal", as
 test("should not splat the mascot on a vertical shake", async ({ page }) => {
   await boot(page);
 
-  const piste = (await page.locator("[data-track]").boundingBox())!,
-    depart = (await mascot(page).boundingBox())!;
+  const piste = await boxOf(page.locator("[data-track]")),
+    depart = await boxOf(mascot(page));
 
   await attraper(page);
   // Hors de la piste, mais dans la marge : la prise tient.
@@ -641,13 +649,13 @@ test("should not splat the mascot on a vertical shake", async ({ page }) => {
 test("should never let the mascot leave its track", async ({ page }) => {
   await boot(page);
 
-  const piste = (await page.locator("[data-track]").boundingBox())!;
+  const piste = await boxOf(page.locator("[data-track]"));
 
   await attraper(page);
   await pousser(page, piste.x + piste.width + 300, piste.y - 200);
   await expect(mascot(page)).toHaveClass(/slime--splat/u);
 
-  const box = (await mascot(page).boundingBox())!;
+  const box = await boxOf(mascot(page));
 
   expect(Math.round(box.x), "the mascot stays past the left edge").toBeGreaterThanOrEqual(
     Math.round(piste.x),
@@ -667,7 +675,7 @@ test("should never let the mascot leave its track", async ({ page }) => {
 test("should leave the mascot where it is released", async ({ page }) => {
   await boot(page);
 
-  const piste = (await page.locator("[data-track]").boundingBox())!;
+  const piste = await boxOf(page.locator("[data-track]"));
 
   await attraper(page);
   await pousser(page, piste.x - 200, piste.y + 32);
@@ -675,7 +683,7 @@ test("should leave the mascot where it is released", async ({ page }) => {
 
   await expect(mascot(page), "the mascot jumps on release").toHaveClass(/slime--jump/u);
 
-  const box = (await mascot(page).boundingBox())!;
+  const box = await boxOf(mascot(page));
 
   expect(Math.round(box.x), "stuck to the left edge of its track").toBe(Math.round(piste.x));
 });
@@ -703,8 +711,13 @@ test("should cover no inner element while the mascot is idle", async ({ page }) 
   await boot(page);
 
   const derriere = await page.evaluate(() => {
-    const node = document.querySelector<HTMLElement>("[data-mascot]")!,
-      box = node.getBoundingClientRect();
+    const node = document.querySelector<HTMLElement>("[data-mascot]");
+
+    if (!node) {
+      throw new Error("no mascot");
+    }
+
+    const box = node.getBoundingClientRect();
 
     node.style.pointerEvents = "none";
 
@@ -722,8 +735,8 @@ test("should bring the mascot back into its track when the window is resized", a
   await boot(page);
   await page.setViewportSize({ height: 620, width: 820 });
 
-  const piste = (await page.locator("[data-track]").boundingBox())!,
-    box = (await mascot(page).boundingBox())!;
+  const piste = await boxOf(page.locator("[data-track]")),
+    box = await boxOf(mascot(page));
 
   expect(box.x + box.width, "the mascot fits in the shrunk track").toBeLessThanOrEqual(
     Math.round(piste.x + piste.width),

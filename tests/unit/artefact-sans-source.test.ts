@@ -5,7 +5,7 @@ import { readdir } from "node:fs/promises";
 import { relative } from "node:path";
 
 const OUTPUT = fileURLToPath(
-    new URL(`../../${process.env["PORTFOLIO_DIST"] ?? "dist.test"}/`, import.meta.url),
+    new URL(`../../${process.env.PORTFOLIO_DIST ?? "dist.test"}/`, import.meta.url),
   ),
   walk = async (directory: string): Promise<string[]> => {
     const entries = await readdir(directory, { withFileTypes: true }),
@@ -13,7 +13,7 @@ const OUTPUT = fileURLToPath(
         entries.map(async (entry) => {
           const full = `${directory}/${entry.name}`;
 
-          return entry.isDirectory() ? walk(full) : [full];
+          return entry.isDirectory() ? await walk(full) : [full];
         }),
       );
 

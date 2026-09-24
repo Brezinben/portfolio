@@ -36,7 +36,9 @@ test("should keep the focus outline inside the result, down to the last column",
   await boot(page, "#stack");
 
   const debord = await page.evaluate(() => {
-    const box = document.querySelector<HTMLElement>("[data-result]")!.getBoundingClientRect();
+    const box =
+      document.querySelector<HTMLElement>("[data-result]")?.getBoundingClientRect() ??
+      new DOMRect();
 
     return [...document.querySelectorAll<HTMLElement>("[data-tech]")].reduce((pire, node) => {
       return Math.max(pire, node.getBoundingClientRect().right + 4 - box.right);
@@ -162,7 +164,7 @@ test("should walk the section list with the up and down arrows", async ({ page }
 
   const focused = () => {
       return page.evaluate(() => {
-        return document.activeElement!.textContent.trim();
+        return document.activeElement?.textContent.trim() ?? "";
       });
     },
     first = await focused();

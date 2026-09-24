@@ -17,7 +17,7 @@ const boot = async (page: Page) => {
     await page.keyboard.press("Control+k");
     await expect(zone(page)).toBeVisible();
   },
-  saved = async (page: Page) => {
+  saved = (page: Page) => {
     return page.evaluate(() => {
       // SAFETY: la page vient d'écrire ce tableau elle-même. Un JSON illisible ferait tomber
       // le test ici, ce qui est le bon endroit.

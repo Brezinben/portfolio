@@ -42,7 +42,7 @@ const read = (name: string) => {
       return entry.type === "track" && entry.event === "commande";
     });
 
-    return effect?.type === "track" ? unlockedBy(String(effect.props["cmd"])) : undefined;
+    return effect?.type === "track" ? unlockedBy(String(effect.props.cmd)) : undefined;
   };
 
 // Deux succes qui partagent une cle n'en font qu'un : le second ne se debloque jamais, et
@@ -123,7 +123,7 @@ it("should read the seen count, and read zero when the mark is absent", () => {
 // La version texte n'a pas de construction : son script est écrit en clair. Sans ce
 // croisement, la page écrirait dans une clé que personne ne lit.
 it("should make the text version write into the storage the terminal reads", () => {
-  const declared = settings.match(/ACHIEVEMENTS_KEY = "(?<key>[^"]+)"/u)?.groups?.["key"] ?? "";
+  const declared = /ACHIEVEMENTS_KEY = "(?<key>[^"]+)"/u.exec(settings)?.groups?.key ?? "";
 
   assert.ok(declared !== "", "settings.ts no longer declares the storage key");
   assert.ok(texte.includes(declared), `texte.html does not write into ${declared}`);

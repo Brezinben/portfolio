@@ -50,7 +50,7 @@ export const contentLine = (raw: ContentLine) => {
       tokens: [
         token(`"${key}"`, "acc", "700"),
         token(": ", "fg2"),
-        token(kind === "num" ? String(value) : `"${value}"`, lookup(JQ_TONE, String(kind)) ?? "ok"),
+        token(kind === "num" ? String(value) : `"${value}"`, lookup(JQ_TONE, kind) ?? "ok"),
         ...(comma ? [token(",", "fg2")] : []),
       ],
     };

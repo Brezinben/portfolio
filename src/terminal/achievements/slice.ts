@@ -147,7 +147,7 @@ export const achievementsSlice = () => {
       this.alertQueue = rest;
       this.alertCells = cells();
       this.alertTimer = setTimeout(() => {
-        return this.alertOut();
+        this.alertOut();
       }, ALERT_MS);
     },
 
@@ -158,7 +158,7 @@ export const achievementsSlice = () => {
       // bouton disparaît et le focus tombe sur le corps de la page (WCAG 2.2.1).
       if (document.querySelector("[data-ach-alert]")?.matches(":focus-within, :hover") === true) {
         this.alertTimer = setTimeout(() => {
-          return this.alertOut();
+          this.alertOut();
         }, ALERT_MS);
 
         return;
@@ -172,7 +172,7 @@ export const achievementsSlice = () => {
 
       this.alertLeaving = true;
       this.alertTimer = setTimeout(() => {
-        return this.alertNext();
+        this.alertNext();
       }, ALERT_OUT_TOTAL_MS);
     },
 
@@ -267,7 +267,7 @@ export const achievementsSlice = () => {
         refused = effects.some((effect) => {
           return effect.type === "track" && effect.event === "commande_inconnue";
         }),
-        command = measured?.type === "track" ? String(measured.props["cmd"]) : "";
+        command = measured?.type === "track" ? String(measured.props.cmd) : "";
 
       if (command === "" || refused) {
         return;

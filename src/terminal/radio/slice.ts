@@ -115,8 +115,7 @@ const members: RadioApi & ThisType<Shell> = {
     if (document.querySelector(".radio")?.contains(document.activeElement) === true) {
       this.$nextTick(() => {
         (
-          document.querySelector<HTMLElement>('[data-pane="out"] [role="region"]') ??
-          this.$refs["cli"]
+          document.querySelector<HTMLElement>('[data-pane="out"] [role="region"]') ?? this.$refs.cli
         )?.focus();
       });
     }
@@ -250,16 +249,16 @@ const members: RadioApi & ThisType<Shell> = {
 
     const press = {
       " ": () => {
-        return this.radioToggle();
+        this.radioToggle();
       },
       m: () => {
-        return this.radioMute();
+        this.radioMute();
       },
       q: () => {
-        return this.radioClose();
+        this.radioClose();
       },
       r: () => {
-        return this.radioReseed(undefined);
+        this.radioReseed(undefined);
       },
     }[event.key.toLowerCase()];
 
@@ -334,16 +333,16 @@ const members: RadioApi & ThisType<Shell> = {
     // Mesurer avant laissait seize barres sur un grand ecran, quand le reglage « out »
     // etait eteint et que le volet valait donc zero pixel.
     navigator.mediaSession.setActionHandler("play", () => {
-      return this.radioToggle();
+      this.radioToggle();
     });
     navigator.mediaSession.setActionHandler("pause", () => {
-      return this.radioToggle();
+      this.radioToggle();
     });
     navigator.mediaSession.setActionHandler("stop", () => {
-      return this.radioClose();
+      this.radioClose();
     });
     navigator.mediaSession.setActionHandler("nexttrack", () => {
-      return this.radioReseed(undefined);
+      this.radioReseed(undefined);
     });
 
     this.$nextTick(() => {
@@ -361,7 +360,7 @@ const members: RadioApi & ThisType<Shell> = {
       // La bande doit rester lisible quand la fenetre change, pas seulement a l'ouverture.
       if (pane) {
         this.radioSizer = new ResizeObserver(() => {
-          return this.radioFit();
+          this.radioFit();
         });
         this.radioSizer.observe(pane);
       }

@@ -1,6 +1,8 @@
 {
   "$schema": "https://raw.githubusercontent.com/oxc-project/oxc/main/npm/oxlint/configuration_schema.json",
-  "plugins": ["jest", "unicorn", "oxc", "promise", "import"],
+  // La liste remplace les plugins par défaut : sans « typescript », aucune règle de types
+  // ne tournait, et « typeAware » travaillait pour rien.
+  "plugins": ["typescript", "jest", "unicorn", "oxc", "promise", "import"],
   "jsPlugins": [
     "@stylistic/eslint-plugin",
     {
@@ -14,10 +16,6 @@
   },
   "options": {
     "typeAware": true,
-  },
-  "globals": {
-    "Alpine": "readonly",
-    "umami": "readonly",
   },
   "categories": {
     "correctness": "error",
@@ -131,13 +129,51 @@
     // une paire de parentheses qu'on retire par erreur : l'objet devient alors un bloc.
     "arrow-body-style": ["error", "always"],
     "capitalized-comments": [
-      "warn",
+      "error",
       "always",
       {
         "ignoreConsecutiveComments": true,
       },
     ],
+    "complexity": "warn",
+    "default-case": "error",
     "eqeqeq": "error",
+    "no-cond-assign": ["error", "always"],
+    "no-console": "error",
+    "prefer-template": "error",
+    "typescript/consistent-indexed-object-style": "error",
+    "typescript/explicit-member-accessibility": [
+      "error",
+      { "accessibility": "explicit", "overrides": { "constructors": "no-public" } },
+    ],
+    "typescript/prefer-find": "error",
+    "no-use-before-define": "error",
+    "require-await": "error",
+    "typescript/method-signature-style": "off",
+    // Chaque couture de types porte déjà un commentaire SAFETY, exigé par
+    // anti-slop/require-safety-comment-for-type-assertion. Cette règle doublerait le contrôle.
+    "typescript/no-unsafe-type-assertion": "off",
+    // Les glyphes se découpent par point de code, pas par graphème : c'est voulu.
+    "typescript/no-misused-spread": "off",
+    "typescript/no-confusing-void-expression": "error",
+    // « it » de node:test rend une promesse que le lanceur attend lui-même.
+    "typescript/no-floating-promises": [
+      "error",
+      {
+        "allowForKnownSafeCalls": [
+          { "from": "package", "package": "node:test", "name": ["describe", "it", "test"] },
+        ],
+      },
+    ],
+    "typescript/no-explicit-any": "error",
+    "typescript/no-non-null-assertion": "error",
+    "typescript/prefer-nullish-coalescing": "error",
+    "typescript/strict-boolean-expressions": [
+      "error",
+      { "allowNullableBoolean": true, "allowNullableString": true },
+    ],
+    "typescript/switch-exhaustiveness-check": "error",
+    "unicorn/no-negated-condition": "error",
     "import/no-nodejs-modules": "error",
     "no-magic-numbers": "off",
     "no-ternary": "off",
@@ -186,6 +222,8 @@
       },
       "rules": {
         "import/no-nodejs-modules": "off",
+        // Un outil en ligne de commande parle sur la console.
+        "no-console": "off",
       },
     },
     {

@@ -109,10 +109,10 @@ const ready = () => {
 
   for (const exit of exits) {
     exit.addEventListener("pointerenter", () => {
-      return highlight(exits, exit);
+      highlight(exits, exit);
     });
     exit.addEventListener("focus", () => {
-      return highlight(exits, exit);
+      highlight(exits, exit);
     });
   }
 

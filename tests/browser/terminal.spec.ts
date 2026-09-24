@@ -55,13 +55,13 @@ test("should drop the boot floor under reduced motion", async ({ page }) => {
 for (const [geste, jouer] of [
   [
     "a key",
-    async (page: Page) => {
+    (page: Page) => {
       return page.keyboard.press("Enter");
     },
   ],
   [
     "a click",
-    async (page: Page) => {
+    (page: Page) => {
       return page.locator("[data-boot]").click();
     },
   ],

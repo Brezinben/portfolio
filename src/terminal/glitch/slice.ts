@@ -92,7 +92,7 @@ export const glitchSlice = () => {
     glitchLater(this: Shell, mode: string) {
       clearTimeout(this.glitchWait);
       this.glitchWait = setTimeout(() => {
-        return this.glitchStart(mode);
+        this.glitchStart(mode);
       }, SUDO_MS);
     },
 
@@ -161,7 +161,7 @@ export const glitchSlice = () => {
       }, TICK_MS);
 
       this.glitchEnd = setTimeout(() => {
-        return this.glitchStop();
+        this.glitchStop();
       }, GLITCH_MS);
     },
 
