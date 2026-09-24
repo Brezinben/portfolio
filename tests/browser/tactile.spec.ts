@@ -165,11 +165,9 @@ test.describe("on desktop", () => {
   test("should keep the panes side by side", async ({ page }) => {
     await boot(page);
 
-    const [nav, main, out] = await Promise.all(
-      ["nav", "main", "out"].map((name) => {
-        return boxOf(page.locator(`[data-pane="${name}"]`));
-      }),
-    );
+    const nav = await boxOf(page.locator('[data-pane="nav"]')),
+      main = await boxOf(page.locator('[data-pane="main"]')),
+      out = await boxOf(page.locator('[data-pane="out"]'));
 
     expect(nav.x + nav.width, "the left pane ends before the main pane").toBeLessThanOrEqual(
       main.x,

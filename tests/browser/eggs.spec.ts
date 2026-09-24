@@ -31,7 +31,7 @@ test("should keep the multiple spaces of the ASCII art", async ({ page }) => {
   const spacing = await page
     .locator("[data-journal] span", { hasText: "^__^" })
     .first()
-    .evaluate((node) => {
+    .evaluate((node: HTMLElement) => {
       // « innerText » rend le texte tel qu'il est peint : les espaces fondues en disparaissent.
       // « textContent » garderait tout et passerait toujours.
       // oxlint-disable-next-line unicorn/prefer-dom-node-text-content

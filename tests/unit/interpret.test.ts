@@ -705,3 +705,21 @@ it("should refuse the command without lying during a form change", () => {
     assert.equal(effectOf(result, "blowUp"), undefined, command);
   }
 });
+
+// Un mot du titre pèse plus que ses répétitions ailleurs : « stack » ouvre la section stack.
+it("should prefer the passage whose title holds the word", () => {
+  const result = interpret("ask stack", {
+    ...CONTEXT,
+    sections: [
+      { ask: "La stack, la stack, toute la stack de Benjamin.", id: "whoami", label: "whoami" },
+      { ask: "Vue, React, NestJS.", id: "stack", label: "stack" },
+    ],
+  });
+
+  assert.ok(
+    texts(result).some((t) => {
+      return t.includes("Vue, React");
+    }),
+    "the stack section answers",
+  );
+});
