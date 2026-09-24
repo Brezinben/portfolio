@@ -560,19 +560,16 @@ test("should keep the last frame of a splat that is held long", async ({ page })
   // La passe dure 0,96 s. On attend bien au-dela, comme une main qui ne lache pas.
   await page.waitForTimeout(1600);
 
-  // La dernière case commence une case avant le bord droit de la bande : au-delà, la
-  // mascotte montre du vide.
-  const { band, frame, offset } = await mascot(page).evaluate((node) => {
-    const style = getComputedStyle(node);
-
+  // La passe du plaquage compte douze cases. La case tenue est la douzième : la treizième
+  // tombe hors du dessin, et la mascotte montre du vide.
+  const { frame, offset } = await mascot(page).evaluate((node) => {
     return {
-      band: Number.parseFloat(style.backgroundSize),
       frame: node.getBoundingClientRect().width,
-      offset: -Number.parseFloat(style.backgroundPositionX),
+      offset: -Number.parseFloat(getComputedStyle(node).backgroundPositionX),
     };
   });
 
-  expect(offset, "the held frame stays inside the drawing").toBeLessThanOrEqual(band - frame);
+  expect(offset, "the held frame is the twelfth one").toBe(11 * frame);
 
   await page.mouse.up();
 });

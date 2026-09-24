@@ -55,6 +55,17 @@ const CONTEXT: Context = {
     });
   };
 
+// L'interpréteur est pur : il rend des effets, et ne touche jamais au contexte qu'il reçoit.
+it("should leave its context untouched", () => {
+  const before = JSON.stringify(CONTEXT);
+
+  for (const command of ["ls", "help", "cd stack", "ask accessibilité", "/joke", "xyzzy"]) {
+    interpret(command, CONTEXT);
+  }
+
+  assert.equal(JSON.stringify(CONTEXT), before);
+});
+
 it("should produce nothing on an empty input", () => {
   for (const empty of ["", "   ", "\t"]) {
     assert.deepEqual(interpret(empty, CONTEXT), { effects: [], lines: [] });

@@ -107,18 +107,29 @@ test("should draw the mascot from the merged sheet", async ({ page }) => {
 // Le « hue-rotate » accorde les couleurs cuites dans le PNG au thème. Posé sur le bouton,
 // il repeignait aussi son contour de focus : l'ambre y virait au rose sur quatre thèmes.
 test("should keep the focus ring out of the mascot hue filter", async ({ page }) => {
-  await setOptions(page, JSON.stringify({ theme: "azureus" }));
+  const filters = () => {
+    return mascot(page).evaluate((node) => {
+      return {
+        button: getComputedStyle(node).filter,
+        sprite: getComputedStyle(node, "::before").filter,
+      };
+    });
+  };
+
+  // Sans réglage, la page suit le système, et ni le sombre ni le clair ne tournent la teinte.
   await page.goto(UNKNOWN);
 
-  const filters = await mascot(page).evaluate((node) => {
-    return {
-      button: getComputedStyle(node).filter,
-      sprite: getComputedStyle(node, "::before").filter,
-    };
-  });
+  const untouched = await filters();
 
-  expect(filters.button, "the button draws the outline, so it stays unfiltered").toBe("none");
-  expect(filters.sprite, "the sprite follows the theme").toMatch(/^hue-rotate\(/u);
+  await page.evaluate(() => {
+    localStorage.setItem("bd-term-opts", JSON.stringify({ theme: "azureus" }));
+  });
+  await page.reload();
+
+  const tuned = await filters();
+
+  expect(tuned.button, "the button draws the outline, so it stays unfiltered").toBe("none");
+  expect(tuned.sprite, "the sprite follows the theme").not.toBe(untouched.sprite);
 });
 
 // Une seule sortie est mise en avant, et elle suit le pointeur comme le clavier. La
