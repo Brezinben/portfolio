@@ -11,7 +11,9 @@ import type { AchievementsApi, AchievementsState } from "./achievements/slice.ts
 import type { GlitchApi, GlitchState } from "./glitch/slice.ts";
 import type { GlobalEntry, TrackValue } from "../interpret.ts";
 import type { GlobalSearchApi, GlobalSearchState } from "./global-search/slice.ts";
+import type { KeyboardApi, KeyboardState } from "./keyboard/slice.ts";
 import type { MascotApi, MascotState } from "./mascot/slice.ts";
+import type { OptionsApi, OptionsState } from "./options/slice.ts";
 import type { RadioApi, RadioState } from "./radio/slice.ts";
 import type { Section } from "./format.ts";
 
@@ -35,7 +37,9 @@ export type Beat = ReturnType<typeof setInterval>;
 // du systeme en cours de visite : une tranche le lit, elle ne le copie jamais.
 export interface Shared {
   anim: boolean;
+  booting: boolean;
   details: Section[];
+  goSection(id: string, options?: { push?: boolean; via?: TrackSource }): void;
   // Les deux accesseurs de la recherche globale. Ils vivent dans app.ts : aucune tranche n'en
   // porte, et une tranche qui les recalculerait classerait l'index une seconde fois.
   globalGhost: string;
@@ -44,16 +48,22 @@ export interface Shared {
   missions: { id: string; state?: string }[];
   // Vrai tant qu'une des trois modales est ouverte : le reste de la page devient inerte.
   modalOpen: boolean;
+  logH: number;
   online: boolean;
+  openTimeline(index: number): void;
   modelState: string;
   out: boolean;
+  radioStop(): void;
   reduced: boolean;
+  section: string;
   sections: Section[];
   shortcuts: boolean;
+  skipBoot(): boolean;
   // « typed » distingue une commande tapee d'une commande lancee a la souris : le succes de
   // la premiere commande dit « tapee, pas cliquee ».
   submit(options?: { typed?: boolean }): void;
   tech: string;
+  wantResult: boolean;
   techNotes: Record<string, { note?: string; where?: string }>;
   track(event: string, props?: Record<string, TrackValue>): void;
 }
@@ -68,8 +78,12 @@ export interface Terminal
     GlitchState,
     GlobalSearchApi,
     GlobalSearchState,
+    KeyboardApi,
+    KeyboardState,
     MascotApi,
     MascotState,
+    OptionsApi,
+    OptionsState,
     RadioApi,
     RadioState,
     Shared {}

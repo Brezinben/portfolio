@@ -15,7 +15,6 @@ import {
   ghostFor,
   hintFor,
   interpret,
-  keepKnown,
   rankHits,
   safeTone,
   seenCount,
@@ -36,26 +35,21 @@ import {
   EXEC_MS,
   FADE_MS,
   GLOBAL_LIMIT,
-  OPTS_KEY,
-  PANES,
   PANE_GAP_PX,
   RESULT_MIN_PX,
   THEMES,
   TOGGLES,
   TYPE_CPS,
-  type ToggleKey,
-  VERTICAL,
 } from "./terminal/settings.ts";
 import { type AchievementsState, achievementsSlice } from "./terminal/achievements/slice.ts";
 import type { Beat, Delay, Magics, TrackSource } from "./terminal/shell.ts";
 import { GAUGE_AT, type GlitchState, SHIFT_COUNT, glitchSlice } from "./terminal/glitch/slice.ts";
 import { type GlobalSearchState, globalSearchSlice } from "./terminal/global-search/slice.ts";
+import { type KeyboardState, keyboardSlice } from "./terminal/keyboard/slice.ts";
 import { type MascotState, mascotSlice } from "./terminal/mascot/slice.ts";
+import { type OptionsState, optionsSlice } from "./terminal/options/slice.ts";
 import type { RadioApi, RadioState } from "./terminal/radio/slice.ts";
 import { type Section, barParts, printed, section } from "./terminal/format.ts";
-import { knownTheme, readOpts } from "./terminal/opts.ts";
-import { readMarks, writeMarks } from "./terminal/achievements/store.ts";
-import { MORPH_HOLD_MS } from "./terminal/mascot/constants.ts";
 import { windowTop } from "./terminal/suggest.ts";
 
 // Une mission du volet gauche : sa pastille et son etat.
@@ -105,16 +99,6 @@ interface Share {
 
 // Alpine vient du script vendu a cote de la page : il n'apporte pas ses types.
 
-const rect = (node: Element) => {
-    return node.getBoundingClientRect();
-  },
-  paneOf = (node: Element | null) => {
-    return node?.closest<HTMLElement>("[data-pane]")?.dataset.pane;
-  },
-  isScrollRegion = (node: EventTarget | null) => {
-    return node instanceof Element && node.matches('[role="region"][tabindex="0"], [role="log"]');
-  };
-
 declare const Alpine: {
   data: (name: string, factory: () => State) => void;
 };
@@ -155,11 +139,18 @@ const askFailure = (cause: unknown) => {
 
 // Ce que la page tient en memoire. Les minuteurs en font partie : les declarer les rend
 // visibles. « RadioState » vient de la tranche qui l'emploie, pour ne pas deriver.
-interface State extends AchievementsState, GlitchState, GlobalSearchState, MascotState, RadioState {
+interface State
+  extends
+    AchievementsState,
+    GlitchState,
+    GlobalSearchState,
+    KeyboardState,
+    MascotState,
+    OptionsState,
+    RadioState {
   asker: AbortController | undefined;
   compactor: Delay | undefined;
   latency: Delay | undefined;
-  morphTimer: Delay | undefined;
   booter: Delay | undefined;
   spinner: Beat | undefined;
   ticker: Beat | undefined;
@@ -175,7 +166,6 @@ interface State extends AchievementsState, GlitchState, GlobalSearchState, Masco
   details: Section[];
   errDetail: string;
   feedback: Record<string, string>;
-  focusAt: Record<string, number>;
   input: string;
   jokeIndex: number;
   jokes: string[];
@@ -185,13 +175,10 @@ interface State extends AchievementsState, GlitchState, GlobalSearchState, Masco
   missions: Mission[];
   more: { journal: boolean };
   used: number;
-  optsOpen: boolean;
   modelState: string;
   // Qui a ouvert la modale : le bouton de l'en-tete, ou la saisie via la commande.
-  optsReturn: HTMLElement | undefined;
   online: boolean;
   out: boolean;
-  pane: string;
   pending: string | undefined;
   power: "boot" | "fade" | "off" | "on";
   profileEmail: string;
@@ -226,7 +213,6 @@ interface State extends AchievementsState, GlitchState, GlobalSearchState, Masco
   suggTop: number;
   tech: string;
   techNotes: Record<string, TechNote>;
-  theme: string;
   timeline: Step[];
   timelineAt: number;
   typed: string;
@@ -239,7 +225,14 @@ interface State extends AchievementsState, GlitchState, GlobalSearchState, Masco
 //
 // L'etalement est sur ici : une tranche ne porte jamais d'accesseur.
 const slices = () => {
-  return { ...achievementsSlice(), ...glitchSlice(), ...globalSearchSlice(), ...mascotSlice() };
+  return {
+    ...achievementsSlice(),
+    ...glitchSlice(),
+    ...globalSearchSlice(),
+    ...keyboardSlice(),
+    ...mascotSlice(),
+    ...optionsSlice(),
+  };
 };
 
 // « RadioApi » n'est pas dans « slices » : sa tranche arrive par import dynamique, une fois
@@ -426,314 +419,6 @@ document.addEventListener("alpine:init", () => {
         this.watchNetwork();
         void this.learnModel();
         void this.load();
-      },
-
-      items(pane: string) {
-        return [
-          ...document.querySelectorAll<HTMLElement>(
-            `[data-pane="${pane}"] button:not(:disabled), [data-pane="${pane}"] input`,
-          ),
-        ];
-      },
-
-      // Le focus est mémorisé par volet : y revenir repose le curseur où on l'avait
-      // laissé, plutôt qu'en tête de liste.
-      focusPane(pane: string) {
-        const entries = this.items(pane);
-
-        if (entries.length === 0) {
-          return;
-        }
-
-        this.pane = pane;
-        this.focusAt[pane] = Math.min(this.focusAt[pane] ?? 0, entries.length - 1);
-        entries[this.focusAt[pane] ?? 0]?.focus();
-      },
-
-      movePane(step: number) {
-        const next = PANES.indexOf(paneOf(document.activeElement) ?? this.pane) + step;
-
-        if (next >= 0 && next < PANES.length) {
-          this.focusPane(PANES[next] ?? "nav");
-        }
-      },
-
-      // Le volet courant se lit sur le focus : Tab et la souris deplacent le focus sans
-      // passer par focusPane.
-      moveInPane(step: number) {
-        const pane = paneOf(document.activeElement) ?? this.pane,
-          entries = this.items(pane);
-
-        if (entries.length === 0) {
-          return;
-        }
-
-        const active = document.activeElement,
-          here = active instanceof HTMLElement ? entries.indexOf(active) : -1,
-          from = here === -1 ? (this.focusAt[pane] ?? 0) : here;
-
-        this.pane = pane;
-        this.focusAt[pane] = Math.max(0, Math.min(entries.length - 1, from + step));
-        entries[this.focusAt[pane] ?? 0]?.focus();
-      },
-
-      moveSection(step: number) {
-        const ids = this.sections.map((entry) => {
-            return entry.id;
-          }),
-          next = ids.indexOf(this.section) + step;
-
-        if (next >= 0 && next < ids.length) {
-          this.goSection(ids[next] ?? "whoami");
-        }
-      },
-
-      // Une grille se parcourt aux quatre fleches. La stack en compte une par domaine : un pas
-      // fixe, deduit de la premiere ligne, changeait de colonne des qu'une ligne etait incomplete
-      // ou qu'on passait au domaine suivant. Les lignes se lisent donc sur la position reelle des cellules.
-      gridMove(selector: string, key: string) {
-        const cells = [...document.querySelectorAll<HTMLElement>(selector)],
-          at =
-            document.activeElement instanceof HTMLElement
-              ? cells.indexOf(document.activeElement)
-              : -1;
-
-        if (at === -1 || !VERTICAL.has(key)) {
-          return this.rowMove(cells, at, key);
-        }
-
-        // SAFETY: « at » vient de cells.indexOf et le cas -1 est sorti juste au-dessus,
-        // donc l'index designe une cellule de la liste.
-        const from = rect(cells[at] as HTMLElement),
-          beyond = cells.filter((cell) => {
-            return key === "ArrowDown"
-              ? rect(cell).top > from.top + 1
-              : rect(cell).top < from.top - 1;
-          });
-
-        if (beyond.length === 0) {
-          return true;
-        }
-
-        // La colonne prime sur la ligne. Une derniere ligne plus courte n'a pas de cellule dans la
-        // colonne du curseur : viser la ligne d'a cote le faisait glisser tout a gauche, et les
-        // frappes suivantes partaient d'ailleurs. Le curseur saute donc cette ligne pour retrouver sa colonne.
-        const inColumn = beyond.filter((cell) => {
-          return Math.abs(rect(cell).left - from.left) < 1;
-        });
-
-        if (inColumn.length > 0) {
-          inColumn
-            .reduce((best, cell) => {
-              return Math.abs(rect(cell).top - from.top) < Math.abs(rect(best).top - from.top)
-                ? cell
-                : best;
-            })
-            .focus();
-
-          return true;
-        }
-
-        // Plus rien dans cette colonne : le curseur prend la cellule la plus proche de la
-        // premiere ligne atteignable, plutot que de rester sur place.
-        const tops = beyond.map((cell) => {
-            return rect(cell).top;
-          }),
-          edge = key === "ArrowDown" ? Math.min(...tops) : Math.max(...tops),
-          row = beyond.filter((cell) => {
-            return Math.abs(rect(cell).top - edge) < 1;
-          });
-
-        row
-          .reduce((best, cell) => {
-            return Math.abs(rect(cell).left - from.left) < Math.abs(rect(best).left - from.left)
-              ? cell
-              : best;
-          })
-          .focus();
-
-        return true;
-      },
-
-      // Gauche et droite suivent l'ordre du document : c'est l'ordre de lecture.
-      rowMove(cells: HTMLElement[], at: number, key: string) {
-        if (at === -1 || (key !== "ArrowLeft" && key !== "ArrowRight")) {
-          return false;
-        }
-
-        cells[
-          Math.max(0, Math.min(cells.length - 1, at + (key === "ArrowRight" ? 1 : -1)))
-        ]?.focus();
-
-        return true;
-      },
-
-      // Dans une liste a une colonne, la fleche droite valide et descend vers le volet
-      // suivant : c'est ce qu'un terminal fait.
-      listMove(selector: string, key: string, activate: (at: number) => void) {
-        const items = [...document.querySelectorAll<HTMLElement>(selector)],
-          at =
-            document.activeElement instanceof HTMLElement
-              ? items.indexOf(document.activeElement)
-              : -1;
-
-        if (at === -1) {
-          return false;
-        }
-
-        if (key === "ArrowRight") {
-          activate(at);
-
-          return true;
-        }
-
-        if (key === "ArrowUp" || key === "ArrowDown") {
-          items[
-            Math.max(0, Math.min(items.length - 1, at + (key === "ArrowDown" ? 1 : -1)))
-          ]?.focus();
-
-          return true;
-        }
-
-        return false;
-      },
-
-      onKey(event: KeyboardEvent) {
-        // Le raccourci de la recherche globale passe avant la sortie sur les modificateurs,
-        // qui l'avalerait. Ctrl et Cmd ouvrent tous les deux : la page sert les deux systemes.
-        if ((event.metaKey || event.ctrlKey) && (event.key === "k" || event.key === "K")) {
-          event.preventDefault();
-
-          if (this.globalOpen) {
-            this.closeGlobal();
-          } else if (!this.booting && !this.modalOpen) {
-            this.openGlobal();
-          }
-
-          return;
-        }
-
-        // Un element qui traite sa touche l'a deja consommee. Sans cette sortie, la
-        // fleche de la poignee deplace aussi le focus de volet.
-        if (event.altKey || event.ctrlKey || event.metaKey || event.defaultPrevented) {
-          return;
-        }
-
-        // Entrée maintenue : le système répète la touche, et le navigateur fabrique un clic
-        // par répétition. Valider au clavier envoyait alors dix mesures pour un seul geste.
-        // Les flèches gardent leur répétition, qui sert à parcourir une liste.
-        if (event.repeat && event.key === "Enter") {
-          event.preventDefault();
-
-          return;
-        }
-
-        // La touche qui abrege le boot s'arrete la : sans cette sortie, elle partirait
-        // aussi dans la saisie, et le visiteur taperait une commande sans le vouloir.
-        if (this.skipBoot()) {
-          event.preventDefault();
-
-          return;
-        }
-
-        // Une modale a son propre clavier. Sans cette garde, les deux gestionnaires
-        // traitent la même flèche et le focus s'échappe de la modale.
-        if (this.modalOpen) {
-          return;
-        }
-
-        // Toute saisie garde ses touches : « j », « k » et « / » s'y tapent, et les flèches
-        // y déplacent le curseur. Seule la ligne de commande vide rend la main aux volets.
-        // Sans cette garde, le champ de seed devenait impossible à corriger.
-        if (event.target instanceof HTMLInputElement) {
-          const leaving =
-            event.target === this.$refs.cli &&
-            this.input === "" &&
-            (event.key === "ArrowLeft" || event.key === "ArrowRight");
-
-          if (!leaving) {
-            return;
-          }
-        }
-
-        // Cinq appuis sur Shift corrompent l'affichage. La garde ci-dessus laisse deja
-        // passer la majuscule tapee dans la ligne de commande : elle ne compte pas.
-        if (event.key === "Shift") {
-          // Le systeme repete une touche maintenue : sans cette sortie, garder Shift
-          // enfonce armait l'egg tout seul en une fraction de seconde.
-          if (!event.repeat) {
-            this.glitchShift();
-          }
-
-          return;
-        }
-
-        // La bascule ne coupe que les touches de caractere : les fleches restent la
-        // navigation elle-meme, pas un raccourci.
-        if (this.shortcuts && event.key === "/") {
-          event.preventDefault();
-          this.$refs.cli?.focus();
-
-          return;
-        }
-
-        if (this.shortcuts && (event.key === "j" || event.key === "k")) {
-          event.preventDefault();
-          this.moveSection(event.key === "j" ? 1 : -1);
-
-          return;
-        }
-
-        // Chaque zone a sa logique. La stack est une grille, les sections et la frise
-        // sont des listes ou la fleche droite valide, le reste change de volet.
-        const handled =
-          this.gridMove("[data-tech]", event.key) ||
-          this.listMove('[data-ctl="nav"]', event.key, (at) => {
-            const items = [...document.querySelectorAll<HTMLElement>('[data-ctl="nav"]')];
-
-            // De gauche a droite : valider une section amene a sa premiere prise (stack, frise), ou a
-            // la ligne de commande si elle n'en a pas. L'intention se pose avant le clic : une section
-            // deja vue s'affiche sans frappe, et la prise se ferait avant que l'intention soit connue.
-            this.wantResult = true;
-            items[at]?.click();
-          }) ||
-          this.listMove('[data-ctl="tl"]', event.key, (at) => {
-            this.openTimeline(at);
-          });
-
-        if (handled) {
-          event.preventDefault();
-
-          return;
-        }
-
-        // Une region qui defile garde ses fleches verticales : c'est pour les lire qu'elle
-        // prend le focus.
-        if (VERTICAL.has(event.key) && isScrollRegion(event.target)) {
-          return;
-        }
-
-        const fallback = {
-          ArrowDown: () => {
-            this.moveInPane(1);
-          },
-          ArrowLeft: () => {
-            this.movePane(-1);
-          },
-          ArrowRight: () => {
-            this.movePane(1);
-          },
-          ArrowUp: () => {
-            this.moveInPane(-1);
-          },
-        }[event.key];
-
-        if (!fallback) {
-          return;
-        }
-
-        event.preventDefault();
-        fallback();
       },
 
       // Une grille à flèches n'a qu'un arrêt de tabulation : la brique suivie, sinon la
@@ -1160,201 +845,6 @@ document.addEventListener("alpine:init", () => {
         return globalThis.matchMedia?.("(max-width: 900px)").matches ?? false;
       },
 
-      // Le systeme a deja tranche : sous mouvement reduit, la bascule des animations ne
-      // peut plus rien changer. La laisser active ferait croire le contraire.
-      lockedToggle(key: ToggleKey) {
-        return key === "anim" && this.reduced;
-      },
-
-      value(key: ToggleKey) {
-        return this[key] && !this.lockedToggle(key);
-      },
-
-      flip(key: ToggleKey) {
-        if (this.lockedToggle(key)) {
-          return;
-        }
-
-        this[key] = !this[key];
-        this.track("option", { cle: key, valeur: this[key] });
-        this.persist();
-
-        // La boucle de rendu de la radio s'arrete quand l'animation se coupe. Rien ne la
-        // rallumerait sans cet appel : le depot ne porte aucun observateur de reglage.
-        if (key === "anim" && this.radioOn) {
-          this.radioDraw();
-        }
-
-        // Le volet de sortie est la seule surface de la radio, et « /radio » le rallume pour
-        // cette raison. L'eteindre la laisserait jouer sans rien pour l'arreter.
-        if (key === "out" && !this.out) {
-          this.radioStop();
-        }
-      },
-
-      setTheme(id: string, via: TrackSource = "interface") {
-        this.track("theme", { nom: id, via });
-        this.markTheme(id);
-
-        // Le choix se fait depuis la modale, donc la mue tient jusqu'a sa fermeture. Le
-        // marquer ici et non dans apply() : startViewTransition differe le rappel, et une
-        // fermeture rapide passerait devant lui.
-        clearTimeout(this.morphTimer);
-        this.morphHeld = this.optsOpen;
-
-        const apply = () => {
-          this.theme = id;
-          this.persist();
-          this.mascotPlay("morph");
-        };
-
-        // Le réglage « animations off » et la préférence système coupent aussi le fondu.
-        if (!this.anim || this.reduced || !("startViewTransition" in document)) {
-          apply();
-
-          return;
-        }
-
-        document.startViewTransition(() => {
-          apply();
-        });
-      },
-
-      themeButtons() {
-        return [...document.querySelectorAll<HTMLElement>("[data-opts] [data-theme-choice]")];
-      },
-
-      toggleButtons() {
-        return [
-          ...document.querySelectorAll<HTMLElement>("[data-opts] [data-toggle]:not(:disabled)"),
-        ];
-      },
-
-      // Le reglage courant se lit sur l'element focalise. Le deduire d'un compteur le
-      // desynchronisait des qu'on arrivait par tabulation ou a la souris : le focus
-      // etait sur « animations » et la fleche droite modifiait « dense lines ».
-      focused() {
-        const active = document.activeElement,
-          theme = active instanceof HTMLElement ? this.themeButtons().indexOf(active) : -1;
-
-        if (theme !== -1) {
-          return { group: "theme", index: theme };
-        }
-
-        const toggle = active instanceof HTMLElement ? this.toggleButtons().indexOf(active) : -1;
-
-        return toggle === -1 ? undefined : { group: "toggle", index: toggle };
-      },
-
-      focusSetting() {
-        const active = document.querySelector<HTMLElement>(
-          "[data-opts] [data-theme-choice][aria-pressed='true']",
-        );
-
-        (active ?? this.themeButtons()[0])?.focus();
-      },
-
-      // Les themes sont sur plusieurs lignes : les quatre fleches doivent y naviguer.
-      // Les boutons d'une meme ligne partagent leur position verticale.
-      themeColumns() {
-        const buttons = this.themeButtons(),
-          top = buttons[0]?.offsetTop;
-
-        return Math.max(
-          1,
-          buttons.filter((button) => {
-            return button.offsetTop === top;
-          }).length,
-        );
-      },
-
-      moveTheme(index: number) {
-        const buttons = this.themeButtons(),
-          target = buttons[Math.max(0, Math.min(buttons.length - 1, index))];
-
-        if (!target) {
-          return;
-        }
-
-        this.setTheme(target.dataset.themeChoice ?? "dark");
-        this.$nextTick(() => {
-          target.focus();
-        });
-      },
-
-      optsKey(event: KeyboardEvent) {
-        if (event.key === "Escape") {
-          event.preventDefault();
-          this.closeOpts();
-
-          return;
-        }
-
-        // La grille des thèmes se parcourt aux flèches : Tab n'y garde qu'un arrêt, le thème
-        // qui a le focus, sinon le thème choisi.
-        if (event.key === "Tab") {
-          const active = document.activeElement,
-            inThemes = active instanceof HTMLElement && active.matches("[data-theme-choice]"),
-            focusable = [
-              ...document.querySelectorAll<HTMLElement>(
-                "[data-opts] [data-ctl='opt']:not(:disabled)",
-              ),
-            ].filter((node) => {
-              if (!node.matches("[data-theme-choice]")) {
-                return true;
-              }
-
-              return inThemes ? node === active : node.getAttribute("aria-pressed") === "true";
-            }),
-            at = active instanceof HTMLElement ? focusable.indexOf(active) : -1,
-            next = (at + (event.shiftKey ? -1 : 1) + focusable.length) % focusable.length;
-
-          event.preventDefault();
-          focusable[next]?.focus();
-
-          return;
-        }
-
-        const here = this.focused();
-
-        if (!here || !["ArrowDown", "ArrowLeft", "ArrowRight", "ArrowUp"].includes(event.key)) {
-          return;
-        }
-
-        event.preventDefault();
-
-        if (here.group === "theme") {
-          const columns = this.themeColumns(),
-            step = { ArrowDown: columns, ArrowLeft: -1, ArrowRight: 1, ArrowUp: -columns }[
-              event.key
-            ],
-            next = here.index + (step ?? 0);
-
-          // Sortir de la grille par le bas mene au premier reglage suivant.
-          if (next >= this.themeButtons().length) {
-            this.toggleButtons()[0]?.focus();
-          } else {
-            this.moveTheme(next);
-          }
-
-          return;
-        }
-
-        if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
-          this.flip(TOGGLES[here.index]?.key ?? "anim");
-
-          return;
-        }
-
-        const next = here.index + (event.key === "ArrowDown" ? 1 : -1);
-
-        if (next < 0) {
-          this.focusSetting();
-        } else {
-          this.toggleButtons()[next]?.focus();
-        }
-      },
-
       get themeLabel() {
         return (
           THEMES.find((entry) => {
@@ -1462,90 +952,6 @@ document.addEventListener("alpine:init", () => {
         return groups;
       },
 
-      restore() {
-        const saved = readOpts();
-
-        // Cinq clés, et cinq seulement, chacune verifiee avant d'entrer dans l'etat.
-        if (saved.anim === true || saved.anim === false) {
-          this.anim = saved.anim;
-        }
-
-        if (saved.out === true || saved.out === false) {
-          this.out = saved.out;
-        }
-
-        if (saved.shortcuts === true || saved.shortcuts === false) {
-          this.shortcuts = saved.shortcuts;
-        }
-
-        if (Number.isFinite(saved.logH)) {
-          this.logH = Number(saved.logH);
-        }
-
-        this.theme = knownTheme(saved);
-
-        // Le catalogue bouge, le stockage non : une clé retirée disparaît sans laisser
-        // d'orphelin. Les pages annexes écrivent ici, depuis un autre onglet.
-        const stored = readMarks();
-
-        this.achievements = keepKnown(stored);
-
-        // Le nettoyage se réécrit, et ne reste pas en mémoire. « addMark » relit le stockage
-        // brut avant d'écrire : sans cette passe, l'orphelin revenait au premier déblocage.
-        if (this.achievements.length !== stored.length) {
-          writeMarks(this.achievements);
-        }
-      },
-
-      persist() {
-        try {
-          globalThis.localStorage.setItem(
-            OPTS_KEY,
-            JSON.stringify({
-              anim: this.anim,
-              logH: this.logH,
-              out: this.out,
-              shortcuts: this.shortcuts,
-              theme: this.theme,
-            }),
-          );
-        } catch {
-          // Navigation privée ou stockage plein : le réglage vaut pour cette visite.
-        }
-      },
-
-      openOpts(via: TrackSource = "interface") {
-        this.track("options_ouvertes", { via });
-        this.optsReturn =
-          document.activeElement instanceof HTMLElement ? document.activeElement : undefined;
-        this.optsOpen = true;
-        this.$nextTick(() => {
-          this.focusSetting();
-        });
-      },
-
-      closeOpts() {
-        this.optsOpen = false;
-        // « isConnected » : « options » lancé depuis la recherche globale a capturé le champ
-        // de la zone, que la fermeture détache. Un nœud détaché reste vrai, et le focus
-        // tombait alors sur le corps de la page. Même garde que les deux autres modales.
-        this.$nextTick(() => {
-          const back = this.optsReturn?.isConnected === true ? this.optsReturn : undefined;
-
-          (back ?? document.querySelector<HTMLElement>("[data-ctl='opts']"))?.focus();
-        });
-
-        if (!this.morphHeld) {
-          return;
-        }
-
-        // Fermer au milieu d'une passe n'en montrerait qu'un eclat. Le sursis passe, la
-        // passe en cours s'acheve, et settle() rend le repos.
-        clearTimeout(this.morphTimer);
-        this.morphTimer = setTimeout(() => {
-          this.morphHeld = false;
-        }, MORPH_HOLD_MS);
-      },
       fromHash() {
         const id = globalThis.location.hash.slice(1);
 
@@ -2344,11 +1750,10 @@ document.addEventListener("alpine:init", () => {
         this.complete();
       },
 
-      // Sans proposition, Tab garde son role de navigation : avaler Tab enferme le visiteur
-      // dans la ligne. Une ligne vide garde tout le vocabulaire en reserve, et n'en propose
-      // rien. Shift+Tab n'est jamais une completion.
+      // Sans proposition, Tab garde son role de navigation : l'avaler enfermait le
+      // visiteur dans la ligne. Shift+Tab n'est jamais une completion.
       tab(event: KeyboardEvent) {
-        if (event.shiftKey || this.input === "" || this.sugg.length === 0) {
+        if (event.shiftKey || this.sugg.length === 0) {
           return;
         }
 
