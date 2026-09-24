@@ -11,8 +11,8 @@ import type { AchievementsApi, AchievementsState } from "./achievements/slice.ts
 import type { GlitchApi, GlitchState } from "./glitch/slice.ts";
 import type { GlobalEntry, TrackValue } from "../interpret.ts";
 import type { GlobalSearchApi, GlobalSearchState } from "./global-search/slice.ts";
+import type { MascotApi, MascotState } from "./mascot/slice.ts";
 import type { RadioApi, RadioState } from "./radio/slice.ts";
-import type { MascotApi } from "./mascot/slice.ts";
 import type { Section } from "./format.ts";
 
 // Alpine pose ses magies sur le composant apres l'avoir construit : elles ne sont pas dans
@@ -35,7 +35,6 @@ export type Beat = ReturnType<typeof setInterval>;
 // du systeme en cours de visite : une tranche le lit, elle ne le copie jamais.
 export interface Shared {
   anim: boolean;
-  blowUp(via: TrackSource): void;
   details: Section[];
   // Les deux accesseurs de la recherche globale. Ils vivent dans app.ts : aucune tranche n'en
   // porte, et une tranche qui les recalculerait classerait l'index une seconde fois.
@@ -45,6 +44,7 @@ export interface Shared {
   missions: { id: string; state?: string }[];
   // Vrai tant qu'une des trois modales est ouverte : le reste de la page devient inerte.
   modalOpen: boolean;
+  online: boolean;
   modelState: string;
   out: boolean;
   reduced: boolean;
@@ -69,6 +69,7 @@ export interface Terminal
     GlobalSearchApi,
     GlobalSearchState,
     MascotApi,
+    MascotState,
     RadioApi,
     RadioState,
     Shared {}
