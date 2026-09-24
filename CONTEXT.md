@@ -121,6 +121,12 @@ Une entrée rendue par la recherche globale. Son rang est celui de la liste enti
 celui de son groupe : c'est ce rang que les flèches déplacent.
 _Avoid_: résultat, proposition, suggestion, match.
 
+**Proposition** (`suggestion`) :
+Une entrée de la liste qui s'ouvre au-dessus de la ligne de commande pendant la frappe.
+`Tab` ou la flèche droite l'applique. Elle complète la saisie, là où une trouvaille rend
+une commande depuis la recherche globale.
+_Avoid_: trouvaille, suggestion, autocomplétion, hint.
+
 **Complétion fantôme** (`ghost`) :
 La fin de la première trouvaille, affichée en retrait derrière la saisie, et acceptée par
 `Tab`. Elle n'apparaît que si cette trouvaille **commence** par la saisie : compléter vers
