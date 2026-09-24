@@ -12,6 +12,7 @@ export interface OptionsState {
   // La mue du thème tient jusqu'à la fermeture de la modale, puis ce sursis.
   morphTimer: Delay | undefined;
   optsOpen: boolean;
+  // Qui a ouvert la modale : le bouton de l'en-tete, ou la saisie via la commande.
   optsReturn: HTMLElement | undefined;
   theme: string;
 }

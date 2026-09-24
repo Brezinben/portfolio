@@ -3,9 +3,9 @@
 // La tranche ne porte aucun accesseur : elle ecrit dans l'etat, et le balisage lit l'etat.
 // Les hauteurs de barres font exception, et pour une raison — voir « radioDraw ».
 
+import type { Beat, Shell } from "../shell.ts";
 import { type Params, derive, newSeed, radioLines } from "./derive.ts";
 import { type Radio, radioEngine } from "./engine.ts";
-import type { Shell } from "../shell.ts";
 
 // Seize barres quand le volet est a son minimum, vingt au-dela. Sous 900 px le volet
 // s'empile et la bande grandit d'elle-meme par son « clamp ».
@@ -79,7 +79,7 @@ export interface RadioState {
   // rendre au retour. Une pause demandee par le visiteur, elle, ne se defait pas seule.
   radioSlept: boolean;
   radioSizer: ResizeObserver | undefined;
-  radioTicker: ReturnType<typeof setInterval> | undefined;
+  radioTicker: Beat | undefined;
   radioTyping: boolean;
 }
 

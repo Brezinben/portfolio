@@ -592,8 +592,6 @@ a:hover {
   min-width: 0;
 }
 
-/* La pastille dit l'état de l'entrée. Seule celle en cours bat. */
-/* Le rail relie les domaines de la stack. Le dernier n'a plus rien à relier. */
 .tm [data-ctl="tl"][aria-selected="true"] [data-tl-org] {
   font-weight: 700;
 }
@@ -602,6 +600,7 @@ a:hover {
   font-size: 12px;
 }
 
+/* Le rail relie les domaines de la stack. Le dernier n'a plus rien à relier. */
 .tm [data-branch-rail] {
   position: relative;
   display: flex;
@@ -614,6 +613,7 @@ a:hover {
   border-left-color: transparent;
 }
 
+/* La pastille dit l'état de l'entrée. Seule celle en cours bat. */
 .tm [data-dot] {
   width: 8px;
   height: 8px;
@@ -1100,16 +1100,14 @@ a:hover {
   gap: 10px;
 }
 
-/* Ce qui reste en ligne y reste pour une raison, et les raisons sont trois.
+/* Ce qui reste en ligne y reste pour deux raisons.
  Une classe ne doit jamais fermer ce que content.json a le droit d'ouvrir : « pad »,
  « size », « weight » et « letterSpacing » le traversent sans filtre, et les figer
  échangerait une valeur modifiable sans redéploiement contre une valeur bloquée par un
  déploiement.
  Une mesure continue n'est pas un état : la hauteur du journal se tire à la souris, la
- position de la mascotte se réécrit à chaque pointermove. Les tests les lisent sur
- node.style, et une propriété personnalisée n'y ajouterait qu'une indirection.
- La palette d'une pastille décrit un thème qui n'est pas appliqué, et le CSS ne sait
- pas lire les variables d'un thème qu'il ne porte pas. */
+ position de la mascotte se réécrit à chaque pointermove. La ligne ne porte alors que la
+ valeur, « --log-h » ou « left », et la feuille porte le reste. */
 
 .tm [data-pane="nav"] > div {
   flex: 1 1 auto;
@@ -2774,9 +2772,8 @@ a:hover {
 
 /* La permutation ne tire que dans les quatre alias : on reste toujours dans les couleurs
  du theme choisi, et jamais dans un arc-en-ciel. */
-/* Le conteneur des volets porte un « style » en ligne, qui bat toute regle de la feuille :
- l'animation passe donc par une variable, que la ligne lit en repli. Meme detour que
- « --panes-overflow ». Sans lui la permutation ne tournait pas, en silence. */
+/* L'animation des volets passe par « --panes-animation », que la regle de base lit en
+ premier : la permutation remplace ainsi le fondu d'allumage sans se battre avec lui. */
 .tm [data-panes][data-glitch] {
   position: relative;
   --panes-animation: glitch-theme var(--glitch-ms) steps(1, end) both;

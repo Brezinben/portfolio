@@ -39,8 +39,8 @@ export interface MascotState {
   direction: number;
   dragged: boolean;
   dragging: boolean;
-  // La forme affichee, la forme visee pendant une transition, et les feuilles deja tirees.
-  // Aucune des trois n'est persistee : chaque visite repart du slime.
+  // « form », « becoming » et « loaded » ne sont jamais persistes : chaque visite repart
+  // du slime.
   form: string;
   gone: boolean;
   grabAt: number;
@@ -234,9 +234,9 @@ export const mascotSlice = () => {
       }, AWAY_MS);
     },
 
-    // Le compte repart de zero : le slime peut exploser autant de fois qu'on veut. La feuille
-    // d'une forme ne part qu'a la demande, car le cube et le pingouin pesent plus que le slime.
-    // L'adresse empruntee est posee par la construction sur la piste, qui la reecrit comme tout chemin d'actif.
+    // La feuille d'une forme ne part qu'a la demande : le cube et le pingouin pesent plus que
+    // le slime. La construction pose l'adresse sur la piste, et la reecrit comme tout chemin
+    // d'actif.
     async loadForm(this: Shell, form: string) {
       if (this.loaded.has(form)) {
         return;

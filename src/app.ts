@@ -147,7 +147,6 @@ interface State
   missions: Mission[];
   more: { journal: boolean };
   modelState: string;
-  // Qui a ouvert la modale : le bouton de l'en-tete, ou la saisie via la commande.
   online: boolean;
   out: boolean;
   power: "boot" | "fade" | "off" | "on";
@@ -159,7 +158,6 @@ interface State
   // un aller-retour reseau : partir entre-temps ne doit pas la faire s'ouvrir quand meme.
   radioWanted: boolean;
   running: boolean;
-  // Le modele cherche, et rien n'est encore affiche : sa reponse remplacera l'attente.
   section: string;
   wantResult: boolean;
   sections: Section[];
@@ -208,8 +206,8 @@ const withMagics = <T>(
 };
 
 document.addEventListener("alpine:init", () => {
-  // Les proprietes sont triees, les methodes suivent un ordre de lecture : chargement,
-  // navigation, clavier, options, mascotte, commandes, jamais alphabetique pour ne pas disperser chaque sujet.
+  // Les proprietes sont triees. Les methodes suivent un ordre de lecture : chargement,
+  // navigation, commandes. Un tri alphabetique disperserait chaque sujet.
   // eslint-disable-next-line sort-keys
   Alpine.data("terminal", () => {
     // eslint-disable-next-line sort-keys

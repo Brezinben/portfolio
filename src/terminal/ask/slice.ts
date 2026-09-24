@@ -12,6 +12,7 @@ export interface AskState {
   feedback: Record<string, string>;
   // La proposition qui attend son oui.
   pending: string | undefined;
+  // Le modele cherche, et rien n'est encore affiche : sa reponse remplacera l'attente.
   thinking: boolean;
 }
 
