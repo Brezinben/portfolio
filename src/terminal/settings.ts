@@ -36,13 +36,16 @@ export const THEMES = [
   { acc: "#00707f", bg: "#f7fbfc", edge: "#cfdde1", id: "hibernus", label: "hibernus" },
 ];
 // Les valeurs d'etat restent en anglais : c'est la langue d'un terminal.
-// Les deux seuls reglages qui se basculent. Nommer l'union permet d'indexer l'etat par la
+// Les réglages qui se basculent. Nommer l'union permet d'indexer l'etat par la
 // cle sans effacer son type.
-export type ToggleKey = "anim" | "out";
+export type ToggleKey = "anim" | "out" | "shortcuts";
 
 export const TOGGLES: { key: ToggleKey; label: string; off: string; on: string }[] = [
   { key: "anim", label: "animations", off: "off", on: "on" },
   { key: "out", label: "output pane", off: "off", on: "on" },
+  // Une commande vocale ou une frappe accidentelle déclenche aussi un raccourci. La bascule
+  // coupe tous les raccourcis (WCAG 2.1.4).
+  { key: "shortcuts", label: "shortcuts", off: "off", on: "on" },
 ];
 export const TYPE_CPS = 52;
 export const EXEC_MS = 20;
