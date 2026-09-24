@@ -102,7 +102,7 @@ it("should list the sections then the missions with ls", () => {
 });
 
 // La reponse de help ne tient pas dans le journal d'un ecran large : elle reclame le
-// resultat, et le journal ne garde que l'echo de la commande.
+// resultat, et le journal dit seulement ou la lire.
 it("should list the commands and recall the keyboard in the result of help", () => {
   const result = interpret("help", CONTEXT),
     body = resultTexts(result).join("\n");
@@ -111,7 +111,7 @@ it("should list the commands and recall the keyboard in the result of help", () 
   assert.match(body, /Clavier/);
   // Rien d'autre n'annonce la recherche globale : la ligne clavier est sa seule affiche.
   assert.match(body, /⌘K ou Ctrl\+K ouvre la recherche globale/u);
-  assert.deepEqual(texts(result), ["help"]);
+  assert.deepEqual(texts(result), ["help", "aide affichée dans le résultat"]);
   assert.ok(
     result.effects.some((effect) => {
       return effect.type === "say";

@@ -121,6 +121,12 @@ Une entrée rendue par la recherche globale. Son rang est celui de la liste enti
 celui de son groupe : c'est ce rang que les flèches déplacent.
 _Avoid_: résultat, proposition, suggestion, match.
 
+**Proposition** (`suggestion`) :
+Une entrée de la liste qui s'ouvre au-dessus de la ligne de commande pendant la frappe.
+`Tab` ou la flèche droite l'applique. Elle complète la saisie, là où une trouvaille rend
+une commande depuis la recherche globale.
+_Avoid_: trouvaille, autocomplétion, hint.
+
 **Complétion fantôme** (`ghost`) :
 La fin de la première trouvaille, affichée en retrait derrière la saisie, et acceptée par
 `Tab`. Elle n'apparaît que si cette trouvaille **commence** par la saisie : compléter vers
@@ -235,6 +241,33 @@ _Avoid_: store, modèle, contexte.
 **Valeur figée** (`frozenValue`) :
 Durée ou seuil arrêté après itération, qui ne doit pas redevenir un réglage.
 _Avoid_: constante, paramètre, réglage.
+
+**Raccourci** (`shortcut`) :
+Une touche de caractère seule qui déclenche une action : `/`, `j`, `k`, et `m`, `q`, `r`,
+`espace` sur la radio. Une bascule des options les coupe tous. Les flèches, Tab, Entrée et
+Échap ne sont pas des raccourcis : ce sont la navigation elle-même.
+_Avoid_: hotkey, touche rapide, binding.
+
+### Le focus et le clavier
+
+Ces règles valent pour tout élément intérieur. `tests/browser/clavier.spec.ts` vérifie les règles 1 à 7 et 10, et la règle 9 dans les options. `layout.spec.ts` vérifie la règle 8.
+
+1. Tab et Shift+Tab ne sont jamais avalés. Seule exception : une proposition existe, et Tab
+   la complète. Shift+Tab n'est jamais une complétion.
+2. Un élément qui traite une touche la consomme. Le gestionnaire de la page ignore tout
+   événement déjà consommé.
+3. Le volet courant se lit sur l'élément qui a le focus, jamais sur un état mémorisé.
+4. Une région qui défile garde ses flèches verticales.
+5. Retirer un élément qui a le focus déplace d'abord le focus vers un élément connu. Le
+   focus ne tombe jamais sur le corps de la page.
+6. Une seule modale à la fois. Tant qu'elle est ouverte, le reste de la page est inerte.
+   Un élément intérieur désactivé sort de toute boucle de tabulation.
+7. Entrée appartient à l'élément qui a le focus.
+8. Un contour de focus prend `--acc-text`, jamais `--acc`, et tient 3:1 contre le fond.
+9. Une liste parcourue aux flèches n'a qu'un arrêt de tabulation.
+10. Un message d'état passe par une région live toujours montée. Un nœud inséré déjà rempli
+    n'annonce rien.
+11. Un élément ne prend le focus que s'il a une action ou un contenu à lire.
 
 ### Le travail
 

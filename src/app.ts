@@ -125,8 +125,14 @@ interface Share {
 // Alpine vient du script vendu a cote de la page : il n'apporte pas ses types.
 
 const rect = (node: Element) => {
-  return node.getBoundingClientRect();
-};
+    return node.getBoundingClientRect();
+  },
+  paneOf = (node: Element | null) => {
+    return node?.closest<HTMLElement>("[data-pane]")?.dataset["pane"];
+  },
+  isScrollRegion = (node: EventTarget | null) => {
+    return node instanceof Element && node.matches('[role="region"][tabindex="0"], [role="log"]');
+  };
 
 declare const Alpine: {
   data: (name: string, factory: () => State) => void;
@@ -172,6 +178,7 @@ interface SavedOpts {
   anim?: unknown;
   logH?: unknown;
   out?: unknown;
+  shortcuts?: unknown;
   theme?: unknown;
 }
 
@@ -401,6 +408,7 @@ document.addEventListener("alpine:init", () => {
       modelState: "unknown",
       online: true,
       out: true,
+      shortcuts: true,
       pane: "nav",
       pending: undefined,
       power: "boot",
@@ -506,25 +514,30 @@ document.addEventListener("alpine:init", () => {
       },
 
       movePane(step: number) {
-        const next = PANES.indexOf(this.pane) + step;
+        const next = PANES.indexOf(paneOf(document.activeElement) ?? this.pane) + step;
 
         if (next >= 0 && next < PANES.length) {
           this.focusPane(PANES[next] ?? "nav");
         }
       },
 
+      // Le volet courant se lit sur le focus : Tab et la souris deplacent le focus sans
+      // passer par focusPane.
       moveInPane(step: number) {
-        const entries = this.items(this.pane);
+        const pane = paneOf(document.activeElement) ?? this.pane,
+          entries = this.items(pane);
 
         if (entries.length === 0) {
           return;
         }
 
-        this.focusAt[this.pane] = Math.max(
-          0,
-          Math.min(entries.length - 1, (this.focusAt[this.pane] ?? 0) + step),
-        );
-        entries[this.focusAt[this.pane] ?? 0]?.focus();
+        const active = document.activeElement,
+          here = active instanceof HTMLElement ? entries.indexOf(active) : -1,
+          from = here === -1 ? (this.focusAt[pane] ?? 0) : here;
+
+        this.pane = pane;
+        this.focusAt[pane] = Math.max(0, Math.min(entries.length - 1, from + step));
+        entries[this.focusAt[pane] ?? 0]?.focus();
       },
 
       moveSection(step: number) {
@@ -656,14 +669,16 @@ document.addEventListener("alpine:init", () => {
 
           if (this.globalOpen) {
             this.closeGlobal();
-          } else if (!this.booting) {
+          } else if (!this.booting && !this.modalOpen) {
             this.openGlobal();
           }
 
           return;
         }
 
-        if (event.altKey || event.ctrlKey || event.metaKey) {
+        // Un element qui traite sa touche l'a deja consommee. Sans cette sortie, la
+        // fleche de la poignee deplace aussi le focus de volet.
+        if (event.altKey || event.ctrlKey || event.metaKey || event.defaultPrevented) {
           return;
         }
 
@@ -686,7 +701,7 @@ document.addEventListener("alpine:init", () => {
 
         // Une modale a son propre clavier. Sans cette garde, les deux gestionnaires
         // traitent la même flèche et le focus s'échappe de la modale.
-        if (this.optsOpen || this.achievementsOpen || this.globalOpen) {
+        if (this.modalOpen) {
           return;
         }
 
@@ -716,14 +731,16 @@ document.addEventListener("alpine:init", () => {
           return;
         }
 
-        if (event.key === "/") {
+        // La bascule ne coupe que les touches de caractere : les fleches restent la
+        // navigation elle-meme, pas un raccourci.
+        if (this.shortcuts && event.key === "/") {
           event.preventDefault();
           this.$refs["cli"]?.focus();
 
           return;
         }
 
-        if (event.key === "j" || event.key === "k") {
+        if (this.shortcuts && (event.key === "j" || event.key === "k")) {
           event.preventDefault();
           this.moveSection(event.key === "j" ? 1 : -1);
 
@@ -753,6 +770,12 @@ document.addEventListener("alpine:init", () => {
           return;
         }
 
+        // Une region qui defile garde ses fleches verticales : c'est pour les lire qu'elle
+        // prend le focus.
+        if (VERTICAL.has(event.key) && isScrollRegion(event.target)) {
+          return;
+        }
+
         const fallback = {
           ArrowDown: () => {
             return this.moveInPane(1);
@@ -774,6 +797,20 @@ document.addEventListener("alpine:init", () => {
 
         event.preventDefault();
         fallback();
+      },
+
+      // Une grille à flèches n'a qu'un arrêt de tabulation : la brique suivie, sinon la
+      // première.
+      get techStop() {
+        const names = this.stack.flatMap((root: Brick) => {
+          return root.kids;
+        });
+
+        return names.includes(this.tech) ? this.tech : (names[0] ?? "");
+      },
+
+      get modalOpen() {
+        return this.optsOpen || this.achievementsOpen || this.globalOpen;
       },
 
       // La stack s'arme à la première validation, puis suit le focus. Avant l'armement,
@@ -1676,9 +1713,7 @@ document.addEventListener("alpine:init", () => {
         }
       },
 
-      setTheme(id: string, options: { event?: MouseEvent; via?: TrackSource } = {}) {
-        const { event, via = "interface" } = options;
-
+      setTheme(id: string, via: TrackSource = "interface") {
         this.track("theme", { nom: id, via });
         this.markTheme(id);
 
@@ -1694,34 +1729,16 @@ document.addEventListener("alpine:init", () => {
           this.mascotPlay("morph");
         };
 
-        // Le réglage « animations off » coupe aussi la transition de thème.
-        if (!this.anim || !document.startViewTransition) {
+        // Le réglage « animations off » et la préférence système coupent aussi le fondu.
+        if (!this.anim || this.reduced || !document.startViewTransition) {
           apply();
 
           return;
         }
 
-        const origin = event?.clientX
-          ? { x: event.clientX, y: event.clientY }
-          : this.buttonCentre(event);
-
-        document.documentElement.style.setProperty("--vt-x", `${origin.x}px`);
-        document.documentElement.style.setProperty("--vt-y", `${origin.y}px`);
         document.startViewTransition(() => {
           return apply();
         });
-      },
-
-      // La propagation part de ce que le visiteur a touche : le bouton clique, sinon
-      // l'element qui a le focus — la saisie, quand le theme vient de la commande. Un
-      // point a zero ferait balayer le cercle depuis le coin haut-gauche.
-      buttonCentre(event?: Event) {
-        const target = event?.target instanceof Element ? event.target : document.activeElement,
-          box = target instanceof Element ? target.getBoundingClientRect() : undefined;
-
-        return box
-          ? { x: box.left + box.width / 2, y: box.top + box.height / 2 }
-          : { x: window.innerWidth / 2, y: window.innerHeight / 2 };
       },
 
       themeButtons() {
@@ -1794,14 +1811,23 @@ document.addEventListener("alpine:init", () => {
           return;
         }
 
+        // La grille des thèmes se parcourt aux flèches : Tab n'y garde qu'un arrêt, le thème
+        // qui a le focus, sinon le thème choisi.
         if (event.key === "Tab") {
-          const focusable = [
-              ...document.querySelectorAll<HTMLElement>("[data-opts] [data-ctl='opt']"),
-            ],
-            at =
-              document.activeElement instanceof HTMLElement
-                ? focusable.indexOf(document.activeElement)
-                : -1,
+          const active = document.activeElement,
+            inThemes = active instanceof HTMLElement && active.matches("[data-theme-choice]"),
+            focusable = [
+              ...document.querySelectorAll<HTMLElement>(
+                "[data-opts] [data-ctl='opt']:not(:disabled)",
+              ),
+            ].filter((node) => {
+              if (!node.matches("[data-theme-choice]")) {
+                return true;
+              }
+
+              return inThemes ? node === active : node.getAttribute("aria-pressed") === "true";
+            }),
+            at = active instanceof HTMLElement ? focusable.indexOf(active) : -1,
             next = (at + (event.shiftKey ? -1 : 1) + focusable.length) % focusable.length;
 
           event.preventDefault();
@@ -1908,6 +1934,16 @@ document.addEventListener("alpine:init", () => {
         return ghostFor(this.globalQuery, this.globalHits);
       },
 
+      get globalSaid() {
+        const found = this.globalHits.length;
+
+        if (this.globalQuery.trim() === "") {
+          return "";
+        }
+
+        return found === 0 ? "aucune trouvaille" : `${found} trouvaille${found > 1 ? "s" : ""}`;
+      },
+
       // Les groupes se decoupent dans l'ordre des trouvailles, jamais dans l'ordre declare :
       // sinon la fleche du bas et l'oeil ne parcourent pas la meme liste. « GLOBAL_GROUPS »
       // n'apporte plus ici que le libelle et l'etiquette.
@@ -1957,13 +1993,17 @@ document.addEventListener("alpine:init", () => {
           // Un stockage illisible ou refusé ne doit pas empêcher la page de démarrer.
         }
 
-        // Quatre clés, et quatre seulement, chacune verifiee avant d'entrer dans l'etat.
+        // Cinq clés, et cinq seulement, chacune verifiee avant d'entrer dans l'etat.
         if (saved.anim === true || saved.anim === false) {
           this.anim = saved.anim;
         }
 
         if (saved.out === true || saved.out === false) {
           this.out = saved.out;
+        }
+
+        if (saved.shortcuts === true || saved.shortcuts === false) {
+          this.shortcuts = saved.shortcuts;
         }
 
         if (Number.isFinite(saved.logH)) {
@@ -2000,7 +2040,13 @@ document.addEventListener("alpine:init", () => {
         try {
           globalThis.localStorage.setItem(
             OPTS_KEY,
-            JSON.stringify({ anim: this.anim, logH: this.logH, out: this.out, theme: this.theme }),
+            JSON.stringify({
+              anim: this.anim,
+              logH: this.logH,
+              out: this.out,
+              shortcuts: this.shortcuts,
+              theme: this.theme,
+            }),
           );
         } catch {
           // Navigation privée ou stockage plein : le réglage vaut pour cette visite.
@@ -2322,6 +2368,9 @@ document.addEventListener("alpine:init", () => {
         }
 
         this.say("copié");
+        // La bulle n'est montee qu'avec son texte : elle n'annonce rien. Le journal, lui,
+        // est une region live toujours presente.
+        this.journal = [...this.journal, { c: "ok", m: "✓", mc: "ok", t: "copié" }];
       },
 
       // Trois chemins dans l'ordre : marquage GoatCounter, puis appel direct, puis
@@ -2585,7 +2634,7 @@ document.addEventListener("alpine:init", () => {
           } else if (effect.type === "power") {
             this.powerDown(effect.mode);
           } else if (effect.type === "theme") {
-            this.setTheme(effect.name, { via: "commande" });
+            this.setTheme(effect.name, "commande");
           } else if (effect.type === "evolve") {
             void this.evolve();
           } else if (effect.type === "options") {
@@ -2741,6 +2790,18 @@ document.addEventListener("alpine:init", () => {
       // deja en fin de ligne, elle n'a rien d'autre a faire.
       right(event: KeyboardEvent) {
         if (!this.suggOpen) {
+          return;
+        }
+
+        event.preventDefault();
+        this.complete();
+      },
+
+      // Sans proposition, Tab garde son role de navigation : avaler Tab enferme le visiteur
+      // dans la ligne. Une ligne vide garde tout le vocabulaire en reserve, et n'en propose
+      // rien. Shift+Tab n'est jamais une completion.
+      tab(event: KeyboardEvent) {
+        if (event.shiftKey || this.input === "" || this.sugg.length === 0) {
           return;
         }
 

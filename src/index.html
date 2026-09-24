@@ -68,7 +68,9 @@
     >
       <main
         data-panes
+        :inert="modalOpen"
         :data-glitch="glitchMode || false"
+        :aria-busy="glitchMode ? 'true' : null"
         :style="`flex:1;min-height:0;display:flex;flex-wrap:nowrap;gap:10px;align-items:stretch;overflow:var(--panes-overflow,hidden);max-width:2400px;width:100%;margin:0;animation:var(--panes-animation,${power === 'fade' ? 'revealUp .62s cubic-bezier(.2,.7,.3,1) both' : 'none'})`"
       >
         <h1 class="titre">Benjamin David — Développeur IA et Full Stack</h1>
@@ -86,7 +88,7 @@
           </button>
           <div>
             <div class="zone">
-              <p class="zone__head">sections</p>
+              <h2 class="zone__head">sections</h2>
               <ul class="zone__list">
                 <template x-for="item in sections" :key="item.id">
                   <li>
@@ -116,7 +118,7 @@
               </ul>
             </div>
             <div class="zone">
-              <p class="zone__head">missions</p>
+              <h2 class="zone__head">missions</h2>
               <ul class="zone__list">
                 <template x-for="item in missions" :key="item.id">
                   <li>
@@ -145,7 +147,7 @@
           </div>
         </nav>
 
-        <section class="zone" data-pane="main" aria-label="Session">
+        <section class="zone" data-pane="main" aria-label="Volet central">
           <div data-decor aria-hidden="true">
             <div
               :style="`height:2px;background:linear-gradient(90deg,transparent,var(--acc),transparent);opacity:.16;animation:scan 9s linear infinite`"
@@ -184,6 +186,7 @@
                     role="option"
                     data-ctl="tl"
                     :aria-selected="index === timelineAt"
+                    :tabindex="index === timelineAt ? 0 : -1"
                     @click="openTimeline(index)"
                     @focus="timelineAt = index"
                   >
@@ -244,7 +247,8 @@
                             type="button"
                             data-ctl="tech"
                             data-tech
-                            :aria-pressed="tech === kid"
+                            :aria-current="tech === kid ? 'true' : null"
+                            :tabindex="kid === techStop ? 0 : -1"
                             @click="followTech(kid)"
                             @focus="followTech(kid)"
                           >
@@ -266,7 +270,7 @@
 
             <template x-for="(line, index) in current.lines" :key="`${current.id}-${index}`">
               <p
-                :tabindex="current.id === 'contact' ? 0 : null"
+                :data-contact="current.id === 'contact' ? '' : null"
                 :data-edge="index === 0 || index === current.lines.length - 1 ? '' : null"
                 :style="current.id === 'contact' ? `margin:0;display:grid;grid-template-columns:18px 1fr;gap:8px;align-items:baseline;padding:5px 8px 5px calc(10px + ${line.pad ?? '0px'});border-left:2px solid var(--row-acc,transparent)` : `margin:0;display:grid;grid-template-columns:18px 1fr;gap:8px;align-items:baseline;padding-left:${line.pad ?? '0'}`"
               >
@@ -428,6 +432,7 @@
             data-sugg-box
           >
             <div
+              id="sugg-list"
               data-suggestions
               role="listbox"
               aria-label="Suggestions"
@@ -439,6 +444,8 @@
               <template x-for="(hit, index) in suggWindow" :key="hit">
                 <button
                   type="button"
+                  tabindex="-1"
+                  :id="`sugg-${suggTop + index}`"
                   data-suggestion
                   role="option"
                   :aria-selected="suggTop + index === suggAt"
@@ -466,7 +473,12 @@
               x-model="input"
               @input="suggest(); typing()"
               @blur="closeSugg()"
-              @keydown.tab.prevent="complete()"
+              @keydown.tab="tab($event)"
+              role="combobox"
+              aria-autocomplete="list"
+              :aria-controls="suggOpen ? 'sugg-list' : null"
+              :aria-expanded="suggOpen"
+              :aria-activedescendant="suggOpen ? `sugg-${suggAt}` : null"
               @keydown.arrow-up.prevent="up()"
               @keydown.arrow-down.prevent="down()"
               @keydown.arrow-right="right($event)"
@@ -483,8 +495,10 @@
             <span data-branch
               ><span x-text="`~/${current.id || section}`"></span>
               <span data-tone="acc">main</span> ✳
-              <template x-if="!online"
-                ><span data-offline role="status" data-tone="warn">hors ligne</span></template
+              <span role="status"
+                ><template x-if="!online"
+                  ><span data-offline data-tone="warn">hors ligne</span></template
+                ></span
               ></span
             >
             <!-- Pendant la compaction, l'animation prend la place des cellules : le cadre
@@ -525,7 +539,7 @@
            le droit prenant 641 px contre 346 px a gauche. Fixes, elles gardent la mise en
            page identique d'une section a l'autre. -->
         <aside class="zone" data-pane="out" aria-label="Sortie" x-show="out">
-          <p class="zone__head">
+          <h2 class="zone__head">
             <span x-text="radioOn ? 'radio' : open.out.title"></span
             ><span :style="`color:var(--${outTone})`"
               ><span
@@ -536,7 +550,7 @@
               >
               <span x-text="outLabel"></span
             ></span>
-          </p>
+          </h2>
           <!-- Les raccourcis sont posés sur le volet, pas sur la fenêtre : la coquille garde
              le focus sur la ligne de commande, où « espace » et « r » se tapent
              légitimement. Le visiteur atteint le volet par la flèche droite. -->
@@ -709,7 +723,7 @@
                     data-ctl="opt"
                     :data-theme-choice="entry.id"
                     :aria-pressed="entry.id === theme"
-                    @click="setTheme(entry.id, { event: $event })"
+                    @click="setTheme(entry.id)"
                   >
                     <span
                       aria-hidden="true"
@@ -771,13 +785,13 @@
               succès <span x-text="`${won} | ${ACHIEVEMENTS.length}`"></span>
             </p>
 
-            <div data-ach-list>
+            <ul data-ach-list>
               <template x-for="row in achievementRows" :key="row.key">
-                <button
-                  type="button"
+                <li
+                  tabindex="-1"
                   data-ctl="ach-row"
                   data-ach-row
-                  :aria-disabled="row.done ? null : 'true'"
+                  :data-locked="row.done ? null : ''"
                 >
                   <span data-ach-rank x-text="row.rank"></span
                   ><svg class="icon" aria-hidden="true"><use :href="`#i-${row.icon}`" /></svg
@@ -785,9 +799,9 @@
                     ><span data-ach-title x-text="row.title"></span
                     ><span data-ach-trigger x-text="row.trigger"></span
                   ></span>
-                </button>
+                </li>
               </template>
-            </div>
+            </ul>
 
             <div data-modal-foot>
               <p data-tone="fg2" data-modal-hint>
@@ -890,6 +904,8 @@
               </template>
             </div>
 
+            <p data-said role="status" x-text="globalSaid"></p>
+
             <div data-modal-foot>
               <p data-tone="fg2" data-modal-hint data-global-hint>
                 <span><span data-tone="acc">&uarr; &darr;</span> parcourir</span>
@@ -967,10 +983,13 @@
         </div>
       </template>
 
-      <footer data-tone="fg2">
+      <footer data-tone="fg2" :inert="modalOpen">
         <p data-footer-keys>
           <span data-glyph="acc">←→</span> volet · <span data-glyph="acc">↑↓</span> parcourir ·
-          <span data-tone="acc">j/k</span> section · <span data-glyph="acc">/</span> saisie ·
+          <span x-show="shortcuts"
+            ><span data-tone="acc">j/k</span> section · <span data-glyph="acc">/</span> saisie
+            ·</span
+          >
           <span data-tone="acc">help</span>
         </p>
         <p data-footer-links>
