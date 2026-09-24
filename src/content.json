@@ -554,7 +554,7 @@
         },
         {
           "m": "·",
-          "t": "Kereis construit plutôt qu'il n'achète : on me demande de tester par le code avant de payer une licence très chère pour une fonction peu utilisée."
+          "t": "Kereis construit plutôt qu'elle n'achète : on me demande de tester par le code avant de payer une licence très chère pour une fonction peu utilisée."
         },
         {
           "m": "·",
@@ -923,7 +923,7 @@
       "years": "2020 → 2021",
       "org": "LDC Services",
       "role": "Concepteur Développeur d'Applications · alternance",
-      "note": "Développement logiciel classique et qualité du code.",
+      "note": "En parallèle du Titre Professionnel Concepteur Développeur d'Applications.",
       "detail": null
     },
     {
@@ -931,7 +931,7 @@
       "years": "2018 → 2020",
       "org": "FPEE Industries",
       "role": "Technicien réseau · alternance",
-      "note": "Comprendre le problème de l'utilisateur avant de le réparer. Tout part de là.",
+      "note": "En parallèle du BTS SIO option SISR.",
       "detail": null
     }
   ],

@@ -53,7 +53,7 @@ alternance), FPEE Industries (2018-2020, technicien réseau en alternance).
 
 mai 2026 → aujourd'hui · Développeur IA / Full Stack · via digital4better
 
-Kereis construit plutôt qu'il n'achète : on me demande de tester par le code avant de payer une licence très chère pour une fonction peu utilisée.
+Kereis construit plutôt qu'elle n'achète : on me demande de tester par le code avant de payer une licence très chère pour une fonction peu utilisée.
 
 - Le cadrage du code passe en premier. Linter et règles avant la première
   fonctionnalité : l'IA produit sous contrainte, un humain relit.
@@ -146,13 +146,13 @@ Laravel, NestJS, Vue 3.
 
 2020 → 2021 · Concepteur Développeur d'Applications · alternance
 
-Développement logiciel classique et qualité du code.
+En parallèle du Titre Professionnel Concepteur Développeur d'Applications.
 
 ### FPEE Industries
 
 2018 → 2020 · Technicien réseau · alternance
 
-Comprendre le problème de l'utilisateur avant de le réparer. Tout part de là.
+En parallèle du BTS SIO option SISR.
 
 ## Numérique responsable
 
@@ -210,8 +210,8 @@ Cinq domaines, 57 briques. Chaque brique indique où elle a été pratiquée.
   TypeORM.
 - PHP — LDC Services, Transway, digital4better — Langage des back-offices Laravel.
   Typage strict et outillage moderne depuis la 8.
-- API REST — toutes les missions — Contrats documentés en OpenAPI avant l'implémentation
-  : la spec précède le code.
+- API REST — toutes les missions — Contrats documentés en OpenAPI avant
+  l'implémentation : la spec précède le code.
 - OpenAPI — toutes les missions — Le contrat s'écrit avant l'implémentation. Le front et
   le back avancent en parallèle sans se bloquer.
 - JWT — Transway, SNCF, Kereis — Jetons d'authentification entre services. Sur un
