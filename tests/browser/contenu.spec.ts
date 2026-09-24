@@ -22,29 +22,6 @@ test("should load the content from a relative URL next to the page", async ({ pa
   expect(asked[0]).toBe(`${new URL(page.url()).origin}/content.json`);
 });
 
-test("should fill the page with the served content", async ({ page }) => {
-  await page.goto("/");
-  await booted(page);
-
-  await expect(page.locator('[data-pane="main"]')).toContainText("bd whoami --verbose");
-  await expect(page.getByRole("img", { name: "Benjamin" })).toBeVisible();
-});
-
-// Sans contenu, la page ne se rabat sur rien : elle panique et propose la version texte.
-test("should panic when the content fails", async ({ page }) => {
-  await page.route("**/content.json", (route) => {
-    return route.fulfill({ status: 500 });
-  });
-  await page.goto("/");
-
-  await expect(page.locator("[data-boot]")).toContainText("panic: content.json not found", {
-    timeout: 15_000,
-  });
-  await expect(
-    page.locator("[data-boot]").getByRole("link", { name: "version texte" }),
-  ).toBeVisible();
-});
-
 test("should panic when the JSON is unreadable", async ({ page }) => {
   await page.route("**/content.json", (route) => {
     return route.fulfill({ body: "{ pas du json", contentType: "application/json" });

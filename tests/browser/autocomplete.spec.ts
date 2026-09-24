@@ -33,11 +33,11 @@ test("should keep the list at ten suggestions at most and never scroll", async (
   expect(shown).toBeGreaterThan(0);
   expect(shown).toBeLessThanOrEqual(10);
 
-  const overflow = await list(page).evaluate((node) => {
-    return getComputedStyle(node).overflowY;
+  const hidden = await list(page).evaluate((node) => {
+    return node.scrollHeight - node.clientHeight;
   });
 
-  expect(overflow, "the list does not scroll: it is limited to ten").not.toBe("scroll");
+  expect(hidden, "the list does not scroll: it is limited to ten").toBeLessThanOrEqual(1);
 });
 
 test("should propose the right vocabulary for the second word", async ({ page }) => {
@@ -295,18 +295,18 @@ test("should animate the list on opening but not on scrolling", async ({ page })
       .locator("[data-suggestion]")
       .first()
       .evaluate((node) => {
-        return getComputedStyle(node).animationName;
+        return node.getAnimations().length > 0;
       });
   };
 
-  expect(await played(), "a fresh list greets the eye").toBe("suggRow");
+  expect(await played(), "a fresh list greets the eye").toBe(true);
 
   await cli.press("ArrowDown");
 
-  expect(await played(), "scrolling does not blink").toBe("none");
+  expect(await played(), "scrolling does not blink").toBe(false);
 
   await cli.fill("/s");
   await cli.dispatchEvent("input");
 
-  expect(await played(), "typing computes a new list, which animates again").toBe("suggRow");
+  expect(await played(), "typing computes a new list, which animates again").toBe(true);
 });

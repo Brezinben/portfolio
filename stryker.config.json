@@ -1,0 +1,33 @@
+{
+  "$schema": "./node_modules/@stryker-mutator/core/schema/stryker-schema.json",
+  "testRunner": "command",
+  "commandRunner": {
+    "command": "bun test tests/unit/ --path-ignore-patterns=**/artefact-sans-source.test.ts"
+  },
+  "coverageAnalysis": "off",
+  "mutate": [
+    "src/interpret/**/*.ts",
+    "src/terminal/achievements/store.ts",
+    "src/terminal/format.ts",
+    "src/terminal/glitch/corrupt.ts",
+    "src/terminal/mascot/drag.ts",
+    "src/terminal/radio/derive.ts",
+    "src/terminal/suggest.ts"
+  ],
+  "ignorePatterns": [
+    ".agents",
+    ".claude",
+    ".scratch",
+    ".versions",
+    "dist*",
+    "docs",
+    "playwright-report",
+    "reports",
+    "test-results"
+  ],
+  "mutator": {
+    "excludedMutations": ["StringLiteral"]
+  },
+  "reporters": ["clear-text", "progress", "html"],
+  "tsconfigFile": "stryker-sans-tsconfig.json"
+}

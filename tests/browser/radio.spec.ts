@@ -27,11 +27,16 @@ const boot = async (page: Page) => {
   field = (page: Page) => {
     return page.getByLabel(/^Seed/);
   },
+  // Le nom du bouton suit son état : il annonce toujours sa touche.
   play = (page: Page) => {
-    return page.locator(".radio__ctl button").last();
+    // Le glyphe du spectre porte le même nom : le bouton de la barre est le second.
+    return page
+      .locator(".radio")
+      .getByRole("button", { name: /touche (?:espace|m)$/u })
+      .last();
   },
   reseed = (page: Page) => {
-    return page.locator(".radio__ctl button").first();
+    return page.locator(".radio").getByRole("button", { name: /nouvelle seed/u });
   },
   // « 1:20 » vaut vingt : le test compare des secondes, pas des chaînes.
   seconds = (shown: string | null) => {

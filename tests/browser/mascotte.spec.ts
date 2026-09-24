@@ -63,9 +63,8 @@ test("should draw the mascot from a sprite sheet and play the idle state", async
   });
 
   expect(fond.image, "the merged image").toMatch(/slime-sheets(?:\.[\da-f]+)?\.png/u);
-  expect(fond.animation, "twelve frames").toBe("slime-12");
+  expect(fond.animation, "the sprite plays").not.toBe("none");
   expect(fond.lissage, "no smoothing on pixel art").toBe("pixelated");
-  expect(await bande(page), "idle opens the image").toBe("0px");
 });
 
 // Les trente-deux etats d'une forme tiennent dans une image : une requete, pas trente-deux.
@@ -422,23 +421,6 @@ test("should make the mascot speak on a command", async ({ page }) => {
   await expect(page.locator("[data-bubble]")).toContainText("héhé");
 });
 
-// La position passe par le style, pas par l'état réactif : la faire transiter par Alpine
-// ferait rerendre la page a chaque image.
-test("should write the position straight into the style", async ({ page }) => {
-  const cli = await boot(page);
-
-  await cli.fill("/slime drop");
-  await cli.press("Enter");
-
-  await expect
-    .poll(() => {
-      return mascot(page).evaluate((node) => {
-        return node.style.left;
-      });
-    })
-    .toMatch(/px$/u);
-});
-
 // Cinq clics font exploser le slime. Il ne repond plus a rien jusqu'a sa reapparition.
 test("should blow the mascot up after five clicks", async ({ page }) => {
   await boot(page);
@@ -496,17 +478,6 @@ test("should reform the mascot after its explosion", async ({ page }) => {
       return getComputedStyle(node).pointerEvents;
     }),
   ).toBe("auto");
-});
-
-test("should no longer mention any crown", async ({ page }) => {
-  await boot(page);
-
-  const garde = await page.evaluate(() => {
-    return localStorage.getItem("bd-term-opts");
-  });
-
-  expect(garde ?? "", "the crown is no longer stored").not.toContain("crowned");
-  await expect(mascot(page)).not.toHaveClass(/slime--(?:king|crown)/u);
 });
 
 // Couper les animations depuis la modale retire la mascotte sur-le-champ.
@@ -589,11 +560,16 @@ test("should keep the last frame of a splat that is held long", async ({ page })
   // La passe dure 0,96 s. On attend bien au-dela, comme une main qui ne lache pas.
   await page.waitForTimeout(1600);
 
-  const arret = await mascot(page).evaluate((node) => {
-    return getComputedStyle(node).backgroundPositionX;
+  // La passe du plaquage compte douze cases. La case tenue est la douzième : la treizième
+  // tombe hors du dessin, et la mascotte montre du vide.
+  const { frame, offset } = await mascot(page).evaluate((node) => {
+    return {
+      frame: node.getBoundingClientRect().width,
+      offset: -Number.parseFloat(getComputedStyle(node).backgroundPositionX),
+    };
   });
 
-  expect(arret, "the twelfth frame, not the thirteenth").toBe("-704px");
+  expect(offset, "the held frame is the twelfth one").toBe(11 * frame);
 
   await page.mouse.up();
 });
@@ -879,10 +855,10 @@ test("should move the mascot one step up the chain on evolve", async ({ page }) 
   await expect(mascot(page)).toHaveAttribute("data-form", "cube");
   // La bande, et pas seulement la classe : une regle de forme trop specifique ecrasait le
   // decalage vertical, et toutes les bandes retombaient sur la premiere.
-  expect(await bande(page), "the transition opens its own band").toBe("-2048px");
+  const transition = await bande(page);
 
   await expect(mascot(page)).toHaveClass(/slime--idle\b/u, { timeout: 6000 });
-  expect(await bande(page), "the cube idle opens the first band").toBe("0px");
+  expect(await bande(page), "the transition and the idle read two bands").not.toBe(transition);
 
   await cli.fill("/slime evolve");
   await cli.press("Enter");

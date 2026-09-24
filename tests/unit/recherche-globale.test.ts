@@ -162,3 +162,9 @@ it("should complete only towards a label that starts with the query", () => {
   assert.equal(ghostFor("api", rankHits("api", INDEX, 5)), "", "a keyword match completes nothing");
   assert.equal(ghostFor("", INDEX), "");
 });
+
+// L'ordre vient du rang, pas de l'ordre de l'index : un libellé qui commence par la saisie
+// passe devant un mot trouvé dans une note.
+it("should rank a label that starts with the query first, whatever the index order", () => {
+  assert.equal(rankHits("st", INDEX.toReversed(), 20)[0]?.label, "stack");
+});

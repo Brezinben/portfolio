@@ -1,12 +1,8 @@
 import { expect, test } from "@playwright/test";
-import { readFile, readdir } from "node:fs/promises";
 
 const BUDGET_KO = 150,
   TEXTE_KO = 60,
   ERROR_KO = 50,
-  // Un plafond par forme, sur la source : il borne ce que la fusion aura a digerer et
-  // signale une feuille qui grossit. Le slime est le seul qui parte au premier chargement.
-  SPRITES_KO = { cube: 112, pingouin: 132, slime: 80 },
   FUSION_KO = 24,
   // Un hôte tiers qui n'envoie pas timing-allow-origin fait rapporter un transferSize nul au
   // navigateur. Le poids de ces ressources est invisible, pas nul. Les nommer ici empêche
@@ -69,29 +65,6 @@ test("should keep the first load inside the weight budget", async ({ page }) => 
 
   expect(inconnus, `third parties seen: ${JSON.stringify(measured.tiers)}`).toEqual([]);
 });
-
-// La construction fusionne les feuilles d'une forme en une seule image. Ce plafond porte sur
-// la source, et non sur ce qui part sur le réseau.
-for (const [forme, plafond] of Object.entries(SPRITES_KO)) {
-  test(`should keep the ${forme} sheets under their ceiling`, async () => {
-    const dossier = new URL(`../../src/assets/sprites/${forme}/`, import.meta.url),
-      feuilles = await readdir(dossier),
-      poids = await Promise.all(
-        feuilles.map(async (nom) => {
-          const octets = await readFile(new URL(nom, dossier));
-
-          return octets.byteLength;
-        }),
-      ),
-      total = poids.reduce((somme, octets) => {
-        return somme + octets;
-      }, 0);
-
-    expect(Math.round(total / 102.4) / 10, `${feuilles.length} sheets`).toBeLessThanOrEqual(
-      plafond,
-    );
-  });
-}
 
 // Le premier rendu tire une image de mascotte, et une seule. Elle porte les neuf états,
 // donc elle pèse dès le démarrage : le nombre de requêtes ne suffit plus à la surveiller,

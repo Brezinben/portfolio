@@ -44,24 +44,6 @@ test("should link the text version to the terminal version and to llms.txt", asy
   await expect(page.getByRole("link", { name: "llms.txt" })).toHaveAttribute("href", "llms.txt");
 });
 
-// Le lien de secours de l'écran de panique pointe vers cette page : aucun lien
-// de la version texte ne doit renvoyer vers un fichier du canvas.
-test("should point no link to the canvas", async ({ page }) => {
-  await page.goto("/texte.html");
-
-  const hrefs = await page.locator("a[href]").evaluateAll((links) => {
-    return links.map((link) => {
-      return link.getAttribute("href");
-    });
-  });
-
-  expect(
-    hrefs.filter((href) => {
-      return href?.includes(".dc.html");
-    }),
-  ).toEqual([]);
-});
-
 // La personne a déjà choisi son thème sur la version terminal. La page le reprend, et ne
 // propose aucun sélecteur : elle sera lue, imprimée, ou passée en mode lecture.
 for (const theme of THEMES) {

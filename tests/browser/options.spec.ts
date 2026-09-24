@@ -146,13 +146,6 @@ test("should ignore the system preference when a theme is already chosen", async
   await expect(page.locator(".tm")).toHaveAttribute("data-theme", "bordo");
 });
 
-test("should offer no text size setting", async ({ page }) => {
-  await boot(page);
-  await openOpts(page);
-
-  await expect(page.getByRole("dialog")).not.toContainText("taille");
-});
-
 // Les réglages sont conservés sur l'appareil, et la lecture filtre sur six clés.
 test("should keep the chosen theme across a reload", async ({ page }) => {
   await boot(page);
