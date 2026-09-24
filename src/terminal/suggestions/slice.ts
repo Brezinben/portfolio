@@ -182,10 +182,11 @@ export const suggestionsSlice = () => {
       this.suggOpen = result.hits.length > 0 && this.input !== "";
     },
 
-    // Sans proposition, Tab garde son role de navigation : l'avaler enfermait le
-    // visiteur dans la ligne. Shift+Tab n'est jamais une completion.
+    // Sans proposition, Tab garde son role de navigation : avaler Tab enferme le visiteur
+    // dans la ligne. Une ligne vide garde tout le vocabulaire en reserve, et n'en propose
+    // rien. Shift+Tab n'est jamais une completion.
     tab(this: Shell, event: KeyboardEvent) {
-      if (event.shiftKey || this.sugg.length === 0) {
+      if (event.shiftKey || this.input === "" || this.sugg.length === 0) {
         return;
       }
 
