@@ -1,4 +1,4 @@
-# Benjamin David — Développeur IA / Full Stack
+# Benjamin David · Développeur IA & Full Stack
 
 > Portfolio de Benjamin David, concepteur orchestrateur IA et développeur Full
 > Stack, à Nantes. Il construit des applications qui rendent les outils internes
@@ -35,7 +35,7 @@ Je conçois, j'orchestre, je livre. La spécification avant le code : les agents
 produisent dans les contraintes que je pose.
 
 Huit ans de production, d'abord côté réseau, aujourd'hui autour de l'IA. Le
-métier bouge trop vite pour se reposer sur l'an dernier.
+métier bouge trop vite pour se reposer sur ce qu'on savait l'an dernier.
 
 L'accessibilité, la performance et la qualité du code sont des contraintes de
 départ, pas une checklist de fin de projet.
@@ -53,21 +53,17 @@ alternance), FPEE Industries (2018-2020, technicien réseau en alternance).
 
 mai 2026 → aujourd'hui · Développeur IA / Full Stack · via digital4better
 
-Kereis construit plutôt qu'il n'achète. On me demande de prouver par le code ce
-qu'une licence coûteuse ne ferait qu'à moitié.
+Kereis construit plutôt qu'il n'achète : on me demande de tester par le code avant de payer une licence très chère pour une fonction peu utilisée.
 
 - Le cadrage du code passe en premier. Linter et règles avant la première
   fonctionnalité : l'IA produit sous contrainte, un humain relit.
-- Serveurs MCP : les outils internes s'ouvrent aux agents. Le point dur est
-  l'autorisation, pas l'exposition.
-- Simulateur de tarif d'assurance de prêt. L'utilisateur décrit son projet en
-  langage naturel, le MCP répond un tarif.
+- Serveurs MCP : les outils internes s'ouvrent aux agents. La partie la plus délicate est l'autorisation.
+- Plugin ChatGPT de simulation de tarif d'assurance de prêt : l'utilisateur décrit son projet en langage naturel, un serveur MCP propose un premier tarif.
 - Cartographie du SI sous Backstage. Sources AWS, GitLab et Zeenea branchées, puis
   un MCP pour que les agents lisent la carte.
 - Application de compte rendu. Le texte dicté est nettoyé, l'e-mail rédigé, la
   réunion suivante préparée.
-- Revue de spécification par l'IA : ~20 min là où un humain passerait une journée.
-  Étape obligatoire à chaque fonctionnalité.
+- Revue de spécification par l'IA, étape obligatoire à chaque fonctionnalité.
 
 Statut : en cours · Rôle : développeur IA / full stack · Client : Kereis · pôle
 DSI · Via : digital4better · Pile : MCP, SpecKit, LiteLLM, Langfuse · Apport :
@@ -77,14 +73,11 @@ cadrer l'IA par la spec.
 
 sept. 2024 → mai 2026 · Développeur Full Stack · via digital4better
 
-- Réservation de prestations d'assistance pour les personnes en situation de
-  handicap (PSH/PMR) souhaitant accéder à leur train.
+- Réservation de prestations d'assistance pour les personnes handicapées ou à mobilité réduite (PSH/PMR) souhaitant accéder à leur train.
 - Front grand public de Gares & Connexions. La déclaration d'accessibilité affiche
   96 % de conformité moyenne au RGAA 4.1, sous audits successifs.
-- Règles axe au linter, essais au lecteur d'écran sous NVDA et TalkBack. Le
-  critère d'accessibilité entre dans la spécification, pas dans le correctif.
-- MUI ne couvre pas tout le référentiel. Le reste s'écrit à la main : copie des
-  références, vocalisation correcte des marques.
+- Règles axe au linter, essais au lecteur d'écran sous NVDA et TalkBack.
+- Au-delà du RGAA, des aides pour tous : copie automatique des références, vocalisation correcte des marques.
 - La brique parle à tout le SI SNCF. Le spécifique devient générique : ActiveMQ
   réécrit d'AMQP vers STOMP, routage dynamique par entité métier.
 - Voyage en deux segments SNCF et Trenitalia : chaque transporteur ne reçoit que
@@ -107,15 +100,14 @@ NestJS, PostgreSQL.
 oct. 2023 → sept. 2024 · Développeur Full Stack / IA
 
 - Quatre projets clients en parallèle : Body Nature, Dorval AM, PiLeJe et Servier.
-- Quatre piles, quatre historiques. Le RUN oblige à entrer vite dans du code qu'on
+- Chaque client a sa pile et son historique : le RUN oblige à entrer vite dans du code qu'on
   n'a pas écrit.
 - Supervision : monitoring des performances, détection et analyse des anomalies
   avant la remontée utilisateur.
 - Maintenance et montées de version. Correctifs de sécurité tenus à jour sur le
   parc, provisionnés par Ansible.
 - Évolutions produit sur Body Nature, en échange direct avec l'équipe produit.
-- Éco-conception mesurée avec fruggr, l'outil maison. L'impact d'une application
-  se constate, il ne se déclare pas.
+- Éco-conception mesurée avec fruggr, l'outil maison.
 - Optimisation des pipelines CI/CD : moins de temps de calcul, donc moins de
   gaspillage.
 
@@ -128,7 +120,7 @@ Mesure : fruggr · éco-conception.
 
 ### Transway · mobilité durable
 
-sept. 2021 → sept. 2023 · Full Stack, puis Technical Lead Developer
+sept. 2021 → sept. 2023 · Full Stack, puis tech lead
 
 - Première mission hors alternance. Deux produits d'incitation à la mobilité
   durable : WeFlo Pro pour les entreprises, IREBY pour les collectivités.
@@ -141,7 +133,7 @@ sept. 2021 → sept. 2023 · Full Stack, puis Technical Lead Developer
 - Branchements aux systèmes des réseaux partenaires : TCL à Lyon, STAR à Rennes.
 - L'interface se configure depuis l'administration. La page reste générique, la
   vue du client se paramètre.
-- Passage au rôle de lead technique : encadrement de quatre à six développeurs, et
+- Passage au rôle de tech lead : encadrement de quatre à six développeurs, et
   la main sur les choix techniques.
 - Migration Vue 2 vers Vue 3, montées de version Node, renforcements de sécurité
   après audit.
@@ -152,7 +144,7 @@ Laravel, NestJS, Vue 3.
 
 ### LDC Services
 
-2020 → 2021 · Concepteur Développeur d'Application · alternance
+2020 → 2021 · Concepteur Développeur d'Applications · alternance
 
 Développement logiciel classique et qualité du code.
 
@@ -164,17 +156,18 @@ Comprendre le problème de l'utilisateur avant de le réparer. Tout part de là.
 
 ## Numérique responsable
 
-- Accessibilité — contrastes vérifiés, navigation clavier complète, focus
+- Accessibilité : contrastes vérifiés, navigation clavier complète, focus
   visibles, structure sémantique.
-- Sobriété — aucune vidéo, aucune image, une seule police, animations
+- Sobriété : aucune vidéo, aucune photo, une seule police, animations
   désactivables.
-- Mesure — l'impact environnemental d'une application se constate, il ne se
-  déclare pas.
-- Arbitrage — chaque fonctionnalité a un coût ; certaines ne valent pas leur
-  empreinte.
+- Mesure : l'impact environnemental se chiffre avec un outil, fruggr par exemple.
+- Arbitrage : une fonctionnalité qui coûte plus qu'elle n'apporte sort.
+- Fréquentation mesurée par GoatCounter auto-hébergé : aucun cookie, aucun
+  identifiant, aucune donnée revendue.
+- Cette page suit vos réglages système : animations réduites, thème clair ou
+  sombre.
 
-Le numérique responsable n'est pas un supplément : c'est une contrainte de
-conception, au même titre que la sécurité.
+Le numérique responsable est une contrainte de conception, au même titre que la sécurité.
 
 ## Compétences techniques
 
@@ -182,29 +175,28 @@ Cinq domaines, 57 briques. Chaque brique indique où elle a été pratiquée.
 
 ### Frontend — interfaces accessibles
 
-- HTML — toutes les missions — Le bon élément porte le sens. Un lecteur d'écran
-  suit la structure du document.
+- HTML — toutes les missions — Le bon élément porte le sens. Un lecteur d'écran suit la
+  structure du document.
 - CSS — toutes les missions — Grille, variables, et requêtes de préférence pour le
   mouvement réduit et le thème sombre.
-- Tailwind — Transway, digital4better — Rapidité de mise en page sans feuille de
-  style à maintenir. Attention portée à la taille finale du CSS.
-- Sass — Transway, LDC Services — Variables et imbrication sur les feuilles de
-  style héritées, avant que les variables CSS suffisent.
+- Tailwind — Transway, digital4better — Rapidité de mise en page sans feuille de style à
+  maintenir. Attention portée à la taille finale du CSS.
+- Sass — Transway, LDC Services — Variables et imbrication sur les feuilles de style
+  héritées, avant que les variables CSS suffisent.
 - Vuetify — Transway — Base de composants accessibles, complétée à la main sur les
   points que le RGAA impose.
-- MUI — Assist'enGare — Base de composants React. Elle ne couvre pas tout le
-  RGAA : le reste s'écrit à la main.
-- TypeScript — toutes les missions depuis 2021 — Typage strict côté front comme
-  côté NestJS. Non négociable sur un projet à plusieurs mains.
-- Vue.js — Transway, Kereis, appui SNCF — Framework principal sur la majorité des
-  interfaces livrées. Composition API, stores, routage. Migration Vue 2 vers Vue 3
-  faite deux fois.
-- React — Assist'enGare — Front grand public de Gares & Connexions, tenu sous
-  audits d'accessibilité pendant vingt-et-un mois.
+- MUI — Assist'enGare — Base de composants React. Elle ne couvre pas tout le RGAA : le
+  reste s'écrit à la main.
+- TypeScript — toutes les missions depuis 2021 — Typage strict côté front comme côté
+  NestJS. Non négociable sur un projet à plusieurs mains.
+- Vue.js — Transway, appui SNCF — Framework principal sur la majorité des interfaces
+  livrées. Composition API, stores, routage. Migration Vue 2 vers Vue 3 faite deux fois.
+- React — Assist'enGare — Front grand public de Gares & Connexions, tenu sous audits
+  d'accessibilité pendant vingt-et-un mois.
 - Svelte — veille et prototypes — Choisi quand le poids du bundle compte plus que
   l'écosystème.
-- Pinia — Transway, Kereis — Gestion d'état des applications Vue : sessions,
-  réservations, cache local.
+- Pinia — Transway — Gestion d'état des applications Vue : sessions, cache
+  local.
 - RxJS — NestJS, formulaires réactifs — Flux asynchrones et annulation de requêtes
   concurrentes.
 - Vite — depuis 2021 — Serveur de développement et construction. Le rechargement
@@ -212,16 +204,16 @@ Cinq domaines, 57 briques. Chaque brique indique où elle a été pratiquée.
 
 ### Backend — services et données
 
-- Laravel — LDC Services, digital4better — API et back-offices : Eloquent, files
-  de traitement, authentification.
-- NestJS — Transway, SNCF, Kereis — Architecture modulaire, injection de
-  dépendances, TypeORM.
+- Laravel — LDC Services, Transway (WeFlo Pro), digital4better — API et back-offices :
+  Eloquent, files de traitement, authentification.
+- NestJS — Transway, SNCF, Kereis — Architecture modulaire, injection de dépendances,
+  TypeORM.
 - PHP — LDC Services, Transway, digital4better — Langage des back-offices Laravel.
   Typage strict et outillage moderne depuis la 8.
-- API REST — toutes les missions — Contrats documentés en OpenAPI avant
-  l'implémentation : la spec précède le code.
-- OpenAPI — toutes les missions — Le contrat s'écrit avant l'implémentation. Le
-  front et le back avancent en parallèle sans se bloquer.
+- API REST — toutes les missions — Contrats documentés en OpenAPI avant l'implémentation
+  : la spec précède le code.
+- OpenAPI — toutes les missions — Le contrat s'écrit avant l'implémentation. Le front et
+  le back avancent en parallèle sans se bloquer.
 - JWT — Transway, SNCF, Kereis — Jetons d'authentification entre services. Sur un
   serveur MCP, la difficulté porte sur les droits accordés à l'agent.
 - PostgreSQL — Transway, SNCF — Base de référence : requêtes analytiques, index,
@@ -230,95 +222,91 @@ Cinq domaines, 57 briques. Chaque brique indique où elle a été pratiquée.
   versionnées et index relus avant chaque mise en production.
 - Redis — digital4better, Transway — Cache et files de messages. Réduit la charge
   serveur, donc l'empreinte.
-- ActiveMQ — Assist'enGare — Bus de messages entre la brique et le reste du SI
-  SNCF. Réécriture d'AMQP vers STOMP, puis routage dynamique par entité métier.
+- ActiveMQ — Assist'enGare — Bus de messages entre la brique et le reste du SI SNCF.
+  Réécriture d'AMQP vers STOMP, puis routage dynamique par entité métier.
 
 ### IA — orchestration d'agents
 
 - Serveurs MCP — Kereis, 2026 — Exposition des outils internes aux agents : tools,
   resources, prompts, avec les garde-fous d'accès.
-- SpecKit — Kereis, 2026 — spec-it, plan, tasks. La spécification devient
-  l'artefact de référence, le code en découle.
-- SDD — Kereis — Specification-Driven Development : décrire l'intention, faire
-  valider, puis générer et vérifier.
-- Claude — Kereis, 2026 — Toute la gamme Anthropic : l'agent en terminal pour le
-  code, l'application pour la spec. Le cadrage vient des règles du dépôt, qui
-  survivent à la session.
-- herdr — Kereis, 2026 — Multiplexeur de terminal en Rust. Plusieurs agents
-  travaillent en parallèle et leur état reste lisible.
-- LiteLLM — Kereis, 2026 — Passerelle unique devant plusieurs fournisseurs de
-  modèles. Le code ne dépend d'aucun d'eux.
-- Langfuse — Kereis, 2026 — Traces et évaluation des appels de modèle, pour
-  comparer deux versions d'un agent sur les mêmes cas.
-- LangGraph — Kereis, 2026 — Enchaînements conditionnels entre prompts. L'agent
-  devient un graphe que l'on peut relire.
-- Agents — Kereis — Revue automatisée de spécification : ~20 min contre une
-  journée humaine, à chaque fonctionnalité.
+- SpecKit — Kereis, 2026 — specify, plan, tasks. La spécification devient l'artefact de
+  référence, le code en découle.
+- SDD — Kereis — Specification-Driven Development : décrire l'intention, faire valider,
+  puis générer et vérifier.
+- Claude — Kereis, 2026 — Toute la gamme Anthropic : Claude Code pour le code, Claude
+  Design pour les maquettes. Le cadrage vient des règles du dépôt, qui survivent à la
+  session.
+- herdr — Kereis, 2026 — Multiplexeur de terminal en Rust. Plusieurs agents travaillent
+  en parallèle et leur état reste lisible.
+- LiteLLM — Kereis, 2026 — Passerelle unique devant plusieurs fournisseurs de modèles.
+  Le code ne dépend d'aucun d'eux.
+- Langfuse — Kereis, 2026 — Traces et évaluation des appels de modèle, pour comparer
+  deux versions d'un agent sur les mêmes cas.
+- LangGraph — Kereis, 2026 — Enchaînements conditionnels entre prompts. L'agent devient
+  un graphe que l'on peut relire.
+- Agents — Kereis — Revue automatisée de spécification, à chaque fonctionnalité.
 - Harness engineering — Kereis, 2026 — Construire la machinerie autour du modèle :
-  nettoyage de l'entrée, enchaînement des étapes, contrôle de la sortie. C'est
-  cette machinerie qui rend le résultat livrable.
-- Évaluation — Kereis — Mesurer ce que produit un agent, jeu de cas après jeu de
-  cas, avant et après chaque changement.
+  nettoyage de l'entrée, enchaînement des étapes, contrôle de la sortie.
+- Évaluation — Kereis — Mesurer ce que produit un agent, jeu de cas après jeu de cas,
+  avant et après chaque changement.
 - Prompting — Kereis — Le prompt porte l'intention de la demande. Les contraintes
   durables restent dans le dépôt.
 
 ### DevOps — livrer sans casser
 
-- Docker — depuis 2020 — Environnements reproductibles en local comme en CI.
-  Compose pour les dépendances.
-- Compose — depuis 2020 — Les dépendances d'un projet démarrent en une commande.
-  Un nouvel arrivant travaille le premier jour.
+- Docker — depuis 2020 — Environnements reproductibles en local comme en CI. Compose
+  pour les dépendances.
+- Compose — depuis 2020 — Les dépendances d'un projet démarrent en une commande. Un
+  nouvel arrivant travaille le premier jour.
 - GitLab CI — digital4better, SNCF — Pipelines de test, build et déploiement.
   Optimisation des durées pour limiter le gaspillage.
-- Jenkins — Assist'enGare — Déploiements du service, en tandem avec les
-  intégrations GitLab.
+- Jenkins — Assist'enGare — Déploiements du service, en tandem avec les intégrations
+  GitLab.
 - GitHub Actions — projets personnels — Mêmes étapes que GitLab CI : tests,
   construction, publication.
-- AWS — Assist'enGare, Kereis — Hébergement du service et source de la
-  cartographie du SI.
-- Linux — depuis FPEE, 2018 — Administration, scripts Bash, accès SSH. Le socle du
-  reste.
-- Bash — depuis FPEE, 2018 — Scripts de migration, de sauvegarde et de
-  déploiement, sur les serveurs comme en intégration continue.
-- Ansible — équipe RUN, digital4better — Provisionnement et mises à jour de
-  sécurité automatisées sur le parc.
-- Datadog — Assist'enGare — Observabilité d'un service à fort volume : traces,
-  alertes, dimensionnement des instances.
-- Monitoring — équipe RUN, digital4better — Supervision des performances,
-  détection et analyse des anomalies avant remontée utilisateur.
+- AWS — Assist'enGare, Kereis — Hébergement du service et source de la cartographie du
+  SI.
+- Linux — depuis FPEE, 2018 — Administration, scripts Bash, accès SSH.
+- Bash — depuis FPEE, 2018 — Scripts de migration, de sauvegarde et de déploiement, sur
+  les serveurs comme en intégration continue.
+- Ansible — équipe RUN, digital4better — Provisionnement et mises à jour de sécurité
+  automatisées sur le parc.
+- Datadog — Assist'enGare — Observabilité d'un service à fort volume : traces, alertes,
+  dimensionnement des instances.
+- Monitoring — équipe RUN, digital4better — Supervision des performances, détection et
+  analyse des anomalies avant remontée utilisateur.
 
 ### Qualité & sobriété — ce qui tient dans le temps
 
-- Tests unitaires — toutes les missions — Ils tiennent la logique métier. Un test
-  qui échoue localise le défaut à la ligne près.
-- E2E — Transway, ce portfolio — Le parcours complet dans un vrai navigateur. Ce
-  niveau attrape les défauts d'assemblage que les tests unitaires laissent passer.
-- Cypress — Transway — Tests de bout en bout sur les parcours critiques :
-  réservation, authentification.
-- ESLint — toutes les missions — Règles partagées : la revue humaine se concentre
-  sur le fond, pas sur la forme.
-- Oxlint — Assist'enGare, ce portfolio — Remplace ESLint. Assez rapide pour
-  tourner à chaque sauvegarde, et non plus seulement en intégration continue.
-- Prettier — missions jusqu'en 2025 — Mise en forme automatique. La revue humaine
-  porte sur le fond.
-- oxfmt — Assist'enGare — Remplace Prettier. Même mise en forme, exécution plus
-  rapide.
-- axe — Assist'enGare — Règles d'accessibilité branchées sur le linter. Une
-  régression d'accessibilité apparaît dès la sauvegarde, des mois avant l'audit.
-- Éco-conception — digital4better — Mesure de l'impact des applications avec
-  fruggr, l'outil maison, et arbitrages assumés entre fonctionnalité et empreinte.
-- RGAA — Assist'enGare — 96 % de conformité moyenne à la déclaration publique.
-  Essais au lecteur d'écran sous NVDA et TalkBack.
-- Pair-programming — Transway, Kereis — Transmission plus rapide qu'une
-  documentation, surtout sur les parties sensibles.
+- Tests unitaires — toutes les missions — Ils tiennent la logique métier. Un test qui
+  échoue localise le défaut à la ligne près.
+- E2E — Transway, ce portfolio — Le parcours complet dans un vrai navigateur. Ce niveau
+  attrape les défauts d'assemblage que les tests unitaires laissent passer.
+- Cypress — Transway — Tests de bout en bout sur les parcours critiques, dont
+  l'authentification.
+- ESLint — toutes les missions — Règles partagées : la revue humaine n'a plus à discuter
+  de la forme.
+- Oxlint — Assist'enGare, ce portfolio — Remplace ESLint. Assez rapide pour tourner à
+  chaque sauvegarde, et non plus seulement en intégration continue.
+- Prettier — missions jusqu'en 2025 — Mise en forme automatique, remplacée depuis par
+  oxfmt.
+- oxfmt — Assist'enGare — Remplace Prettier. Même mise en forme, exécution plus rapide.
+- axe — Assist'enGare — Règles d'accessibilité branchées sur le linter. Une régression
+  d'accessibilité apparaît dès la sauvegarde, des mois avant l'audit.
+- Éco-conception — digital4better — Mesure de l'impact des applications avec fruggr,
+  l'outil maison, et arbitrages assumés entre fonctionnalité et empreinte.
+- RGAA — Assist'enGare — 96 % de conformité moyenne à la déclaration publique. Essais au
+  lecteur d'écran sous NVDA et TalkBack.
+- Pair-programming — Transway, Kereis — Transmission plus rapide qu'une documentation,
+  surtout sur les parties sensibles.
 
 ## Formation
 
-- 2021 → aujourd'hui — On n'arrête jamais d'apprendre. Veille continue,
-  certifications, expérimentations, d'autant plus à l'ère de l'IA.
-- 2020 – 2021 — Titre Professionnel Concepteur Développeur d'Applications.
-- 2018 – 2020 — BTS SIO option SISR, en alternance.
-- 2016 – 2018 — Baccalauréat STI2D.
+- 2021 → aujourd'hui : veille sur l'IA et les nouvelles technologies, bêta-testeur de
+  GitHub Copilot à ses débuts.
+- 2020 → 2021 : Titre Professionnel Concepteur Développeur d'Applications.
+- 2018 → 2020 : BTS SIO option SISR, en alternance.
+- 2016 → 2018 : baccalauréat STI2D.
 
 En cours : MCP, agents, évaluation. Méthode : lire, tester, casser, recommencer.
 

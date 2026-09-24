@@ -1893,7 +1893,8 @@ document.addEventListener("alpine:init", () => {
       },
 
       get badgeLabel() {
-        const left = this.unseen === 0 ? "" : `, ${this.unseen} non regardés`;
+        const left =
+          this.unseen === 0 ? "" : `, ${this.unseen} non regardé${this.unseen > 1 ? "s" : ""}`;
 
         return `succès : ${this.won} sur ${ACHIEVEMENTS.length}${left}`;
       },

@@ -52,8 +52,8 @@ export const ACHIEVEMENTS: Achievement[] = [
   {
     icon: "heart",
     key: "expression",
-    title: "elle apprécie modérément",
-    trigger: "/slime expression · la caresser",
+    title: "il apprécie modérément",
+    trigger: "/slime expression · le caresser",
   },
   {
     icon: "dumbbell",

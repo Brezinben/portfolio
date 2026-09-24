@@ -86,7 +86,7 @@
         },
         {
           "m": "·",
-          "t": "Huit ans de production, d'abord côté réseau, aujourd'hui autour de l'IA. Le métier bouge trop vite pour se reposer sur l'an dernier."
+          "t": "Huit ans de production, d'abord côté réseau, aujourd'hui autour de l'IA. Le métier bouge trop vite pour se reposer sur ce qu'on savait l'an dernier."
         },
         {
           "m": "·",
@@ -156,7 +156,7 @@
           ],
           [
             "2026",
-            "MCP + SDD en production"
+            "preuves de concept IA, MCP + SDD"
           ],
           [
             "2024",
@@ -164,11 +164,11 @@
           ],
           [
             "2023",
-            "RUN & observabilité"
+            "RUN & maintenance"
           ],
           [
             "2021",
-            "lead technique"
+            "tech lead"
           ],
           [
             "2018",
@@ -238,17 +238,17 @@
         {
           "m": "✓",
           "mc": "ok",
-          "t": "Sobriété : aucune vidéo, aucune image, une seule police, animations désactivables."
+          "t": "Sobriété : aucune vidéo, aucune photo, une seule police, animations désactivables."
         },
         {
           "m": "✓",
           "mc": "ok",
-          "t": "Mesure : l'impact environnemental d'une application se constate, il ne se déclare pas."
+          "t": "Mesure : l'impact environnemental se chiffre avec un outil, fruggr par exemple."
         },
         {
           "m": "✓",
           "mc": "ok",
-          "t": "Arbitrage : chaque fonctionnalité a un coût ; certaines ne valent pas leur empreinte."
+          "t": "Arbitrage : une fonctionnalité qui coûte plus qu'elle n'apporte sort."
         },
         {
           "m": "›",
@@ -263,7 +263,7 @@
         },
         {
           "m": "·",
-          "t": "Cette page respecte prefers-reduced-motion et prefers-color-scheme.",
+          "t": "Cette page suit vos réglages système : animations réduites, thème clair ou sombre.",
           "tone": "fg2"
         }
       ],
@@ -277,7 +277,7 @@
             "ok"
           ],
           [
-            "images",
+            "photos",
             "0",
             "fg2",
             "ok"
@@ -302,7 +302,7 @@
           ]
         ]
       },
-      "ask": "Le numérique responsable est une contrainte de conception, pas un supplément : sobriété des interfaces, accessibilité réelle (RGAA), mesure de l'impact environnemental, arbitrages assumés entre fonctionnalité et empreinte. Cette page n'a aucun tracker, aucune vidéo, aucune image, une seule police."
+      "ask": "Le numérique responsable est une contrainte de conception : sobriété des interfaces, accessibilité réelle (RGAA), mesure de l'impact environnemental, arbitrages assumés entre fonctionnalité et empreinte. Cette page n'a aucun cookie, aucun identifiant de visiteur, aucune vidéo, aucune photo, une seule police."
     },
     {
       "id": "formation",
@@ -315,28 +315,28 @@
         {
           "m": "◆",
           "mc": "acc",
-          "t": "2021 → …  On n'arrête jamais d'apprendre",
+          "t": "2021 → …  Veille continue",
           "w": "700"
         },
         {
           "m": "│",
-          "t": "Veille continue, certifications et expérimentations, d'autant plus à l'ère de l'IA.",
+          "t": "Veille sur l'IA et les nouvelles technologies, bêta-testeur de GitHub Copilot à ses débuts.",
           "tone": "fg2"
         },
         {
           "m": "◆",
           "mc": "acc",
-          "t": "2020 – 2021  Titre Professionnel Concepteur Développeur d'Applications"
+          "t": "2020 → 2021  Titre Professionnel Concepteur Développeur d'Applications"
         },
         {
           "m": "◆",
           "mc": "acc",
-          "t": "2018 – 2020  BTS SIO option SISR · alternance"
+          "t": "2018 → 2020  BTS SIO option SISR · alternance"
         },
         {
           "m": "╰",
           "mc": "acc",
-          "t": "2016 – 2018  Baccalauréat STI2D"
+          "t": "2016 → 2018  Baccalauréat STI2D"
         }
       ],
       "out": {
@@ -366,12 +366,12 @@
           ]
         ]
       },
-      "ask": "Depuis 2021 : veille continue, certifications, expérimentations, d'autant plus à l'ère de l'IA. Titre Professionnel Concepteur Développeur d'Applications en 2021, BTS SIO option SISR en alternance en 2020, Baccalauréat STI2D en 2018."
+      "ask": "Depuis 2021 : veille sur l'IA et les nouvelles technologies, bêta-testeur de GitHub Copilot à ses débuts. Titre Professionnel Concepteur Développeur d'Applications en 2021, BTS SIO option SISR en alternance en 2020, Baccalauréat STI2D en 2018."
     },
     {
       "id": "contact",
       "label": "contact",
-      "sub": "ouvert aux missions",
+      "sub": "ouvert aux opportunités",
       "dot": "acc",
       "state": "ouvert",
       "cmd": "curl -s me.brezinben.dpdns.org/contact | jq",
@@ -554,7 +554,7 @@
         },
         {
           "m": "·",
-          "t": "Kereis construit plutôt qu'il n'achète. On me demande de prouver par le code ce qu'une licence coûteuse ne ferait qu'à moitié."
+          "t": "Kereis construit plutôt qu'il n'achète : on me demande de tester par le code avant de payer une licence très chère pour une fonction peu utilisée."
         },
         {
           "m": "·",
@@ -562,11 +562,11 @@
         },
         {
           "m": "·",
-          "t": "Serveurs MCP : les outils internes s'ouvrent aux agents. Le point dur est l'autorisation, pas l'exposition."
+          "t": "Serveurs MCP : les outils internes s'ouvrent aux agents. La partie la plus délicate est l'autorisation."
         },
         {
           "m": "·",
-          "t": "Simulateur de tarif d'assurance de prêt. L'utilisateur décrit son projet en langage naturel, le MCP répond un tarif."
+          "t": "Plugin ChatGPT de simulation de tarif d'assurance de prêt : l'utilisateur décrit son projet en langage naturel, un serveur MCP propose un premier tarif."
         },
         {
           "m": "·",
@@ -578,7 +578,7 @@
         },
         {
           "m": "·",
-          "t": "Revue de spécification par l'IA : ~20 min là où un humain passerait une journée. Étape obligatoire à chaque fonctionnalité."
+          "t": "Revue de spécification par l'IA, étape obligatoire à chaque fonctionnalité."
         }
       ],
       "out": {
@@ -632,7 +632,7 @@
         },
         {
           "m": "·",
-          "t": "Réservation de prestations d'assistance pour les personnes en situation de handicap (PSH/PMR) souhaitant accéder à leur train."
+          "t": "Réservation de prestations d'assistance pour les personnes handicapées ou à mobilité réduite (PSH/PMR) souhaitant accéder à leur train."
         },
         {
           "m": "·",
@@ -640,11 +640,11 @@
         },
         {
           "m": "·",
-          "t": "Règles axe au linter, essais au lecteur d'écran sous NVDA et TalkBack. Le critère d'accessibilité entre dans la spécification, pas dans le correctif."
+          "t": "Règles axe au linter, essais au lecteur d'écran sous NVDA et TalkBack."
         },
         {
           "m": "·",
-          "t": "MUI ne couvre pas tout le référentiel. Le reste s'écrit à la main : copie des références, vocalisation correcte des marques."
+          "t": "Au-delà du RGAA, des aides pour tous : copie automatique des références, vocalisation correcte des marques."
         },
         {
           "m": "·",
@@ -736,7 +736,7 @@
         },
         {
           "m": "·",
-          "t": "Quatre piles, quatre historiques. Le RUN oblige à entrer vite dans du code qu'on n'a pas écrit."
+          "t": "Chaque client a sa pile et son historique : le RUN oblige à entrer vite dans du code qu'on n'a pas écrit."
         },
         {
           "m": "·",
@@ -752,7 +752,7 @@
         },
         {
           "m": "·",
-          "t": "Éco-conception mesurée avec fruggr, l'outil maison. L'impact d'une application se constate, il ne se déclare pas."
+          "t": "Éco-conception mesurée avec fruggr, l'outil maison."
         },
         {
           "m": "·",
@@ -813,7 +813,7 @@
           "ls": "-.02em"
         },
         {
-          "t": "sept. 2021 → sept. 2023 · Full Stack, puis Technical Lead Developer",
+          "t": "sept. 2021 → sept. 2023 · Full Stack, puis tech lead",
           "tone": "acc"
         },
         {
@@ -842,7 +842,7 @@
         },
         {
           "m": "·",
-          "t": "Passage au rôle de lead technique : encadrement de quatre à six développeurs, et la main sur les choix techniques."
+          "t": "Passage au rôle de tech lead : encadrement de quatre à six développeurs, et la main sur les choix techniques."
         },
         {
           "m": "·",
@@ -882,7 +882,7 @@
           ]
         ]
       },
-      "ask": "Transway, de septembre 2021 à septembre 2023 : deux produits d'incitation à la mobilité durable, WeFlo Pro pour les entreprises et IREBY pour les collectivités. J'ai mené la migration de la V1 vers la V3, soit plus de 300 000 utilisateurs transférés. Passage au rôle de Technical Lead Developer, avec l'encadrement de quatre à six développeurs."
+      "ask": "Transway, de septembre 2021 à septembre 2023 : deux produits d'incitation à la mobilité durable, WeFlo Pro pour les entreprises et IREBY pour les collectivités. Il a mené la migration de la V1 vers la V3, soit plus de 300 000 utilisateurs transférés. Passage au rôle de tech lead, avec l'encadrement de quatre à six développeurs."
     }
   ],
   "timeline": [
@@ -899,7 +899,7 @@
       "years": "2024 → 2026",
       "org": "SNCF Gares & Connexions",
       "role": "Développeur Full Stack · Assist'enGare",
-      "note": "Réservation d'assistance pour les personnes en situation de handicap (PSH/PMR). Front grand public à 96 % de conformité RGAA, tenu sous audits successifs, et une brique d'échange qui parle à tout le SI SNCF.",
+      "note": "Réservation d'assistance pour les personnes handicapées ou à mobilité réduite (PSH/PMR). Front grand public à 96 % de conformité RGAA, tenu sous audits successifs, et une brique d'échange qui parle à tout le SI SNCF.",
       "detail": "m-assist"
     },
     {
@@ -914,7 +914,7 @@
       "id": "t3",
       "years": "2021 → 2023",
       "org": "Transway",
-      "role": "Full Stack, puis Technical Lead",
+      "role": "Full Stack, puis tech lead",
       "note": "Incitation à la mobilité durable : forfait mobilité durable pour les entreprises, programme de fidélité pour les collectivités. Plus de 300 000 utilisateurs migrés vers la nouvelle plateforme.",
       "detail": "m-transway"
     },
@@ -922,7 +922,7 @@
       "id": "t4",
       "years": "2020 → 2021",
       "org": "LDC Services",
-      "role": "Concepteur Développeur d'Application · alternance",
+      "role": "Concepteur Développeur d'Applications · alternance",
       "note": "Développement logiciel classique et qualité du code.",
       "detail": null
     },
@@ -1031,7 +1031,7 @@
   ],
   "techNotes": {
     "Vue.js": {
-      "where": "Transway, Kereis, appui SNCF",
+      "where": "Transway, appui SNCF",
       "note": "Framework principal sur la majorité des interfaces livrées. Composition API, stores, routage. Migration Vue 2 vers Vue 3 faite deux fois."
     },
     "React": {
@@ -1071,8 +1071,8 @@
       "note": "Base de composants React. Elle ne couvre pas tout le RGAA : le reste s'écrit à la main."
     },
     "Pinia": {
-      "where": "Transway, Kereis",
-      "note": "Gestion d'état des applications Vue : sessions, réservations, cache local."
+      "where": "Transway",
+      "note": "Gestion d'état des applications Vue : sessions, cache local."
     },
     "RxJS": {
       "where": "NestJS, formulaires réactifs",
@@ -1083,7 +1083,7 @@
       "note": "Serveur de développement et construction. Le rechargement instantané raccourcit la boucle d'essai."
     },
     "Laravel": {
-      "where": "LDC Services, digital4better",
+      "where": "LDC Services, Transway (WeFlo Pro), digital4better",
       "note": "API et back-offices : Eloquent, files de traitement, authentification."
     },
     "NestJS": {
@@ -1128,7 +1128,7 @@
     },
     "SpecKit": {
       "where": "Kereis, 2026",
-      "note": "spec-it, plan, tasks. La spécification devient l'artefact de référence, le code en découle."
+      "note": "specify, plan, tasks. La spécification devient l'artefact de référence, le code en découle."
     },
     "SDD": {
       "where": "Kereis",
@@ -1136,7 +1136,7 @@
     },
     "Claude": {
       "where": "Kereis, 2026",
-      "note": "Toute la gamme Anthropic : l'agent en terminal pour le code, l'application pour la spec. Le cadrage vient des règles du dépôt, qui survivent à la session."
+      "note": "Toute la gamme Anthropic : Claude Code pour le code, Claude Design pour les maquettes. Le cadrage vient des règles du dépôt, qui survivent à la session."
     },
     "herdr": {
       "where": "Kereis, 2026",
@@ -1156,11 +1156,11 @@
     },
     "Agents": {
       "where": "Kereis",
-      "note": "Revue automatisée de spécification : ~20 min contre une journée humaine, à chaque fonctionnalité."
+      "note": "Revue automatisée de spécification, à chaque fonctionnalité."
     },
     "Harness engineering": {
       "where": "Kereis, 2026",
-      "note": "Construire la machinerie autour du modèle : nettoyage de l'entrée, enchaînement des étapes, contrôle de la sortie. C'est cette machinerie qui rend le résultat livrable."
+      "note": "Construire la machinerie autour du modèle : nettoyage de l'entrée, enchaînement des étapes, contrôle de la sortie."
     },
     "Évaluation": {
       "where": "Kereis",
@@ -1200,7 +1200,7 @@
     },
     "Linux": {
       "where": "depuis FPEE, 2018",
-      "note": "Administration, scripts Bash, accès SSH. Le socle du reste."
+      "note": "Administration, scripts Bash, accès SSH."
     },
     "Bash": {
       "where": "depuis FPEE, 2018",
@@ -1220,11 +1220,11 @@
     },
     "Cypress": {
       "where": "Transway",
-      "note": "Tests de bout en bout sur les parcours critiques : réservation, authentification."
+      "note": "Tests de bout en bout sur les parcours critiques, dont l'authentification."
     },
     "ESLint": {
       "where": "toutes les missions",
-      "note": "Règles partagées : la revue humaine se concentre sur le fond, pas sur la forme."
+      "note": "Règles partagées : la revue humaine n'a plus à discuter de la forme."
     },
     "Oxlint": {
       "where": "Assist'enGare, ce portfolio",
@@ -1236,7 +1236,7 @@
     },
     "Prettier": {
       "where": "missions jusqu'en 2025",
-      "note": "Mise en forme automatique. La revue humaine porte sur le fond."
+      "note": "Mise en forme automatique, remplacée depuis par oxfmt."
     },
     "oxfmt": {
       "where": "Assist'enGare",
@@ -1263,7 +1263,7 @@
     "Un développeur part avec 12 tickets. Il en ferme 3. Il en ouvre 7.",
     "« Ça marche chez moi. » — épitaphe la plus fréquente en production.",
     "Le cache est comme le placard : tout y rentre, plus rien n'en sort.",
-    "Deux problèmes difficiles : nommer les choses, l'invalidation de cache, et les erreurs de décalage.",
+    "Deux problèmes difficiles : nommer les choses, l'invalidation de cache, et les erreurs d'un cran.",
     "Une régression, c'est une fonctionnalité qui a pris son indépendance.",
     "L'estimation la plus honnête reste « deux jours », quelle que soit la tâche."
   ]
