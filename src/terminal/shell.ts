@@ -8,13 +8,16 @@
 //    specificateur en ligne creerait un cycle d'execution invisible ailleurs, que tient la regle dediee de .oxlintrc.jsonc.
 
 import type { AchievementsApi, AchievementsState } from "./achievements/slice.ts";
+import type { AskApi, AskState } from "./ask/slice.ts";
 import type { GlitchApi, GlitchState } from "./glitch/slice.ts";
-import type { GlobalEntry, TrackValue } from "../interpret.ts";
+import type { GlobalEntry, Line, TrackValue } from "../interpret.ts";
 import type { GlobalSearchApi, GlobalSearchState } from "./global-search/slice.ts";
 import type { KeyboardApi, KeyboardState } from "./keyboard/slice.ts";
+import type { LogApi, LogState } from "./log/slice.ts";
 import type { MascotApi, MascotState } from "./mascot/slice.ts";
 import type { OptionsApi, OptionsState } from "./options/slice.ts";
 import type { RadioApi, RadioState } from "./radio/slice.ts";
+import type { SuggestionsApi, SuggestionsState } from "./suggestions/slice.ts";
 import type { Section } from "./format.ts";
 
 // Alpine pose ses magies sur le composant apres l'avoir construit : elles ne sont pas dans
@@ -38,6 +41,7 @@ export type Beat = ReturnType<typeof setInterval>;
 export interface Shared {
   anim: boolean;
   booting: boolean;
+  current: Section;
   details: Section[];
   goSection(id: string, options?: { push?: boolean; via?: TrackSource }): void;
   // Les deux accesseurs de la recherche globale. Ils vivent dans app.ts : aucune tranche n'en
@@ -45,10 +49,12 @@ export interface Shared {
   globalGhost: string;
   globalHits: GlobalEntry[];
   input: string;
+  journal: Line[];
   missions: { id: string; state?: string }[];
   // Vrai tant qu'une des trois modales est ouverte : le reste de la page devient inerte.
   modalOpen: boolean;
   logH: number;
+  logHeight: number;
   online: boolean;
   openTimeline(index: number): void;
   modelState: string;
@@ -57,6 +63,7 @@ export interface Shared {
   reduced: boolean;
   section: string;
   sections: Section[];
+  shareTargets: string[];
   shortcuts: boolean;
   skipBoot(): boolean;
   // « typed » distingue une commande tapee d'une commande lancee a la souris : le succes de
@@ -74,19 +81,25 @@ export interface Terminal
   extends
     AchievementsApi,
     AchievementsState,
+    AskApi,
+    AskState,
     GlitchApi,
     GlitchState,
     GlobalSearchApi,
     GlobalSearchState,
     KeyboardApi,
     KeyboardState,
+    LogApi,
+    LogState,
     MascotApi,
     MascotState,
     OptionsApi,
     OptionsState,
     RadioApi,
     RadioState,
-    Shared {}
+    Shared,
+    SuggestionsApi,
+    SuggestionsState {}
 
 // Ce que « this » voit dans une methode : le composant entier, plus les magies.
 export type Shell = Magics & Terminal;

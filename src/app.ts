@@ -10,8 +10,6 @@ import {
   type PowerMode,
   type Tone,
   type TrackValue,
-  candidates,
-  commonPrefix,
   ghostFor,
   hintFor,
   interpret,
@@ -20,8 +18,9 @@ import {
   seenCount,
   wonCount,
 } from "./interpret.ts";
+import { type AchievementsState, achievementsSlice } from "./terminal/achievements/slice.ts";
+import { type AskState, askSlice } from "./terminal/ask/slice.ts";
 import {
-  ASK_MS,
   BOOT_CELLS,
   BOOT_MS,
   CHAR_PX,
@@ -30,27 +29,24 @@ import {
   CONTENT_URL,
   CTX_BUDGET,
   CTX_CELLS,
-  CTX_FLOOR,
   EMPTY,
   EXEC_MS,
   FADE_MS,
   GLOBAL_LIMIT,
-  PANE_GAP_PX,
-  RESULT_MIN_PX,
   THEMES,
   TOGGLES,
   TYPE_CPS,
 } from "./terminal/settings.ts";
-import { type AchievementsState, achievementsSlice } from "./terminal/achievements/slice.ts";
 import type { Beat, Delay, Magics, TrackSource } from "./terminal/shell.ts";
 import { GAUGE_AT, type GlitchState, SHIFT_COUNT, glitchSlice } from "./terminal/glitch/slice.ts";
 import { type GlobalSearchState, globalSearchSlice } from "./terminal/global-search/slice.ts";
 import { type KeyboardState, keyboardSlice } from "./terminal/keyboard/slice.ts";
+import { type LogState, logSlice } from "./terminal/log/slice.ts";
 import { type MascotState, mascotSlice } from "./terminal/mascot/slice.ts";
 import { type OptionsState, optionsSlice } from "./terminal/options/slice.ts";
 import type { RadioApi, RadioState } from "./terminal/radio/slice.ts";
 import { type Section, barParts, printed, section } from "./terminal/format.ts";
-import { windowTop } from "./terminal/suggest.ts";
+import { type SuggestionsState, suggestionsSlice } from "./terminal/suggestions/slice.ts";
 
 // Une mission du volet gauche : sa pastille et son etat.
 interface Mission {
@@ -117,69 +113,43 @@ declare global {
   var goatcounter: GoatCounter | undefined;
 }
 
-// « responseConstraint » fait rendre du JSON : un identifiant en sort entre guillemets. Le
-// comparer tel quel ne trouvait jamais le passage, et la reponse du corpus sortait a chaque
-// fois. Un modele qui ignore la contrainte rend du texte brut, qui reste utilisable.
-// Un identifiant du corpus n'a ni guillemet ni echappement : retirer la paire suffit, et
-// evite de decoder du JSON pour en tirer une chaine. L'identifiant est de toute facon
-// cherche dans le corpus, ou un inconnu ne designe rien.
-const readChoice = (raw: string) => {
-  const trimmed = raw.trim();
-
-  return trimmed.startsWith('"') && trimmed.endsWith('"') ? trimmed.slice(1, -1) : trimmed;
-};
-
-// L'attente depassee et le refus ne se reparent pas de la meme facon : l'une demande de
-// patienter, l'autre de regarder l'etat du modele.
-const askFailure = (cause: unknown) => {
-  return cause instanceof DOMException && cause.name === "TimeoutError"
-    ? `le modèle local n'a pas répondu en ${ASK_MS / 1000} s.`
-    : "le modèle local a refusé de répondre.";
-};
-
 // Ce que la page tient en memoire. Les minuteurs en font partie : les declarer les rend
 // visibles. « RadioState » vient de la tranche qui l'emploie, pour ne pas deriver.
 interface State
   extends
     AchievementsState,
+    AskState,
     GlitchState,
     GlobalSearchState,
     KeyboardState,
+    LogState,
     MascotState,
     OptionsState,
-    RadioState {
-  asker: AbortController | undefined;
-  compactor: Delay | undefined;
+    RadioState,
+    SuggestionsState {
   latency: Delay | undefined;
   booter: Delay | undefined;
-  spinner: Beat | undefined;
   ticker: Beat | undefined;
   anim: boolean;
   reducedMotion: boolean;
-  commands: string[];
   // Le resultat d'une commande qui l'a reclame. La navigation le reprend.
   commandResult: Section | undefined;
-  compacting: boolean;
   bootTick: number;
-  compactTick: number;
   dataErr: boolean;
   details: Section[];
   errDetail: string;
-  feedback: Record<string, string>;
   input: string;
+  journal: Line[];
   jokeIndex: number;
   jokes: string[];
-  journal: Line[];
   journalOverflows: boolean;
   logH: number;
   missions: Mission[];
   more: { journal: boolean };
-  used: number;
   modelState: string;
   // Qui a ouvert la modale : le bouton de l'en-tete, ou la saisie via la commande.
   online: boolean;
   out: boolean;
-  pending: string | undefined;
   power: "boot" | "fade" | "off" | "on";
   profileEmail: string;
   // La tranche de la radio arrive par import dynamique : ce drapeau dit si elle a rejoint
@@ -188,11 +158,8 @@ interface State
   // La commande a ete tapee et la radio n'a pas encore ete quittee. Le chunk arrive apres
   // un aller-retour reseau : partir entre-temps ne doit pas la faire s'ouvrir quand meme.
   radioWanted: boolean;
-  recallAt: number;
-  resizing: { height: number; y: number } | undefined;
   running: boolean;
   // Le modele cherche, et rien n'est encore affiche : sa reponse remplacera l'attente.
-  thinking: boolean;
   section: string;
   wantResult: boolean;
   sections: Section[];
@@ -200,17 +167,6 @@ interface State
   share: Share;
   shareTargets: string[];
   stack: Brick[];
-  sugg: string[];
-  suggAt: number;
-  // La liste vient d'etre calculee par une frappe, et non deplacee par une fleche. Seule
-  // une liste fraiche s'anime : voir surgir chaque entree revelee par la fenetre qui glisse
-  // transformerait un deplacement en clignotement.
-  suggFresh: boolean;
-  suggFrag: string;
-  suggHead: string;
-  suggOpen: boolean;
-  suggSlash: boolean;
-  suggTop: number;
   tech: string;
   techNotes: Record<string, TechNote>;
   timeline: Step[];
@@ -227,11 +183,14 @@ interface State
 const slices = () => {
   return {
     ...achievementsSlice(),
+    ...askSlice(),
     ...glitchSlice(),
     ...globalSearchSlice(),
     ...keyboardSlice(),
+    ...logSlice(),
     ...mascotSlice(),
     ...optionsSlice(),
+    ...suggestionsSlice(),
   };
 };
 
@@ -558,80 +517,6 @@ document.addEventListener("alpine:init", () => {
         return this.logH || 120;
       },
 
-      setLogHeight(next: number) {
-        this.logH = Math.max(44, Math.min(Math.round(next), this.logRoom()));
-        this.persist();
-      },
-
-      // La borne haute se mesure sur les freres du journal. Un nombre magique la sous-estimait
-      // de pres de cent pixels : le resultat tombait a zero et le volet central debordait.
-      logRoom() {
-        const { journal } = this.$refs,
-          pane = journal?.parentElement;
-
-        if (!pane) {
-          return 400;
-        }
-
-        const style = globalThis.getComputedStyle(pane),
-          inner =
-            pane.clientHeight -
-            Number.parseFloat(style.paddingTop) -
-            Number.parseFloat(style.paddingBottom),
-          // Seules les lignes de la colonne comptent : ni les gabarits, ni les reglages
-          // masques, ni le calque de balayage qui se superpose au volet.
-          rows = [...pane.children].filter((node) => {
-            const own = globalThis.getComputedStyle(node);
-
-            return (
-              own.display !== "none" && own.position !== "absolute" && own.position !== "fixed"
-            );
-          }),
-          taken = rows
-            .filter((node) => {
-              return node !== journal && !node.hasAttribute("data-result");
-            })
-            .reduce((total, node) => {
-              return total + node.getBoundingClientRect().height;
-            }, 0);
-
-        return Math.max(
-          44,
-          Math.floor(inner - taken - Math.max(0, rows.length - 1) * PANE_GAP_PX - RESULT_MIN_PX),
-        );
-      },
-
-      logDown(event: PointerEvent) {
-        this.resizing = { height: this.logHeight, y: event.clientY };
-
-        if (event.target instanceof Element) {
-          event.target.setPointerCapture(event.pointerId);
-        }
-      },
-
-      logMove(event: PointerEvent) {
-        if (!this.resizing) {
-          return;
-        }
-
-        this.setLogHeight(this.resizing.height + (this.resizing.y - event.clientY));
-      },
-
-      logUp() {
-        const before = this.resizing?.height;
-
-        this.resizing = undefined;
-
-        if (before !== undefined && before !== this.logHeight) {
-          this.track(
-            this.logHeight > before ? "redimensionnement_agrandi" : "redimensionnement_reduit",
-            {
-              px: this.logHeight,
-            },
-          );
-        }
-      },
-
       // L'indicateur remplace la barre de défilement, masquée pour l'esthétique
       // terminale. Sans lui, rien ne dit qu'il reste du contenu.
       checkMore(name: string) {
@@ -649,62 +534,6 @@ document.addEventListener("alpine:init", () => {
         if (name === "journal") {
           this.journalOverflows = node.scrollHeight > node.clientHeight + 4;
         }
-      },
-
-      bump(cost?: number) {
-        if (this.compacting) {
-          return;
-        }
-
-        this.used += Math.max(CTX_FLOOR, cost ?? 0);
-
-        if (this.used < CTX_BUDGET) {
-          return;
-        }
-
-        this.compacting = true;
-        this.compactTick = 0;
-        this.track("contexte_plein", {});
-
-        if (this.anim && !this.reduced) {
-          this.spinner = setInterval(() => {
-            this.compactTick += 1;
-          }, COMPACT_TICK_MS);
-        }
-
-        this.journal = [
-          ...this.journal,
-          {
-            c: "warn",
-            m: "·",
-            mc: "warn",
-            t: "fenêtre de contexte pleine (100 %) — compaction automatique…",
-          },
-        ];
-        this.compactor = setTimeout(() => {
-          clearInterval(this.spinner);
-          this.compacting = false;
-          this.used = 0;
-          this.track("contexte_libere", {});
-          this.journal = [
-            ...this.journal,
-            {
-              c: "fg2",
-              m: "·",
-              mc: "fg2",
-              t: "retenu : Benjamin, développeur IA, Nantes, aime le vélo.",
-            },
-          ];
-        }, COMPACT_MS);
-      },
-
-      // Un redemarrage annule la compaction : sinon son resume s'ecrit dans un journal
-      // qu'on vient de vider, et sa barre s'affiche par-dessus l'ecran de demarrage.
-      stopCompacting() {
-        clearInterval(this.spinner);
-        clearTimeout(this.compactor);
-        this.compacting = false;
-        this.compactTick = 0;
       },
 
       // La radio n'est chargee qu'apres la commande : « radioOn » ne peut valoir vrai que si
@@ -1240,168 +1069,6 @@ document.addEventListener("alpine:init", () => {
         this.journal = [...this.journal, { c: "ok", m: "✓", mc: "ok", t: "copié" }];
       },
 
-      // Trois chemins dans l'ordre : marquage GoatCounter, puis appel direct, puis
-      // mailto. Le texte est le nom de l'événement : GoatCounter ne transporte aucune
-      // donnée libre.
-      async send(text: string) {
-        this.pending = undefined;
-
-        const feedback = this.feedback ?? {};
-
-        if (globalThis.goatcounter?.count) {
-          this.track(text);
-          this.journal = [
-            ...this.journal,
-            { c: "ok", m: "✓", mc: "ok", t: "proposition envoyée. merci." },
-          ];
-
-          return;
-        }
-
-        try {
-          const response = await fetch(
-            `${feedback.host}/count?p=${encodeURIComponent(text)}&e=true`,
-          );
-
-          if (!response.ok) {
-            throw new Error(String(response.status));
-          }
-
-          this.journal = [
-            ...this.journal,
-            { c: "ok", m: "✓", mc: "ok", t: "proposition envoyée. merci." },
-          ];
-        } catch {
-          globalThis.open(
-            `mailto:${feedback.fallbackEmail}?subject=Proposition&body=${encodeURIComponent(text)}`,
-          );
-          this.journal = [
-            ...this.journal,
-            {
-              c: "fg2",
-              m: "·",
-              mc: "fg2",
-              t: "envoi direct impossible — votre client de courrier prend le relais.",
-            },
-          ];
-        }
-      },
-
-      // Le modele local choisit un identifiant dans une liste fermee, jamais du texte libre :
-      // cela evite d'inventer sur le parcours de Benjamin, et rattrape les recherches par
-      // mots qui ratent un passage reformule. « lexical » n'arrive que si l'interpreteur a garde sa reponse pour laisser le modele choisir ; elle sort telle quelle des qu'il echoue, refuse ou tarde.
-      async answerWithModel(query: string, candidateIds: string[], lexical?: Line[]) {
-        if (lexical === undefined || !("LanguageModel" in globalThis)) {
-          return;
-        }
-
-        const asker = new AbortController();
-
-        this.asker = asker;
-        this.thinking = true;
-
-        // Une session fermee de travers ne doit pas faire repasser la question par le repli :
-        // la reponse est deja affichee, elle sortirait deux fois.
-        let answered = false;
-
-        try {
-          const session = await LanguageModel.create({
-            // La question et les passages sont en francais. Le declarer laisse le navigateur
-            // refuser tout de suite plutot que de repondre depuis un modele d'une autre langue.
-            expectedInputs: [{ languages: ["fr"], type: "text" }],
-            signal: AbortSignal.any([asker.signal, AbortSignal.timeout(ASK_MS)]),
-          });
-
-          try {
-            const choice = await session.prompt(this.askPrompt(query, candidateIds), {
-              responseConstraint: { enum: candidateIds, type: "string" },
-              signal: AbortSignal.any([asker.signal, AbortSignal.timeout(ASK_MS)]),
-            });
-
-            this.showAskChoice(readChoice(choice), lexical, asker);
-            answered = true;
-          } finally {
-            session.destroy();
-          }
-        } catch (error) {
-          // Le modele muet, refuse ou trop lent ne doit pas laisser la question sans reponse :
-          // celle du corpus la remplace, sauf si une autre question a deja pris sa place. Son
-          // echec se dit aussi : « rien ne repond » et « le modele a lache » se lisaient pareil, et menaient a chercher le defaut du mauvais cote.
-          if (!answered && this.asker === asker) {
-            this.journal = [
-              ...this.journal,
-              { c: "warn", m: "✗", mc: "warn", t: askFailure(error) } satisfies Line,
-              ...lexical,
-            ];
-          }
-        } finally {
-          // La question coupee n'eteint pas l'attente de celle qui l'a remplacee.
-          if (this.asker === asker) {
-            this.thinking = false;
-          }
-        }
-      },
-
-      // « m-transway » ne dit rien de ce que la mission couvre. Sans le texte en face, le
-      // modele choisit sur la forme de l'identifiant, et perd l'avantage qu'il avait sur le
-      // recouvrement de mots. La contrainte de reponse, elle, reste sur les identifiants.
-      askPrompt(query: string, candidateIds: string[]) {
-        const corpus = [...this.sections, ...this.details],
-          topics = candidateIds.map((id) => {
-            const found = corpus.find((entry) => {
-              return entry.id === id;
-            });
-
-            return `${id} : ${found?.label ?? id} — ${found?.ask ?? ""}`;
-          });
-
-        return [
-          `Question : « ${query} ».`,
-          "Voici les sujets de ce portfolio, chacun précédé de son identifiant.",
-          ...topics,
-          "Réponds uniquement par l'identifiant du sujet qui répond le mieux.",
-        ].join("\n");
-      },
-
-      // Le choix du modele designe un passage du corpus, et c'est ce passage qui s'affiche.
-      // Un identifiant inconnu ne designe rien : la reponse du corpus reprend la main.
-      showAskChoice(id: string, lexical: Line[], asker: AbortController) {
-        if (this.asker !== asker) {
-          return;
-        }
-
-        const found = [...this.sections, ...this.details].find((entry) => {
-          return entry.id === id;
-        });
-
-        this.journal =
-          !found || (found.ask ?? "") === ""
-            ? [...this.journal, ...lexical]
-            : [
-                ...this.journal,
-                { c: "fg", m: "✓", mc: "ok", t: found.label } satisfies Line,
-                { c: "fg", m: " ", mc: "fg2", t: found.ask ?? "" } satisfies Line,
-              ];
-      },
-
-      // « availability » est asynchrone, l'interpreteur ne l'est pas : sans cette lecture au
-      // demarrage, la premiere question partirait en croyant qu'aucun modele n'est la.
-      async learnModel() {
-        if (!("LanguageModel" in globalThis)) {
-          return;
-        }
-
-        try {
-          this.modelState = await LanguageModel.availability();
-          // Le vocabulaire porte « ask » ou « ask✨ », jamais les deux. L'index se refait, sinon
-          // la recherche globale garderait le nom d'avant la detection.
-          this.reindexGlobal();
-        } catch {
-          // Un refus au demarrage laisse « unknown » : « ask » repond alors sans modele,
-          // ce qui est le comportement sans API.
-        }
-      },
-
       // « hors ligne » sans se tromper, et « en ligne » avec optimisme : c'est le sens
       // utile ici, puisque la page ne sert qu'a refuser une commande vouee a l'echec.
       watchNetwork() {
@@ -1423,16 +1090,6 @@ document.addEventListener("alpine:init", () => {
       onResize() {
         this.setLogHeight(this.logHeight);
         this.place(this.at);
-      },
-
-      // Le site entier tient en memoire une fois charge : seules les commandes qui partent
-      // ailleurs cassent. Le refus les nomme, et il nomme ce qui marche encore.
-      refuseOffline(what: string, instead: string) {
-        this.journal = [
-          ...this.journal,
-          { c: "warn", m: "✗", mc: "warn", t: `${what} demande le réseau, et il est coupé.` },
-          { c: "fg2", m: "·", mc: "fg2", t: instead },
-        ];
       },
 
       // La coquille applique ce que l'interpréteur décrit. Les effets des tickets à
@@ -1610,27 +1267,6 @@ document.addEventListener("alpine:init", () => {
         }
       },
 
-      suggest() {
-        const result = candidates(this.input, {
-          details: this.details,
-          model: this.modelState === "available",
-          sections: this.sections,
-          shareTargets: this.shareTargets,
-          themes: THEMES.map((entry) => {
-            return entry.id;
-          }),
-        });
-
-        this.sugg = result.hits;
-        this.suggFrag = result.frag;
-        this.suggHead = result.head;
-        this.suggSlash = result.slash;
-        this.suggAt = 0;
-        this.suggTop = 0;
-        this.suggFresh = true;
-        this.suggOpen = result.hits.length > 0 && this.input !== "";
-      },
-
       // Le nom d'une proposition n'apprend rien a lui seul. La ligne suit la selection,
       // et se tait quand la proposition vient du contenu : son identifiant se lit deja.
       get suggHint() {
@@ -1642,148 +1278,6 @@ document.addEventListener("alpine:init", () => {
       // reste atteignable a la fleche.
       get suggWindow() {
         return this.sugg.slice(this.suggTop, this.suggTop + MAX_SUGGESTIONS);
-      },
-
-      // La fermeture reste déterministe : la liste se vide, sans compteur de génération
-      // qui pourrait annuler le vidage au lieu de le protéger.
-      closeSugg() {
-        this.suggOpen = false;
-        this.sugg = [];
-        this.suggAt = 0;
-        this.suggTop = 0;
-      },
-
-      rebuild(word: string) {
-        const prefix = this.suggSlash ? "/" : "";
-
-        return this.suggHead ? `${prefix}${this.suggHead} ${word}` : `${prefix}${word}`;
-      },
-
-      // La liste se rouvre sur le mot suivant : une commande completee qui attend un
-      // argument montre ce qu'elle attend, sans qu'on ait a taper une lettre pour le voir.
-      applySugg(index: number) {
-        this.input = `${this.rebuild(this.sugg[index] ?? "")} `;
-        this.closeSugg();
-        this.suggest();
-        this.$refs.cli?.focus();
-      },
-
-      // Le doigt valide en un geste : la proposition part sans passer par la touche
-      // entree. Un premier mot qui attend un argument ouvre sa liste, sinon la commande
-      // partirait incomplete.
-      pickSugg(index: number, pointer: PointerEvent) {
-        this.applySugg(index);
-
-        if (pointer.pointerType !== "touch") {
-          return;
-        }
-
-        // Une liste rouverte veut dire que la commande attend encore un mot, a n'importe
-        // quel niveau. Ne regarder que le premier mot laissait partir « slime expression ».
-        if (this.suggOpen) {
-          return;
-        }
-
-        this.submit();
-      },
-
-      complete() {
-        if (this.sugg.length === 0) {
-          return;
-        }
-
-        this.unlock("tab");
-
-        // Une proposition choisie a la fleche doit s'appliquer telle quelle : c'est
-        // pour cela qu'on l'a choisie.
-        if (this.sugg.length === 1 || this.suggAt > 0) {
-          this.applySugg(this.suggAt);
-
-          return;
-        }
-
-        const shared = commonPrefix(this.sugg);
-
-        // Tant que le prefixe commun avance, il avance : c'est ce que Tab sait faire de
-        // moins arbitraire.
-        if (shared.length > this.suggFrag.length) {
-          this.input = this.rebuild(shared);
-          this.suggOpen = true;
-
-          return;
-        }
-
-        // Plus rien a gagner. La liste montre deja une ligne en avant, et refuser de la
-        // prendre laissait Tab sans effet : « / » met « /slime » en tete, la tabulation
-        // n'en faisait rien. Ce que la liste designe, Tab l'applique.
-        this.applySugg(this.suggAt);
-      },
-
-      up() {
-        if (this.suggOpen) {
-          this.suggAt = (this.suggAt - 1 + this.sugg.length) % this.sugg.length;
-          this.suggTop = windowTop(this.suggTop, this.suggAt, MAX_SUGGESTIONS);
-          this.suggFresh = false;
-        } else {
-          this.recall(-1);
-        }
-      },
-
-      down() {
-        if (this.suggOpen) {
-          this.suggAt = (this.suggAt + 1) % this.sugg.length;
-          this.suggTop = windowTop(this.suggTop, this.suggAt, MAX_SUGGESTIONS);
-          this.suggFresh = false;
-        } else {
-          this.recall(1);
-        }
-      },
-
-      // La fleche droite valide la proposition choisie, comme la tabulation. Curseur
-      // deja en fin de ligne, elle n'a rien d'autre a faire.
-      right(event: KeyboardEvent) {
-        if (!this.suggOpen) {
-          return;
-        }
-
-        event.preventDefault();
-        this.complete();
-      },
-
-      // Sans proposition, Tab garde son role de navigation : l'avaler enfermait le
-      // visiteur dans la ligne. Shift+Tab n'est jamais une completion.
-      tab(event: KeyboardEvent) {
-        if (event.shiftKey || this.sugg.length === 0) {
-          return;
-        }
-
-        event.preventDefault();
-        this.complete();
-      },
-
-      onEscape() {
-        if (this.suggOpen) {
-          this.closeSugg();
-        } else {
-          this.input = "";
-        }
-      },
-
-      // La première flèche haut rappelle la commande de la section, puis l'historique.
-      // La commande de section n'arrive en tete que tant que rien n'a ete tape : c'est
-      // « la premiere fois dans une section » du journal de conception, pas toujours.
-      recall(step: number) {
-        const pool =
-            this.commands.length > 0 ? [...this.commands, this.current.cmd] : [this.current.cmd],
-          next = Math.min(pool.length - 1, Math.max(-1, this.recallAt - step));
-
-        this.recallAt = next;
-        this.input = next < 0 ? "" : pool[next];
-
-        // Une fleche qui ne ramene rien n'a rien rappele : la ligne vide ne compte pas.
-        if (next >= 0) {
-          this.unlock("history");
-        }
       },
 
       // Distant d'abord, local ensuite. Le repli n'est pas un luxe : la page dependrait
