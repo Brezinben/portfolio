@@ -1,4 +1,4 @@
-# Benjamin David — Développeur IA / Full Stack
+# Benjamin David · Développeur IA & Full Stack
 
 > Portfolio de Benjamin David, concepteur orchestrateur IA et développeur Full
 > Stack, à Nantes. Il construit des applications qui rendent les outils internes
@@ -34,8 +34,8 @@ Parcours, six expériences depuis 2018 :
 - 2026 → … · Kereis · Développeur IA / Full Stack · pôle DSI
 - 2024 → 2026 · SNCF Gares & Connexions · Développeur Full Stack · Assist'enGare
 - 2023 → 2024 · digital4better · Équipe RUN · Développeur Full Stack / IA
-- 2021 → 2023 · Transway · Full Stack, puis Technical Lead
-- 2020 → 2021 · LDC Services · Concepteur Développeur d'Application · alternance
+- 2021 → 2023 · Transway · Full Stack, puis tech lead
+- 2020 → 2021 · LDC Services · Concepteur Développeur d'Applications · alternance
 - 2018 → 2020 · FPEE Industries · Technicien réseau · alternance
 
 Compétences techniques, cinq domaines :
@@ -51,8 +51,7 @@ Compétences techniques, cinq domaines :
 - Qualité & sobriété, ce qui tient dans le temps : tests unitaires, E2E, Cypress,
   ESLint, Oxlint, Prettier, oxfmt, axe, éco-conception, RGAA, pair-programming.
 
-Le numérique responsable n'est pas un supplément : c'est une contrainte de
-conception, au même titre que la sécurité.
+Le numérique responsable est une contrainte de conception, au même titre que la sécurité.
 
 ## Quand ce site répond à votre question
 

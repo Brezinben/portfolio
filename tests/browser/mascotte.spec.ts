@@ -840,7 +840,7 @@ test("should refuse the command instead of lying while the slime is gone", async
   await cli.fill("/slime drop");
   await cli.press("Enter");
 
-  await expect(page.locator("[data-journal]")).toContainText("le slime n'est pas la");
+  await expect(page.locator("[data-journal]")).toContainText("le slime n'est pas là");
 });
 
 // La chaine des formes : slime -> cube -> pingouin -> slime. Chaque appel monte d'un cran, le
@@ -925,7 +925,7 @@ test("should refuse the command without lying during the transformation", async 
   await cli.fill("/slime kill");
   await cli.press("Enter");
 
-  await expect(page.locator("[data-journal]")).toContainText("la mascotte change de forme");
+  await expect(page.locator("[data-journal]")).toContainText("le slime change de forme");
   await expect(page.locator("[data-journal]")).not.toContainText("le slime explose");
 });
 

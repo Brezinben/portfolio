@@ -42,17 +42,17 @@ const emoted = (expression: Expression): Told => {
 };
 const absent: Told = {
   effects: [{ type: "usage" }],
-  lines: [failed("le slime n'est pas la : attendez qu'il revienne.")],
+  lines: [failed("le slime n'est pas là : attendez qu'il revienne.")],
 };
 const changing: Told = {
   effects: [{ type: "usage" }],
-  lines: [failed("la mascotte change de forme : laissez-la finir.")],
+  lines: [failed("le slime change de forme : laissez-le finir.")],
 };
 const dozing: Told = {
   effects: [{ type: "usage" }],
   lines: [
-    failed("la mascotte dort tant que le réseau est coupé."),
-    muted("elle se réveille d'elle-même au retour du réseau."),
+    failed("le slime dort tant que le réseau est coupé."),
+    muted("il se réveille de lui-même au retour du réseau."),
   ],
 };
 
@@ -76,7 +76,7 @@ export const slime = (argument: string, name: string, mascot: Context["mascot"])
   if (argument === "evolve") {
     return {
       effects: [{ type: "evolve" }],
-      lines: [done("la mascotte change de forme.")],
+      lines: [done("le slime change de forme.")],
     };
   }
 
