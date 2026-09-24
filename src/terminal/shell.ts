@@ -40,10 +40,13 @@ export interface Shared {
   globalHits: GlobalEntry[];
   input: string;
   missions: { id: string; state?: string }[];
+  // Vrai tant qu'une des trois modales est ouverte : le reste de la page se tait.
+  modalOpen: boolean;
   modelState: string;
   out: boolean;
   reduced: boolean;
   sections: Section[];
+  shortcuts: boolean;
   // « typed » distingue une commande tapee d'une commande lancee a la souris : le succes de
   // la premiere commande dit « tapee, pas cliquee ».
   submit(options?: { typed?: boolean }): void;

@@ -236,6 +236,33 @@ _Avoid_: store, modèle, contexte.
 Durée ou seuil arrêté après itération, qui ne doit pas redevenir un réglage.
 _Avoid_: constante, paramètre, réglage.
 
+**Raccourci** (`shortcut`) :
+Une touche de caractère seule qui déclenche une action : `/`, `j`, `k`, et `m`, `q`, `r`,
+`espace` sur la radio. Une bascule des options les coupe tous. Les flèches, Tab, Entrée et
+Échap ne sont pas des raccourcis : ce sont la navigation elle-même.
+_Avoid_: hotkey, touche rapide, binding.
+
+### Le focus et le clavier
+
+Ces règles valent pour tout élément intérieur. `tests/browser/clavier.spec.ts` les vérifie.
+
+1. Tab et Shift+Tab ne sont jamais avalés. Seule exception : une proposition existe, et Tab
+   la complète. Shift+Tab n'est jamais une complétion.
+2. Un élément qui traite une touche la consomme. Le gestionnaire de la page ignore tout
+   événement déjà consommé.
+3. Le volet courant se lit sur l'élément qui a le focus, jamais sur un état mémorisé.
+4. Une région qui défile garde ses flèches verticales.
+5. Retirer un élément qui a le focus déplace d'abord le focus vers un élément connu. Le
+   focus ne tombe jamais sur le corps de la page.
+6. Une seule modale à la fois. Tant qu'elle est ouverte, le reste de la page est inerte.
+   Un contrôle désactivé sort de toute boucle de tabulation.
+7. Entrée appartient à l'élément qui a le focus.
+8. Un contour de focus prend `--acc-text`, jamais `--acc`, et tient 3:1 contre le fond.
+9. Une liste parcourue aux flèches n'a qu'un arrêt de tabulation.
+10. Un message d'état passe par une région live toujours montée. Un nœud inséré déjà rempli
+    n'annonce rien.
+11. Un élément ne prend le focus que s'il a une action ou un contenu à lire.
+
 ### Le travail
 
 **Seam** (`seam`) :

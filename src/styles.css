@@ -25,7 +25,8 @@
 /* Le titre de la page. Le bandeau de whoami est une image de points : il ne porte pas
  le niveau un. Masqué à l'œil, jamais au lecteur d'écran, et hors du flux pour ne pas
  peser sur la mise en page des volets. */
-.titre {
+.titre,
+.tm [data-said] {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -423,26 +424,6 @@ a:hover {
   }
 }
 
-@keyframes vtReveal {
-  from {
-    clip-path: circle(0 at var(--vt-x) var(--vt-y));
-  }
-
-  to {
-    clip-path: circle(var(--vt-r) at var(--vt-x) var(--vt-y));
-  }
-}
-
-html[data-vt-theme]::view-transition-old(root) {
-  animation: none;
-  z-index: 0;
-}
-
-html[data-vt-theme]::view-transition-new(root) {
-  animation: vtReveal 0.62s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-  z-index: 1;
-}
-
 .tm,
 .tm * {
   box-sizing: border-box;
@@ -518,6 +499,7 @@ html[data-vt-theme]::view-transition-new(root) {
 
 .tm .zone__head {
   margin: 0;
+  font-weight: inherit;
   padding: 9px 12px;
   font-size: 11px;
   letter-spacing: 0.12em;
@@ -1632,18 +1614,15 @@ html[data-vt-theme]::view-transition-new(root) {
  couronne est un objet solide et garde sa forme, d'ou l'animation portee par le
  bloc et non par la couronne. */
 
-/* Un contrôle prend l'ambre décoratif, une région de texte prend l'ambre textuel. La
- feuille porte déjà cette distinction pour les liens, et l'ambre décoratif du thème
- clair ne tient pas les 3:1 qu'un indicateur de focus demande.
+/* Tout contour de focus prend l'ambre textuel. L'ambre décoratif du thème clair tient
+ 2:1 contre le panneau, sous les 3:1 qu'un indicateur de focus demande (WCAG 1.4.11).
  Le journal, la poignée et le résultat y entrent : sans eux, les éléments focalisables
  du volet central retombaient sur l'anneau du navigateur, invisible sur un fond
  sombre. */
 .tm [data-ctl]:focus-visible,
-.tm [data-handle]:focus-visible {
-  outline: 2px solid var(--acc);
-  outline-offset: -2px;
-}
-
+.tm [data-handle]:focus-visible,
+.tm [data-cli]:focus-within,
+.tm [data-global-field]:focus-within,
 .tm [data-journal]:focus-visible,
 .tm [data-result]:focus-visible,
 .tm [data-pane="out"] [tabindex="0"]:focus-visible,
@@ -1666,15 +1645,9 @@ html[data-vt-theme]::view-transition-new(root) {
   gap: 14px;
 }
 
-.tm [data-pane="main"] p[tabindex] {
-  cursor: pointer;
-}
-
-.tm [data-pane="main"] p[tabindex]:not([data-edge]):hover,
-.tm [data-pane="main"] p[tabindex]:not([data-edge]):focus-visible {
+.tm [data-pane="main"] p[data-contact]:not([data-edge]):hover {
   --row-acc: var(--acc);
   background: var(--acc-soft);
-  outline: none;
 }
 
 .tm [data-ctl="opts"]:hover {
@@ -1758,7 +1731,7 @@ html[data-vt-theme]::view-transition-new(root) {
   cursor: pointer;
 }
 
-.tm [data-ctl="tech"][aria-pressed="true"] {
+.tm [data-ctl="tech"][aria-current="true"] {
   color: var(--acc-text);
   font-weight: 700;
 }
@@ -1954,7 +1927,7 @@ html[data-vt-theme]::view-transition-new(root) {
 }
 
 .tm .radio__glyph:focus-visible {
-  outline: 2px solid var(--acc);
+  outline: 2px solid var(--acc-text);
   outline-offset: 2px;
 }
 
@@ -1977,7 +1950,7 @@ html[data-vt-theme]::view-transition-new(root) {
 
 .tm .radio__number input:focus {
   outline: none;
-  border-bottom-color: var(--acc);
+  border-bottom-color: var(--acc-text);
 }
 
 .tm .radio__params {
@@ -2050,7 +2023,7 @@ html[data-vt-theme]::view-transition-new(root) {
 }
 
 .tm .radio__ctl button:focus-visible {
-  outline: 2px solid var(--acc);
+  outline: 2px solid var(--acc-text);
   outline-offset: 2px;
 }
 
@@ -2215,6 +2188,9 @@ html[data-vt-theme]::view-transition-new(root) {
 }
 
 .tm [data-ach-list] {
+  margin: 0;
+  padding: 0;
+  list-style: none;
   overflow: auto;
   display: grid;
   gap: 2px;
@@ -2246,8 +2222,8 @@ html[data-vt-theme]::view-transition-new(root) {
   font-size: 12px;
 }
 
-.tm [data-ach-row][aria-disabled="true"] [data-ach-title],
-.tm [data-ach-row][aria-disabled="true"] [data-ach-trigger] {
+.tm [data-ach-row][data-locked] [data-ach-title],
+.tm [data-ach-row][data-locked] [data-ach-trigger] {
   color: var(--fg2);
 }
 

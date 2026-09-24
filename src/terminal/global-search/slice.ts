@@ -81,7 +81,8 @@ export const globalSearchSlice = () => {
         return;
       }
 
-      if (event.key === "Enter") {
+      // Entrée appartient au bouton qui a le focus : sur « close », elle ferme.
+      if (event.key === "Enter" && event.target === this.$refs["globalField"]) {
         event.preventDefault();
         this.runGlobal(this.globalHits[this.globalAt]);
       }

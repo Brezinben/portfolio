@@ -290,14 +290,10 @@ test("should give the boot zone the radius too", async ({ page }) => {
   expect(await rayon(), "the variable drives it too").toBe("0px");
 });
 
-// Un contrôle prend l'ambre décoratif, une région de texte l'ambre textuel. En sombre les
-// deux coïncident : c'est le thème clair qui prouve la règle, et c'est là que l'ambre
-// décoratif tombe sous les 3:1 qu'un indicateur de focus demande.
-for (const [theme, controle, texte] of [
-  ["dark", "rgb(245, 184, 59)", "rgb(245, 184, 59)"],
-  ["light", "rgb(230, 160, 0)", "rgb(143, 95, 0)"],
-]) {
-  test(`should mark the focus with the right amber on the ${theme} theme`, async ({ page }) => {
+// Un indicateur de focus doit tenir 3:1 contre le fond qu'il borde (WCAG 1.4.11). Axe ne
+// mesure pas les contours : ce test le fait, sur chaque thème.
+for (const theme of ["dark", "light", "noctis", "azureus", "uva", "bordo", "lux", "hibernus"]) {
+  test(`should draw every focus ring at 3:1 or more on the ${theme} theme`, async ({ page }) => {
     await page.addInitScript((choisi) => {
       localStorage["bd-term-opts"] = JSON.stringify({ anim: true, out: true, theme: choisi });
     }, theme);
@@ -306,8 +302,37 @@ for (const [theme, controle, texte] of [
 
     await fill(cli);
 
-    const marks = await page.evaluate(() => {
+    const ratios = await page.evaluate(() => {
+      const probe = document.createElement("i"),
+        rgb = (color: string) => {
+          probe.style.color = color;
+
+          return (getComputedStyle(probe).color.match(/[\d.]+/gu) ?? []).slice(0, 3).map(Number);
+        },
+        luminance = (color: string) => {
+          const [red = 0, green = 0, blue = 0] = rgb(color).map((channel) => {
+            const unit = channel / 255;
+
+            return unit <= 0.03928 ? unit / 12.92 : ((unit + 0.055) / 1.055) ** 2.4;
+          });
+
+          return 0.2126 * red + 0.7152 * green + 0.0722 * blue;
+        },
+        ratio = (one: string, two: string) => {
+          const [light, dark] = [luminance(one), luminance(two)].toSorted((a, b) => {
+            return b - a;
+          });
+
+          return ((light ?? 0) + 0.05) / ((dark ?? 0) + 0.05);
+        };
+
+      document.querySelector(".tm")!.append(probe);
+
+      const panel = getComputedStyle(probe).getPropertyValue("--panel"),
+        ground = getComputedStyle(probe).getPropertyValue("--bg");
+
       return [
+        '[data-ctl="nav"]',
         "[data-handle]",
         "[data-journal]",
         "[data-result]",
@@ -317,11 +342,15 @@ for (const [theme, controle, texte] of [
 
         node?.focus();
 
-        return node ? getComputedStyle(node).outlineColor : "absent";
+        const ring = node ? getComputedStyle(node).outlineColor : "transparent";
+
+        return `${selector} ${Math.min(ratio(ring, panel), ratio(ring, ground)).toFixed(2)}`;
       });
     });
 
-    expect(marks).toEqual([controle, texte, texte, texte]);
+    for (const entry of ratios) {
+      expect(Number(entry.split(" ").at(-1)), entry).toBeGreaterThanOrEqual(3);
+    }
   });
 }
 

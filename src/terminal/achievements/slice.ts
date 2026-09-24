@@ -83,10 +83,16 @@ const cells = () => {
 const rowNodes = () => {
   return [...document.querySelectorAll<HTMLElement>("[data-ach-row]")];
 };
-// Les flèches parcourent les entrées, la tabulation boucle sur tout ce qui prend le focus.
-// Le bouton de fermeture en fait partie : sans lui, « échap » était la seule sortie.
-const focusables = () => {
-  return [...document.querySelectorAll<HTMLElement>("[data-ach] [data-ctl]")];
+// Les flèches parcourent les entrées. La tabulation n'en garde qu'une, celle qui a le
+// focus, et le bouton de fermeture : sans lui, « échap » était la seule sortie.
+const focusables = (active: HTMLElement | undefined) => {
+  const rows = rowNodes(),
+    row = active && rows.includes(active) ? active : rows[0];
+
+  return [
+    ...(row ? [row] : []),
+    ...document.querySelectorAll<HTMLElement>("[data-ach] button[data-ctl]"),
+  ];
 };
 
 export const achievementsSlice = () => {
@@ -105,7 +111,7 @@ export const achievementsSlice = () => {
         document.activeElement instanceof HTMLElement ? document.activeElement : undefined;
 
       if (event.key === "Tab") {
-        const all = focusables(),
+        const all = focusables(active),
           from = active ? all.indexOf(active) : -1;
 
         event.preventDefault();
@@ -148,6 +154,16 @@ export const achievementsSlice = () => {
     // La sortie n'est jouée que si rien n'attend derrière. Jouer une disparition pour la
     // recouvrir aussitôt ne se voit pas, et retarde chaque entrée de la file.
     alertOut(this: Shell) {
+      // Une alerte qu'on lit ou qu'on vise reste : en partir retirait le bouton sous le
+      // focus, qui tombait alors sur le corps de la page (WCAG 2.2.1).
+      if (document.querySelector("[data-ach-alert]")?.matches(":focus-within, :hover") === true) {
+        this.alertTimer = setTimeout(() => {
+          return this.alertOut();
+        }, ALERT_MS);
+
+        return;
+      }
+
       if (this.alertQueue.length > 0 || !this.anim || this.reduced) {
         this.alertNext();
 
