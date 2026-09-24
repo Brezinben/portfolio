@@ -1,6 +1,6 @@
 # Des tests figent l'implémentation et des comportements n'ont aucun test
 
-Status: ready-for-agent
+Status: resolved
 Type: task
 
 Un test vérifie un comportement que le visiteur voit. Il ne recopie ni le texte, ni le
@@ -40,3 +40,7 @@ le réseau de `/propose`.
 
 `bun run test:mutation` lance Stryker avec le runner `command` sur `bun test`, en local
 seulement.
+
+## Answer
+
+Corrigé dans la PR #22.

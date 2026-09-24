@@ -1,6 +1,6 @@
 # Aucune règle TypeScript d'oxlint ne tourne
 
-Status: ready-for-agent
+Status: resolved
 Type: task
 
 `plugins` dans `.oxlintrc.jsonc` remplace la liste par défaut, et `typescript` n'y est
@@ -18,3 +18,7 @@ pas. `oxlint --print-config` montre 0 règle `typescript/`. `typeAware` et
 - Retirer `globals` : `umami` est mort, et `Alpine` est déclaré dans `app.ts`.
 - `capitalized-comments` passe en error, car un warn ne bloque pas la CI.
 - `apply()` devient un `switch` exhaustif.
+
+## Answer
+
+Corrigé dans la PR #21.
