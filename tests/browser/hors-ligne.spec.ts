@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 import type { Page } from "@playwright/test";
+import { boxOf } from "../helpers/box.ts";
 
 // Le site tient en memoire une fois charge : couper le reseau apres le demarrage ne casse
 // que les commandes qui partent ailleurs. Le test coupe donc apres, jamais avant.
@@ -107,7 +108,7 @@ test("should ignore clicks and drags while the mascot sleeps", async ({ page }) 
   await couper(page);
   await expect(mascot(page)).toHaveClass(/slime--sleep/u);
 
-  const avant = (await mascot(page).boundingBox())!;
+  const avant = await boxOf(mascot(page));
 
   await Array.from({ length: 5 }).reduce<Promise<unknown>>((chain) => {
     return chain.then(() => {
@@ -125,7 +126,9 @@ test("should ignore clicks and drags while the mascot sleeps", async ({ page }) 
   await page.mouse.up();
 
   await expect(mascot(page)).toHaveClass(/slime--sleep/u);
-  expect((await mascot(page).boundingBox())!.x, "the mascot has not moved").toBe(avant.x);
+  const apres = await boxOf(mascot(page));
+
+  expect(apres.x, "the mascot has not moved").toBe(avant.x);
 });
 
 test("should say that propose needs the network instead of failing silently", async ({ page }) => {

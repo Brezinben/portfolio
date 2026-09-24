@@ -69,7 +69,7 @@ const ROOT = resolve(
     // Stat() peut réussir là où open() échoue. Sans cet écouteur, l'erreur est non gérée
     // et tue le processus : le harnais tombe au milieu d'une série de tests.
     stream.on("error", () => {
-      return notFound(response);
+      notFound(response);
     });
 
     if (

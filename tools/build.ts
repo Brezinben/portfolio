@@ -79,6 +79,9 @@ const ROOT = fileURLToPath(new URL("../", import.meta.url)),
     { dir: "cube", prefix: "cube" },
     { dir: "pingouin", prefix: "peng" },
   ],
+  // La 404 est servie sur une adresse quelconque : elle écrit des chemins absolus, là où
+  // index.html les écrit relatifs. Le plan, lui, ne connaît que la forme relative.
+  LEADING_SLASH = /^\//u,
   sheetsOf = (dir: string) => {
     return `assets/sprites/${dir}-sheets.png`;
   },
@@ -91,9 +94,6 @@ const ROOT = fileURLToPath(new URL("../", import.meta.url)),
   SHEET_RULE =
     /(?<indent>[^\S\n]*)background-image: url\("(?<file>\/?assets\/sprites\/[a-z]+\/[^"]+\.png)"\);\n[^\S\n]*background-size: \d+px \d+px;\n/gu,
   SHEET_URL = /\/?assets\/sprites\/[a-z]+\/[^"]+\.png/gu,
-  // La 404 est servie sur une adresse quelconque : elle écrit des chemins absolus, là où
-  // index.html les écrit relatifs. Le plan, lui, ne connaît que la forme relative.
-  LEADING_SLASH = /^\//u,
   // La règle de base d'une forme porte la position de départ, et reçoit l'image fusionnée.
   // Le point-virgule est facultatif : le formateur le pose, la feuille s'écrivait sans lui.
   // L'ancre sur le sélecteur évite qu'une règle placée avant reçoive l'image en silence.
@@ -198,12 +198,22 @@ const ROOT = fileURLToPath(new URL("../", import.meta.url)),
 
 // Le voisinage qu'un filtre PNG consulte : le pixel de gauche, celui du dessus, et le coin
 // entre les deux. Un voisin hors de l'image vaut zéro.
-type Around = { above: number; corner: number; left: number };
+interface Around {
+  above: number;
+  corner: number;
+  left: number;
+}
 
 // Ce qu'un balayage de index.html apprend sur les feuilles fusionnées : la bande de
 // chaque feuille source, et la taille d'affichage de l'image de chaque forme.
-type SheetSize = { height: number; width: number };
-type SheetPlan = { bands: Map<string, number>; sizes: Map<string, SheetSize> };
+interface SheetSize {
+  height: number;
+  width: number;
+}
+interface SheetPlan {
+  bands: Map<string, number>;
+  sizes: Map<string, SheetSize>;
+}
 
 // Les cinq filtres de ligne de la spécification PNG, défaits.
 const unfilter = (filter: number, value: number, around: Around) => {
@@ -421,7 +431,7 @@ const unfilter = (filter: number, value: number, around: Around) => {
     const declared = text.match(SHEET_URL) ?? [],
       // L'adresse de l'image fusionnée reprend la forme de celles qu'elle remplace : une page
       // servie sur une adresse quelconque écrit des chemins absolus, et les garde.
-      root = LEADING_SLASH.test(declared[0] ?? "") ? "/" : "",
+      root = (declared[0] ?? "").startsWith("/") ? "/" : "",
       folded = text.replace(SHEET_RULE, (_rule, indent: string, file: string) => {
         const band = plan.bands.get(file.replace(LEADING_SLASH, ""));
 
@@ -499,7 +509,7 @@ const unfilter = (filter: number, value: number, around: Around) => {
     // Le chunk paresseux s'écrit à la racine, comme la page : un spécificateur relatif dans
     // un module en ligne se résout contre l'adresse du document, pas contre un fichier.
     await Promise.all(
-      bundled.lazy.map(async (part) => {
+      bundled.lazy.map((part) => {
         return writeFile(join(staging, part.file), part.code);
       }),
     );
@@ -562,7 +572,7 @@ const unfilter = (filter: number, value: number, around: Around) => {
         entries.map(async (entry) => {
           const full = join(dir, entry.name);
 
-          return entry.isDirectory() ? walk(full) : [full];
+          return entry.isDirectory() ? await walk(full) : [full];
         }),
       );
 
@@ -684,20 +694,6 @@ const unfilter = (filter: number, value: number, around: Around) => {
 
 // Un dossier vide n'a rien a faire dans l'artefact. L'elagage remonte des feuilles vers la
 // racine : un dossier qui ne contenait que des dossiers vides se vide a son tour.
-const pruneChildren = async (directory: string): Promise<void> => {
-  const entries = await readdir(directory, { withFileTypes: true });
-
-  await Promise.all(
-    entries
-      .filter((entry) => {
-        return entry.isDirectory();
-      })
-      .map(async (entry) => {
-        return pruneEmpty(join(directory, entry.name));
-      }),
-  );
-};
-
 const pruneEmpty = async (directory: string): Promise<boolean> => {
   const entries = await readdir(directory, { withFileTypes: true }),
     kept = await Promise.all(
@@ -713,6 +709,20 @@ const pruneEmpty = async (directory: string): Promise<boolean> => {
   await rm(directory, { recursive: true });
 
   return false;
+};
+
+const pruneChildren = async (directory: string): Promise<void> => {
+  const entries = await readdir(directory, { withFileTypes: true });
+
+  await Promise.all(
+    entries
+      .filter((entry) => {
+        return entry.isDirectory();
+      })
+      .map((entry) => {
+        return pruneEmpty(join(directory, entry.name));
+      }),
+  );
 };
 
 await takeLock();

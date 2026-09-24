@@ -176,7 +176,7 @@ const PARTAGE = /property="og:image" content="https:\/\/[^"/]+\/(?<chemin>[^"]+\
 test("should serve the side files", async ({ request }) => {
   const page = await request.get("/texte.html"),
     html = await page.text(),
-    partage = html.match(PARTAGE)?.groups?.chemin;
+    partage = PARTAGE.exec(html)?.groups?.chemin;
 
   expect(partage, "texte.html must declare a share image").toBeDefined();
 

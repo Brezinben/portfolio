@@ -128,7 +128,7 @@ const rect = (node: Element) => {
     return node.getBoundingClientRect();
   },
   paneOf = (node: Element | null) => {
-    return node?.closest<HTMLElement>("[data-pane]")?.dataset["pane"];
+    return node?.closest<HTMLElement>("[data-pane]")?.dataset.pane;
   },
   isScrollRegion = (node: EventTarget | null) => {
     return node instanceof Element && node.matches('[role="region"][tabindex="0"], [role="log"]');
@@ -148,7 +148,7 @@ interface GoatCounter {
 // Les types de « @types/dom-chromium-ai » declarent « LanguageModel » toujours present, d'ou le « in globalThis » plutot qu'une comparaison a undefined.
 // « topK », « temperature » et « samplingMode » restent hors du contrat : chrome-only ou en essai d'origine.
 declare global {
-  // eslint-disable-next-line no-var, vars-on-top
+  // oxlint-disable-next-line no-var, vars-on-top
   var goatcounter: GoatCounter | undefined;
 }
 
@@ -481,14 +481,14 @@ document.addEventListener("alpine:init", () => {
         }, COMPACT_TICK_MS);
         this.startMascot();
         globalThis.addEventListener("popstate", () => {
-          return this.fromHash();
+          this.fromHash();
         });
         this.watchNetwork();
-        this.learnModel();
+        void this.learnModel();
         globalThis.addEventListener("resize", () => {
-          return this.setLogHeight(this.logHeight);
+          this.setLogHeight(this.logHeight);
         });
-        this.load();
+        void this.load();
       },
 
       items(pane: string) {
@@ -710,7 +710,7 @@ document.addEventListener("alpine:init", () => {
         // Sans cette garde, le champ de seed devenait impossible à corriger.
         if (event.target instanceof HTMLInputElement) {
           const leaving =
-            event.target === this.$refs["cli"] &&
+            event.target === this.$refs.cli &&
             this.input === "" &&
             (event.key === "ArrowLeft" || event.key === "ArrowRight");
 
@@ -735,7 +735,7 @@ document.addEventListener("alpine:init", () => {
         // navigation elle-meme, pas un raccourci.
         if (this.shortcuts && event.key === "/") {
           event.preventDefault();
-          this.$refs["cli"]?.focus();
+          this.$refs.cli?.focus();
 
           return;
         }
@@ -761,7 +761,7 @@ document.addEventListener("alpine:init", () => {
             items[at]?.click();
           }) ||
           this.listMove('[data-ctl="tl"]', event.key, (at) => {
-            return this.openTimeline(at);
+            this.openTimeline(at);
           });
 
         if (handled) {
@@ -778,16 +778,16 @@ document.addEventListener("alpine:init", () => {
 
         const fallback = {
           ArrowDown: () => {
-            return this.moveInPane(1);
+            this.moveInPane(1);
           },
           ArrowLeft: () => {
-            return this.movePane(-1);
+            this.movePane(-1);
           },
           ArrowRight: () => {
-            return this.movePane(1);
+            this.movePane(1);
           },
           ArrowUp: () => {
-            return this.moveInPane(-1);
+            this.moveInPane(-1);
           },
         }[event.key];
 
@@ -802,14 +802,14 @@ document.addEventListener("alpine:init", () => {
       // Une grille à flèches n'a qu'un arrêt de tabulation : la brique suivie, sinon la
       // première.
       get techStop() {
-        const names = this.stack.flatMap((root: Brick) => {
+        const names: string[] = this.stack.flatMap((root: Brick) => {
           return root.kids;
         });
 
         return names.includes(this.tech) ? this.tech : (names[0] ?? "");
       },
 
-      get modalOpen() {
+      get modalOpen(): boolean {
         return this.optsOpen || this.achievementsOpen || this.globalOpen;
       },
 
@@ -1129,7 +1129,7 @@ document.addEventListener("alpine:init", () => {
             clearTimeout(this.returner);
             this.gone = false;
             this.power = "boot";
-            this.load();
+            void this.load();
           },
           mode === "shutdown" ? 2200 : 900,
         );
@@ -1189,7 +1189,7 @@ document.addEventListener("alpine:init", () => {
       // Reappliquer une classe ne redemarre pas son animation : il faut la retirer, forcer
       // une relecture de la geometrie, puis la remettre.
       mascotPlay(state: string) {
-        const node = this.$refs["mascot"];
+        const node = this.$refs.mascot;
 
         if (!node || !MASCOT_STATES.has(state)) {
           return;
@@ -1221,7 +1221,7 @@ document.addEventListener("alpine:init", () => {
 
         const passe = lookup(HOLD_MS, state);
 
-        if (passe) {
+        if (passe !== undefined) {
           this.settler = setTimeout(() => {
             if (this.mascotState === state) {
               this.settle();
@@ -1364,8 +1364,7 @@ document.addEventListener("alpine:init", () => {
           return;
         }
 
-        const source =
-          this.$refs["mascot"]?.dataset[`sheet${form[0]?.toUpperCase()}${form.slice(1)}`];
+        const source = this.$refs.mascot?.dataset[`sheet${form[0]?.toUpperCase()}${form.slice(1)}`];
 
         if (!source) {
           throw new Error(`la piste ne declare aucune feuille pour ${form}`);
@@ -1444,7 +1443,7 @@ document.addEventListener("alpine:init", () => {
       place(x: number) {
         this.at = Math.max(0, Math.min(this.trackWidth(), x));
 
-        const node = this.$refs["mascot"];
+        const node = this.$refs.mascot;
 
         if (node) {
           node.style.left = `${this.at}px`;
@@ -1462,11 +1461,11 @@ document.addEventListener("alpine:init", () => {
       // Reaction seulement a proximite : un seuil large donnait un declenchement fantome,
       // curseur encore loin du slime.
       nearby(event: PointerEvent) {
-        if (this.dragging || !this.$refs["mascot"] || this.mascotState !== MASCOT_REST) {
+        if (this.dragging || !this.$refs.mascot || this.mascotState !== MASCOT_REST) {
           return;
         }
 
-        const box = this.$refs["mascot"].getBoundingClientRect(),
+        const box = this.$refs.mascot.getBoundingClientRect(),
           distance = Math.hypot(
             event.clientX - (box.left + box.width / 2),
             event.clientY - (box.top + box.height / 2),
@@ -1503,7 +1502,7 @@ document.addEventListener("alpine:init", () => {
           return;
         }
 
-        const node = this.$refs["mascot"],
+        const node = this.$refs.mascot,
           box = node?.getBoundingClientRect();
 
         this.grabAt = event.clientX - (box?.left ?? 0);
@@ -1599,22 +1598,22 @@ document.addEventListener("alpine:init", () => {
 
       startMascot() {
         this.walker = setInterval(() => {
-          return this.wander();
+          this.wander();
         }, 2400);
         this.twitcher = setInterval(() => {
-          return this.twitch();
+          this.twitch();
         }, TWITCH_MS);
         // La piste bouge avec la mise en page, la mascotte non : sans cette reprise, une
         // fenetre redimensionnee la laisserait hors champ.
         globalThis.addEventListener("resize", () => {
-          return this.place(this.at);
+          this.place(this.at);
         });
 
         for (const event of ["pointermove", "keydown", "wheel"]) {
           globalThis.addEventListener(
             event,
             () => {
-              return this.rouse();
+              this.rouse();
             },
             { passive: true },
           );
@@ -1638,7 +1637,7 @@ document.addEventListener("alpine:init", () => {
         }
 
         this.sleeper = setTimeout(() => {
-          return this.mascotPlay("sleep");
+          this.mascotPlay("sleep");
         }, SLEEP_MS);
       },
 
@@ -1730,14 +1729,14 @@ document.addEventListener("alpine:init", () => {
         };
 
         // Le réglage « animations off » et la préférence système coupent aussi le fondu.
-        if (!this.anim || this.reduced || !document.startViewTransition) {
+        if (!this.anim || this.reduced || !("startViewTransition" in document)) {
           apply();
 
           return;
         }
 
         document.startViewTransition(() => {
-          return apply();
+          apply();
         });
       },
 
@@ -1764,7 +1763,7 @@ document.addEventListener("alpine:init", () => {
 
         const toggle = active instanceof HTMLElement ? this.toggleButtons().indexOf(active) : -1;
 
-        return toggle !== -1 ? { group: "toggle", index: toggle } : undefined;
+        return toggle === -1 ? undefined : { group: "toggle", index: toggle };
       },
 
       focusSetting() {
@@ -1797,9 +1796,9 @@ document.addEventListener("alpine:init", () => {
           return;
         }
 
-        this.setTheme(target.dataset["themeChoice"] ?? "dark");
+        this.setTheme(target.dataset.themeChoice ?? "dark");
         this.$nextTick(() => {
-          return target.focus();
+          target.focus();
         });
       },
 
@@ -1903,7 +1902,7 @@ document.addEventListener("alpine:init", () => {
       // vient de sa clé, jamais d'un tirage : recalculé au rendu, il clignoterait.
       get achievementRows() {
         return ACHIEVEMENTS.map((entry: Achievement, index: number) => {
-          const done = this.achievements.includes(entry.key);
+          const done: boolean = this.achievements.includes(entry.key);
 
           return {
             done,
@@ -2059,7 +2058,7 @@ document.addEventListener("alpine:init", () => {
           document.activeElement instanceof HTMLElement ? document.activeElement : undefined;
         this.optsOpen = true;
         this.$nextTick(() => {
-          return this.focusSetting();
+          this.focusSetting();
         });
       },
 
@@ -2149,7 +2148,7 @@ document.addEventListener("alpine:init", () => {
 
         this.wantResult = false;
         this.$nextTick(() => {
-          this.focusAt["main"] = 0;
+          this.focusAt.main = 0;
           this.focusPane("main");
         });
       },
@@ -2202,7 +2201,7 @@ document.addEventListener("alpine:init", () => {
 
         this.seen = [...this.seen, id];
 
-        if (this.current.suggest) {
+        if ((this.current.suggest ?? "") !== "") {
           this.input = this.current.suggest;
         }
 
@@ -2237,7 +2236,7 @@ document.addEventListener("alpine:init", () => {
         this.running = false;
         this.commandResult = section({ id: raw, label: raw, lines });
         this.$nextTick(() => {
-          return this.setLogHeight(this.logHeight);
+          this.setLogHeight(this.logHeight);
         });
       },
 
@@ -2256,7 +2255,7 @@ document.addEventListener("alpine:init", () => {
         this.thinking = false;
 
         const { effects, lines, result } = interpret(raw, {
-          columns: Math.floor((this.$refs["cli"]?.clientWidth ?? 400) / CHAR_PX),
+          columns: Math.floor((this.$refs.cli?.clientWidth ?? 400) / CHAR_PX),
           current: this.current,
           details: this.details,
           feedback: this.feedback,
@@ -2284,8 +2283,8 @@ document.addEventListener("alpine:init", () => {
         this.recallAt = -1;
         this.journal = [...this.journal, ...lines];
         this.$nextTick(() => {
-          if (this.$refs["journal"]) {
-            this.$refs["journal"].scrollTop = this.$refs["journal"].scrollHeight;
+          if (this.$refs.journal) {
+            this.$refs.journal.scrollTop = this.$refs.journal.scrollHeight;
           }
           this.checkMore("journal");
         });
@@ -2316,7 +2315,7 @@ document.addEventListener("alpine:init", () => {
       },
 
       async nativeShare() {
-        if (!globalThis.navigator?.share) {
+        if (!("share" in navigator)) {
           return;
         }
 
@@ -2336,7 +2335,7 @@ document.addEventListener("alpine:init", () => {
       // pourcent invalide.
       shareTo(effect: { kind: string; url: string }) {
         if (effect.kind === "copy") {
-          this.copy(this.share.url ?? "");
+          void this.copy(this.share.url ?? "");
 
           return;
         }
@@ -2581,73 +2580,154 @@ document.addEventListener("alpine:init", () => {
           });
 
         for (const effect of effects) {
-          if (effect.type === "track") {
-            this.track(effect.event, effect.props);
-          } else if (effect.type === "pending") {
-            this.pending = effect.payload;
-            this.input = effect.answer ?? "";
-          } else if (effect.type === "ask") {
-            this.answerWithModel(effect.query, effect.candidates, effect.lexical);
-          } else if (effect.type === "send") {
-            if (this.online) {
-              this.send(effect.payload);
-            } else {
-              this.refuseOffline(
-                "envoyer une proposition",
-                "« mail » copie mon adresse, elle partira au retour du réseau.",
-              );
+          switch (effect.type) {
+            case "track": {
+              this.track(effect.event, effect.props);
+
+              break;
             }
-          } else if (effect.type === "share") {
-            this.shareTo(effect);
-          } else if (effect.type === "shareMenu") {
-            this.nativeShare();
-          } else if (effect.type === "email") {
-            this.copy(this.profileEmail);
-          } else if (effect.type === "sendMail") {
-            globalThis.open(`mailto:${encodeURIComponent(this.profileEmail)}`);
-          } else if (effect.type === "cv") {
-            // Un nouvel onglet : le terminal reste ouvert derriere, avec son journal.
-            globalThis.open("texte.html", "_blank", "noopener");
-          } else if (effect.type === "say") {
-            this.say(effect.text, effect.expression);
-          } else if (effect.type === "emote") {
-            this.emote(effect.expression);
-          } else if (effect.type === "drop") {
-            this.drop();
-          } else if (effect.type === "blowUp") {
-            this.blowUp("commande");
-          } else if (effect.type === "activity") {
-            this.mascotPlay(effect.name);
-          } else if (effect.type === "navigate") {
-            this.goSection(effect.id, { via: "commande" });
-          } else if (effect.type === "clear") {
-            this.journal = [];
-          } else if (effect.type === "replay") {
-            this.journal = [];
-            this.commandResult = undefined;
-            this.seen = this.seen.filter((entry) => {
-              return entry !== this.section;
-            });
-            this.play(this.section, "commande");
-          } else if (effect.type === "state") {
-            Object.assign(this, effect.patch);
-          } else if (effect.type === "power") {
-            this.powerDown(effect.mode);
-          } else if (effect.type === "theme") {
-            this.setTheme(effect.name, "commande");
-          } else if (effect.type === "evolve") {
-            void this.evolve();
-          } else if (effect.type === "options") {
-            this.openOpts("commande");
-          } else if (effect.type === "radio") {
-            void this.radioBoot();
-          } else if (effect.type === "glitch") {
-            // « sudo » laisse lire son refus avant de tomber en panne ; « matrix » part
-            // avec sa ligne.
-            if (effect.mode === "sudo") {
-              this.glitchLater(effect.mode);
-            } else {
-              this.glitchStart(effect.mode);
+            case "pending": {
+              this.pending = effect.payload;
+              this.input = effect.answer ?? "";
+
+              break;
+            }
+            case "ask": {
+              void this.answerWithModel(effect.query, effect.candidates, effect.lexical);
+
+              break;
+            }
+            case "send": {
+              if (this.online) {
+                void this.send(effect.payload);
+              } else {
+                this.refuseOffline(
+                  "envoyer une proposition",
+                  "« mail » copie mon adresse, elle partira au retour du réseau.",
+                );
+              }
+
+              break;
+            }
+            case "share": {
+              this.shareTo(effect);
+
+              break;
+            }
+            case "shareMenu": {
+              void this.nativeShare();
+
+              break;
+            }
+            case "email": {
+              void this.copy(this.profileEmail);
+
+              break;
+            }
+            case "sendMail": {
+              globalThis.open(`mailto:${encodeURIComponent(this.profileEmail)}`);
+
+              break;
+            }
+            case "cv": {
+              // Un nouvel onglet : le terminal reste ouvert derriere, avec son journal.
+              globalThis.open("texte.html", "_blank", "noopener");
+
+              break;
+            }
+            case "say": {
+              this.say(effect.text, effect.expression);
+
+              break;
+            }
+            case "emote": {
+              this.emote(effect.expression);
+
+              break;
+            }
+            case "drop": {
+              this.drop();
+
+              break;
+            }
+            case "blowUp": {
+              this.blowUp("commande");
+
+              break;
+            }
+            case "activity": {
+              this.mascotPlay(effect.name);
+
+              break;
+            }
+            case "navigate": {
+              this.goSection(effect.id, { via: "commande" });
+
+              break;
+            }
+            case "clear": {
+              this.journal = [];
+
+              break;
+            }
+            case "replay": {
+              this.journal = [];
+              this.commandResult = undefined;
+              this.seen = this.seen.filter((entry) => {
+                return entry !== this.section;
+              });
+              this.play(this.section, "commande");
+
+              break;
+            }
+            case "state": {
+              Object.assign(this, effect.patch);
+
+              break;
+            }
+            case "power": {
+              this.powerDown(effect.mode);
+
+              break;
+            }
+            case "theme": {
+              this.setTheme(effect.name, "commande");
+
+              break;
+            }
+            case "evolve": {
+              void this.evolve();
+
+              break;
+            }
+            case "options": {
+              this.openOpts("commande");
+
+              break;
+            }
+            case "radio": {
+              void this.radioBoot();
+
+              break;
+            }
+            case "glitch": {
+              // « sudo » laisse lire son refus avant de tomber en panne ; « matrix » part
+              // avec sa ligne.
+              if (effect.mode === "sudo") {
+                this.glitchLater(effect.mode);
+              } else {
+                this.glitchStart(effect.mode);
+              }
+
+              break;
+            }
+            // Une commande qui liste son usage n'a rien a faire ici : « listed » la lit plus haut.
+            case "usage": {
+              break;
+            }
+            // Un effet ajoute sans son cas casse la compilation ici.
+            default: {
+              effect satisfies never;
             }
           }
         }
@@ -2712,7 +2792,7 @@ document.addEventListener("alpine:init", () => {
         this.input = `${this.rebuild(this.sugg[index] ?? "")} `;
         this.closeSugg();
         this.suggest();
-        this.$refs["cli"]?.focus();
+        this.$refs.cli?.focus();
       },
 
       // Le doigt valide en un geste : la proposition part sans passer par la touche
@@ -2895,7 +2975,7 @@ document.addEventListener("alpine:init", () => {
         // le temps de charger le contenu.
         this.booter = setTimeout(
           () => {
-            return this.finishBoot();
+            this.finishBoot();
           },
           Math.max(0, (this.reduced ? 0 : BOOT_MS) - waited),
         );
