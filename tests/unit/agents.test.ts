@@ -109,7 +109,8 @@ const CLES = ["--bg", "--panel", "--edge", "--fg", "--fg2", "--acc"],
     const releve: Record<string, Record<string, string>> = {};
 
     for (const bloc of html.matchAll(
-      new RegExp(`${prefixe}\\[data-theme="(?<nom>[^"]+)"\\]\\s*\\{(?<corps>[^}]*)\\}`, "gu"),
+      // La liste de sélecteurs peut porter d'autres éléments du même thème, comme la pastille.
+      new RegExp(`${prefixe}\\[data-theme="(?<nom>[^"]+)"\\][^{]*\\{(?<corps>[^}]*)\\}`, "gu"),
     )) {
       const nom = bloc.groups?.nom ?? "",
         regles = [
