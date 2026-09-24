@@ -55,7 +55,7 @@ test("should show the stack tree in the main pane, in columns", async ({ page })
     .locator("[data-tech]")
     .first()
     .evaluate((node) => {
-      return getComputedStyle(node.parentElement!).gridTemplateColumns.split(" ").length;
+      return getComputedStyle(node.parentElement ?? node).gridTemplateColumns.split(" ").length;
     });
 
   expect(columns, "the technologies flow over several columns").toBeGreaterThan(1);
@@ -84,7 +84,7 @@ test("should move through the stack grid with the four arrows", async ({ page })
 
   const focused = () => {
       return page.evaluate(() => {
-        return document.activeElement!.textContent.trim();
+        return document.activeElement?.textContent.trim() ?? "";
       });
     },
     first = await focused();
@@ -120,7 +120,7 @@ test("should keep the column from one stack row to the next on arrow down", asyn
         }),
       ),
       boxOf = (cell: HTMLElement) => {
-        return boxes.get(cell)!;
+        return boxes.get(cell) ?? cell.getBoundingClientRect();
       },
       wrong: string[] = [],
       // La derniere ligne n'a rien en dessous : la fleche bas n'y promet rien.

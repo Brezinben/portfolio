@@ -220,7 +220,7 @@ it("should draw a joke different from the previous one", () => {
   for (let attempt = 0; attempt < 40; attempt += 1) {
     const result = interpret("/joke", { ...CONTEXT, jokeIndex: 0 }),
       patch = effectOf(result, "state"),
-      index = Number(patch?.patch["jokeIndex"]);
+      index = Number(patch?.patch.jokeIndex);
 
     assert.notEqual(index, 0, "the current joke does not repeat");
     assert.equal(result.lines[1]?.t, CONTEXT.jokes[index]);

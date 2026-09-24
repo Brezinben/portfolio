@@ -169,7 +169,7 @@ it("should copy the terminal version colors into the eight themes of the other p
 
     // L'ambre décoratif du thème clair ne passe pas le contraste sur du texte. Les trois
     // pages doivent porter la même variante sombre.
-    assert.equal(copy["light"]?.["--acc-text"], "#8f5f00", `${page}: the light amber has drifted`);
+    assert.equal(copy.light?.["--acc-text"], "#8f5f00", `${page}: the light amber has drifted`);
   }
 });
 

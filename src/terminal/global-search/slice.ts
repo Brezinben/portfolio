@@ -35,7 +35,7 @@ export const globalSearchSlice = () => {
       this.$nextTick(() => {
         const back = this.globalReturn?.isConnected === true ? this.globalReturn : undefined;
 
-        (back ?? this.$refs["cli"])?.focus();
+        (back ?? this.$refs.cli)?.focus();
       });
     },
 
@@ -74,15 +74,15 @@ export const globalSearchSlice = () => {
           return;
         }
 
-        const close = this.$refs["globalClose"];
+        const close = this.$refs.globalClose;
 
-        (document.activeElement === close ? this.$refs["globalField"] : close)?.focus();
+        (document.activeElement === close ? this.$refs.globalField : close)?.focus();
 
         return;
       }
 
       // Entrée appartient au bouton qui a le focus : sur « close », elle ferme.
-      if (event.key === "Enter" && event.target === this.$refs["globalField"]) {
+      if (event.key === "Enter" && event.target === this.$refs.globalField) {
         event.preventDefault();
         this.runGlobal(this.globalHits[this.globalAt]);
       }
@@ -113,7 +113,7 @@ export const globalSearchSlice = () => {
       this.globalAt = 0;
       this.globalOpen = true;
       this.$nextTick(() => {
-        return this.$refs["globalField"]?.focus();
+        return this.$refs.globalField?.focus();
       });
     },
 

@@ -58,15 +58,15 @@ test("should build no audio context before the command is typed", async ({ page 
 
         const root = document.documentElement;
 
-        root.dataset["built"] = String(Number(root.dataset["built"] ?? 0) + 1);
+        root.dataset.built = String(Number(root.dataset.built ?? 0) + 1);
       }
     };
   });
 
   const cli = await boot(page),
-    built = async () => {
+    built = () => {
       return page.evaluate(() => {
-        return document.documentElement.dataset["built"] ?? "0";
+        return document.documentElement.dataset.built ?? "0";
       });
     };
 
@@ -92,7 +92,7 @@ test("should really feed the analyser once the command runs", async ({ page }) =
 
   await expect
     .poll(
-      async () => {
+      () => {
         const bar = page.locator("[data-radio-bar]").first();
 
         return bar.evaluate((node) => {
@@ -215,7 +215,7 @@ test("should never stretch the spectrum band beyond its ceiling", async ({ page 
 test("should stop the render loop when animation is off", async ({ page }) => {
   const cli = await open(page),
     bar = page.locator("[data-radio-bar]").first(),
-    height = async () => {
+    height = () => {
       return bar.evaluate((node) => {
         return node.style.getPropertyValue("--bar");
       });
@@ -399,7 +399,7 @@ test("should resume the tune instead of restarting it", async ({ page }) => {
 
   await expect
     .poll(
-      async () => {
+      () => {
         return clock.textContent();
       },
       { timeout: 8000 },
@@ -461,7 +461,7 @@ test("should mute without stopping the tune", async ({ page }) => {
 
   await expect
     .poll(
-      async () => {
+      () => {
         return clock.textContent();
       },
       { timeout: 8000 },
@@ -477,7 +477,7 @@ test("should mute without stopping the tune", async ({ page }) => {
 
   await expect
     .poll(
-      async () => {
+      () => {
         return clock.textContent();
       },
       { timeout: 8000 },

@@ -97,8 +97,8 @@ export const globalIndex = (source: GlobalSource): GlobalEntry[] => {
     ...details.map((detail) => {
       return entry({
         cmd: open(detail.id),
-        // « || » et non « ?? » : la coquille pose une chaine vide, jamais « undefined ».
-        desc: detail.sub || stateOf(detail.id),
+        // Une fiche sans sous-titre prend l'etat de sa mission.
+        desc: detail.sub === undefined || detail.sub === "" ? stateOf(detail.id) : detail.sub,
         keys: `${detail.id} ${detail.ask ?? ""}`,
         kind: "mission",
         label: detail.label,

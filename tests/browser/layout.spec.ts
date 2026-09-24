@@ -169,7 +169,7 @@ test("should show an indicator while content remains below", async ({ page }) =>
       });
   }, Promise.resolve());
   await page.locator("[data-journal]").evaluate((node) => {
-    return node.scrollTo(0, 0);
+    node.scrollTo(0, 0);
   });
 
   await expect(page.locator("[data-more]")).toBeVisible();
@@ -205,28 +205,23 @@ test("should keep the pane widths from one section to the next", async ({ page }
       return page.evaluate(() => {
         return ["nav", "main", "out"].map((pane) => {
           return Math.round(
-            document.querySelector<HTMLElement>(`[data-pane="${pane}"]`)!.clientWidth,
+            document.querySelector<HTMLElement>(`[data-pane="${pane}"]`)?.clientWidth ?? 0,
           );
         });
       });
     },
     first = await widths();
 
-  await ["parcours", "stack", "impact", "contact"].reduce((chain, id) => {
-    return chain
-      .then(() => {
-        return page
-          .getByRole("button", { name: new RegExp(id) })
-          .first()
-          .click();
-      })
-      .then(() => {
-        return widths();
-      })
-      .then((seen) => {
-        return expect(seen, `section ${id}`).toEqual(first);
-      });
-  }, Promise.resolve());
+  for (const id of ["parcours", "stack", "impact", "contact"]) {
+    // Les sections s'ouvrent l'une après l'autre : les ouvrir ensemble ne mesurerait rien.
+    // eslint-disable-next-line no-await-in-loop
+    await page
+      .getByRole("button", { name: new RegExp(id) })
+      .first()
+      .click();
+    // eslint-disable-next-line no-await-in-loop
+    expect(await widths(), `section ${id}`).toEqual(first);
+  }
 });
 
 // Un seul rayon pilote les coins des zones : la valeur se teste dans le navigateur en
@@ -245,7 +240,9 @@ test("should drive the rounded corners of every zone with a single radius", asyn
         "[data-pane='out']",
         "[data-opts]",
       ].map((cible) => {
-        return getComputedStyle(document.querySelector<HTMLElement>(cible)!).borderRadius;
+        const node = document.querySelector<HTMLElement>(cible);
+
+        return node ? getComputedStyle(node).borderRadius : "absent";
       });
     });
   };
@@ -257,7 +254,7 @@ test("should drive the rounded corners of every zone with a single radius", asyn
   );
 
   await page.evaluate(() => {
-    return document.querySelector<HTMLElement>(".tm")!.style.setProperty("--radius", "0px");
+    document.querySelector<HTMLElement>(".tm")?.style.setProperty("--radius", "0px");
   });
 
   expect(await rayons(), "the variable drives them all").toEqual(
@@ -284,7 +281,7 @@ test("should give the boot zone the radius too", async ({ page }) => {
   expect(await rayon(), "the zone carries the radius").toBe("5px");
 
   await page.evaluate(() => {
-    return document.querySelector<HTMLElement>(".tm")!.style.setProperty("--radius", "0px");
+    document.querySelector<HTMLElement>(".tm")?.style.setProperty("--radius", "0px");
   });
 
   expect(await rayon(), "the variable drives it too").toBe("0px");
@@ -326,7 +323,7 @@ for (const theme of ["dark", "light", "noctis", "azureus", "uva", "bordo", "lux"
           return ((light ?? 0) + 0.05) / ((dark ?? 0) + 0.05);
         };
 
-      document.querySelector(".tm")!.append(probe);
+      document.querySelector(".tm")?.append(probe);
 
       const panel = getComputedStyle(probe).getPropertyValue("--panel"),
         ground = getComputedStyle(probe).getPropertyValue("--bg");
@@ -412,7 +409,7 @@ test("should give the result its room back when a too tall log meets a new secti
   page,
 }) => {
   await page.addInitScript(() => {
-    return localStorage.setItem("bd-term-opts", JSON.stringify({ logH: 900 }));
+    localStorage.setItem("bd-term-opts", JSON.stringify({ logH: 900 }));
   });
   await boot(page);
   await page
@@ -424,8 +421,8 @@ test("should give the result its room back when a too tall log meets a new secti
     const pane = document.querySelector<HTMLElement>('[data-pane="main"]');
 
     return {
-      overflow: pane!.scrollHeight - pane!.clientHeight,
-      result: document.querySelector<HTMLElement>("[data-result]")!.clientHeight,
+      overflow: (pane?.scrollHeight ?? 0) - (pane?.clientHeight ?? 0),
+      result: document.querySelector<HTMLElement>("[data-result]")?.clientHeight ?? 0,
     };
   });
 

@@ -138,7 +138,7 @@ test("should follow the dark preference of the system on the first visit", async
 test("should ignore the system preference when a theme is already chosen", async ({ page }) => {
   await page.emulateMedia({ colorScheme: "light" });
   await page.addInitScript(() => {
-    return localStorage.setItem("bd-term-opts", JSON.stringify({ theme: "bordo" }));
+    localStorage.setItem("bd-term-opts", JSON.stringify({ theme: "bordo" }));
   });
   await page.goto("/");
   await expect(page.locator("[data-boot]")).toHaveCount(0, { timeout: 10_000 });
@@ -169,10 +169,7 @@ test("should keep the chosen theme across a reload", async ({ page }) => {
 test("should ignore a foreign key in the storage", async ({ page }) => {
   await boot(page);
   await page.evaluate(() => {
-    return localStorage.setItem(
-      "bd-term-opts",
-      JSON.stringify({ section: "piraté", theme: "uva" }),
-    );
+    localStorage.setItem("bd-term-opts", JSON.stringify({ section: "piraté", theme: "uva" }));
   });
   await page.reload();
   await expect(page.locator("[data-boot]")).toHaveCount(0, { timeout: 10_000 });
@@ -184,7 +181,7 @@ test("should ignore a foreign key in the storage", async ({ page }) => {
 test("should still boot with an unreadable storage", async ({ page }) => {
   await boot(page);
   await page.evaluate(() => {
-    return localStorage.setItem("bd-term-opts", "{ pas du json");
+    localStorage.setItem("bd-term-opts", "{ pas du json");
   });
   await page.reload();
 

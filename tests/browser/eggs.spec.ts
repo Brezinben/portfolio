@@ -85,7 +85,7 @@ test("should raise the gauge faster on a long output", async ({ page }) => {
     percent = async () => {
       const gauge = (await page.locator("[data-gauge]").textContent()) ?? "";
 
-      return Number.parseInt(gauge.match(/(?<pct>\d+)%/u)?.groups?.["pct"] ?? "", 10);
+      return Number.parseInt(/(?<pct>\d+)%/u.exec(gauge)?.groups?.pct ?? "", 10);
     },
     start = await percent();
 
