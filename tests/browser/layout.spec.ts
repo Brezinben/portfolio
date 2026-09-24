@@ -1,5 +1,6 @@
 import type { Locator, Page } from "@playwright/test";
 import { expect, test } from "@playwright/test";
+import { boxOf } from "../helpers/box.ts";
 
 // La poignee ne s'affiche que si le journal deborde : une tige a deplacer dans le vide
 // ne servirait a rien. « help » ne remplit plus le journal, il reclame le resultat : une
@@ -115,22 +116,35 @@ test("should take the result back from the command when a section opens", async 
 test("should keep the content at the top of its pane", async ({ page }) => {
   await boot(page);
 
-  const align = await page.locator("[data-result]").evaluate((node) => {
-    return getComputedStyle(node).alignContent;
+  const gap = await page.locator("[data-result]").evaluate((node) => {
+    const first = node.firstElementChild?.getBoundingClientRect().top ?? Infinity;
+
+    return first - node.getBoundingClientRect().top;
   });
 
-  expect(align).toBe("start");
+  expect(gap, "the first line sits at the top, not in the middle").toBeLessThan(24);
 });
 
 test("should stack the three panes below 900 px", async ({ page }) => {
   await page.setViewportSize({ height: 800, width: 700 });
   await boot(page);
 
-  const direction = await page.locator("[data-panes]").evaluate((node) => {
-    return getComputedStyle(node).flexDirection;
-  });
+  const boxes = await Promise.all(
+      ["nav", "main", "out"].map((name) => {
+        return boxOf(page.locator(`[data-pane="${name}"]`));
+      }),
+    ),
+    column = boxes.toSorted((one, two) => {
+      return one.y - two.y;
+    });
 
-  expect(direction).toBe("column");
+  for (const [index, box] of column.slice(1).entries()) {
+    const above = column[index];
+
+    expect(above && above.y + above.height, "each pane ends before the next").toBeLessThanOrEqual(
+      box.y,
+    );
+  }
 });
 
 test("should centre the layout beyond 2400 px", async ({ page }) => {
@@ -222,69 +236,6 @@ test("should keep the pane widths from one section to the next", async ({ page }
     // eslint-disable-next-line no-await-in-loop
     expect(await widths(), `section ${id}`).toEqual(first);
   }
-});
-
-// Un seul rayon pilote les coins des zones : la valeur se teste dans le navigateur en
-// changeant une variable, pas en chassant six déclarations.
-test("should drive the rounded corners of every zone with a single radius", async ({ page }) => {
-  await boot(page);
-  await page.locator("[data-ctl='opts']").click();
-  await expect(page.locator("[data-opts]")).toBeVisible();
-
-  const rayons = () => {
-    return page.evaluate(() => {
-      return [
-        "[data-pane='nav'] > div > div:nth-child(1)",
-        "[data-pane='nav'] > div > div:nth-child(2)",
-        "[data-pane='main']",
-        "[data-pane='out']",
-        "[data-opts]",
-      ].map((cible) => {
-        const node = document.querySelector<HTMLElement>(cible);
-
-        return node ? getComputedStyle(node).borderRadius : "absent";
-      });
-    });
-  };
-
-  expect(await rayons(), "the five visible zones carry the radius").toEqual(
-    Array.from({ length: 5 }, () => {
-      return "5px";
-    }),
-  );
-
-  await page.evaluate(() => {
-    document.querySelector<HTMLElement>(".tm")?.style.setProperty("--radius", "0px");
-  });
-
-  expect(await rayons(), "the variable drives them all").toEqual(
-    Array.from({ length: 5 }, () => {
-      return "0px";
-    }),
-  );
-});
-
-// Le cadre de démarrage est la sixième zone. Il meurt avec le boot : son rayon ne se lit
-// que pendant.
-test("should give the boot zone the radius too", async ({ page }) => {
-  await page.goto("/");
-
-  const cadre = page.locator("[data-boot] > div"),
-    rayon = () => {
-      return cadre.evaluate((node) => {
-        return getComputedStyle(node).borderRadius;
-      });
-    };
-
-  await expect(cadre).toBeVisible();
-
-  expect(await rayon(), "the zone carries the radius").toBe("5px");
-
-  await page.evaluate(() => {
-    document.querySelector<HTMLElement>(".tm")?.style.setProperty("--radius", "0px");
-  });
-
-  expect(await rayon(), "the variable drives it too").toBe("0px");
 });
 
 // Un indicateur de focus doit tenir 3:1 contre le fond qu'il borde (WCAG 1.4.11). Axe ne

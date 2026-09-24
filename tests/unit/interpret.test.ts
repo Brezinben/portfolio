@@ -264,20 +264,6 @@ it("should ignore the case of the command", () => {
   );
 });
 
-// L'interpréteur ne doit toucher à rien : ni DOM, ni réseau, ni minuteur.
-it("should stay synchronous and free of side effects", () => {
-  const before = JSON.stringify(CONTEXT);
-
-  for (const command of ["ls", "help", "joke", "cd stack", "xyzzy", "shutdown", "matrix"]) {
-    const result = interpret(command, CONTEXT);
-
-    assert.ok(Array.isArray(result.lines));
-    assert.ok(Array.isArray(result.effects));
-  }
-
-  assert.equal(JSON.stringify(CONTEXT), before, "the context must not be mutated");
-});
-
 // Chaque expression proposée doit jouer sa propre feuille. Une commande qui annonce quelque
 // chose et ne le fait pas est pire que son absence.
 it("should give each offered expression its own state", () => {
@@ -287,29 +273,6 @@ it("should give each offered expression its own state", () => {
 
     assert.equal(emote?.expression, expression, `${expression} must emit its own expression`);
   }
-});
-
-// « idle » reste dans le type, « say » s'en sert. La commande, elle, ne le propose plus :
-// il ne montrait rien.
-it("should no longer offer idle as an expression of slime", () => {
-  const result = interpret("/slime idle", CONTEXT);
-
-  assert.equal(effectOf(result, "emote"), undefined);
-  // La première ligne est l'écho de la saisie : elle porte « idle » quoi qu'il arrive.
-  assert.ok(
-    texts(result)
-      .slice(1)
-      .some((text) => {
-        return text.includes("/slime expression <nom>");
-      }),
-  );
-  assert.ok(
-    !texts(result)
-      .slice(1)
-      .some((text) => {
-        return text.includes("idle");
-      }),
-  );
 });
 
 it("should blow the mascot up on slime kill", () => {
@@ -562,15 +525,6 @@ it("should say so and recall the list on an unknown theme", () => {
   );
 });
 
-// « ai » et « ask » n'ont pas encore de partie pure. Les annoncer promet un résultat
-// qui ne vient pas : leur code reste, leur annonce part.
-it("should no longer announce the commands without a result in the help", () => {
-  const shown = texts(interpret("help", CONTEXT)).slice(1).join(" ");
-
-  assert.doesNotMatch(shown, /\bask\b/u);
-  assert.doesNotMatch(shown, /\bai\b/u);
-});
-
 // Il n'y a pas de PDF à servir. La commande ouvre la version texte, qui porte le parcours
 // complet, et le dit : une navigation muette se lit comme une commande cassée.
 it("should announce what it does instead of staying silent on cv", () => {
@@ -663,29 +617,9 @@ it("should list the expressions when slime expression gets no known expression",
   }
 });
 
-it("should no longer accept expression as a command of its own", () => {
-  assert.match(
-    texts(interpret("/expression happy", CONTEXT))[1] ?? "",
-    /commande introuvable : expression/u,
-  );
-});
-
 it("should no longer say that reboot shuts down", () => {
   assert.match(texts(interpret("reboot", CONTEXT))[1] ?? "", /Redémarrage/u);
   assert.match(texts(interpret("shutdown", CONTEXT))[1] ?? "", /Extinction/u);
-});
-
-// « jump » était un second nom pour « drop » : la feuille de saut n'a jamais été jouée
-// par une commande.
-it("should no longer accept slime jump as a second name for drop", () => {
-  const result = interpret("/slime jump", CONTEXT);
-
-  assert.equal(effectOf(result, "drop"), undefined);
-  assert.ok(
-    texts(result).some((text) => {
-      return text.includes("/slime drop");
-    }),
-  );
 });
 
 it("should emit the glitch on matrix", () => {

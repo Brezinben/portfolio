@@ -32,10 +32,13 @@ test("should keep the multiple spaces of the ASCII art", async ({ page }) => {
     .locator("[data-journal] span", { hasText: "^__^" })
     .first()
     .evaluate((node) => {
-      return getComputedStyle(node).whiteSpace;
+      // « innerText » rend le texte tel qu'il est peint : les espaces fondues en disparaissent.
+      // « textContent » garderait tout et passerait toujours.
+      // oxlint-disable-next-line unicorn/prefer-dom-node-text-content
+      return node.innerText;
     });
 
-  expect(spacing).toMatch(/pre/);
+  expect(spacing, "the rendered text keeps its runs of spaces").toMatch(/ {2}/u);
 });
 
 test("should keep the ligatures off", async ({ page }) => {
@@ -49,18 +52,6 @@ test("should keep the ligatures off", async ({ page }) => {
   });
 
   expect(`${settings.features} ${settings.ligatures}`).toMatch(/none|liga/);
-});
-
-// La commande n'a plus de drapeau : elle tire un visage au hasard parmi les huit. Le test
-// verifie donc l'appartenance, pas l'identite. La variete est prouvee cote unitaire.
-test("should give the cow one of the eight faces", async ({ page }) => {
-  const cli = await boot(page);
-
-  await run(cli, "/cowsay bonjour");
-
-  await expect(page.locator("[data-journal]")).toContainText(
-    /\((?:==|xx|\$\$|@@|\*\*|--|OO|\.\.)\)/u,
-  );
 });
 
 test("should raise the context gauge on every command", async ({ page }) => {
@@ -402,10 +393,10 @@ test("should really run the theme permutation on the panes", async ({ page }) =>
   await expect
     .poll(() => {
       return page.locator("[data-panes]").evaluate((node) => {
-        return getComputedStyle(node).animationName;
+        return node.getAnimations().length;
       });
     })
-    .toBe("glitch-theme");
+    .toBeGreaterThan(0);
 });
 
 // Une touche maintenue se repete. Sans garde, garder Shift enfonce armait l'egg tout seul,

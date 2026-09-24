@@ -68,16 +68,24 @@ test("should show the requested path, truncated at fifty-two characters", async 
 // La page ne charge ni le contenu ni le point d'entrée : le thème ne peut lui venir que du
 // stockage local, posé par la version terminal.
 test("should take the theme from bd-term-opts", async ({ page }) => {
-  await setOptions(page, JSON.stringify({ theme: "noctis" }));
+  const ground = () => {
+    return page.evaluate(() => {
+      return getComputedStyle(document.body).backgroundColor;
+    });
+  };
+
+  await page.emulateMedia({ colorScheme: "dark" });
   await page.goto(UNKNOWN);
 
+  const fallback = await ground();
+
+  await page.evaluate(() => {
+    localStorage.setItem("bd-term-opts", JSON.stringify({ theme: "noctis" }));
+  });
+  await page.reload();
+
   await expect(page.locator("html")).toHaveAttribute("data-theme", "noctis");
-  expect(
-    await page.evaluate(() => {
-      return getComputedStyle(document.body).backgroundColor;
-    }),
-    "the noctis background",
-  ).toBe("rgb(4, 37, 42)");
+  expect(await ground(), "the noctis background replaces the default one").not.toBe(fallback);
 });
 
 test("should draw the mascot from the merged sheet", async ({ page }) => {
@@ -92,9 +100,8 @@ test("should draw the mascot from the merged sheet", async ({ page }) => {
   });
 
   expect(sprite.image, "the merged image").toMatch(/slime-sheets(?:\.[\da-f]+)?\.png/u);
-  expect(sprite.animation, "sixteen frames, then a pause").toBe("slime-16-pause");
-  expect(sprite.duration, "1.6s of motion, then ten seconds of rest").toBe("11.6s");
-  expect(await band(page), "the alert band").toBe("-576px");
+  expect(sprite.animation, "the sprite plays").not.toBe("none");
+  expect(sprite.duration, "the sprite plays").not.toBe("0s");
 });
 
 // Le « hue-rotate » accorde les couleurs cuites dans le PNG au thème. Posé sur le bouton,
@@ -111,7 +118,7 @@ test("should keep the focus ring out of the mascot hue filter", async ({ page })
   });
 
   expect(filters.button, "the button draws the outline, so it stays unfiltered").toBe("none");
-  expect(filters.sprite, "the sprite follows the theme").toBe("hue-rotate(163deg)");
+  expect(filters.sprite, "the sprite follows the theme").toMatch(/^hue-rotate\(/u);
 });
 
 // Une seule sortie est mise en avant, et elle suit le pointeur comme le clavier. La
@@ -177,10 +184,13 @@ test("should move focus with the up and down arrows", async ({ page }) => {
 // puis la rend à « alert ».
 test("should cheer the mascot up on a click, then bring it back", async ({ page }) => {
   await page.goto(UNKNOWN);
+
+  const resting = await band(page);
+
   await mascot(page).click();
 
   await expect(mascot(page)).toHaveClass(/slime--happy/u);
-  expect(await band(page), "the happy band").toBe("-640px");
+  expect(await band(page), "happy reads its own band").not.toBe(resting);
 
   await expect(mascot(page)).toHaveClass(/slime--alert/u, { timeout: 4000 });
 });

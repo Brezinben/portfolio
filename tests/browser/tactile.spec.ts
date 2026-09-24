@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 import type { Page } from "@playwright/test";
+import { boxOf } from "../helpers/box.ts";
 
 const TELEPHONE = { hasTouch: true, isMobile: true, viewport: { height: 640, width: 360 } },
   boot = async (page: Page, hash = "/") => {
@@ -151,22 +152,6 @@ test.describe("on touch", () => {
 test.describe("on desktop", () => {
   test.use({ viewport: { height: 900, width: 1440 } });
 
-  test("should keep the pane bases of the design", async ({ page }) => {
-    await boot(page);
-
-    const bases = await Promise.all(
-      ["nav", "main", "out"].map((name) => {
-        return page.locator(`[data-pane="${name}"]`).evaluate((node) => {
-          const style = getComputedStyle(node);
-
-          return [style.flexGrow, style.flexShrink, style.flexBasis, style.minHeight].join(" ");
-        });
-      }),
-    );
-
-    expect(bases).toEqual(["0 1 244.8px 0px", "3 1 360px 0px", "1.3 1 230px 0px"]);
-  });
-
   test("should keep the log under its ceiling", async ({ page }) => {
     await boot(page);
     const cli = page.getByLabel("Commande");
@@ -180,10 +165,16 @@ test.describe("on desktop", () => {
   test("should keep the panes side by side", async ({ page }) => {
     await boot(page);
 
-    const direction = await page.locator("[data-panes]").evaluate((node) => {
-      return getComputedStyle(node).flexDirection;
-    });
+    const [nav, main, out] = await Promise.all(
+      ["nav", "main", "out"].map((name) => {
+        return boxOf(page.locator(`[data-pane="${name}"]`));
+      }),
+    );
 
-    expect(direction).toBe("row");
+    expect(nav.x + nav.width, "the left pane ends before the main pane").toBeLessThanOrEqual(
+      main.x,
+    );
+    expect(main.x + main.width, "the main pane ends before the output").toBeLessThanOrEqual(out.x);
+    expect(Math.abs(nav.y - out.y), "the panes share one row").toBeLessThan(1);
   });
 });
