@@ -6,6 +6,7 @@
 import { type Effect, type Expression, say } from "./effects.ts";
 import { type Line, done, failed, info, muted, offer } from "./lines.ts";
 import type { Context } from "./context.ts";
+import { lookup } from "./lookup.ts";
 
 export interface Told {
   effects: Effect[];
@@ -56,21 +57,18 @@ const dozing: Told = {
   ],
 };
 
+// La mascotte absente, occupee ou endormie refuse toute commande, chacune avec sa phrase.
+const REFUSED = { asleep: dozing, away: absent, busy: changing };
+
 // Quatre etats possibles, un seul a la fois : la coquille dit lequel plutot que de passer
 // trois booleens dont la plupart des combinaisons n'existent pas.
 export const slime = (argument: string, name: string, mascot: Context["mascot"]): Told => {
   // Annoncer « le slime explose » pendant qu'il est deja parti fait mentir le journal :
   // la coquille avale le geste, la ligne reste. Endormie, elle avale tout de meme.
-  if (mascot === "asleep") {
-    return dozing;
-  }
+  const refused = lookup(REFUSED, mascot);
 
-  if (mascot === "away") {
-    return absent;
-  }
-
-  if (mascot === "busy") {
-    return changing;
+  if (refused) {
+    return refused;
   }
 
   if (argument === "evolve") {

@@ -181,7 +181,7 @@
     "jest/prefer-each": "off",
     "jest/require-hook": "off",
     "import/consistent-type-specifier-style": "off",
-    "max-statements": "off",
+    "max-statements": ["error", 20],
     "unicorn/number-literal-case": "off",
   },
   "ignorePatterns": [
@@ -223,6 +223,8 @@
     {
       "files": ["tests/**"],
       "rules": {
+        // Un scénario de test se lit d'un bloc : le découper disperserait ses étapes.
+        "max-statements": "off",
         "eslint/no-duplicate-imports": "off",
       },
     },

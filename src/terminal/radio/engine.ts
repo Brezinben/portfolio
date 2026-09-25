@@ -140,6 +140,27 @@ const chordTone = (chord: number, index: number) => {
   return chord + 2 * (index % 3);
 };
 
+const tuneBus = (bus: BiquadFilterNode) => {
+  bus.type = "lowpass";
+  bus.frequency.value = LOWPASS_HZ;
+  bus.Q.value = LOWPASS_Q;
+};
+
+const tuneCompressor = (comp: DynamicsCompressorNode) => {
+  comp.threshold.value = COMP_THRESHOLD;
+  comp.knee.value = COMP_KNEE;
+  comp.ratio.value = COMP_RATIO;
+  comp.attack.value = COMP_ATTACK;
+  comp.release.value = COMP_RELEASE;
+};
+
+// Une reserve de bruit blanc, tiree une fois : c'est la matiere des cymbales.
+const fillNoise = (channel: Float32Array) => {
+  for (let index = 0; index < channel.length; index += 1) {
+    channel[index] = Math.random() * 2 - 1;
+  }
+};
+
 // Le graphe se monte au premier geste, jamais au montage du volet : Chrome refuse de
 // demarrer un contexte sans interaction, et un contexte suspendu ne rend aucun son.
 // L'analyseur est en bout de chaine, donc il mesure ce qu'on entend vraiment.
@@ -155,16 +176,10 @@ const build = (): Graph => {
     noise = ctx.createBuffer(1, Math.floor(ctx.sampleRate * NOISE_SEC), ctx.sampleRate),
     channel = noise.getChannelData(0);
 
-  bus.type = "lowpass";
-  bus.frequency.value = LOWPASS_HZ;
-  bus.Q.value = LOWPASS_Q;
+  tuneBus(bus);
   dry.gain.value = DRY_GAIN;
   echo.gain.value = ECHO_FEEDBACK;
-  comp.threshold.value = COMP_THRESHOLD;
-  comp.knee.value = COMP_KNEE;
-  comp.ratio.value = COMP_RATIO;
-  comp.attack.value = COMP_ATTACK;
-  comp.release.value = COMP_RELEASE;
+  tuneCompressor(comp);
   master.gain.value = 0;
   analyser.fftSize = FFT_SIZE;
   analyser.smoothingTimeConstant = SMOOTHING;
@@ -179,10 +194,7 @@ const build = (): Graph => {
   master.connect(analyser);
   analyser.connect(ctx.destination);
 
-  // Une reserve de bruit blanc, tiree une fois : c'est la matiere des cymbales.
-  for (let index = 0; index < channel.length; index += 1) {
-    channel[index] = Math.random() * 2 - 1;
-  }
+  fillNoise(channel);
 
   return {
     analyser,

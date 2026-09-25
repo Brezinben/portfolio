@@ -98,6 +98,38 @@ export interface RadioApi {
   radioVisibility(): void;
 }
 
+// Le systeme garderait la radio dans ses commandes media apres sa fermeture. « null » et
+// non « undefined » : c'est ce que Media Session attend pour effacer.
+const forgetMediaSession = () => {
+  // oxlint-disable-next-line unicorn/no-null
+  navigator.mediaSession.metadata = null;
+  navigator.mediaSession.playbackState = "none";
+
+  for (const action of MEDIA_ACTIONS) {
+    // oxlint-disable-next-line unicorn/no-null
+    navigator.mediaSession.setActionHandler(action, null);
+  }
+};
+
+// L'etat d'une radio fermee. Un champ retire ne perd pas le focus par un evenement : sans
+// la remise a zero de « radioTyping », la seed suivante ne s'afficherait jamais.
+const radioRest = () => {
+  return {
+    radioAudio: "muet",
+    radioBars: [],
+    radioClock: ZERO_CLOCK,
+    radioEngine: undefined,
+    radioOn: false,
+    radioParams: undefined,
+    radioPeaks: [],
+    radioRows: [],
+    radioSeconds: 0,
+    radioSeedText: "",
+    radioSlept: false,
+    radioTyping: false,
+  } satisfies Partial<RadioState>;
+};
+
 // Cette tranche n'appelle pas « slice » du socle : elle vit dans un chunk a part, et une
 // valeur empruntee au paquet principal lui ferait importer l'entree, qui est en ligne dans
 // la page et n'a donc pas d'URL. « ThisType » type « this » sans rien emprunter.
@@ -130,32 +162,10 @@ const members: RadioApi & ThisType<Shell> = {
       this.radioFrame = undefined;
     }
 
-    // Le systeme garderait la radio dans ses commandes media apres sa fermeture. « null »
-    // et non « undefined » : c'est ce que Media Session attend pour effacer.
-    // oxlint-disable-next-line unicorn/no-null
-    navigator.mediaSession.metadata = null;
-    navigator.mediaSession.playbackState = "none";
+    forgetMediaSession();
 
-    for (const action of MEDIA_ACTIONS) {
-      // oxlint-disable-next-line unicorn/no-null
-      navigator.mediaSession.setActionHandler(action, null);
-    }
-
-    this.radioSlept = false;
     this.radioEngine?.close();
-    this.radioEngine = undefined;
-    this.radioOn = false;
-    this.radioAudio = "muet";
-    this.radioParams = undefined;
-    this.radioBars = [];
-    this.radioPeaks = [];
-    this.radioRows = [];
-    this.radioSeconds = 0;
-    this.radioClock = ZERO_CLOCK;
-    this.radioSeedText = "";
-    // Un champ retire ne perd pas le focus par un evenement : sans cette remise a zero, la
-    // seed suivante ne s'afficherait jamais.
-    this.radioTyping = false;
+    Object.assign(this, radioRest());
   },
 
   // Les hauteurs viennent de l'analyseur, pas d'un keyframe : quand le son tourne, le
