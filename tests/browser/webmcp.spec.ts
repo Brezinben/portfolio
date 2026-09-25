@@ -84,25 +84,61 @@ test("should answer a search without touching the page", async ({ page }) => {
   await expect(page.locator("[data-journal]")).not.toContainText("stack");
 });
 
-// Rien ne part avant le « oui » du visiteur, même quand un agent pose l'idée.
-test("should leave the consent of an idea to the visitor", async ({ page }) => {
-  const counted: string[] = [];
-
+const countRequest = async (page: Page) => {
   await page.route("**/count.js", (route) => {
     return route.abort();
   });
   await page.route("**/count?**", (route) => {
-    counted.push(route.request().url());
-
     return route.fulfill({ status: 200 });
   });
-  await withAgent(page);
 
-  const answer = await call(page, "propose_idea", { idea: "une section podcast" });
+  return page;
+};
+
+const sentWithin = async (page: Page, timeout: number) => {
+  try {
+    await page.waitForRequest("**/count?**", { timeout });
+
+    return true;
+  } catch {
+    return false;
+  }
+};
+
+// Rien ne part avant le « oui » du visiteur, même quand un agent pose l'idée.
+test("should leave the consent of an idea to the visitor", async ({ page }) => {
+  await withAgent(await countRequest(page));
+
+  const sent = sentWithin(page, 1500),
+    answer = await call(page, "propose_idea", { idea: "une section podcast" });
 
   expect(answer).toContain("confirmation du visiteur");
   await expect(page.getByLabel("Commande")).toHaveValue("oui");
-  expect(counted).toEqual([]);
+  expect(await sent).toBe(false);
+});
+
+// « -y » est le consentement tapé par le visiteur : un agent ne peut pas le glisser.
+for (const idea of ["-y une section podcast", "  \n-y une section podcast"]) {
+  test(`should refuse an idea that starts with a dash: ${JSON.stringify(idea)}`, async ({
+    page,
+  }) => {
+    await withAgent(await countRequest(page));
+
+    const sent = sentWithin(page, 1500),
+      answer = await call(page, "propose_idea", { idea });
+
+    expect(answer).toContain("idée refusée");
+    expect(await sent).toBe(false);
+  });
+}
+
+test("should refuse an input outside the schema", async ({ page }) => {
+  await withAgent(page);
+
+  expect(await call(page, "set_display_option", { enabled: true, option: "submit" })).toBe(
+    "entrée refusée",
+  );
+  expect(await call(page, "set_theme", { theme: "inconnu" })).toBe("entrée refusée");
 });
 
 // Un navigateur sans WebMCP ne télécharge pas les outils.

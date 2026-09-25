@@ -111,7 +111,8 @@ _Avoid_: notification, toast, bandeau, popup.
 **Outil d'agent** (`tool`) :
 Une fonction que la page déclare à l'agent du navigateur par WebMCP : ouvrir une section,
 chercher, changer de thème, proposer une idée. Une action passe par la ligne de commande,
-donc le journal montre au visiteur ce que l'agent a fait. Rien ne part avant un oui du
+donc le journal montre au visiteur ce que l'agent a fait. Seul `set_display_option` bascule
+un réglage sans elle, car aucune commande ne le fait. Rien ne part avant un oui du
 visiteur. Voir l'ADR 0010.
 _Avoid_: serveur MCP, API, endpoint, commande.
 

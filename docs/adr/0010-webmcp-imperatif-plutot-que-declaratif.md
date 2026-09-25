@@ -8,7 +8,7 @@ WebMCP permet à une page de déclarer des outils à l'agent du navigateur. Un a
 alors ouvrir une section ou chercher dans le portfolio sans lire l'écran. L'API a deux
 formes, et la page doit en choisir une.
 
-La documentation a été vérifiée le 2026-09-25, sur developer.chrome.com et sur la
+Nous avons vérifié la documentation le 2026-09-25, sur developer.chrome.com et sur la
 spécification du W3C. La surface actuelle est `document.modelContext.registerTool`. Les
 premiers brouillons parlaient de `navigator.modelContext`, de `provideContext` et de
 `requestUserInteraction` : ces noms n'existent plus. L'API demande Chrome 149, derrière
@@ -32,7 +32,11 @@ L'API impérative, avec huit outils : `open_section`, `search_portfolio`, `read_
 
 - Une action passe par la ligne de commande, comme une frappe du visiteur. Le répartiteur
   reste le point unique, et le journal montre au visiteur ce que l'agent a fait. Les outils
-  de lecture lisent l'état sans rien taper.
+  de lecture lisent l'état sans rien taper. Une exception : `set_display_option` appelle
+  `flip`, car le répartiteur n'a pas de commande de bascule.
+- Le navigateur ne garantit pas de valider l'entrée contre le schéma. Chaque appel passe
+  donc par `accepts` avant `execute`, et `propose_idea` refuse une idée qui commence par un
+  tiret : elle lirait `-y`, le consentement tapé.
 - `propose_idea` tape `/propose` sans `-y`. Rien ne part avant le « oui » du visiteur, et
   l'outil porte `consequentialHint`.
 - Le module part dans un chunk à part (ADR 0008), chargé seulement si
@@ -49,6 +53,7 @@ radio, parce que le son exige un geste du visiteur.
 - Le contrat de l'API est déclaré à la main dans `src/terminal/webmcp/tools.ts`, car aucun
   paquet installé ne le porte. Une évolution de la spécification demandera de le reprendre.
 - La construction nomme maintenant chaque chunk paresseux d'après le dossier de son
-  module : `radio.js`, `webmcp.js`.
+  module : `radio.js`, `webmcp.js`. Le garde-fou « un seul nom de chunk » de l'ADR 0008
+  tombe, comme il le prévoyait.
 - Sans jeton d'Origin Trial, les outils ne marchent que derrière le flag. Le jeton demande
   une inscription du porteur sur la console Chrome.

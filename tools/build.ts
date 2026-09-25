@@ -61,7 +61,7 @@ const ROOT = fileURLToPath(new URL("../", import.meta.url)),
   // Il porte l'empreinte comme tout actif, et « rewritePages » réécrit son nom dans le
   // bundle en ligne, qui fait partie du texte de la page.
   lazyName = (chunk: { facadeModuleId: string | null }) => {
-    return `${basename(dirname(chunk.facadeModuleId ?? "lazy/"))}.js`;
+    return `${basename(dirname(String(chunk.facadeModuleId)))}.js`;
   },
   MODULE_TAG = '<script type="module" src="app.ts"></script>',
   // Les icônes des succès partent en ligne dans la page. Un « use » vers un SVG externe
@@ -503,8 +503,8 @@ const unfilter = (filter: number, value: number, around: Around) => {
           return sprite;
         });
 
-    // Le chunk paresseux s'écrit à la racine, comme la page : un spécificateur relatif dans
-    // un module en ligne se résout contre l'adresse du document, pas contre un fichier.
+    // Les chunks paresseux s'écrivent à la racine, comme la page : un spécificateur relatif
+    // dans un module en ligne se résout contre l'adresse du document, pas contre un fichier.
     await Promise.all(
       bundled.lazy.map((part) => {
         return writeFile(join(staging, part.file), part.code);

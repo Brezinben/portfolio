@@ -108,7 +108,7 @@ declare global {
 }
 
 // Le contenu tel que le reseau le rend. Chaque champ peut manquer : « applyContent » pose
-// un repli pour chacun.
+// un repli pour chacun, sauf « sections », sans lequel le chargement echoue.
 interface RawContent {
   details?: RawSection[];
   feedback?: Record<string, string>;
@@ -1294,14 +1294,19 @@ document.addEventListener("alpine:init", () => {
 
         this.agentToolsOffered = true;
 
-        const { registerAgentTools } = await import("./terminal/webmcp/tools.ts");
+        try {
+          const { registerAgentTools } = await import("./terminal/webmcp/tools.ts");
 
-        await registerAgentTools(this, {
-          rankHits,
-          themes: THEMES.map((entry) => {
-            return entry.id;
-          }),
-        });
+          await registerAgentTools(this, {
+            rankHits,
+            themes: THEMES.map((entry) => {
+              return entry.id;
+            }),
+          });
+        } catch {
+          // Un chunk perdu ou un refus du navigateur laisse le prochain « load » réessayer.
+          this.agentToolsOffered = false;
+        }
       },
 
       async load() {

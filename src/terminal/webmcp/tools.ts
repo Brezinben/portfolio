@@ -3,32 +3,33 @@
 // Ce module part dans un chunk à part, chargé seulement quand le navigateur expose
 // « document.modelContext » (ADR 0010). Il n'importe donc que des types : une valeur prise
 // au paquet principal lui ferait importer l'entrée, qui n'a pas d'URL. Ce qu'il lui faut
-// arrive en paramètre.
+// arrive en paramètre. Une entrée d'agent est une entrée non fiable : « accepts » la lit
+// contre le schéma avant tout appel.
 
 import type { GlobalEntry } from "../../interpret.ts";
 import type { Shell } from "../shell.ts";
 import type { ToggleKey } from "../settings.ts";
 
-// Le contrat de WebMCP vérifié le 2026-09-25 : aucun paquet installé ne le déclare.
+// Ce contrat est recopié de la spécification du 2026-09-25, car aucun paquet installé ne
+// le déclare.
 interface ToolSchema {
   properties: Record<string, { description: string; enum?: string[]; type: string }>;
   required: string[];
   type: "object";
 }
 
-interface AgentTool<Input> {
+type ToolInput = Record<string, boolean | string | undefined>;
+
+interface AgentTool {
   annotations?: { consequentialHint?: boolean; readOnlyHint?: boolean };
   description: string;
-  execute: (input: Input) => string;
+  execute: (input: ToolInput) => string;
   inputSchema: ToolSchema;
   name: string;
 }
 
 interface ModelContext {
-  registerTool: <Input>(
-    tool: AgentTool<Input>,
-    options?: { signal?: AbortSignal },
-  ) => Promise<undefined>;
+  registerTool: (tool: AgentTool) => Promise<undefined>;
 }
 
 declare global {
@@ -47,24 +48,48 @@ const TOGGLE_KEYS: ToggleKey[] = ["anim", "out", "shortcuts"],
   SEARCH_LIMIT = 8,
   NO_INPUT: ToolSchema = { properties: {}, required: [], type: "object" };
 
+// La documentation ne garantit pas que le navigateur valide l'entrée contre le schéma.
+// Sans cette lecture, « set_display_option » basculerait n'importe quelle propriété du
+// composant, et « set_theme » annoncerait un thème inconnu comme appliqué.
+const accepts = (schema: ToolSchema, input: ToolInput) => {
+  return Object.entries(schema.properties).every(([key, rule]) => {
+    const value = input[key];
+
+    if (value === undefined) {
+      return !schema.required.includes(key);
+    }
+
+    if (rule.type === "boolean") {
+      return value === true || value === false;
+    }
+
+    return value === String(value) && (rule.enum?.includes(value) ?? true);
+  });
+};
+
 // Une action passe par la ligne de commande, comme une frappe du visiteur. Le répartiteur
-// reste le point unique, et le journal montre au visiteur ce que l'agent a fait.
+// reste le point unique, et le journal montre au visiteur ce que l'agent a fait. Une saisie
+// que le visiteur était en train de taper revient après la commande.
 const run = (shell: Shell, command: string) => {
+  const typing = shell.input;
+
   shell.input = command;
   shell.submit({ typed: false });
+
+  if (shell.input === "") {
+    shell.input = typing;
+  }
 };
 
-const oneOf = (name: string, description: string, values: string[]): ToolSchema => {
-  return {
-    properties: { [name]: { description, enum: values, type: "string" } },
-    required: [name],
-    type: "object",
-  };
-};
+const field = (name: string, description: string, values?: string[]): ToolSchema => {
+  const rule: ToolSchema["properties"][string] = { description, type: "string" };
 
-const text = (name: string, description: string): ToolSchema => {
+  if (values) {
+    rule.enum = values;
+  }
+
   return {
-    properties: { [name]: { description, type: "string" } },
+    properties: { [name]: rule },
     required: [name],
     type: "object",
   };
@@ -80,9 +105,7 @@ const summary = (shell: Shell, id: string) => {
   return found ? `${found.label} : ${found.ask}` : `section inconnue : ${id}`;
 };
 
-// « never » : chaque outil a son propre type d'entrée, et le navigateur les appelle tous de
-// la même façon.
-const tools = (shell: Shell, needs: AgentToolsNeeds): AgentTool<never>[] => {
+const tools = (shell: Shell, needs: AgentToolsNeeds): AgentTool[] => {
   const places = [...shell.sections, ...shell.details].map((entry) => {
     return entry.id;
   });
@@ -91,20 +114,21 @@ const tools = (shell: Shell, needs: AgentToolsNeeds): AgentTool<never>[] => {
     {
       description:
         "Ouvre une section ou une mission du portfolio de Benjamin David, et rend son résumé.",
-      execute: ({ section }: { section: string }) => {
-        run(shell, `cd ${section}`);
+      execute: (input) => {
+        run(shell, `cd ${String(input.section)}`);
 
-        return summary(shell, section);
+        return summary(shell, String(input.section));
       },
-      inputSchema: oneOf("section", "La section ou la mission à ouvrir.", places),
+      inputSchema: field("section", "La section ou la mission à ouvrir.", places),
       name: "open_section",
     },
     {
       annotations: { readOnlyHint: true },
       description:
         "Cherche dans le portfolio : sections, missions, technologies, thèmes, commandes.",
-      execute: ({ query }: { query: string }) => {
-        const hits = needs.rankHits(query, shell.globalIndexed, SEARCH_LIMIT);
+      execute: (input) => {
+        const query = String(input.query),
+          hits = needs.rankHits(query, shell.globalIndexed, SEARCH_LIMIT);
 
         return hits.length === 0
           ? `aucune trouvaille pour « ${query} »`
@@ -114,20 +138,19 @@ const tools = (shell: Shell, needs: AgentToolsNeeds): AgentTool<never>[] => {
               })
               .join("\n");
       },
-      inputSchema: text("query", "Les mots à chercher."),
+      inputSchema: field("query", "Les mots à chercher."),
       name: "search_portfolio",
     },
     {
       annotations: { readOnlyHint: true },
       description: "Rend la fiche d'une technologie : où Benjamin l'a pratiquée, et comment.",
-      execute: ({ tech }: { tech: string }) => {
-        const note = shell.techNotes[tech];
+      execute: (input) => {
+        const tech = String(input.tech),
+          note = shell.techNotes[tech];
 
-        return note
-          ? `${tech} — ${note.where ?? ""} : ${note.note ?? ""}`
-          : `fiche inconnue : ${tech}`;
+        return `${tech} — ${note?.where ?? ""} : ${note?.note ?? ""}`;
       },
-      inputSchema: oneOf("tech", "La technologie.", Object.keys(shell.techNotes)),
+      inputSchema: field("tech", "La technologie.", Object.keys(shell.techNotes)),
       name: "read_tech_note",
     },
     {
@@ -142,23 +165,29 @@ const tools = (shell: Shell, needs: AgentToolsNeeds): AgentTool<never>[] => {
     },
     {
       description: "Change le thème de couleurs de la page.",
-      execute: ({ theme }: { theme: string }) => {
-        run(shell, `theme ${theme}`);
+      execute: (input) => {
+        run(shell, `theme ${String(input.theme)}`);
 
-        return `thème « ${theme} » appliqué.`;
+        return `thème « ${String(input.theme)} » appliqué.`;
       },
-      inputSchema: oneOf("theme", "Le thème.", needs.themes),
+      inputSchema: field("theme", "Le thème.", needs.themes),
       name: "set_theme",
     },
     {
+      // Le répartiteur n'a pas de commande de bascule : cet outil est le seul qui agit sans
+      // passer par la ligne de commande. Le réglage changé se voit dans la page elle-même.
       description:
         "Active ou coupe un réglage d'affichage : les animations, le volet de sortie, ou les raccourcis d'une touche.",
-      execute: ({ enabled, option }: { enabled: boolean; option: ToggleKey }) => {
-        if (shell.value(option) !== enabled) {
+      execute: (input) => {
+        const option = TOGGLE_KEYS.find((key) => {
+          return key === input.option;
+        });
+
+        if (option && shell.value(option) !== input.enabled) {
           shell.flip(option);
         }
 
-        return `${option} : ${shell.value(option) ? "on" : "off"}`;
+        return option ? `${option} : ${shell.value(option) ? "on" : "off"}` : "réglage inconnu";
       },
       inputSchema: {
         properties: {
@@ -172,26 +201,33 @@ const tools = (shell: Shell, needs: AgentToolsNeeds): AgentTool<never>[] => {
     },
     {
       description: "Partage le portfolio : ouvre la cible choisie, ou copie le lien.",
-      execute: ({ target }: { target: string }) => {
-        run(shell, `share ${target}`);
+      execute: (input) => {
+        run(shell, `share ${String(input.target)}`);
 
-        return `partage vers ${target}.`;
+        return `partage vers ${String(input.target)}.`;
       },
-      inputSchema: oneOf("target", "La cible du partage.", shell.shareTargets),
+      inputSchema: field("target", "La cible du partage.", shell.shareTargets),
       name: "share_portfolio",
     },
     {
       // Rien ne part avant le « oui » du visiteur : l'outil pose la question, il ne répond
-      // jamais à sa place. D'où « /propose » sans « -y ».
+      // jamais à sa place. Une idée qui commence par un tiret lirait « -y », le drapeau du
+      // consentement tapé : elle est refusée.
       annotations: { consequentialHint: true },
       description:
         "Propose une idée d'ajout à ce portfolio. Le visiteur doit confirmer avant l'envoi.",
-      execute: ({ idea }: { idea: string }) => {
+      execute: (input) => {
+        const idea = String(input.idea).trim();
+
+        if (idea === "" || idea.startsWith("-")) {
+          return "idée refusée : elle ne peut ni être vide, ni commencer par un tiret.";
+        }
+
         run(shell, `/propose ${idea}`);
 
         return "en attente de la confirmation du visiteur dans la ligne de commande.";
       },
-      inputSchema: text("idea", "L'idée à proposer."),
+      inputSchema: field("idea", "L'idée à proposer."),
       name: "propose_idea",
     },
   ];
@@ -206,7 +242,12 @@ export const registerAgentTools = async (shell: Shell, needs: AgentToolsNeeds) =
 
   await Promise.all(
     tools(shell, needs).map((tool) => {
-      return context.registerTool(tool);
+      return context.registerTool({
+        ...tool,
+        execute: (input) => {
+          return accepts(tool.inputSchema, input) ? tool.execute(input) : "entrée refusée";
+        },
+      });
     }),
   );
 };

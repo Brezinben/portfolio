@@ -215,8 +215,6 @@ const COMMANDS = {
   },
 } satisfies Record<string, (call: Call) => Outcome>;
 
-// L'ordre des étapes, une fois la ligne lue : « help » et « ls », les sections, les
-// navigateurs, la table, les easter eggs, puis la commande inconnue.
 const route = (call: Call): Outcome => {
   const { argument, command, out, sections } = call,
     target = sections.find((entry) => {

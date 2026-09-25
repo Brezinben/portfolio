@@ -57,7 +57,8 @@ const dozing: Told = {
   ],
 };
 
-// La mascotte absente, occupee ou endormie refuse toute commande, chacune avec sa phrase.
+// La mascotte absente, occupee ou endormie refuse « /slime », quel que soit l'argument.
+// Chaque etat a sa phrase.
 const REFUSED = { asleep: dozing, away: absent, busy: changing };
 
 // Quatre etats possibles, un seul a la fois : la coquille dit lequel plutot que de passer

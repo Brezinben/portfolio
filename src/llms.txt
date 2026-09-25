@@ -14,10 +14,11 @@ Ce que ce domaine n'héberge pas :
 - Aucune documentation d'API, aucun schéma OpenAPI, aucune clé d'accès.
 - Aucun serveur MCP. Benjamin conçoit des serveurs MCP pour ses clients. Ce
   domaine n'en héberge aucun et n'expose aucun point d'entrée MCP sur le réseau.
-- Dans un navigateur qui prend en charge WebMCP, la page déclare des outils à
-  l'agent du navigateur : ouvrir une section, chercher, lire une fiche techno,
-  obtenir le contact. Ces outils vivent dans la page, pas sur un serveur.
 - Aucun service à appeler. Les documents cités plus bas sont des documents à lire.
+
+Dans un navigateur qui prend en charge WebMCP, la page déclare des outils à
+l'agent du navigateur : ouvrir une section, chercher, lire une fiche techno,
+obtenir le contact. Ces outils vivent dans la page, pas sur un serveur.
 
 Identité :
 
