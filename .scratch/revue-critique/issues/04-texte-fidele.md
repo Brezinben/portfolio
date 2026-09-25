@@ -1,6 +1,6 @@
 # Le texte publie des faits que l'auteur n'a pas dictés
 
-Status: needs-info
+Status: resolved
 Type: task
 
 La source est `docs/contenu/entretien.md`. Il faut la confirmation de l'auteur pour ces
@@ -26,3 +26,7 @@ faits :
 - L'interface mêle l'anglais au français (« close », « value · setting »). Un
   tutoiement est isolé. La mascotte change de genre.
 - Aucune espace insécable : le navigateur peut couper avant « : » ou dans « 3 000 ».
+
+## Answer
+
+Corrigé dans la PR #23.

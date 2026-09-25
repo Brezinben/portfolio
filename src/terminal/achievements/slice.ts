@@ -25,10 +25,8 @@ import {
   ALERT_ROWS,
   THEMES,
 } from "../settings.ts";
+import type { Delay, Shell } from "../shell.ts";
 import { addMark, setMark } from "./store.ts";
-import type { Shell } from "../shell.ts";
-
-type Delay = ReturnType<typeof setTimeout>;
 
 // Ce que les succès gardent dans l'état du composant. L'état vit dans app.ts, comme tout
 // le reste ; app.ts reprend cette interface pour ne pas déclarer les mêmes champs deux fois.

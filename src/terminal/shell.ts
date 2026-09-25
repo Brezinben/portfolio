@@ -8,11 +8,16 @@
 //    specificateur en ligne creerait un cycle d'execution invisible ailleurs, que tient la regle dediee de .oxlintrc.jsonc.
 
 import type { AchievementsApi, AchievementsState } from "./achievements/slice.ts";
+import type { AskApi, AskState } from "./ask/slice.ts";
 import type { GlitchApi, GlitchState } from "./glitch/slice.ts";
-import type { GlobalEntry, TrackValue } from "../interpret.ts";
+import type { GlobalEntry, Line, TrackValue } from "../interpret.ts";
 import type { GlobalSearchApi, GlobalSearchState } from "./global-search/slice.ts";
+import type { KeyboardApi, KeyboardState } from "./keyboard/slice.ts";
+import type { LogApi, LogState } from "./log/slice.ts";
+import type { MascotApi, MascotState } from "./mascot/slice.ts";
+import type { OptionsApi, OptionsState } from "./options/slice.ts";
 import type { RadioApi, RadioState } from "./radio/slice.ts";
-import type { MascotApi } from "./mascot/slice.ts";
+import type { SuggestionsApi, SuggestionsState } from "./suggestions/slice.ts";
 import type { Section } from "./format.ts";
 
 // Alpine pose ses magies sur le composant apres l'avoir construit : elles ne sont pas dans
@@ -27,30 +32,45 @@ export interface Magics {
 // evenements qui la distinguent.
 export type TrackSource = "commande" | "interface";
 
-// Ce que toute tranche peut lire de l'etat, en plus du sien. « reduced » est un accesseur
-// vivant : le copier le figerait a « false » chez qui demande moins de mouvement, sans
-// casser un seul test.
+// Les deux minuteurs de la plateforme. Chaque tranche en garde, et aucune ne les redéclare.
+export type Delay = ReturnType<typeof setTimeout>;
+export type Beat = ReturnType<typeof setInterval>;
+
+// Ce que toute tranche peut lire de l'etat, en plus du sien. « reduced » suit la preference
+// du systeme en cours de visite : une tranche le lit, elle ne le copie jamais.
 export interface Shared {
   anim: boolean;
-  blowUp(via: TrackSource): void;
+  booting: boolean;
+  current: Section;
   details: Section[];
+  goSection(id: string, options?: { push?: boolean; via?: TrackSource }): void;
   // Les deux accesseurs de la recherche globale. Ils vivent dans app.ts : aucune tranche n'en
   // porte, et une tranche qui les recalculerait classerait l'index une seconde fois.
   globalGhost: string;
   globalHits: GlobalEntry[];
   input: string;
+  journal: Line[];
   missions: { id: string; state?: string }[];
   // Vrai tant qu'une des trois modales est ouverte : le reste de la page devient inerte.
   modalOpen: boolean;
+  logH: number;
+  logHeight: number;
+  online: boolean;
+  openTimeline(index: number): void;
   modelState: string;
   out: boolean;
+  radioStop(): void;
   reduced: boolean;
+  section: string;
   sections: Section[];
+  shareTargets: string[];
   shortcuts: boolean;
+  skipBoot(): boolean;
   // « typed » distingue une commande tapee d'une commande lancee a la souris : le succes de
   // la premiere commande dit « tapee, pas cliquee ».
   submit(options?: { typed?: boolean }): void;
   tech: string;
+  wantResult: boolean;
   techNotes: Record<string, { note?: string; where?: string }>;
   track(event: string, props?: Record<string, TrackValue>): void;
 }
@@ -61,14 +81,25 @@ export interface Terminal
   extends
     AchievementsApi,
     AchievementsState,
+    AskApi,
+    AskState,
     GlitchApi,
     GlitchState,
     GlobalSearchApi,
     GlobalSearchState,
+    KeyboardApi,
+    KeyboardState,
+    LogApi,
+    LogState,
     MascotApi,
+    MascotState,
+    OptionsApi,
+    OptionsState,
     RadioApi,
     RadioState,
-    Shared {}
+    Shared,
+    SuggestionsApi,
+    SuggestionsState {}
 
 // Ce que « this » voit dans une methode : le composant entier, plus les magies.
 export type Shell = Magics & Terminal;

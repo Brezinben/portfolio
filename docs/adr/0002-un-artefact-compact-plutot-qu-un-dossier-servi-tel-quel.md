@@ -61,3 +61,8 @@ ne passe par une constante de portée module.
 Un clone frais ne porte pas `dist/`, qui est hors de git. Playwright le construit avant de
 servir, donc les tests fonctionnent. Le jour où le montage basculera, un `dist/` absent
 deviendra un site en 404. Ce jour est arrivé. Voir l'ADR 0003.
+
+Le minifieur de feuille est clean-css 5.3, par `html-minifier-terser`. Il jette sans erreur
+l'imbrication CSS (`&`) et `@scope` : la règle marche en source, et disparaît de
+l'artefact. `@layer`, `:has()` et `@container` passent. Une feuille qui veut l'imbrication
+doit d'abord changer de minifieur.

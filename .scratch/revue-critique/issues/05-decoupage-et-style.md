@@ -1,6 +1,6 @@
 # app.ts porte six groupes fermés et la page porte du style statique
 
-Status: ready-for-agent
+Status: resolved
 Type: task
 
 ## Constats
@@ -24,3 +24,7 @@ Type: task
 
 Un commit par slice extraite. `app.ts` passe sous 1 000 lignes. Le piège de clean-css va
 dans l'ADR 0002.
+
+## Answer
+
+Corrigé dans la PR #24.

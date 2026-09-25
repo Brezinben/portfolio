@@ -1,6 +1,6 @@
 # Le clavier piège le focus ou le perd
 
-Status: ready-for-agent
+Status: resolved
 Type: task
 
 ## Défauts bloquants (WCAG A et AA)
@@ -53,3 +53,7 @@ passent en `<dialog>` avec `showModal()`. Les règles de focus vont dans CONTEXT
 une garde sur Ctrl+K, règle l'empilement et l'arrière-plan actif. Passer les trois modales
 en `<dialog>` réécrivait leur style pour le même gain. L'en-tête hors du composant, avec le
 lien d'évitement, reste hors de `inert`.
+
+## Answer
+
+Corrigé dans la PR #20.
