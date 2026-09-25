@@ -95,7 +95,7 @@
         {
           "m": "›",
           "mc": "acc",
-          "t": "En poste chez Kereis depuis mai 2026. Ouvert aux opportunités en numérique responsable.",
+          "t": "Chez digital4better depuis 2023, en mission chez Kereis depuis mai 2026. Ouvert aux opportunités en numérique responsable.",
           "tone": "fg2"
         }
       ],
@@ -108,7 +108,7 @@
           ],
           [
             "entreprise",
-            "Kereis · via digital4better"
+            "digital4better · en mission chez Kereis"
           ],
           [
             "depuis",
@@ -176,7 +176,7 @@
           ]
         ]
       },
-      "ask": "Six expériences depuis 2018 : Kereis (2026, IA et full stack), SNCF Gares & Connexions (2024-2026, Assist'enGare), digital4better (2023-2024, équipe RUN), Transway (2021-2023, full stack puis tech lead), LDC Services (2020-2021, alternance), FPEE Industries (2018-2020, technicien réseau en alternance)."
+      "ask": "Chez digital4better depuis 2023, en mission : Kereis (2026, IA et full stack), SNCF Gares & Connexions (2024-2026, Assist'enGare), équipe RUN (2023-2024). Avant : Transway (2021-2023, full stack puis tech lead), LDC Services (2020-2021, alternance), FPEE Industries (2018-2020, technicien réseau en alternance)."
     },
     {
       "id": "stack",
@@ -890,6 +890,7 @@
       "id": "t0",
       "years": "2026 → …",
       "org": "Kereis",
+      "via": "digital4better",
       "role": "Développeur IA & Full Stack · pôle DSI",
       "note": "Preuves de concept IA pour une DSI qui construit plutôt qu'elle n'achète. Serveurs MCP, Specification-Driven Development, et le cadrage du code écrit avant la première fonctionnalité.",
       "detail": "m-kereis"
@@ -898,6 +899,7 @@
       "id": "t1",
       "years": "2024 → 2026",
       "org": "SNCF Gares & Connexions",
+      "via": "digital4better",
       "role": "Développeur Full Stack · Assist'enGare",
       "note": "Réservation d'assistance pour les personnes handicapées ou à mobilité réduite (PSH/PMR). Front grand public à 96 % de conformité RGAA, tenu sous audits successifs, et une brique d'échange qui parle à tout le SI SNCF.",
       "detail": "m-assist"
@@ -905,8 +907,9 @@
     {
       "id": "t2",
       "years": "2023 → 2024",
-      "org": "digital4better",
-      "role": "Équipe RUN · Développeur Full Stack / IA",
+      "org": "Équipe RUN",
+      "via": "digital4better",
+      "role": "Développeur Full Stack / IA",
       "note": "Quatre projets clients en parallèle : Body Nature, Dorval AM, PiLeJe et Servier. Supervision, correctifs de sécurité, et éco-conception mesurée avec fruggr, l'outil maison.",
       "detail": "m-run"
     },

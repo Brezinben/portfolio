@@ -307,6 +307,18 @@ Réponses de Benjamin aux questions de fidélité de la revue critique
 - **Néo** : la citation vouvoie aussi : « Réveillez-vous, Néo ».
 - **/propose** : ce que la commande envoie s'appelle une idée.
 
+## Réponses du 2026-09-25, suite
+
+> Je fais la mission chez Kereis. J'y suis en tant que prestataire pour digital4better.
+> Aujourd'hui, je suis toujours dans cette entreprise : je suis juste envoyé pour y
+> accomplir des missions. Mon salaire tombe de chez digital4better. Le client paye
+> digital4better, mais moi je suis rattaché à digital4better.
+
+- **Employeur** : digital4better depuis 2023. L'équipe RUN, Assist'enGare (SNCF) et Kereis
+  sont trois missions pour ce même employeur.
+- **Affichage** : la frise montre digital4better comme employeur, avec les missions en
+  dessous. Le statut dit « en mission chez Kereis », et non « en poste chez Kereis ».
+
 ## LDC Services · 2020 → 2021
 
 À recueillir. Aucune fiche mission aujourd'hui.

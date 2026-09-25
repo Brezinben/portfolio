@@ -24,7 +24,7 @@ test("should show the timeline in the main pane", async ({ page }) => {
 test("should set the timeline years in tabular figures", async ({ page }) => {
   await open(page, "#parcours");
 
-  const years = page.locator("[data-years]").first();
+  const years = page.locator('[data-ctl="tl"] [data-years]').first();
 
   await expect(years).toContainText("2026");
   expect(
@@ -32,6 +32,18 @@ test("should set the timeline years in tabular figures", async ({ page }) => {
       return getComputedStyle(node).fontVariantNumeric;
     }),
   ).toContain("tabular-nums");
+});
+
+// Les missions faites pour un employeur se rangent sous lui : on lit pour qui chacune a
+// ete faite, et l'employeur ne se choisit pas.
+test("should group the missions under their employer", async ({ page }) => {
+  await open(page, "#parcours");
+
+  const employer = page.getByRole("group", { name: /^digital4better, employeur/u });
+
+  await expect(employer.getByRole("option")).toHaveCount(3);
+  await expect(employer.getByRole("option").first()).toContainText("Kereis");
+  await expect(page.getByRole("option")).toHaveCount(6);
 });
 
 test("should open the mission when a timeline entry is confirmed", async ({ page }) => {

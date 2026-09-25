@@ -63,6 +63,7 @@ interface Step {
   note: string;
   org: string;
   role: string;
+  via?: string;
   years: string;
 }
 
@@ -437,6 +438,25 @@ document.addEventListener("alpine:init", () => {
         });
 
         return detail ? `↵ ${detail.cmd}` : "— pas de fiche";
+      },
+
+      // Les missions d'un meme employeur se suivent dans la frise et s'y rangent sous son
+      // nom. Le groupe va du debut de sa plus ancienne mission a la fin de la plus recente.
+      timelineGroups() {
+        const groups: { employer: string; steps: Step[]; years: string }[] = [];
+
+        for (const step of this.timeline) {
+          const last = groups.at(-1);
+
+          if (step.via && last?.employer === step.via) {
+            last.steps.push(step);
+            last.years = `${step.years.split(" → ")[0]} → ${last.years.split(" → ")[1]}`;
+          } else {
+            groups.push({ employer: step.via ?? "", steps: [step], years: step.years });
+          }
+        }
+
+        return groups;
       },
 
       openTimeline(index: number) {
