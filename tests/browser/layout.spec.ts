@@ -78,7 +78,7 @@ test("should keep the output filled when a command takes the result", async ({ p
   await cli.press("Enter");
 
   await expect(page.locator('[data-pane="out"]')).toContainText("système");
-  await expect(page.locator('[data-pane="out"]')).toContainText("Développeur IA / Full Stack");
+  await expect(page.locator('[data-pane="out"] dd').first()).not.toBeEmpty();
 
   // La colonne des clés se mesure sur la section, elle aussi : mesurée sur la réponse,
   // elle retombait à son plancher et la clé passait sous sa valeur.

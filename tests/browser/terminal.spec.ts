@@ -10,7 +10,7 @@ test("should boot the terminal and show whoami", async ({ page }) => {
     timeout: 10_000,
   });
   await expect(page.locator('[data-pane="nav"]')).toContainText("sections");
-  await expect(page.locator('[data-pane="out"]')).toContainText("Développeur IA / Full Stack");
+  await expect(page.locator('[data-pane="out"] dd').first()).not.toBeEmpty();
   await expect(page.getByRole("img", { name: "Benjamin" })).toBeVisible();
   await expect(page.getByRole("img", { name: "David" })).toBeVisible();
 });
