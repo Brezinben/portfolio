@@ -1086,6 +1086,12 @@ document.addEventListener("alpine:init", () => {
         }
       },
 
+      // L'en-tête et son lien d'évitement vivent hors du composant, pour survivre à un script
+      // absent. Une modale ouverte doit pourtant les rendre inertes, comme le reste.
+      shelterHeader(open: boolean) {
+        document.querySelector("body > header")?.toggleAttribute("inert", open);
+      },
+
       // La piste bouge avec la mise en page, la mascotte non : sans cette reprise, une
       // fenetre redimensionnee la laisserait hors champ. Le journal recale sa hauteur.
       onResize() {

@@ -70,6 +70,7 @@
       @resize.window="onResize()"
       @online.window="setOnline(true)"
       @offline.window="setOnline(false)"
+      x-effect="shelterHeader(modalOpen)"
     >
       <main
         data-panes
@@ -147,7 +148,7 @@
           </p>
           <template x-if="running">
             <p data-running data-tone="fg2">
-              <span aria-hidden="true" data-tone="acc" data-pulse>▚</span
+              <span aria-hidden="true" data-glyph="acc" data-pulse>▚</span
               ><span data-pulse-slow>exécution…</span>
             </p>
           </template>
@@ -326,7 +327,7 @@
                pulsation que « execution… », pour que les deux attentes se lisent pareil. -->
             <template x-if="thinking">
               <p data-thinking data-log-line>
-                <span aria-hidden="true" data-tone="acc" data-pulse>▚</span>
+                <span aria-hidden="true" data-glyph="acc" data-pulse>▚</span>
                 <span data-tone="fg2" data-pulse-slow>le modèle réfléchit…</span>
               </p>
             </template>
@@ -548,8 +549,8 @@
                     x-model="radioSeedText"
                     @focus="radioTyping = true"
                     @blur="radioLoad(radioSeedText)"
-                    @keydown.enter.prevent="radioLoad(radioSeedText); $event.target.blur()"
-                    @keydown.escape.prevent="radioLoad(''); $event.target.blur()"
+                    @keydown.enter.prevent="radioLoad(radioSeedText); $event.target.previousElementSibling?.focus()"
+                    @keydown.escape.prevent="radioLoad(''); $event.target.previousElementSibling?.focus()"
                   />
                 </p>
               </div>
@@ -578,7 +579,7 @@
           <div tabindex="0" role="region" aria-label="Contenu de la sortie" x-show="!radioOn">
             <template x-if="running">
               <p data-waiting data-tone="fg2">
-                <span aria-hidden="true" data-tone="acc" data-pulse>▚</span
+                <span aria-hidden="true" data-glyph="acc" data-pulse>▚</span
                 ><span data-pulse-slow>en attente de la sortie…</span>
               </p>
             </template>
@@ -698,6 +699,7 @@
                   <span lang="en" x-text="toggle.label"></span
                   ><span
                     data-toggle-value
+                    :lang="lockedToggle(toggle.key) ? null : 'en'"
                     x-text="lockedToggle(toggle.key) ? 'système' : (value(toggle.key) ? toggle.on : toggle.off)"
                   ></span>
                 </button>
@@ -901,7 +903,7 @@
                   stack trace.
                 </p>
                 <div data-panic-exits>
-                  <button type="button" data-ctl="retry" @click="load()">retry</button>
+                  <button type="button" data-ctl="retry" lang="en" @click="load()">retry</button>
                   <a href="texte.html" data-tone="fg2">version texte</a>
                 </div>
               </div>

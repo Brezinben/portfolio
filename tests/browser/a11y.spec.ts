@@ -161,6 +161,8 @@ test("should reach every section button with Tab", async ({ page }) => {
   const sections = await page.locator('[data-ctl="nav"]').count(),
     reached = new Set<number>();
 
+  expect(sections, "the page lists its sections").toBeGreaterThan(0);
+
   for (const _ of Array.from({ length: 40 })) {
     // Le focus avance d'un pas à la fois : paralléliser n'aurait pas de sens.
     // eslint-disable-next-line no-await-in-loop

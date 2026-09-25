@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 import type { Page } from "@playwright/test";
+import { ringRatios } from "../helpers/contrast.ts";
 
 const UNKNOWN = "/une/route/qui-n-existe-pas";
 const HOME = /cd ~/u;
@@ -290,3 +291,15 @@ test("should link back to the home page and to the text version", async ({ page 
   await expect(exit(page, HOME)).toHaveAttribute("href", "/");
   await expect(exit(page, PLAIN)).toHaveAttribute("href", "/texte.html");
 });
+
+// La page introuvable a ses propres contours : ils tiennent 3:1 comme ceux du terminal.
+for (const theme of ["dark", "light", "noctis", "azureus", "uva", "bordo", "lux", "hibernus"]) {
+  test(`should draw its focus rings at 3:1 or more on the ${theme} theme`, async ({ page }) => {
+    await setOptions(page, JSON.stringify({ theme }));
+    await page.goto(UNKNOWN);
+
+    for (const entry of await page.evaluate(ringRatios, [".slime", '[data-ctl="nav"]'])) {
+      expect(Number(entry.split(" ").at(-1)), entry).toBeGreaterThanOrEqual(3);
+    }
+  });
+}
