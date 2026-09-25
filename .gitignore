@@ -8,3 +8,7 @@ dist*
 .versions/
 reports/
 .stryker-tmp/
+# Notes de travail et dictée : elles restent sur le poste, hors du dépôt public.
+.scratch/
+TODO.md
+docs/contenu/
