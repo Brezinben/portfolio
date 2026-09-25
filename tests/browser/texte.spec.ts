@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 import type { Page } from "@playwright/test";
+import { ringRatios } from "../helpers/contrast.ts";
 
 const THEMES = ["dark", "light", "noctis", "azureus", "uva", "bordo", "lux", "hibernus"],
   fond = (page: Page) => {
@@ -179,3 +180,17 @@ test("should serve the side files", async ({ request }) => {
     expect(response.headers()["content-type"]).toContain(type);
   }
 });
+
+// La version texte est le repli : ses contours tiennent 3:1 sur chaque thème.
+for (const theme of ["dark", "light", "noctis", "azureus", "uva", "bordo", "lux", "hibernus"]) {
+  test(`should draw its focus rings at 3:1 or more on the ${theme} theme`, async ({ page }) => {
+    await page.addInitScript((chosen) => {
+      localStorage.setItem("bd-term-opts", JSON.stringify({ theme: chosen }));
+    }, theme);
+    await page.goto("/texte.html");
+
+    for (const [selector, ratio] of await page.evaluate(ringRatios, ["main a"])) {
+      expect(ratio, selector).toBeGreaterThanOrEqual(3);
+    }
+  });
+}

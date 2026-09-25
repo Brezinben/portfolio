@@ -52,9 +52,9 @@ test("should keep the focus on the log handle while it resizes", async ({ page }
   const cli = page.locator("#cli");
 
   for (const _ of Array.from({ length: 6 })) {
-    // eslint-disable-next-line no-await-in-loop
+    // oxlint-disable-next-line no-await-in-loop
     await cli.fill("xyzzy");
-    // eslint-disable-next-line no-await-in-loop
+    // oxlint-disable-next-line no-await-in-loop
     await cli.press("Enter");
   }
 
@@ -100,9 +100,9 @@ test("should move the focus on every Tab in the options under reduced motion", a
     seen: string[] = [];
 
   for (const _ of Array.from({ length: 12 })) {
-    // eslint-disable-next-line no-await-in-loop
+    // oxlint-disable-next-line no-await-in-loop
     await dialog.press("Tab");
-    // eslint-disable-next-line no-await-in-loop
+    // oxlint-disable-next-line no-await-in-loop
     const label = await page.evaluate(() => {
       return document.activeElement?.textContent?.trim() ?? "";
     });
@@ -174,6 +174,7 @@ test("should not stack the global search over the options", async ({ page }) => 
 
   await expect(page.getByRole("dialog")).toHaveCount(1);
   await expect(page.locator("main")).toHaveAttribute("inert");
+  await expect(page.locator("body > header"), "the skip link too").toHaveAttribute("inert");
 });
 
 // Une touche seule déclenche une action : le réglage doit pouvoir les couper (WCAG 2.1.4).
@@ -209,3 +210,37 @@ test("should cross the theme grid with a single Tab", async ({ page }) => {
 
   await expect(dialog.locator("[data-toggle]").first()).toBeFocused();
 });
+
+// Charger une seed rend le focus au bouton de lecture, jamais au corps de la page.
+test("should keep the focus in the radio after loading a seed", async ({ page }) => {
+  await boot(page);
+  await page.locator("#cli").fill("/radio");
+  await page.keyboard.press("Enter");
+
+  const seed = page.getByLabel(/^Seed/u);
+
+  await seed.fill("8093451772146");
+  await seed.press("Enter");
+
+  expect(
+    await page.evaluate(() => {
+      return document.activeElement === document.body;
+    }),
+  ).toBe(false);
+});
+
+// Une liste parcourue aux flèches n'a qu'un arrêt de tabulation (règle 9).
+for (const [hash, selector] of [
+  ["#stack", "[data-tech]"],
+  ["#parcours", '[data-ctl="tl"]'],
+] as const) {
+  test(`should give ${selector} a single tab stop`, async ({ page }) => {
+    await page.goto(`/${hash}`);
+    await expect(page.locator("[data-boot]")).toHaveCount(0, { timeout: 10_000 });
+
+    const cells = page.locator(selector);
+
+    await expect(cells.first()).toBeVisible();
+    await expect(page.locator(`${selector}[tabindex="0"]`)).toHaveCount(1);
+  });
+}

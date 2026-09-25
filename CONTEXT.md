@@ -121,6 +121,11 @@ Une entrée rendue par la recherche globale. Son rang est celui de la liste enti
 celui de son groupe : c'est ce rang que les flèches déplacent.
 _Avoid_: résultat, proposition, suggestion, match.
 
+**Idée** (`pending`) :
+Le texte que `/propose` envoie à l'auteur. Rien ne part avant un oui. Tant que l'idée
+attend, la ligne de commande lit la saisie suivante comme la réponse.
+_Avoid_: proposition, avis, suggestion, feedback.
+
 **Proposition** (`suggestion`) :
 Une entrée de la liste qui s'ouvre au-dessus de la ligne de commande pendant la frappe.
 `Tab` ou la flèche droite l'applique. Elle complète la saisie, là où une trouvaille rend
@@ -166,7 +171,9 @@ Décorative : un lecteur d'écran ne l'annonce jamais. La page introuvable est l
 exception : la mascotte y est le seul contrôle, donc elle y est annoncée. Elle disparaît
 quand le visiteur demande moins de mouvement. Le réseau coupé, elle dort : elle ne se déplace plus et ne répond plus,
 ni à une commande, ni à la souris, jusqu'au retour du réseau.
-_Avoid_: slime, avatar, personnage.
+Les messages que la page affiche disent « le slime ». Les réglages, la documentation et
+les commentaires disent « la mascotte ». La forme `slime` reste une valeur de **Forme**.
+_Avoid_: avatar, personnage.
 
 **Forme** (`form`) :
 La créature que la mascotte montre. Trois valeurs : `slime`, `cube`, `pingouin`. La commande
@@ -250,7 +257,7 @@ _Avoid_: hotkey, touche rapide, binding.
 
 ### Le focus et le clavier
 
-Ces règles valent pour tout élément intérieur. `tests/browser/clavier.spec.ts` vérifie les règles 1 à 7 et 10, et la règle 9 dans les options. `layout.spec.ts` vérifie la règle 8.
+Ces règles valent pour tout élément intérieur. `tests/browser/clavier.spec.ts` vérifie les règles 1 à 7 et 10, et la règle 9 dans les options, la stack et la frise. `layout.spec.ts` vérifie la règle 8.
 
 1. Tab et Shift+Tab ne sont jamais avalés. Seule exception : une proposition existe, et Tab
    la complète. Shift+Tab n'est jamais une complétion.

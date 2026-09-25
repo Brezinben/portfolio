@@ -4,7 +4,7 @@ import type { Page } from "@playwright/test";
 // La mesure d'audience est un script tiers : le test la remplace par un compteur. Seul
 // « hits » se déclare ici, « goatcounter » portant déjà son contrat dans src/app.ts.
 declare global {
-  // eslint-disable-next-line no-var, vars-on-top
+  // oxlint-disable-next-line no-var, vars-on-top
   var hits: string[];
 }
 

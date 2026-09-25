@@ -46,9 +46,9 @@ ni par le lint, ni par un test unitaire : la page cassait à la première utilis
 `Object.defineProperties(component, Object.getOwnPropertyDescriptors(slices()))`, et non
 un étalement. Deux raisons, toutes deux vérifiées :
 
-1. Un étalement du composant **appelle ses accesseurs et copie leur valeur**. `reduced`
-   figé à `false` laisserait tourner les animations chez qui demande moins de mouvement,
-   sans casser un seul test.
+1. Un étalement du composant **appelle ses accesseurs et copie leur valeur**. `stacked`
+   figé à sa valeur du chargement garderait la mise en page d'une fenêtre qui a changé
+   de largeur, sans casser un seul test.
 2. Un étalement dans le littéral fait perdre à `withMagics` l'inférence de son type :
    `T` devient `unknown`, et cent vingt erreurs tombent d'un coup.
 

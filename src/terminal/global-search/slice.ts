@@ -113,7 +113,7 @@ export const globalSearchSlice = () => {
       this.globalAt = 0;
       this.globalOpen = true;
       this.$nextTick(() => {
-        return this.$refs.globalField?.focus();
+        this.$refs.globalField?.focus();
       });
     },
 

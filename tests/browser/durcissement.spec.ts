@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { opened, spyOpen } from "../helpers/open.ts";
 import type { Page } from "@playwright/test";
 
 // Compose plutot qu'ecrit en clair : no-script-url interdit le litteral, alors qu'il est
@@ -71,35 +72,17 @@ test("should send no request out when the content carries a hostile tone", async
 
 // Une cible declaree dans le contenu ne doit pas pouvoir executer de script.
 test("should never open a share target that carries a script URL", async ({ page }) => {
+  await spyOpen(page);
   await serve(page, HOSTILE);
   await boot(page);
-  await page.evaluate(() => {
-    // La page note ce qu'on a tente d'ouvrir : le faux n'ouvre et ne rend rien, c'est tout ce que le test observe.
-    // SAFETY: « opened » est pose par ces deux lignes seules ; aucun autre code de la
-    // page ne porte ce nom.
-    const temoin = globalThis as typeof globalThis & { opened?: string };
-
-    temoin.opened = "aucune";
-    temoin.open = (url?: string | URL) => {
-      temoin.opened = String(url);
-
-      return globalThis.window;
-    };
-  });
 
   const cli = page.getByLabel("Commande");
 
   await cli.fill("share piege");
   await cli.press("Enter");
-  await page.waitForTimeout(400);
 
-  expect(
-    await page.evaluate(() => {
-      // SAFETY: « opened » vient d'etre pose par le faux « open » installe ci-dessus.
-      return (globalThis as { opened?: string }).opened;
-    }),
-  ).toBe("aucune");
   await expect(page.locator("[data-journal]")).toContainText("cible inconnue");
+  expect(await opened(page), "nothing opens").toEqual([]);
 });
 
 // Une sequence pourcent invalide ne doit pas tuer la commande.

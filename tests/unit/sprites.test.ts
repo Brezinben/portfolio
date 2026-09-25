@@ -2,9 +2,9 @@ import { readFile, readdir } from "node:fs/promises";
 import assert from "node:assert/strict";
 import { it } from "node:test";
 
-// Un plafond par forme, sur la source : il borne ce que la fusion aura a digerer et
+// Un plafond par forme, sur la source : il borne ce que la fusion aura à digérer et
 // signale une feuille qui grossit. Le slime est le seul qui parte au premier chargement.
-// Ce que le reseau transporte se mesure dans tests/browser/budget.spec.ts.
+// Ce que le réseau transporte se mesure dans tests/browser/budget.spec.ts.
 const SPRITES_KO = { cube: 112, pingouin: 132, slime: 80 };
 
 for (const [forme, plafond] of Object.entries(SPRITES_KO)) {

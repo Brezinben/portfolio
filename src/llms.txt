@@ -19,7 +19,7 @@ Ce que ce domaine n'héberge pas :
 Identité :
 
 - Nom : Benjamin David
-- Poste : Développeur IA / Full Stack, chez Kereis · via digital4better, depuis
+- Poste : Développeur IA & Full Stack, chez Kereis · via digital4better, depuis
   mai 2026
 - Statut : en poste, ouvert aux opportunités
 - Base : Nantes, France
@@ -31,7 +31,7 @@ Identité :
 
 Parcours, six expériences depuis 2018 :
 
-- 2026 → … · Kereis · Développeur IA / Full Stack · pôle DSI
+- 2026 → … · Kereis · Développeur IA & Full Stack · pôle DSI
 - 2024 → 2026 · SNCF Gares & Connexions · Développeur Full Stack · Assist'enGare
 - 2023 → 2024 · digital4better · Équipe RUN · Développeur Full Stack / IA
 - 2021 → 2023 · Transway · Full Stack, puis tech lead

@@ -39,7 +39,6 @@ export {
   globalIndex,
   rankHits,
 } from "./interpret/global-search.ts";
-export { proposalPrompt } from "./interpret/consent.ts";
 export { MAX_SUGGESTIONS, type Line } from "./interpret/lines.ts";
 export { TONES, type Tone, safeTone } from "./interpret/tone.ts";
 export { type Share, fillTokens, isSafeUrl, shareTarget } from "./interpret/share.ts";
