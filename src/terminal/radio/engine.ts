@@ -140,34 +140,33 @@ const chordTone = (chord: number, index: number) => {
   return chord + 2 * (index % 3);
 };
 
+// Une reserve de bruit blanc, tiree une fois : c'est la matiere des cymbales.
+const fillNoise = (channel: Float32Array) => {
+  for (let index = 0; index < channel.length; index += 1) {
+    channel[index] = Math.random() * 2 - 1;
+  }
+};
+
 // Le graphe se monte au premier geste, jamais au montage du volet : Chrome refuse de
 // demarrer un contexte sans interaction, et un contexte suspendu ne rend aucun son.
 // L'analyseur est en bout de chaine, donc il mesure ce qu'on entend vraiment.
 const build = (): Graph => {
   const ctx = new AudioContext(),
-    bus = ctx.createBiquadFilter(),
-    dry = ctx.createGain(),
-    delay = ctx.createDelay(1),
-    echo = ctx.createGain(),
-    comp = ctx.createDynamicsCompressor(),
-    master = ctx.createGain(),
-    analyser = ctx.createAnalyser(),
+    bus = new BiquadFilterNode(ctx, { Q: LOWPASS_Q, frequency: LOWPASS_HZ, type: "lowpass" }),
+    dry = new GainNode(ctx, { gain: DRY_GAIN }),
+    delay = new DelayNode(ctx, { maxDelayTime: 1 }),
+    echo = new GainNode(ctx, { gain: ECHO_FEEDBACK }),
+    comp = new DynamicsCompressorNode(ctx, {
+      attack: COMP_ATTACK,
+      knee: COMP_KNEE,
+      ratio: COMP_RATIO,
+      release: COMP_RELEASE,
+      threshold: COMP_THRESHOLD,
+    }),
+    master = new GainNode(ctx, { gain: 0 }),
+    analyser = new AnalyserNode(ctx, { fftSize: FFT_SIZE, smoothingTimeConstant: SMOOTHING }),
     noise = ctx.createBuffer(1, Math.floor(ctx.sampleRate * NOISE_SEC), ctx.sampleRate),
     channel = noise.getChannelData(0);
-
-  bus.type = "lowpass";
-  bus.frequency.value = LOWPASS_HZ;
-  bus.Q.value = LOWPASS_Q;
-  dry.gain.value = DRY_GAIN;
-  echo.gain.value = ECHO_FEEDBACK;
-  comp.threshold.value = COMP_THRESHOLD;
-  comp.knee.value = COMP_KNEE;
-  comp.ratio.value = COMP_RATIO;
-  comp.attack.value = COMP_ATTACK;
-  comp.release.value = COMP_RELEASE;
-  master.gain.value = 0;
-  analyser.fftSize = FFT_SIZE;
-  analyser.smoothingTimeConstant = SMOOTHING;
 
   bus.connect(comp);
   dry.connect(comp);
@@ -179,10 +178,7 @@ const build = (): Graph => {
   master.connect(analyser);
   analyser.connect(ctx.destination);
 
-  // Une reserve de bruit blanc, tiree une fois : c'est la matiere des cymbales.
-  for (let index = 0; index < channel.length; index += 1) {
-    channel[index] = Math.random() * 2 - 1;
-  }
+  fillNoise(channel);
 
   return {
     analyser,

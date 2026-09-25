@@ -9,7 +9,7 @@ import { COW_MODES, cowsay } from "./cowsay.ts";
 import { EGGS, type Egg } from "./eggs.ts";
 import { type Effect, type Outcome, say, track } from "./effects.ts";
 import { type Line, done, echoed, failed, info, line, muted, offer } from "./lines.ts";
-import { answerPending, proposalPrompt } from "./consent.ts";
+import { answerPending, ideaPrompt } from "./consent.ts";
 import type { Context } from "./context.ts";
 import { answer } from "./search.ts";
 import { lookup } from "./lookup.ts";
@@ -151,7 +151,7 @@ const COMMANDS = {
     }
 
     // La réponse attendue est déjà dans la saisie : la validation tient en une touche.
-    return out(proposalPrompt(idea, context.feedback ?? {}), [
+    return out(ideaPrompt(idea, context.feedback ?? {}), [
       { answer: "oui", payload: idea, type: "pending" },
     ]);
   },
@@ -215,6 +215,51 @@ const COMMANDS = {
   },
 } satisfies Record<string, (call: Call) => Outcome>;
 
+const route = (call: Call): Outcome => {
+  const { argument, command, out, sections } = call,
+    target = sections.find((entry) => {
+      return entry.id === command || (NAVIGATORS.has(command) && entry.id === argument);
+    });
+
+  // « help » et « ls » passent devant les sections : ce sont les deux premiers gestes.
+  if (command === "help" || command === "ls") {
+    return COMMANDS[command](call);
+  }
+
+  if (target) {
+    return out(
+      [done(`section « ${target.label} » chargée.`)],
+      [{ id: target.id, type: "navigate" }, say(`→ ${target.label}`, "happy")],
+    );
+  }
+
+  if (NAVIGATORS.has(command)) {
+    const ids = sections.map((entry) => {
+        return entry.id;
+      }),
+      usage = offer(`${command} <section>`, ids);
+
+    return out(argument === "" ? [usage] : [failed(`section inconnue : ${argument}`), usage]);
+  }
+
+  const handler = lookup(COMMANDS, command);
+
+  if (handler) {
+    return handler(call);
+  }
+
+  const egg = lookup<Egg>(EGGS, command);
+
+  if (egg) {
+    return out(egg.lines, [track("easter_egg", { nom: egg.egg }), ...(egg.effects ?? [])]);
+  }
+
+  return out(
+    [failed(`commande introuvable : ${command} — tapez help.`)],
+    [track("commande_inconnue", { cmd: command }), say("connais pas", "sad")],
+  );
+};
+
 export const interpret = (raw: string, context: Context): Outcome => {
   const input = raw.trim().replace(/\s+/g, " ");
 
@@ -258,48 +303,7 @@ export const interpret = (raw: string, context: Context): Outcome => {
     return { effects: [marked, { type: "replay" }], lines: [] };
   }
 
-  const sections = [...context.sections, ...context.details],
-    target = sections.find((entry) => {
-      return entry.id === command || (NAVIGATORS.has(command) && entry.id === argument);
-    });
+  const sections = [...context.sections, ...context.details];
 
-  // « help » et « ls » passent devant les sections : ce sont les deux premiers gestes.
-  const call = { argument, command, context, out, parts, rest, sections };
-
-  if (command === "help" || command === "ls") {
-    return COMMANDS[command](call);
-  }
-
-  if (target) {
-    return out(
-      [done(`section « ${target.label} » chargée.`)],
-      [{ id: target.id, type: "navigate" }, say(`→ ${target.label}`, "happy")],
-    );
-  }
-
-  if (NAVIGATORS.has(command)) {
-    const ids = sections.map((entry) => {
-        return entry.id;
-      }),
-      usage = offer(`${command} <section>`, ids);
-
-    return out(argument === "" ? [usage] : [failed(`section inconnue : ${argument}`), usage]);
-  }
-
-  const handler = lookup(COMMANDS, command);
-
-  if (handler) {
-    return handler(call);
-  }
-
-  const egg = lookup<Egg>(EGGS, command);
-
-  if (egg) {
-    return out(egg.lines, [track("easter_egg", { nom: egg.egg }), ...(egg.effects ?? [])]);
-  }
-
-  return out(
-    [failed(`commande introuvable : ${command} — tapez help.`)],
-    [track("commande_inconnue", { cmd: command }), say("connais pas", "sad")],
-  );
+  return route({ argument, command, context, out, parts, rest, sections });
 };

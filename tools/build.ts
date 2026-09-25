@@ -57,9 +57,12 @@ const ROOT = fileURLToPath(new URL("../", import.meta.url)),
   ]),
   STAMPED_EXTENSIONS = new Set([".css", ".js", ".pdf", ".png", ".svg", ".woff2"]),
   PAGES = ["404.html", "index.html", "texte.html"],
-  // Le chunk de la radio. Il porte l'empreinte comme tout actif, et « rewritePages » réécrit
-  // son nom dans le bundle en ligne, qui fait partie du texte de la page.
-  RADIO_CHUNK = "radio.js",
+  // Un chunk paresseux prend le nom du dossier de son module : « radio.js », « webmcp.js ».
+  // Il porte l'empreinte comme tout actif, et « rewritePages » réécrit son nom dans le
+  // bundle en ligne, qui fait partie du texte de la page.
+  lazyName = (chunk: { facadeModuleId: string | null }) => {
+    return `${basename(dirname(String(chunk.facadeModuleId)))}.js`;
+  },
   MODULE_TAG = '<script type="module" src="app.ts"></script>',
   // Les icônes des succès partent en ligne dans la page. Un « use » vers un SVG externe
   // n'hérite pas des variables CSS du document, et les cinq teintes suivent le thème.
@@ -122,7 +125,7 @@ const ROOT = fileURLToPath(new URL("../", import.meta.url)),
   bundle = async (entry: string, format: "esm" | "iife") => {
     const result = await build({
         input: join(SOURCE, entry),
-        output: { chunkFileNames: RADIO_CHUNK, format, minify: true },
+        output: { chunkFileNames: lazyName, format, minify: true },
         write: false,
       }),
       chunks = result.output.filter((part) => {
@@ -137,12 +140,6 @@ const ROOT = fileURLToPath(new URL("../", import.meta.url)),
 
     if (!main) {
       throw new Error(`Rolldown n'a rien produit pour ${entry}`);
-    }
-
-    // Un seul import dynamique dans le projet, donc un seul nom de chunk à donner. Le jour
-    // où un second apparaît, ce nom doit se dériver au lieu d'être écrit.
-    if (lazy.length > 1) {
-      throw new Error(`${entry} produit ${lazy.length} chunks, et ${RADIO_CHUNK} n'en nomme qu'un`);
     }
 
     // L'entrée est mise en ligne dans la page : elle n'a pas d'URL, donc rien ne peut
@@ -506,8 +503,8 @@ const unfilter = (filter: number, value: number, around: Around) => {
           return sprite;
         });
 
-    // Le chunk paresseux s'écrit à la racine, comme la page : un spécificateur relatif dans
-    // un module en ligne se résout contre l'adresse du document, pas contre un fichier.
+    // Les chunks paresseux s'écrivent à la racine, comme la page : un spécificateur relatif
+    // dans un module en ligne se résout contre l'adresse du document, pas contre un fichier.
     await Promise.all(
       bundled.lazy.map((part) => {
         return writeFile(join(staging, part.file), part.code);

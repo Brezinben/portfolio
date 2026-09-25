@@ -25,6 +25,7 @@ export interface OptionsApi {
   lockedToggle(key: ToggleKey): boolean;
   moveTheme(index: number): void;
   openOpts(via?: TrackSource): void;
+  optsArrow(event: KeyboardEvent, here: { group: string; index: number }): void;
   optsKey(event: KeyboardEvent): void;
   persist(): void;
   restore(): void;
@@ -39,6 +40,27 @@ const themeButtons = () => {
 
 const toggleButtons = () => {
   return [...document.querySelectorAll<HTMLElement>("[data-opts] [data-toggle]:not(:disabled)")];
+};
+
+// La grille des thèmes se parcourt aux flèches : Tab n'y garde qu'un arrêt, le thème qui a
+// le focus, sinon le thème choisi.
+const trapTab = (event: KeyboardEvent) => {
+  const active = document.activeElement,
+    inThemes = active instanceof HTMLElement && active.matches("[data-theme-choice]"),
+    focusable = [
+      ...document.querySelectorAll<HTMLElement>("[data-opts] [data-ctl='opt']:not(:disabled)"),
+    ].filter((node) => {
+      if (!node.matches("[data-theme-choice]")) {
+        return true;
+      }
+
+      return inThemes ? node === active : node.getAttribute("aria-pressed") === "true";
+    }),
+    at = active instanceof HTMLElement ? focusable.indexOf(active) : -1,
+    next = (at + (event.shiftKey ? -1 : 1) + focusable.length) % focusable.length;
+
+  event.preventDefault();
+  focusable[next]?.focus();
 };
 
 export const optionsSlice = () => {
@@ -142,47 +164,9 @@ export const optionsSlice = () => {
       });
     },
 
-    optsKey(this: Shell, event: KeyboardEvent) {
-      if (event.key === "Escape") {
-        event.preventDefault();
-        this.closeOpts();
-
-        return;
-      }
-
-      // La grille des thèmes se parcourt aux flèches : Tab n'y garde qu'un arrêt, le thème
-      // qui a le focus, sinon le thème choisi.
-      if (event.key === "Tab") {
-        const active = document.activeElement,
-          inThemes = active instanceof HTMLElement && active.matches("[data-theme-choice]"),
-          focusable = [
-            ...document.querySelectorAll<HTMLElement>(
-              "[data-opts] [data-ctl='opt']:not(:disabled)",
-            ),
-          ].filter((node) => {
-            if (!node.matches("[data-theme-choice]")) {
-              return true;
-            }
-
-            return inThemes ? node === active : node.getAttribute("aria-pressed") === "true";
-          }),
-          at = active instanceof HTMLElement ? focusable.indexOf(active) : -1,
-          next = (at + (event.shiftKey ? -1 : 1) + focusable.length) % focusable.length;
-
-        event.preventDefault();
-        focusable[next]?.focus();
-
-        return;
-      }
-
-      const here = this.focused();
-
-      if (!here || !["ArrowDown", "ArrowLeft", "ArrowRight", "ArrowUp"].includes(event.key)) {
-        return;
-      }
-
-      event.preventDefault();
-
+    // Dans la grille, les flèches suivent les colonnes. Dans les bascules, gauche et droite
+    // changent la valeur, haut et bas changent de réglage.
+    optsArrow(this: Shell, event: KeyboardEvent, here: { group: string; index: number }) {
       if (here.group === "theme") {
         const columns = this.themeColumns(),
           step = { ArrowDown: columns, ArrowLeft: -1, ArrowRight: 1, ArrowUp: -columns }[event.key],
@@ -211,6 +195,30 @@ export const optionsSlice = () => {
       } else {
         toggleButtons()[next]?.focus();
       }
+    },
+
+    optsKey(this: Shell, event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        this.closeOpts();
+
+        return;
+      }
+
+      if (event.key === "Tab") {
+        trapTab(event);
+
+        return;
+      }
+
+      const here = this.focused();
+
+      if (!here || !["ArrowDown", "ArrowLeft", "ArrowRight", "ArrowUp"].includes(event.key)) {
+        return;
+      }
+
+      event.preventDefault();
+      this.optsArrow(event, here);
     },
 
     persist(this: Shell) {

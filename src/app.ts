@@ -45,7 +45,7 @@ import { type LogState, logSlice } from "./terminal/log/slice.ts";
 import { type MascotState, mascotSlice } from "./terminal/mascot/slice.ts";
 import { type OptionsState, optionsSlice } from "./terminal/options/slice.ts";
 import type { RadioApi, RadioState } from "./terminal/radio/slice.ts";
-import { type Section, barParts, printed, section } from "./terminal/format.ts";
+import { type RawSection, type Section, barParts, printed, section } from "./terminal/format.ts";
 import { type SuggestionsState, suggestionsSlice } from "./terminal/suggestions/slice.ts";
 
 // Une mission du volet gauche : sa pastille et son etat.
@@ -107,6 +107,21 @@ declare global {
   var goatcounter: GoatCounter | undefined;
 }
 
+// Le contenu tel que le reseau le rend. Chaque champ peut manquer : « applyContent » pose
+// un repli pour chacun, sauf « sections », sans lequel le chargement echoue.
+interface RawContent {
+  details?: RawSection[];
+  feedback?: Record<string, string>;
+  jokes?: string[];
+  missions?: Record<string, string>[];
+  profile?: { email?: string };
+  sections?: RawSection[];
+  share?: Share;
+  stack?: Brick[];
+  techNotes?: Record<string, TechNote>;
+  timeline?: Step[];
+}
+
 // Un gestionnaire par genre d'effet : la cle et l'effet recu vont ensemble.
 type EffectRun = { [K in Effect["type"]]: (effect: Extract<Effect, { type: K }>) => void };
 
@@ -124,6 +139,7 @@ interface State
     OptionsState,
     RadioState,
     SuggestionsState {
+  agentToolsOffered: boolean;
   latency: Delay | undefined;
   booter: Delay | undefined;
   ticker: Beat | undefined;
@@ -213,6 +229,7 @@ document.addEventListener("alpine:init", () => {
       THEMES,
       TOGGLES,
       achievements: [],
+      agentToolsOffered: false,
       achievementsOpen: false,
       achievementsReturn: undefined,
       alert: "",
@@ -1227,7 +1244,7 @@ document.addEventListener("alpine:init", () => {
 
       // Distant d'abord, local ensuite. Le repli n'est pas un luxe : la page dependrait
       // sinon de la disponibilite de GitHub pour afficher quoi que ce soit.
-      async fetchContent() {
+      async fetchContent(): Promise<RawContent> {
         const response = await fetch(CONTENT_URL);
 
         if (!response.ok) {
@@ -1237,39 +1254,68 @@ document.addEventListener("alpine:init", () => {
         return response.json();
       },
 
+      // Le contenu arrive du reseau : rien n'entre dans l'etat avant sa lecture ici.
+      applyContent(content: RawContent) {
+        if (!Array.isArray(content.sections) || content.sections.length === 0) {
+          throw new Error("sections manquantes ou vides");
+        }
+
+        this.sections = content.sections.map(section);
+        this.details = (content.details ?? []).map(section);
+        this.jokes = content.jokes ?? [];
+        this.share = content.share ?? {};
+        this.share.url = globalThis.location.origin + globalThis.location.pathname;
+        this.feedback = content.feedback ?? {};
+        this.profileEmail = content.profile?.email ?? "";
+        this.shareTargets = (content.share?.targets ?? []).map((entry: { id: string }) => {
+          return entry.id;
+        });
+        this.timeline = content.timeline ?? [];
+        this.stack = content.stack ?? [];
+        this.techNotes = content.techNotes ?? {};
+        this.missions = (content.missions ?? []).map((raw: Record<string, string>) => {
+          return {
+            dot: safeTone(raw.dot, "ok"),
+            id: raw.id ?? "",
+            label: raw.label ?? "",
+            state: raw.state ?? "",
+          };
+        });
+        this.reindexGlobal();
+      },
+
+      // Les outils d'agent ne partent que vers un navigateur qui sait les recevoir. Le
+      // drapeau tient quand « load » repasse après l'écran de panique : un nom d'outil ne
+      // s'enregistre qu'une fois.
+      async offerAgentTools() {
+        if (this.agentToolsOffered || !("modelContext" in document)) {
+          return;
+        }
+
+        this.agentToolsOffered = true;
+
+        try {
+          const { registerAgentTools } = await import("./terminal/webmcp/tools.ts");
+
+          await registerAgentTools(this, {
+            rankHits,
+            themes: THEMES.map((entry) => {
+              return entry.id;
+            }),
+          });
+        } catch {
+          // Un chunk perdu ou un refus du navigateur laisse le prochain « load » réessayer.
+          this.agentToolsOffered = false;
+        }
+      },
+
       async load() {
         this.dataErr = false;
         const started = performance.now();
 
         try {
-          const content = await this.fetchContent();
-
-          if (!Array.isArray(content.sections) || content.sections.length === 0) {
-            throw new Error("sections manquantes ou vides");
-          }
-
-          this.sections = content.sections.map(section);
-          this.details = (content.details ?? []).map(section);
-          this.jokes = content.jokes ?? [];
-          this.share = content.share ?? {};
-          this.share.url = globalThis.location.origin + globalThis.location.pathname;
-          this.feedback = content.feedback ?? {};
-          this.profileEmail = content.profile?.email ?? "";
-          this.shareTargets = (content.share?.targets ?? []).map((entry: { id: string }) => {
-            return entry.id;
-          });
-          this.timeline = content.timeline ?? [];
-          this.stack = content.stack ?? [];
-          this.techNotes = content.techNotes ?? {};
-          this.missions = (content.missions ?? []).map((raw: Record<string, string>) => {
-            return {
-              dot: safeTone(raw.dot, "ok"),
-              id: raw.id,
-              label: raw.label,
-              state: raw.state ?? "",
-            };
-          });
-          this.reindexGlobal();
+          this.applyContent(await this.fetchContent());
+          void this.offerAgentTools();
         } catch (error) {
           // Le boot reste affiché : la page ne se rabat jamais sur un contenu figé.
           this.errDetail = `caused by: ${error instanceof Error ? error.message : String(error)}`;
