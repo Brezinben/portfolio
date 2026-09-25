@@ -139,6 +139,7 @@ interface State
     OptionsState,
     RadioState,
     SuggestionsState {
+  agentToolsOffered: boolean;
   latency: Delay | undefined;
   booter: Delay | undefined;
   ticker: Beat | undefined;
@@ -228,6 +229,7 @@ document.addEventListener("alpine:init", () => {
       THEMES,
       TOGGLES,
       achievements: [],
+      agentToolsOffered: false,
       achievementsOpen: false,
       achievementsReturn: undefined,
       alert: "",
@@ -1282,12 +1284,33 @@ document.addEventListener("alpine:init", () => {
         this.reindexGlobal();
       },
 
+      // Les outils d'agent ne partent que vers un navigateur qui sait les recevoir. Le
+      // drapeau tient quand « load » repasse après l'écran de panique : un nom d'outil ne
+      // s'enregistre qu'une fois.
+      async offerAgentTools() {
+        if (this.agentToolsOffered || !("modelContext" in document)) {
+          return;
+        }
+
+        this.agentToolsOffered = true;
+
+        const { registerAgentTools } = await import("./terminal/webmcp/tools.ts");
+
+        await registerAgentTools(this, {
+          rankHits,
+          themes: THEMES.map((entry) => {
+            return entry.id;
+          }),
+        });
+      },
+
       async load() {
         this.dataErr = false;
         const started = performance.now();
 
         try {
           this.applyContent(await this.fetchContent());
+          void this.offerAgentTools();
         } catch (error) {
           // Le boot reste affiché : la page ne se rabat jamais sur un contenu figé.
           this.errDetail = `caused by: ${error instanceof Error ? error.message : String(error)}`;

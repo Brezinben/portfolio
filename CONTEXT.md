@@ -108,6 +108,13 @@ moment du déblocage, et ne rejoue jamais une clé posée par une autre page. Le
 elle n'existe pas, et le badge porte seul le signal.
 _Avoid_: notification, toast, bandeau, popup.
 
+**Outil d'agent** (`tool`) :
+Une fonction que la page déclare à l'agent du navigateur par WebMCP : ouvrir une section,
+chercher, changer de thème, proposer une idée. Une action passe par la ligne de commande,
+donc le journal montre au visiteur ce que l'agent a fait. Rien ne part avant un oui du
+visiteur. Voir l'ADR 0010.
+_Avoid_: serveur MCP, API, endpoint, commande.
+
 **Recherche globale** (`globalSearch`) :
 La troisième modale, ouverte par `⌘K`. Elle cherche dans le contenu structuré — sections,
 missions, briques de stack, thèmes, succès, commandes — et rend une commande. `ask` cherche

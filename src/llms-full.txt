@@ -11,7 +11,8 @@ est https://me.brezinben.dpdns.org/llms.txt
 
 Ce site est le portfolio d'une seule personne. Il n'expose ni produit, ni API, ni
 service. Benjamin conçoit des serveurs MCP pour ses clients ;
-ce domaine n'en héberge aucun.
+ce domaine n'en héberge aucun. Dans un navigateur qui prend en charge WebMCP, la page
+déclare des outils à l'agent du navigateur. Ces outils vivent dans la page.
 
 ## Identité
 
