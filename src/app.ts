@@ -440,19 +440,19 @@ document.addEventListener("alpine:init", () => {
         return detail ? `↵ ${detail.cmd}` : "— pas de fiche";
       },
 
-      // Les missions d'un meme employeur se suivent dans la frise et s'y rangent sous son
-      // nom. Le groupe va du debut de sa plus ancienne mission a la fin de la plus recente.
+      // Une mission porte le nom de son employeur dans « via » : elle se range sous lui,
+      // dans le groupe qu'il ouvre. Une entree seule forme un groupe d'une entree.
       timelineGroups() {
-        const groups: { employer: string; steps: Step[]; years: string }[] = [];
+        const groups: { key: string; steps: Step[] }[] = [];
 
         for (const step of this.timeline) {
-          const last = groups.at(-1);
+          const key = step.via ?? step.org,
+            last = groups.at(-1);
 
-          if (step.via && last?.employer === step.via) {
+          if (last?.key === key) {
             last.steps.push(step);
-            last.years = `${step.years.split(" → ")[0]} → ${last.years.split(" → ")[1]}`;
           } else {
-            groups.push({ employer: step.via ?? "", steps: [step], years: step.years });
+            groups.push({ key, steps: [step] });
           }
         }
 

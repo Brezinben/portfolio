@@ -163,27 +163,15 @@
                 <template x-for="group in timelineGroups()" :key="group.steps[0].id">
                   <div
                     data-tl-group
-                    :role="group.employer ? 'group' : 'none'"
-                    :aria-label="group.employer ? `${group.employer}, employeur, ${group.years}` : null"
+                    :role="group.steps.length > 1 ? 'group' : 'none'"
+                    :aria-label="group.steps.length > 1 ? group.key : null"
                   >
-                    <template x-if="group.employer">
-                      <p data-tl-employer aria-hidden="true">
-                        <span></span>
-                        <span data-guide>├</span>
-                        <span data-tl-lines>
-                          <span data-years data-tone="fg2" x-text="group.years"></span>
-                          <span data-tl-org x-text="group.employer"></span>
-                          <span data-tone="fg2" data-tl-note
-                            >employeur · missions chez ses clients</span
-                          >
-                        </span>
-                      </p>
-                    </template>
                     <template x-for="(entry, at) in group.steps" :key="entry.id">
                       <button
                         type="button"
                         role="option"
                         data-ctl="tl"
+                        :data-tl-via="entry.via ? '' : null"
                         :aria-selected="timeline.indexOf(entry) === timelineAt"
                         :tabindex="timeline.indexOf(entry) === timelineAt ? 0 : -1"
                         @click="openTimeline(timeline.indexOf(entry))"
@@ -197,7 +185,7 @@
                         <span
                           data-guide
                           aria-hidden="true"
-                          x-text="(group.employer ? at === group.steps.length - 1 : entry === timeline.at(-1)) ? '└' : '├'"
+                          x-text="(entry.via ? at === group.steps.length - 1 : entry === timeline.at(-1)) ? '└' : '├'"
                         ></span>
                         <span data-tl-lines>
                           <span data-years data-tone="fg2" x-text="entry.years"></span>

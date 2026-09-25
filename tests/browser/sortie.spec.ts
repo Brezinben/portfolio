@@ -24,9 +24,9 @@ test("should show the timeline in the main pane", async ({ page }) => {
 test("should set the timeline years in tabular figures", async ({ page }) => {
   await open(page, "#parcours");
 
-  const years = page.locator('[data-ctl="tl"] [data-years]').first();
+  const years = page.locator("[data-years]").first();
 
-  await expect(years).toContainText("2026");
+  await expect(years).toContainText("2023");
   expect(
     await years.evaluate((node) => {
       return getComputedStyle(node).fontVariantNumeric;
@@ -35,15 +35,21 @@ test("should set the timeline years in tabular figures", async ({ page }) => {
 });
 
 // Les missions faites pour un employeur se rangent sous lui : on lit pour qui chacune a
-// ete faite, et l'employeur ne se choisit pas.
+// ete faite.
 test("should group the missions under their employer", async ({ page }) => {
   await open(page, "#parcours");
 
-  const employer = page.getByRole("group", { name: /^digital4better, employeur/u });
+  const employer = page.getByRole("group", { name: "digital4better" });
 
-  await expect(employer.getByRole("option")).toHaveCount(3);
-  await expect(employer.getByRole("option").first()).toContainText("Kereis");
-  await expect(page.getByRole("option")).toHaveCount(6);
+  await expect(employer.getByRole("option")).toHaveCount(4);
+  await expect(employer.getByRole("option").nth(1)).toContainText("Kereis");
+  await expect(page.getByRole("option")).toHaveCount(7);
+
+  await employer.getByRole("option", { name: /Kereis/u }).focus();
+  await page.keyboard.press("ArrowUp");
+
+  await expect(employer.getByRole("option").first()).toHaveAttribute("aria-selected", "true");
+  await expect(employer.getByRole("option").first()).toBeFocused();
 });
 
 test("should open the mission when a timeline entry is confirmed", async ({ page }) => {

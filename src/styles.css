@@ -675,22 +675,8 @@ a:hover {
   gap: 2px;
 }
 
-/* L'employeur se lit comme une entree de la frise, sans en etre une : il ne se choisit pas.
- Ses missions se rangent en retrait, sous lui, comme les fichiers d'un dossier. */
-.tm [data-tl-employer] {
-  margin: 0;
-  display: grid;
-  grid-template-columns: 14px 14px 1fr;
-  gap: 8px;
-  padding: 6px 10px;
-  font-size: 13px;
-}
-
-.tm [data-tl-employer] [data-guide] {
-  color: var(--fg2);
-}
-
-.tm [data-tl-group][role="group"] [data-ctl="tl"] {
+/* Une mission se range en retrait sous son employeur, comme un fichier sous son dossier. */
+.tm [data-tl-via] {
   margin-left: 22px;
 }
 
