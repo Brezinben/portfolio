@@ -63,6 +63,7 @@ interface Step {
   note: string;
   org: string;
   role: string;
+  via?: string;
   years: string;
 }
 
@@ -437,6 +438,25 @@ document.addEventListener("alpine:init", () => {
         });
 
         return detail ? `↵ ${detail.cmd}` : "— pas de fiche";
+      },
+
+      // Une mission porte le nom de son employeur dans « via » : elle se range sous lui,
+      // dans le groupe qu'il ouvre. Une entree seule forme un groupe d'une entree.
+      timelineGroups() {
+        const groups: { key: string; steps: Step[] }[] = [];
+
+        for (const step of this.timeline) {
+          const key = step.via ?? step.org,
+            last = groups.at(-1);
+
+          if (last?.key === key) {
+            last.steps.push(step);
+          } else {
+            groups.push({ key, steps: [step] });
+          }
+        }
+
+        return groups;
       },
 
       openTimeline(index: number) {

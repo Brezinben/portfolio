@@ -160,37 +160,46 @@
                 aria-label="Parcours professionnel"
                 aria-orientation="vertical"
               >
-                <template x-for="(entry, index) in timeline" :key="entry.id">
-                  <button
-                    type="button"
-                    role="option"
-                    data-ctl="tl"
-                    :aria-selected="index === timelineAt"
-                    :tabindex="index === timelineAt ? 0 : -1"
-                    @click="openTimeline(index)"
-                    @focus="timelineAt = index"
+                <template x-for="group in timelineGroups()" :key="group.steps[0].id">
+                  <div
+                    data-tl-group
+                    :role="group.steps.length > 1 ? 'group' : 'none'"
+                    :aria-label="group.steps.length > 1 ? group.key : null"
                   >
-                    <span
-                      aria-hidden="true"
-                      data-tone="acc"
-                      x-text="index === timelineAt ? '›' : ' '"
-                    ></span>
-                    <span
-                      data-guide
-                      aria-hidden="true"
-                      x-text="index === timeline.length - 1 ? '└' : '├'"
-                    ></span>
-                    <span data-tl-lines>
-                      <span data-years data-tone="fg2" x-text="entry.years"></span>
-                      <span data-tl-org x-text="entry.org"></span>
-                      <span data-tone="fg2" data-tl-note x-text="entry.role"></span>
-                      <span
-                        data-cue
-                        :data-tone="entry.detail ? 'acc' : 'fg2'"
-                        x-text="missionCue(entry)"
-                      ></span>
-                    </span>
-                  </button>
+                    <template x-for="(entry, at) in group.steps" :key="entry.id">
+                      <button
+                        type="button"
+                        role="option"
+                        data-ctl="tl"
+                        :data-tl-via="entry.via ? '' : null"
+                        :aria-selected="timeline.indexOf(entry) === timelineAt"
+                        :tabindex="timeline.indexOf(entry) === timelineAt ? 0 : -1"
+                        @click="openTimeline(timeline.indexOf(entry))"
+                        @focus="timelineAt = timeline.indexOf(entry)"
+                      >
+                        <span
+                          aria-hidden="true"
+                          data-tone="acc"
+                          x-text="timeline.indexOf(entry) === timelineAt ? '›' : ' '"
+                        ></span>
+                        <span
+                          data-guide
+                          aria-hidden="true"
+                          x-text="(entry.via ? at === group.steps.length - 1 : entry === timeline.at(-1)) ? '└' : '├'"
+                        ></span>
+                        <span data-tl-lines>
+                          <span data-years data-tone="fg2" x-text="entry.years"></span>
+                          <span data-tl-org x-text="entry.org"></span>
+                          <span data-tone="fg2" data-tl-note x-text="entry.role"></span>
+                          <span
+                            data-cue
+                            :data-tone="entry.detail ? 'acc' : 'fg2'"
+                            x-text="missionCue(entry)"
+                          ></span>
+                        </span>
+                      </button>
+                    </template>
+                  </div>
                 </template>
               </div>
             </template>

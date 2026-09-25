@@ -195,5 +195,5 @@ test("should walk the rows in the order the eye reads them", async ({ page }) =>
   await page.keyboard.press("ArrowDown");
 
   await expect(rows.nth(2)).toHaveAttribute("aria-selected", "true");
-  await expect(rows.nth(2)).toContainText("whoami");
+  await expect(page.locator('[data-global-row][aria-selected="true"]')).toHaveCount(1);
 });

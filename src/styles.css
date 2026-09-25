@@ -670,6 +670,16 @@ a:hover {
   align-content: start;
 }
 
+.tm [data-tl-group] {
+  display: grid;
+  gap: 2px;
+}
+
+/* Une mission se range en retrait sous son employeur, comme un fichier sous son dossier. */
+.tm [data-tl-via] {
+  margin-left: 22px;
+}
+
 .tm [data-tl-lines] {
   display: grid;
   gap: 2px;
