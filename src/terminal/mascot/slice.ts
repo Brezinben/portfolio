@@ -23,7 +23,7 @@ import { dragState } from "./drag.ts";
 import { lookup } from "../lookup.ts";
 
 // Une position, ou un pas : deux nombres qui vont toujours ensemble.
-export interface Point {
+interface Point {
   x: number;
   y: number;
 }

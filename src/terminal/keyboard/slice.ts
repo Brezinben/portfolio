@@ -11,8 +11,6 @@ export interface KeyboardState {
 
 export interface KeyboardApi {
   focusPane(pane: string): void;
-  gridMove(selector: string, key: string): boolean;
-  items(pane: string): HTMLElement[];
   moveInPane(step: number): void;
   movePane(step: number): void;
   moveSection(step: number): void;
@@ -68,6 +66,76 @@ const listMove = (selector: string, key: string, activate: (at: number) => void)
   return false;
 };
 
+const items = (pane: string) => {
+  return [
+    ...document.querySelectorAll<HTMLElement>(
+      `[data-pane="${pane}"] button:not(:disabled), [data-pane="${pane}"] input`,
+    ),
+  ];
+};
+
+// Une grille se parcourt aux quatre fleches. La stack en compte une par domaine : un pas
+// fixe, deduit de la premiere ligne, changeait de colonne des qu'une ligne etait incomplete
+// ou qu'on passait au domaine suivant. Les lignes se lisent donc sur la position reelle des cellules.
+const gridMove = (selector: string, key: string) => {
+  const cells = [...document.querySelectorAll<HTMLElement>(selector)],
+    at = document.activeElement instanceof HTMLElement ? cells.indexOf(document.activeElement) : -1;
+
+  if (at === -1 || !VERTICAL.has(key)) {
+    return rowMove(cells, at, key);
+  }
+
+  // SAFETY: « at » vient de cells.indexOf et le cas -1 est sorti juste au-dessus,
+  // donc l'index designe une cellule de la liste.
+  const from = rect(cells[at] as HTMLElement),
+    beyond = cells.filter((cell) => {
+      return key === "ArrowDown" ? rect(cell).top > from.top + 1 : rect(cell).top < from.top - 1;
+    });
+
+  if (beyond.length === 0) {
+    return true;
+  }
+
+  // La colonne prime sur la ligne. Une derniere ligne plus courte n'a pas de cellule dans la
+  // colonne du curseur : viser la ligne d'a cote le faisait glisser tout a gauche, et les
+  // frappes suivantes partaient d'ailleurs. Le curseur saute donc cette ligne pour retrouver sa colonne.
+  const inColumn = beyond.filter((cell) => {
+    return Math.abs(rect(cell).left - from.left) < 1;
+  });
+
+  if (inColumn.length > 0) {
+    inColumn
+      .reduce((best, cell) => {
+        return Math.abs(rect(cell).top - from.top) < Math.abs(rect(best).top - from.top)
+          ? cell
+          : best;
+      })
+      .focus();
+
+    return true;
+  }
+
+  // Plus rien dans cette colonne : le curseur prend la cellule la plus proche de la
+  // premiere ligne atteignable, plutot que de rester sur place.
+  const tops = beyond.map((cell) => {
+      return rect(cell).top;
+    }),
+    edge = key === "ArrowDown" ? Math.min(...tops) : Math.max(...tops),
+    row = beyond.filter((cell) => {
+      return Math.abs(rect(cell).top - edge) < 1;
+    });
+
+  row
+    .reduce((best, cell) => {
+      return Math.abs(rect(cell).left - from.left) < Math.abs(rect(best).left - from.left)
+        ? cell
+        : best;
+    })
+    .focus();
+
+  return true;
+};
+
 export const keyboardSlice = () => {
   return slice<KeyboardApi>({
     // Les raccourcis de caractere : Shift pour le glitch, « / », « j » et « k ».
@@ -106,7 +174,7 @@ export const keyboardSlice = () => {
     // Le focus est mémorisé par volet : y revenir repose le curseur où on l'avait
     // laissé, plutôt qu'en tête de liste.
     focusPane(this: Shell, pane: string) {
-      const entries = this.items(pane);
+      const entries = items(pane);
 
       if (entries.length === 0) {
         return;
@@ -136,86 +204,11 @@ export const keyboardSlice = () => {
       return false;
     },
 
-    // Une grille se parcourt aux quatre fleches. La stack en compte une par domaine : un pas
-    // fixe, deduit de la premiere ligne, changeait de colonne des qu'une ligne etait incomplete
-    // ou qu'on passait au domaine suivant. Les lignes se lisent donc sur la position reelle des cellules.
-    gridMove(this: Shell, selector: string, key: string) {
-      const cells = [...document.querySelectorAll<HTMLElement>(selector)],
-        at =
-          document.activeElement instanceof HTMLElement
-            ? cells.indexOf(document.activeElement)
-            : -1;
-
-      if (at === -1 || !VERTICAL.has(key)) {
-        return rowMove(cells, at, key);
-      }
-
-      // SAFETY: « at » vient de cells.indexOf et le cas -1 est sorti juste au-dessus,
-      // donc l'index designe une cellule de la liste.
-      const from = rect(cells[at] as HTMLElement),
-        beyond = cells.filter((cell) => {
-          return key === "ArrowDown"
-            ? rect(cell).top > from.top + 1
-            : rect(cell).top < from.top - 1;
-        });
-
-      if (beyond.length === 0) {
-        return true;
-      }
-
-      // La colonne prime sur la ligne. Une derniere ligne plus courte n'a pas de cellule dans la
-      // colonne du curseur : viser la ligne d'a cote le faisait glisser tout a gauche, et les
-      // frappes suivantes partaient d'ailleurs. Le curseur saute donc cette ligne pour retrouver sa colonne.
-      const inColumn = beyond.filter((cell) => {
-        return Math.abs(rect(cell).left - from.left) < 1;
-      });
-
-      if (inColumn.length > 0) {
-        inColumn
-          .reduce((best, cell) => {
-            return Math.abs(rect(cell).top - from.top) < Math.abs(rect(best).top - from.top)
-              ? cell
-              : best;
-          })
-          .focus();
-
-        return true;
-      }
-
-      // Plus rien dans cette colonne : le curseur prend la cellule la plus proche de la
-      // premiere ligne atteignable, plutot que de rester sur place.
-      const tops = beyond.map((cell) => {
-          return rect(cell).top;
-        }),
-        edge = key === "ArrowDown" ? Math.min(...tops) : Math.max(...tops),
-        row = beyond.filter((cell) => {
-          return Math.abs(rect(cell).top - edge) < 1;
-        });
-
-      row
-        .reduce((best, cell) => {
-          return Math.abs(rect(cell).left - from.left) < Math.abs(rect(best).left - from.left)
-            ? cell
-            : best;
-        })
-        .focus();
-
-      return true;
-    },
-
-    items(this: Shell, pane: string) {
-      return [
-        ...document.querySelectorAll<HTMLElement>(
-          `[data-pane="${pane}"] button:not(:disabled), [data-pane="${pane}"] input`,
-        ),
-      ];
-    },
-
     // Le volet courant se lit sur le focus : Tab et la souris deplacent le focus sans
     // passer par focusPane.
     moveInPane(this: Shell, step: number) {
       const pane = paneOf(document.activeElement) ?? this.pane,
-        entries = this.items(pane);
+        entries = items(pane);
 
       if (entries.length === 0) {
         return;
@@ -254,15 +247,15 @@ export const keyboardSlice = () => {
       // Chaque zone a sa logique. La stack est une grille, les sections et la frise
       // sont des listes ou la fleche droite valide, le reste change de volet.
       const handled =
-        this.gridMove("[data-tech]", event.key) ||
+        gridMove("[data-tech]", event.key) ||
         listMove('[data-ctl="nav"]', event.key, (at) => {
-          const items = [...document.querySelectorAll<HTMLElement>('[data-ctl="nav"]')];
+          const entries = [...document.querySelectorAll<HTMLElement>('[data-ctl="nav"]')];
 
           // De gauche a droite : valider une section amene a sa premiere prise (stack, frise), ou a
           // la ligne de commande si elle n'en a pas. L'intention se pose avant le clic : une section
           // deja vue s'affiche sans frappe, et la prise se ferait avant que l'intention soit connue.
           this.wantResult = true;
-          items[at]?.click();
+          entries[at]?.click();
         }) ||
         listMove('[data-ctl="tl"]', event.key, (at) => {
           this.openTimeline(at);

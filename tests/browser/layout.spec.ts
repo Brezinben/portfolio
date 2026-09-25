@@ -9,9 +9,9 @@ import { ringRatios } from "../helpers/contrast.ts";
 const fill = async (cli: Locator) => {
     for (const _ of Array.from({ length: 6 })) {
       // Les commandes doivent s'enchainer : les paralleliser ne remplirait pas le journal.
-      // eslint-disable-next-line no-await-in-loop
+      // oxlint-disable-next-line no-await-in-loop
       await cli.fill("xyzzy");
-      // eslint-disable-next-line no-await-in-loop
+      // oxlint-disable-next-line no-await-in-loop
       await cli.press("Enter");
     }
   },
@@ -233,12 +233,12 @@ test("should keep the pane widths from one section to the next", async ({ page }
 
   for (const id of ["parcours", "stack", "impact", "contact"]) {
     // Les sections s'ouvrent l'une après l'autre : les ouvrir ensemble ne mesurerait rien.
-    // eslint-disable-next-line no-await-in-loop
+    // oxlint-disable-next-line no-await-in-loop
     await page
       .getByRole("button", { name: new RegExp(id) })
       .first()
       .click();
-    // eslint-disable-next-line no-await-in-loop
+    // oxlint-disable-next-line no-await-in-loop
     expect(await widths(), `section ${id}`).toEqual(first);
   }
 });

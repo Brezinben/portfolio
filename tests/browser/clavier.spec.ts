@@ -52,9 +52,9 @@ test("should keep the focus on the log handle while it resizes", async ({ page }
   const cli = page.locator("#cli");
 
   for (const _ of Array.from({ length: 6 })) {
-    // eslint-disable-next-line no-await-in-loop
+    // oxlint-disable-next-line no-await-in-loop
     await cli.fill("xyzzy");
-    // eslint-disable-next-line no-await-in-loop
+    // oxlint-disable-next-line no-await-in-loop
     await cli.press("Enter");
   }
 
@@ -100,9 +100,9 @@ test("should move the focus on every Tab in the options under reduced motion", a
     seen: string[] = [];
 
   for (const _ of Array.from({ length: 12 })) {
-    // eslint-disable-next-line no-await-in-loop
+    // oxlint-disable-next-line no-await-in-loop
     await dialog.press("Tab");
-    // eslint-disable-next-line no-await-in-loop
+    // oxlint-disable-next-line no-await-in-loop
     const label = await page.evaluate(() => {
       return document.activeElement?.textContent?.trim() ?? "";
     });

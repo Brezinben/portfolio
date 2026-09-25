@@ -29,11 +29,17 @@ export interface OptionsApi {
   persist(): void;
   restore(): void;
   setTheme(id: string, via?: TrackSource): void;
-  themeButtons(): HTMLElement[];
   themeColumns(): number;
-  toggleButtons(): HTMLElement[];
   value(key: ToggleKey): boolean;
 }
+
+const themeButtons = () => {
+  return [...document.querySelectorAll<HTMLElement>("[data-opts] [data-theme-choice]")];
+};
+
+const toggleButtons = () => {
+  return [...document.querySelectorAll<HTMLElement>("[data-opts] [data-toggle]:not(:disabled)")];
+};
 
 export const optionsSlice = () => {
   return slice<OptionsApi>({
@@ -87,7 +93,7 @@ export const optionsSlice = () => {
         "[data-opts] [data-theme-choice][aria-pressed='true']",
       );
 
-      (active ?? this.themeButtons()[0])?.focus();
+      (active ?? themeButtons()[0])?.focus();
     },
 
     // Le reglage courant se lit sur l'element focalise. Le deduire d'un compteur le
@@ -95,13 +101,13 @@ export const optionsSlice = () => {
     // etait sur « animations » et la fleche droite modifiait « dense lines ».
     focused(this: Shell) {
       const active = document.activeElement,
-        theme = active instanceof HTMLElement ? this.themeButtons().indexOf(active) : -1;
+        theme = active instanceof HTMLElement ? themeButtons().indexOf(active) : -1;
 
       if (theme !== -1) {
         return { group: "theme", index: theme };
       }
 
-      const toggle = active instanceof HTMLElement ? this.toggleButtons().indexOf(active) : -1;
+      const toggle = active instanceof HTMLElement ? toggleButtons().indexOf(active) : -1;
 
       return toggle === -1 ? undefined : { group: "toggle", index: toggle };
     },
@@ -113,7 +119,7 @@ export const optionsSlice = () => {
     },
 
     moveTheme(this: Shell, index: number) {
-      const buttons = this.themeButtons(),
+      const buttons = themeButtons(),
         target = buttons[Math.max(0, Math.min(buttons.length - 1, index))];
 
       if (!target) {
@@ -183,8 +189,8 @@ export const optionsSlice = () => {
           next = here.index + (step ?? 0);
 
         // Sortir de la grille par le bas mene au premier reglage suivant.
-        if (next >= this.themeButtons().length) {
-          this.toggleButtons()[0]?.focus();
+        if (next >= themeButtons().length) {
+          toggleButtons()[0]?.focus();
         } else {
           this.moveTheme(next);
         }
@@ -203,7 +209,7 @@ export const optionsSlice = () => {
       if (next < 0) {
         this.focusSetting();
       } else {
-        this.toggleButtons()[next]?.focus();
+        toggleButtons()[next]?.focus();
       }
     },
 
@@ -287,14 +293,10 @@ export const optionsSlice = () => {
       });
     },
 
-    themeButtons(this: Shell) {
-      return [...document.querySelectorAll<HTMLElement>("[data-opts] [data-theme-choice]")];
-    },
-
     // Les themes sont sur plusieurs lignes : les quatre fleches doivent y naviguer.
     // Les boutons d'une meme ligne partagent leur position verticale.
     themeColumns(this: Shell) {
-      const buttons = this.themeButtons(),
+      const buttons = themeButtons(),
         top = buttons[0]?.offsetTop;
 
       return Math.max(
@@ -303,12 +305,6 @@ export const optionsSlice = () => {
           return button.offsetTop === top;
         }).length,
       );
-    },
-
-    toggleButtons(this: Shell) {
-      return [
-        ...document.querySelectorAll<HTMLElement>("[data-opts] [data-toggle]:not(:disabled)"),
-      ];
     },
 
     value(this: Shell, key: ToggleKey) {

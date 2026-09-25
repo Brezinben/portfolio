@@ -284,14 +284,14 @@ test("should paint the bars from the theme accent on every theme", async ({ page
     painted: string[] = [];
 
   for (const theme of THEMES) {
-    // eslint-disable-next-line no-await-in-loop
+    // oxlint-disable-next-line no-await-in-loop
     await cli.fill(`theme ${theme}`);
-    // eslint-disable-next-line no-await-in-loop
+    // oxlint-disable-next-line no-await-in-loop
     await cli.press("Enter");
-    // eslint-disable-next-line no-await-in-loop
+    // oxlint-disable-next-line no-await-in-loop
     await expect(page.locator(".tm")).toHaveAttribute("data-theme", theme);
 
-    // eslint-disable-next-line no-await-in-loop
+    // oxlint-disable-next-line no-await-in-loop
     const paint = await page
       .locator("[data-radio-bar] u")
       .first()

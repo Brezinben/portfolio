@@ -165,9 +165,9 @@ test("should reach every section button with Tab", async ({ page }) => {
 
   for (const _ of Array.from({ length: 40 })) {
     // Le focus avance d'un pas à la fois : paralléliser n'aurait pas de sens.
-    // eslint-disable-next-line no-await-in-loop
+    // oxlint-disable-next-line no-await-in-loop
     await page.keyboard.press("Tab");
-    // eslint-disable-next-line no-await-in-loop
+    // oxlint-disable-next-line no-await-in-loop
     const at = await page.evaluate(() => {
       return [...document.querySelectorAll('[data-ctl="nav"]')].indexOf(
         document.activeElement ?? document.body,

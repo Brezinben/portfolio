@@ -134,7 +134,7 @@ interface State
   booter: Delay | undefined;
   ticker: Beat | undefined;
   anim: boolean;
-  reducedMotion: boolean;
+  reduced: boolean;
   // Le resultat d'une commande qui l'a reclame. La navigation le reprend.
   commandResult: Section | undefined;
   bootTick: number;
@@ -211,9 +211,9 @@ const withMagics = <T>(
 document.addEventListener("alpine:init", () => {
   // Les proprietes sont triees. Les methodes suivent un ordre de lecture : chargement,
   // navigation, commandes. Un tri alphabetique disperserait chaque sujet.
-  // eslint-disable-next-line sort-keys
+  // oxlint-disable-next-line sort-keys
   Alpine.data("terminal", () => {
-    // eslint-disable-next-line sort-keys
+    // oxlint-disable-next-line sort-keys
     const component = withMagics({
       ACHIEVEMENTS,
       THEMES,
@@ -258,7 +258,7 @@ document.addEventListener("alpine:init", () => {
       walker: undefined,
       anim: true,
       at: 0,
-      reducedMotion: globalThis.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false,
+      reduced: globalThis.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false,
       bubble: "",
       clicks: 0,
       commands: [],
@@ -369,14 +369,17 @@ document.addEventListener("alpine:init", () => {
         globalThis
           .matchMedia?.("(prefers-reduced-motion: reduce)")
           .addEventListener("change", (event) => {
-            this.reducedMotion = event.matches;
+            this.reduced = event.matches;
           });
         this.restore();
         this.ticker = setInterval(() => {
           this.bootTick += 1;
         }, COMPACT_TICK_MS);
         this.startMascot();
-        this.watchNetwork();
+        // « onLine » dit « hors ligne » sans se tromper, et « en ligne » avec optimisme :
+        // c'est le sens utile ici, puisque la page ne sert qu'a refuser une commande vouee a
+        // l'echec.
+        this.setOnline(globalThis.navigator?.onLine ?? true);
         void this.learnModel();
         void this.load();
       },
@@ -665,10 +668,6 @@ document.addEventListener("alpine:init", () => {
         return true;
       },
 
-      get reduced(): boolean {
-        return this.reducedMotion;
-      },
-
       // Le meme seuil que la requete de media qui empile les volets. Les deux doivent
       // changer ensemble : la coquille ne peut pas lire la valeur de la feuille de style.
       get stacked() {
@@ -899,7 +898,7 @@ document.addEventListener("alpine:init", () => {
 
         this.seen = [...this.seen, id];
 
-        if ((this.current.suggest ?? "") !== "") {
+        if (this.current.suggest !== "") {
           this.input = this.current.suggest;
         }
 
@@ -1068,12 +1067,6 @@ document.addEventListener("alpine:init", () => {
         // La bulle n'est montee qu'avec son texte : elle n'annonce rien. Le journal, lui,
         // est une region live toujours presente.
         this.journal = [...this.journal, { c: "ok", m: "✓", mc: "ok", t: "copié" }];
-      },
-
-      // « hors ligne » sans se tromper, et « en ligne » avec optimisme : c'est le sens
-      // utile ici, puisque la page ne sert qu'a refuser une commande vouee a l'echec.
-      watchNetwork() {
-        this.setOnline(globalThis.navigator?.onLine ?? true);
       },
 
       setOnline(online: boolean) {

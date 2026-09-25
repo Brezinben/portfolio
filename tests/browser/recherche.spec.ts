@@ -4,7 +4,7 @@ import type { Page } from "@playwright/test";
 // Le faux modele pose sa gachette sur la page. La declarer evite de la retrouver par une
 // assertion de type, qui masquerait une vraie erreur si le nom changeait.
 declare global {
-  // eslint-disable-next-line no-var, vars-on-top
+  // oxlint-disable-next-line no-var, vars-on-top
   var repondre: ((id: string) => void) | undefined;
 }
 
