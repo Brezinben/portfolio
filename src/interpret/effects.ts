@@ -6,6 +6,11 @@ import type { Line } from "./lines.ts";
 
 export type TrackValue = boolean | number | string;
 
+// Ce que « shutdown » et « reboot » demandent à la coquille.
+export type PowerMode = "reboot" | "shutdown";
+// Les trois gestes qui corrompent l'affichage. « shift » vient du clavier, jamais d'un effet.
+export type GlitchMode = "matrix" | "shift" | "sudo";
+
 export type Expression = "alert" | "happy" | "idle" | "laugh" | "sad" | "scared" | "sleep";
 
 // Ce que la coquille doit faire. L'interpreteur ne touche jamais au DOM : il decrit, elle
@@ -23,10 +28,10 @@ export type Effect =
   | { type: "emote"; expression: Expression }
   | { type: "usage" }
   | { type: "evolve" }
-  | { type: "glitch"; mode: string }
+  | { type: "glitch"; mode: Exclude<GlitchMode, "shift"> }
   | { type: "options" }
   | { type: "pending"; answer?: string; payload: string }
-  | { type: "power"; mode: string }
+  | { type: "power"; mode: PowerMode }
   | { type: "radio" }
   | { type: "replay" }
   | { type: "say"; expression: Expression; text: string }

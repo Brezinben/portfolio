@@ -63,15 +63,19 @@
       x-data="terminal"
       :data-theme="theme"
       :data-anim="anim ? 'true' : 'false'"
+      :data-power="power"
       x-cloak
       @keydown.window="onKey($event)"
+      @popstate.window="fromHash()"
+      @resize.window="onResize()"
+      @online.window="setOnline(true)"
+      @offline.window="setOnline(false)"
     >
       <main
         data-panes
         :inert="modalOpen"
         :data-glitch="glitchMode || false"
         :aria-busy="glitchMode ? 'true' : null"
-        :style="`flex:1;min-height:0;display:flex;flex-wrap:nowrap;gap:10px;align-items:stretch;overflow:var(--panes-overflow,hidden);max-width:2400px;width:100%;margin:0;animation:var(--panes-animation,${power === 'fade' ? 'revealUp .62s cubic-bezier(.2,.7,.3,1) both' : 'none'})`"
       >
         <h1 class="titre">Benjamin David · Développeur IA &amp; Full Stack</h1>
 
@@ -98,19 +102,10 @@
                       :aria-current="item.id === section ? 'true' : 'false'"
                       @click="goSection(item.id)"
                     >
-                      <span
-                        aria-hidden="true"
-                        :style="`width:8px;height:8px;background:var(--${item.dot});animation:${item.dot === 'acc' ? 'dotPulse 1.2s ease-in-out infinite' : 'none'}`"
-                      ></span>
+                      <span aria-hidden="true" :data-dot="item.dot"></span>
                       <span data-nav-lines>
-                        <span
-                          :style="`font-weight:${item.id === section ? '700' : '400'}`"
-                          x-text="item.label"
-                        ></span>
-                        <span
-                          :style="`font-size:12px;color:var(--${item.id === section ? 'fg' : 'fg2'});overflow-wrap:anywhere`"
-                          x-text="item.sub"
-                        ></span>
+                        <span data-nav-label x-text="item.label"></span>
+                        <span data-nav-note x-text="item.sub"></span>
                       </span>
                     </button>
                   </li>
@@ -128,15 +123,9 @@
                       :aria-current="item.id === section ? 'true' : 'false'"
                       @click="goSection(item.id)"
                     >
-                      <span
-                        aria-hidden="true"
-                        :style="`width:8px;height:8px;background:var(--${item.dot});animation:${item.dot === 'acc' ? 'dotPulse 1.2s ease-in-out infinite' : 'none'}`"
-                      ></span>
+                      <span aria-hidden="true" :data-dot="item.dot"></span>
                       <span data-nav-lines>
-                        <span
-                          :style="`font-weight:${item.id === section ? '700' : '400'}`"
-                          x-text="item.label"
-                        ></span>
+                        <span data-nav-label x-text="item.label"></span>
                         <span data-tone="fg2" data-nav-sub x-text="item.state"></span>
                       </span>
                     </button>
@@ -149,27 +138,17 @@
 
         <section class="zone" data-pane="main" aria-label="Volet central">
           <div data-decor aria-hidden="true">
-            <div
-              :style="`height:2px;background:linear-gradient(90deg,transparent,var(--acc),transparent);opacity:.16;animation:scan 9s linear infinite`"
-            ></div>
+            <div data-scan></div>
           </div>
           <p data-tone="fg2" data-typed>
             <span aria-hidden="true" data-tone="acc">›&nbsp;</span
             ><span data-tone="fg" x-text="typed"></span
-            ><span
-              x-show="!running && anim"
-              aria-hidden="true"
-              :style="`color:var(--acc-text);animation:caret 1s steps(1) infinite`"
-              >_</span
-            >
+            ><span x-show="!running && anim" aria-hidden="true" data-tone="acc" data-caret>_</span>
           </p>
           <template x-if="running">
             <p data-running data-tone="fg2">
-              <span
-                aria-hidden="true"
-                :style="`color:var(--acc);animation:dotPulse 1s ease-in-out infinite`"
-                >▚</span
-              ><span :style="`animation:dotPulse 1.2s ease-in-out infinite`">exécution…</span>
+              <span aria-hidden="true" data-tone="acc" data-pulse>▚</span
+              ><span data-pulse-slow>exécution…</span>
             </p>
           </template>
           <div data-result tabindex="0" role="region" aria-label="Résultat" :aria-busy="running">
@@ -202,14 +181,11 @@
                     ></span>
                     <span data-tl-lines>
                       <span data-years data-tone="fg2" x-text="entry.years"></span>
-                      <span
-                        :style="`font-weight:${index === timelineAt ? '700' : '400'}`"
-                        x-text="entry.org"
-                      ></span>
+                      <span data-tl-org x-text="entry.org"></span>
                       <span data-tone="fg2" data-tl-note x-text="entry.role"></span>
                       <span
                         data-cue
-                        :style="`font-size:12px;color:var(--${entry.detail ? 'acc-text' : 'fg2'})`"
+                        :data-tone="entry.detail ? 'acc' : 'fg2'"
                         x-text="missionCue(entry)"
                       ></span>
                     </span>
@@ -227,10 +203,7 @@
 
                 <template x-for="(root, branch) in stack" :key="root.id">
                   <div data-branch-row>
-                    <div
-                      aria-hidden="true"
-                      :style="`position:relative;display:flex;justify-content:center;border-left:1px solid ${branch === stack.length - 1 ? 'transparent' : 'var(--edge)'};margin-left:4px`"
-                    >
+                    <div aria-hidden="true" data-branch-rail>
                       <span data-branch-tick></span>
                     </div>
                     <div data-branch-body>
@@ -272,11 +245,12 @@
               <p
                 :data-contact="current.id === 'contact' ? '' : null"
                 :data-edge="index === 0 || index === current.lines.length - 1 ? '' : null"
-                :style="current.id === 'contact' ? `margin:0;display:grid;grid-template-columns:18px 1fr;gap:8px;align-items:baseline;padding:5px 8px 5px calc(10px + ${line.pad ?? '0px'});border-left:2px solid var(--row-acc,transparent)` : `margin:0;display:grid;grid-template-columns:18px 1fr;gap:8px;align-items:baseline;padding-left:${line.pad ?? '0'}`"
+                data-line
+                :style="`--pad:${line.pad ?? '0px'}`"
               >
                 <span
                   aria-hidden="true"
-                  :style="`color:var(--${line.markerTone ?? 'fg2'})`"
+                  :data-glyph="line.markerTone ?? 'fg2'"
                   x-text="line.marker ?? ''"
                 ></span>
                 <span
@@ -339,7 +313,7 @@
             role="log"
             aria-label="Journal"
             @scroll="checkMore('journal')"
-            :style="`flex:none;height:var(--log-height,${logHeight}px);overflow-y:var(--log-overflow,auto);align-content:start;display:grid;gap:2px;border-top:1px solid var(--edge);padding-top:8px`"
+            :style="`--log-h:${logHeight}px`"
           >
             <template x-for="(entry, index) in journal" :key="index">
               <p data-log-line>
@@ -371,12 +345,7 @@
             @pointercancel.window="logUp()"
           >
             <template x-if="bubble">
-              <span
-                data-bubble
-                aria-live="polite"
-                :style="`position:absolute;bottom:52px;left:${at}px;border:1px solid var(--edge);background:var(--panel);color:var(--fg);padding:2px 8px;font-size:12px;white-space:nowrap;pointer-events:none;animation:lineIn .24s ease both`"
-                x-text="bubble"
-              ></span>
+              <span data-bubble aria-live="polite" :style="`left:${at}px`" x-text="bubble"></span>
             </template>
 
             <!-- Animations coupées ou mouvement réduit : la mascotte ne s'affiche pas du tout,
@@ -416,10 +385,7 @@
             </template>
 
             <template x-if="motion === 'bump' && anim">
-              <span
-                data-spark
-                aria-hidden="true"
-                :style="`position:absolute;bottom:14px;${direction > 0 ? 'right:2px' : 'left:2px'};color:var(--warn);font-size:15px;animation:spark .6s ease-out both`"
+              <span data-spark aria-hidden="true" :data-dir="direction > 0 ? 'right' : 'left'"
                 >✳</span
               >
             </template>
@@ -508,7 +474,7 @@
               ><template x-if="!compacting"
                 ><span
                   ><span
-                    :style="`color:var(--${ctxCells === 10 ? 'warn' : 'acc-text'})`"
+                    :data-tone="ctxCells === 10 ? 'warn' : 'acc'"
                     x-text="'█'.repeat(ctxCells)"
                   ></span
                   ><span
@@ -541,13 +507,8 @@
         <aside class="zone" data-pane="out" aria-label="Sortie" x-show="out">
           <h2 class="zone__head">
             <span x-text="radioOn ? 'radio' : open.out.title"></span
-            ><span :style="`color:var(--${outTone})`"
-              ><span
-                data-outdot
-                aria-hidden="true"
-                :style="`animation:dotPulse 1.2s ease-in-out infinite`"
-                >●</span
-              >
+            ><span :data-glyph="outTone"
+              ><span data-outdot aria-hidden="true" data-pulse-slow>●</span>
               <span x-text="outLabel"></span
             ></span>
           </h2>
@@ -617,13 +578,8 @@
           <div tabindex="0" role="region" aria-label="Contenu de la sortie" x-show="!radioOn">
             <template x-if="running">
               <p data-waiting data-tone="fg2">
-                <span
-                  aria-hidden="true"
-                  :style="`color:var(--acc);animation:dotPulse 1s ease-in-out infinite`"
-                  >▚</span
-                ><span :style="`animation:dotPulse 1.2s ease-in-out infinite`"
-                  >en attente de la sortie…</span
-                >
+                <span aria-hidden="true" data-tone="acc" data-pulse>▚</span
+                ><span data-pulse-slow>en attente de la sortie…</span>
               </p>
             </template>
             <dl x-show="!running" :style="`--out-key:${outKeyWidth}`">
@@ -638,10 +594,7 @@
             </dl>
 
             <template x-if="techNote">
-              <div
-                data-technote
-                :style="`border-top:1px solid var(--edge);padding-top:8px;display:grid;gap:4px;animation:lineIn .26s ease both`"
-              >
+              <div data-technote>
                 <p data-tone="acc" data-tech-name x-text="tech"></p>
                 <p data-tone="fg2" data-tech-where x-text="techNote.where"></p>
                 <p data-tech-note x-text="techNote.note"></p>
@@ -725,13 +678,7 @@
                     :aria-pressed="entry.id === theme"
                     @click="setTheme(entry.id)"
                   >
-                    <span
-                      aria-hidden="true"
-                      :style="`width:18px;height:18px;flex:none;border:1px solid ${entry.edge};background:${entry.bg};position:relative;overflow:hidden`"
-                      ><span
-                        :style="`position:absolute;inset:auto 0 0 0;height:7px;background:${entry.acc}`"
-                      ></span
-                    ></span>
+                    <span aria-hidden="true" data-swatch :data-theme="entry.id"><span></span></span>
                     <span data-theme-label x-text="entry.label"></span>
                   </button>
                 </template>
@@ -937,11 +884,7 @@
       <template x-if="booting">
         <!-- Le clic abrege le boot comme la touche. « skipBoot » refuse quand la panique est
            affichee : le bouton retry garde ses gestes. -->
-        <div
-          data-boot
-          @pointerdown="skipBoot()"
-          :style="`position:absolute;inset:0;z-index:30;background:var(--bg);padding:18px clamp(12px,2.5vw,26px) 26px;box-sizing:border-box;display:flex;flex-direction:column;${power === 'fade' ? 'animation:bootOut .62s ease forwards' : ''}`"
-        >
+        <div data-boot @pointerdown="skipBoot()">
           <div class="zone">
             <template x-if="dataErr">
               <div role="alert" data-panic>

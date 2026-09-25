@@ -22,7 +22,9 @@ export { type ContentLine, contentLine } from "./interpret/content.ts";
 export {
   type Effect,
   type Expression,
+  type GlitchMode,
   type Outcome,
+  type PowerMode,
   type TrackValue,
 } from "./interpret/effects.ts";
 export type { Context } from "./interpret/context.ts";

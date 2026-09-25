@@ -26,14 +26,14 @@ export const ALERT_OUT_GRAIN_MS = 190;
 // attend ce total avant de rendre la place ; la feuille porte la durée d'une case.
 export const ALERT_OUT_TOTAL_MS = 810;
 export const THEMES = [
-  { acc: "#F5B83B", bg: "#242538", edge: "#33344a", id: "dark", label: "ambra" },
-  { acc: "#e6a000", bg: "#fff6f6", edge: "#ded2d2", id: "light", label: "solis" },
-  { acc: "#49e9a6", bg: "#052c33", edge: "#0d4148", id: "noctis", label: "noctis" },
-  { acc: "#49ace9", bg: "#07273b", edge: "#0f3b52", id: "azureus", label: "azureus" },
-  { acc: "#a29bfe", bg: "#211d40", edge: "#332d5c", id: "uva", label: "uva" },
-  { acc: "#e0728c", bg: "#2d1b26", edge: "#452a39", id: "bordo", label: "bordo" },
-  { acc: "#0f7d8c", bg: "#fdf6e7", edge: "#ddd2ba", id: "lux", label: "lux" },
-  { acc: "#00707f", bg: "#f7fbfc", edge: "#cfdde1", id: "hibernus", label: "hibernus" },
+  { id: "dark", label: "ambra" },
+  { id: "light", label: "solis" },
+  { id: "noctis", label: "noctis" },
+  { id: "azureus", label: "azureus" },
+  { id: "uva", label: "uva" },
+  { id: "bordo", label: "bordo" },
+  { id: "lux", label: "lux" },
+  { id: "hibernus", label: "hibernus" },
 ];
 // Les valeurs d'etat restent en anglais : c'est la langue d'un terminal.
 // Les réglages qui se basculent. Nommer l'union permet d'indexer l'etat par la
