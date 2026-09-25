@@ -219,9 +219,13 @@ test("should keep the pane widths from one section to the next", async ({ page }
   const widths = () => {
       return page.evaluate(() => {
         return ["nav", "main", "out"].map((pane) => {
-          return Math.round(
-            document.querySelector<HTMLElement>(`[data-pane="${pane}"]`)?.clientWidth ?? 0,
-          );
+          const node = document.querySelector<HTMLElement>(`[data-pane="${pane}"]`);
+
+          if (!node) {
+            throw new Error(`no ${pane} pane`);
+          }
+
+          return Math.round(node.clientWidth);
         });
       });
     },
@@ -332,12 +336,14 @@ test("should give the result its room back when a too tall log meets a new secti
     .click();
 
   const sizes = await page.evaluate(() => {
-    const pane = document.querySelector<HTMLElement>('[data-pane="main"]');
+    const pane = document.querySelector<HTMLElement>('[data-pane="main"]'),
+      result = document.querySelector<HTMLElement>("[data-result]");
 
-    return {
-      overflow: (pane?.scrollHeight ?? 0) - (pane?.clientHeight ?? 0),
-      result: document.querySelector<HTMLElement>("[data-result]")?.clientHeight ?? 0,
-    };
+    if (!pane || !result) {
+      throw new Error("no main pane or no result");
+    }
+
+    return { overflow: pane.scrollHeight - pane.clientHeight, result: result.clientHeight };
   });
 
   expect(sizes.result, "the result keeps its room").toBeGreaterThanOrEqual(120);

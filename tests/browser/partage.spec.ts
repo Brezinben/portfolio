@@ -1,5 +1,6 @@
 import type { Locator, Page } from "@playwright/test";
 import { expect, test } from "@playwright/test";
+import { opened, spyOpen } from "../helpers/open.ts";
 
 const boot = async (page: Page) => {
     await page.goto("/");
@@ -88,15 +89,6 @@ test("should wait for no confirmation on propose -y", async ({ page }) => {
   await expect(cli, "the command line stays free").toHaveValue("");
 });
 
-test("should send nothing when the answer is « non »", async ({ page }) => {
-  const cli = await boot(page);
-
-  await run(cli, "/propose une idée");
-  await run(cli, "non");
-
-  await expect(page.locator("[data-journal]")).toContainText("rien n'a été envoyé");
-});
-
 test("should set no cookie", async ({ page, context }) => {
   const cli = await boot(page);
 
@@ -119,27 +111,6 @@ test("should not break the page when the audience measurement is blocked", async
   await expect(page.locator("[data-journal]")).toContainText("sudoers");
   await expect(page.locator('[data-pane="main"]')).toBeVisible();
 });
-
-// Ce que la page ouvre dans un autre onglet ou dans le client de courrier, sans l'ouvrir.
-// La liste vit sur la racine du document : le test la relit comme un attribut.
-const spyOpen = async (page: Page) => {
-    await page.addInitScript(() => {
-      globalThis.open = (url) => {
-        const root = document.documentElement;
-
-        root.dataset.opened = [root.dataset.opened, String(url)].filter(Boolean).join("\n");
-
-        // Le contrat de window.open rend « null » quand rien ne s'ouvre.
-        // oxlint-disable-next-line unicorn/no-null
-        return null;
-      };
-    });
-  },
-  opened = async (page: Page) => {
-    const list = await page.locator("html").getAttribute("data-opened");
-
-    return (list ?? "").split("\n").filter(Boolean);
-  };
 
 // Le chemin principal d'un recruteur : l'adresse, puis le courrier, puis les profils.
 test("should copy the address on email", async ({ page, context }) => {

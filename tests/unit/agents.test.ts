@@ -194,3 +194,52 @@ it("should carry all of content.json in the text version and in the full content
     "some timeline entries are missing",
   );
 });
+
+// La mise en page d'une copie ne compte pas : balises, entités et espaces sont normalisées.
+const flat = (text: string) => {
+  return text
+    .replaceAll(/<[^>]+>/gu, "")
+    .replaceAll("&amp;", "&")
+    .replaceAll(/[  ]/gu, " ")
+    .replaceAll(/\s+/gu, " ");
+};
+
+// Le texte des fiches et de la frise se recopie dans deux fichiers. Les noms seuls ne
+// suffisent pas : une note corrigée d'un côté seulement publierait deux faits différents.
+it("should carry the same notes, places and contact in every copy", () => {
+  // SAFETY: content.json est un artefact du dépôt, versionné à côté de ce test, et son
+  // schéma est tenu par tests/unit/content.test.ts. Seules ces clés sont lues ici.
+  const contenu = JSON.parse(read("content.json")) as {
+      profile: { email: string };
+      techNotes: Record<string, { note: string; where: string }>;
+      timeline: { detail: string | null; note: string; role: string }[];
+    },
+    copies = [flat(texte), flat(llmsFull)],
+    facts = [
+      contenu.profile.email,
+      ...Object.values(contenu.techNotes).flatMap((entry) => {
+        return [entry.where, entry.note];
+      }),
+      // Une mission qui a sa fiche se lit dans la fiche : la frise ne se recopie que pour
+      // les autres.
+      ...contenu.timeline
+        .filter((entry) => {
+          return entry.detail === null;
+        })
+        .flatMap((entry) => {
+          return [entry.role, entry.note];
+        }),
+    ].map(flat);
+
+  for (const [index, copy] of copies.entries()) {
+    assert.deepEqual(
+      facts.filter((fact) => {
+        return !copy.includes(fact);
+      }),
+      [],
+      `${index === 0 ? "texte.html" : "llms-full.txt"} drifted from content.json`,
+    );
+  }
+
+  assert.ok(llms.includes(contenu.profile.email), "llms.txt gives another contact");
+});
