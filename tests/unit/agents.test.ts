@@ -195,12 +195,11 @@ it("should carry all of content.json in the text version and in the full content
   );
 });
 
-// La mise en page d'une copie ne compte pas : balises, entités et espaces sont normalisées.
+// « flat » retire les balises, décode les entités et réduit les espaces.
 const flat = (text: string) => {
   return text
     .replaceAll(/<[^>]+>/gu, "")
     .replaceAll("&amp;", "&")
-    .replaceAll(/[  ]/gu, " ")
     .replaceAll(/\s+/gu, " ");
 };
 
@@ -214,7 +213,10 @@ it("should carry the same notes, places and contact in every copy", () => {
       techNotes: Record<string, { note: string; where: string }>;
       timeline: { detail: string | null; note: string; role: string }[];
     },
-    copies = [flat(texte), flat(llmsFull)],
+    copies = [
+      ["texte.html", flat(texte)],
+      ["llms-full.txt", flat(llmsFull)],
+    ] as const,
     facts = [
       contenu.profile.email,
       ...Object.values(contenu.techNotes).flatMap((entry) => {
@@ -231,13 +233,13 @@ it("should carry the same notes, places and contact in every copy", () => {
         }),
     ].map(flat);
 
-  for (const [index, copy] of copies.entries()) {
+  for (const [name, copy] of copies) {
     assert.deepEqual(
       facts.filter((fact) => {
         return !copy.includes(fact);
       }),
       [],
-      `${index === 0 ? "texte.html" : "llms-full.txt"} drifted from content.json`,
+      `${name} drifted from content.json`,
     );
   }
 

@@ -12,7 +12,7 @@ import type { GlitchMode } from "../../interpret.ts";
 // remet a zero.
 const GLITCH_MS = 5000;
 // La feuille fige le theme permute sur sa derniere image (« both »). Sans cette variable,
-// allonger la panne laisserait les couleurs permutées après la panne, sans aucune erreur.
+// un glitch plus long laisserait les couleurs permutées après sa fin, sans aucune erreur.
 const GLITCH_VAR = "--glitch-ms";
 
 export const SHIFT_COUNT = 5;

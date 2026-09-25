@@ -25,7 +25,7 @@ export const ringRatios = (selectors: string[]) => {
       return ((light ?? 0) + 0.05) / ((dark ?? 0) + 0.05);
     };
 
-  // Les variables de thème vivent sur « .tm » dans la version terminal, sur la racine ailleurs.
+  // Les variables de thème vivent sur « .tm » dans la version terminal, sur « body » ailleurs.
   (document.querySelector(".tm") ?? document.body).append(probe);
 
   const panel = getComputedStyle(probe).getPropertyValue("--panel"),
@@ -35,13 +35,13 @@ export const ringRatios = (selectors: string[]) => {
     const node = document.querySelector<HTMLElement>(selector);
 
     if (!node) {
-      return `${selector} NaN`;
+      return [selector, Number.NaN] as const;
     }
 
     node.focus();
 
     const ring = getComputedStyle(node).outlineColor;
 
-    return `${selector} ${Math.min(ratio(ring, panel), ratio(ring, ground)).toFixed(2)}`;
+    return [selector, Math.min(ratio(ring, panel), ratio(ring, ground))] as const;
   });
 };

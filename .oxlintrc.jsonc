@@ -1,7 +1,7 @@
 {
   "$schema": "https://raw.githubusercontent.com/oxc-project/oxc/main/npm/oxlint/configuration_schema.json",
   // La liste remplace les plugins par défaut. Sans « typescript », aucune règle de types
-  // ne tourne, et « typeAware » ne sert à rien.
+  // ne tournerait, et « typeAware » ne servirait à rien.
   "plugins": ["typescript", "jest", "unicorn", "oxc", "promise", "import"],
   "jsPlugins": [
     "@stylistic/eslint-plugin",

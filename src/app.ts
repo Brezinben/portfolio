@@ -370,9 +370,8 @@ document.addEventListener("alpine:init", () => {
           this.bootTick += 1;
         }, COMPACT_TICK_MS);
         this.startMascot();
-        // « onLine » dit « hors ligne » sans se tromper, et « en ligne » avec optimisme :
-        // c'est le sens utile ici, puisque la page ne sert qu'a refuser une commande vouee a
-        // l'echec.
+        // « navigator.onLine » ne se trompe jamais sur « hors ligne ». Une valeur « en ligne »
+        // peut être fausse, et la page ne lit cette valeur que pour refuser une commande.
         this.setOnline(globalThis.navigator?.onLine ?? true);
         void this.learnModel();
         void this.load();
@@ -1103,8 +1102,7 @@ document.addEventListener("alpine:init", () => {
             return entry.type === "usage";
           });
 
-        // Un gestionnaire par genre d'effet. Un genre ajoute a « Effect » sans sa cle casse la
-        // compilation ici.
+        // Un genre ajouté à « Effect » sans sa clé casse la compilation ici.
         const run = {
           activity: (effect) => {
             this.mascotPlay(effect.name);
@@ -1135,7 +1133,7 @@ document.addEventListener("alpine:init", () => {
             void this.evolve();
           },
           glitch: (effect) => {
-            // « sudo » laisse lire son refus avant de tomber en panne ; « matrix » part
+            // « sudo » laisse lire son refus avant le glitch ; « matrix » part
             // avec sa ligne.
             if (effect.mode === "sudo") {
               this.glitchLater(effect.mode);
@@ -1198,7 +1196,6 @@ document.addEventListener("alpine:init", () => {
           track: (effect) => {
             this.track(effect.event, effect.props);
           },
-          // Une commande qui liste son usage n'a rien a faire ici : « listed » la lit plus haut.
           usage: () => {
             // « listed » lit cet effet avant la boucle.
           },
@@ -1296,9 +1293,9 @@ document.addEventListener("alpine:init", () => {
       },
     });
 
-    // Les tranches entrent par leurs descripteurs, jamais par un etalement, qui appellerait
-    // les accesseurs et figerait leur valeur ; « reduced » a false laisserait tourner les
-    // animations chez qui demande moins de mouvement. Une methode oubliee dans le litteral perd contre la tranche : c'est le code neuf qui gagne.
+    // Les tranches entrent par leurs descripteurs. Un étalement appellerait les accesseurs et
+    // figerait leur valeur. Une méthode oubliée dans le littéral perd contre la tranche : le
+    // code neuf gagne.
     return Object.defineProperties(component, Object.getOwnPropertyDescriptors(slices()));
   });
 });

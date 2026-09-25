@@ -21,5 +21,6 @@ Stryker n'est pas une dépendance : `bunx` le tire à la demande, et la CI ne l'
 Le rapport s'écrit dans `reports/mutation/mutation.html`. Stryker ne mute pas les chaînes :
 un texte changé est un changement de contenu, pas un défaut.
 
-`stryker.config.json` nomme un `tsconfigFile` qui n'existe pas, et c'est voulu. Stryker
-réécrit sinon le tsconfig avec une API que TypeScript 7 n'a plus, et il s'arrête.
+`stryker.config.json` nomme un `tsconfigFile` qui n'existe pas, et c'est voulu. Sans ce
+faux chemin, Stryker réécrirait le tsconfig avec une API que TypeScript 7 n'a plus, puis
+s'arrêterait.

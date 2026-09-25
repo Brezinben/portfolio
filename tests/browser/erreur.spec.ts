@@ -298,8 +298,11 @@ for (const theme of ["dark", "light", "noctis", "azureus", "uva", "bordo", "lux"
     await setOptions(page, JSON.stringify({ theme }));
     await page.goto(UNKNOWN);
 
-    for (const entry of await page.evaluate(ringRatios, [".slime", '[data-ctl="nav"]'])) {
-      expect(Number(entry.split(" ").at(-1)), entry).toBeGreaterThanOrEqual(3);
+    for (const [selector, ratio] of await page.evaluate(ringRatios, [
+      ".slime",
+      '[data-ctl="nav"]',
+    ])) {
+      expect(ratio, selector).toBeGreaterThanOrEqual(3);
     }
   });
 }

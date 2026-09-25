@@ -1,5 +1,5 @@
-// Les propositions de la ligne de commande : la liste, la tabulation, le rappel de
-// des commandes déjà tapées aux flèches.
+// Les propositions de la ligne de commande : la liste, la tabulation, et le rappel aux
+// flèches des commandes déjà tapées.
 
 import { MAX_SUGGESTIONS, candidates, commonPrefix } from "../../interpret.ts";
 import { type Shell, slice } from "../shell.ts";

@@ -263,8 +263,8 @@ for (const theme of ["dark", "light", "noctis", "azureus", "uva", "bordo", "lux"
       '[data-pane="out"] [tabindex="0"]',
     ]);
 
-    for (const entry of ratios) {
-      expect(Number(entry.split(" ").at(-1)), entry).toBeGreaterThanOrEqual(3);
+    for (const [selector, ratio] of ratios) {
+      expect(ratio, selector).toBeGreaterThanOrEqual(3);
     }
   });
 }

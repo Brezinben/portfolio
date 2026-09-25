@@ -14,11 +14,7 @@ export interface KeyboardApi {
   moveInPane(step: number): void;
   movePane(step: number): void;
   moveSection(step: number): void;
-  characterKey(event: KeyboardEvent): boolean;
-  globalShortcut(event: KeyboardEvent): boolean;
-  navigationKey(event: KeyboardEvent): void;
   onKey(event: KeyboardEvent): void;
-  passesKey(event: KeyboardEvent): boolean;
 }
 
 const rect = (node: Element) => {
@@ -136,41 +132,160 @@ const gridMove = (selector: string, key: string) => {
   return true;
 };
 
+const globalShortcut = (shell: Shell, event: KeyboardEvent): boolean => {
+  // Ctrl et Cmd ouvrent tous les deux : la page sert les deux systèmes.
+  if ((event.metaKey || event.ctrlKey) && (event.key === "k" || event.key === "K")) {
+    event.preventDefault();
+
+    if (shell.globalOpen) {
+      shell.closeGlobal();
+    } else if (!shell.booting && !shell.modalOpen) {
+      shell.openGlobal();
+    }
+
+    return true;
+  }
+
+  return false;
+};
+
+// Les touches que le gestionnaire de la page ne traite pas : un modificateur, une touche
+// déjà consommée, Entrée répétée, la fin du boot, une modale, une saisie.
+const passesKey = (shell: Shell, event: KeyboardEvent): boolean => {
+  // Un element qui traite sa touche l'a deja consommee. Sans cette sortie, la
+  // fleche de la poignee deplace aussi le focus de volet.
+  if (event.altKey || event.ctrlKey || event.metaKey || event.defaultPrevented) {
+    return true;
+  }
+
+  // Entrée maintenue : le système répète la touche, et le navigateur fabrique un clic
+  // par répétition. Sans cette garde, un geste au clavier enverrait dix mesures.
+  // Les flèches gardent leur répétition, qui sert à parcourir une liste.
+  if (event.repeat && event.key === "Enter") {
+    event.preventDefault();
+
+    return true;
+  }
+
+  // La touche qui abrege le boot s'arrete la : sans cette sortie, elle partirait
+  // aussi dans la saisie, et le visiteur taperait une commande sans le vouloir.
+  if (shell.skipBoot()) {
+    event.preventDefault();
+
+    return true;
+  }
+
+  // Une modale a son propre clavier. Sans cette garde, les deux gestionnaires
+  // traitent la même flèche et le focus s'échappe de la modale.
+  if (shell.modalOpen) {
+    return true;
+  }
+
+  // Toute saisie garde ses touches : « j », « k » et « / » s'y tapent, et les flèches
+  // y déplacent le curseur. Seule la ligne de commande vide rend la main aux volets.
+  // Sans cette garde, le champ de seed serait impossible à corriger.
+  if (event.target instanceof HTMLInputElement) {
+    const leaving =
+      event.target === shell.$refs.cli &&
+      shell.input === "" &&
+      (event.key === "ArrowLeft" || event.key === "ArrowRight");
+
+    if (!leaving) {
+      return true;
+    }
+  }
+
+  return false;
+};
+
+// Shift pour le glitch, puis les raccourcis « / », « j » et « k ».
+const characterKey = (shell: Shell, event: KeyboardEvent): boolean => {
+  // Cinq appuis sur Shift corrompent l'affichage. Une majuscule tapée dans une saisie ne
+  // compte pas : passesKey() arrête cette touche avant characterKey().
+  if (event.key === "Shift") {
+    // Le système répète une touche maintenue. Sans cette sortie, Shift maintenu
+    // armerait l'egg tout seul en une fraction de seconde.
+    if (!event.repeat) {
+      shell.glitchShift();
+    }
+
+    return true;
+  }
+
+  // La bascule ne coupe que les touches de caractere : les fleches restent la
+  // navigation elle-meme, pas un raccourci.
+  if (shell.shortcuts && event.key === "/") {
+    event.preventDefault();
+    shell.$refs.cli?.focus();
+
+    return true;
+  }
+
+  if (shell.shortcuts && (event.key === "j" || event.key === "k")) {
+    event.preventDefault();
+    shell.moveSection(event.key === "j" ? 1 : -1);
+
+    return true;
+  }
+
+  return false;
+};
+
+const navigationKey = (shell: Shell, event: KeyboardEvent): void => {
+  // Chaque zone a sa logique. La stack est une grille, les sections et la frise
+  // sont des listes ou la fleche droite valide, le reste change de volet.
+  const handled =
+    gridMove("[data-tech]", event.key) ||
+    listMove('[data-ctl="nav"]', event.key, (at) => {
+      const entries = [...document.querySelectorAll<HTMLElement>('[data-ctl="nav"]')];
+
+      // Valider une section amène à sa première prise (stack, frise), sinon à la ligne de
+      // commande. L'intention se pose avant le clic. Une section déjà vue s'affiche sans
+      // frappe : sans cette intention posée avant le clic, la prise se ferait trop tôt.
+      shell.wantResult = true;
+      entries[at]?.click();
+    }) ||
+    listMove('[data-ctl="tl"]', event.key, (at) => {
+      shell.openTimeline(at);
+    });
+
+  if (handled) {
+    event.preventDefault();
+
+    return;
+  }
+
+  // Une region qui defile garde ses fleches verticales : c'est pour les lire qu'elle
+  // prend le focus.
+  if (VERTICAL.has(event.key) && isScrollRegion(event.target)) {
+    return;
+  }
+
+  const fallback = {
+    ArrowDown: () => {
+      shell.moveInPane(1);
+    },
+    ArrowLeft: () => {
+      shell.movePane(-1);
+    },
+    ArrowRight: () => {
+      shell.movePane(1);
+    },
+    ArrowUp: () => {
+      shell.moveInPane(-1);
+    },
+  }[event.key];
+
+  if (!fallback) {
+    return;
+  }
+
+  event.preventDefault();
+  fallback();
+};
+
 export const keyboardSlice = () => {
   return slice<KeyboardApi>({
-    // Les raccourcis de caractere : Shift pour le glitch, « / », « j » et « k ».
-    characterKey(this: Shell, event: KeyboardEvent) {
-      // Cinq appuis sur Shift corrompent l'affichage. Une majuscule tapée dans une saisie ne
-      // compte pas : passesKey() arrête cette touche avant characterKey().
-      if (event.key === "Shift") {
-        // Le système répète une touche maintenue. Sans cette sortie, Shift maintenu
-        // armerait l'egg tout seul en une fraction de seconde.
-        if (!event.repeat) {
-          this.glitchShift();
-        }
-
-        return true;
-      }
-
-      // La bascule ne coupe que les touches de caractere : les fleches restent la
-      // navigation elle-meme, pas un raccourci.
-      if (this.shortcuts && event.key === "/") {
-        event.preventDefault();
-        this.$refs.cli?.focus();
-
-        return true;
-      }
-
-      if (this.shortcuts && (event.key === "j" || event.key === "k")) {
-        event.preventDefault();
-        this.moveSection(event.key === "j" ? 1 : -1);
-
-        return true;
-      }
-
-      return false;
-    },
-
     // Le focus est mémorisé par volet : y revenir repose le curseur où on l'avait
     // laissé, plutôt qu'en tête de liste.
     focusPane(this: Shell, pane: string) {
@@ -183,25 +298,6 @@ export const keyboardSlice = () => {
       this.pane = pane;
       this.focusAt[pane] = Math.min(this.focusAt[pane] ?? 0, entries.length - 1);
       entries[this.focusAt[pane] ?? 0]?.focus();
-    },
-
-    // Ctrl ou Cmd + K ouvre et ferme la recherche globale.
-    globalShortcut(this: Shell, event: KeyboardEvent) {
-      // Le raccourci de la recherche globale passe avant la sortie sur les modificateurs,
-      // qui l'avalerait. Ctrl et Cmd ouvrent tous les deux : la page sert les deux systemes.
-      if ((event.metaKey || event.ctrlKey) && (event.key === "k" || event.key === "K")) {
-        event.preventDefault();
-
-        if (this.globalOpen) {
-          this.closeGlobal();
-        } else if (!this.booting && !this.modalOpen) {
-          this.openGlobal();
-        }
-
-        return true;
-      }
-
-      return false;
     },
 
     // Le volet courant se lit sur le focus : Tab et la souris deplacent le focus sans
@@ -242,115 +338,14 @@ export const keyboardSlice = () => {
       }
     },
 
-    // Les fleches : les listes, la grille, les regions qui defilent, puis les volets.
-    navigationKey(this: Shell, event: KeyboardEvent) {
-      // Chaque zone a sa logique. La stack est une grille, les sections et la frise
-      // sont des listes ou la fleche droite valide, le reste change de volet.
-      const handled =
-        gridMove("[data-tech]", event.key) ||
-        listMove('[data-ctl="nav"]', event.key, (at) => {
-          const entries = [...document.querySelectorAll<HTMLElement>('[data-ctl="nav"]')];
-
-          // Valider une section amène à sa première prise (stack, frise), sinon à la ligne de
-          // commande. L'intention se pose avant le clic. Une section déjà vue s'affiche sans
-          // frappe : sans cette garde, la prise se ferait avant l'intention.
-          this.wantResult = true;
-          entries[at]?.click();
-        }) ||
-        listMove('[data-ctl="tl"]', event.key, (at) => {
-          this.openTimeline(at);
-        });
-
-      if (handled) {
-        event.preventDefault();
-
-        return;
-      }
-
-      // Une region qui defile garde ses fleches verticales : c'est pour les lire qu'elle
-      // prend le focus.
-      if (VERTICAL.has(event.key) && isScrollRegion(event.target)) {
-        return;
-      }
-
-      const fallback = {
-        ArrowDown: () => {
-          this.moveInPane(1);
-        },
-        ArrowLeft: () => {
-          this.movePane(-1);
-        },
-        ArrowRight: () => {
-          this.movePane(1);
-        },
-        ArrowUp: () => {
-          this.moveInPane(-1);
-        },
-      }[event.key];
-
-      if (!fallback) {
-        return;
-      }
-
-      event.preventDefault();
-      fallback();
-    },
-
+    // « globalShortcut » passe avant « passesKey ». Sans cet ordre, la sortie sur les
+    // modificateurs avalerait Ctrl + K.
     onKey(this: Shell, event: KeyboardEvent) {
-      if (this.globalShortcut(event) || this.passesKey(event) || this.characterKey(event)) {
+      if (globalShortcut(this, event) || passesKey(this, event) || characterKey(this, event)) {
         return;
       }
 
-      this.navigationKey(event);
-    },
-
-    // Les touches que la page laisse passer : un modificateur, une touche deja consommee,
-    // le boot, une modale, une saisie.
-    passesKey(this: Shell, event: KeyboardEvent) {
-      // Un element qui traite sa touche l'a deja consommee. Sans cette sortie, la
-      // fleche de la poignee deplace aussi le focus de volet.
-      if (event.altKey || event.ctrlKey || event.metaKey || event.defaultPrevented) {
-        return true;
-      }
-
-      // Entrée maintenue : le système répète la touche, et le navigateur fabrique un clic
-      // par répétition. Sans cette garde, un geste au clavier enverrait dix mesures.
-      // Les flèches gardent leur répétition, qui sert à parcourir une liste.
-      if (event.repeat && event.key === "Enter") {
-        event.preventDefault();
-
-        return true;
-      }
-
-      // La touche qui abrege le boot s'arrete la : sans cette sortie, elle partirait
-      // aussi dans la saisie, et le visiteur taperait une commande sans le vouloir.
-      if (this.skipBoot()) {
-        event.preventDefault();
-
-        return true;
-      }
-
-      // Une modale a son propre clavier. Sans cette garde, les deux gestionnaires
-      // traitent la même flèche et le focus s'échappe de la modale.
-      if (this.modalOpen) {
-        return true;
-      }
-
-      // Toute saisie garde ses touches : « j », « k » et « / » s'y tapent, et les flèches
-      // y déplacent le curseur. Seule la ligne de commande vide rend la main aux volets.
-      // Sans cette garde, le champ de seed serait impossible à corriger.
-      if (event.target instanceof HTMLInputElement) {
-        const leaving =
-          event.target === this.$refs.cli &&
-          this.input === "" &&
-          (event.key === "ArrowLeft" || event.key === "ArrowRight");
-
-        if (!leaving) {
-          return true;
-        }
-      }
-
-      return false;
+      navigationKey(this, event);
     },
   });
 };

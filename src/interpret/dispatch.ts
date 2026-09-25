@@ -1,8 +1,8 @@
 // Le repartiteur : le point unique ou une ligne tapee devient des lignes et des effets.
 //
-// « COMMANDS » dit en un coup d'oeil ce que le terminal accepte. Chaque commande a son
-// gestionnaire, et « interpret » ne garde que ce qui passe avant elles : la reponse en
-// attente, le slash obligatoire, le rejeu, les sections.
+// « COMMANDS » donne un gestionnaire à chaque commande. « interpret » garde l'ordre des
+// étapes : la réponse en attente, le slash obligatoire, le rejeu, les sections, la table,
+// puis les easter eggs.
 
 import { ALIASES, KEYBOARD, NAVIGATORS, SLASH_ONLY, helpLines } from "./vocabulary.ts";
 import { COW_MODES, cowsay } from "./cowsay.ts";
@@ -74,8 +74,8 @@ const COMMANDS = {
   cv: ({ out }) => {
     return out([info("le parcours complet s'ouvre dans la version texte.")], [{ type: "cv" }]);
   },
-  // Ces commandes appartiennent a d'autres tickets. Elles passent quand meme par le
-  // repartiteur, pour qu'il reste le point unique.
+  // « email », « options » et « send-mail » appartiennent à d'autres tickets. Ces trois
+  // commandes passent quand même par le répartiteur, pour qu'il reste le point unique.
   email: ({ out }) => {
     return out([], [{ type: "email" }]);
   },
@@ -264,10 +264,10 @@ export const interpret = (raw: string, context: Context): Outcome => {
     });
 
   // « help » et « ls » passent devant les sections : ce sont les deux premiers gestes.
-  const early = command === "help" || command === "ls" ? lookup(COMMANDS, command) : undefined;
+  const call = { argument, command, context, out, parts, rest, sections };
 
-  if (early) {
-    return early({ argument, command, context, out, parts, rest, sections });
+  if (command === "help" || command === "ls") {
+    return COMMANDS[command](call);
   }
 
   if (target) {
@@ -289,7 +289,7 @@ export const interpret = (raw: string, context: Context): Outcome => {
   const handler = lookup(COMMANDS, command);
 
   if (handler) {
-    return handler({ argument, command, context, out, parts, rest, sections });
+    return handler(call);
   }
 
   const egg = lookup<Egg>(EGGS, command);

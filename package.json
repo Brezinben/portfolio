@@ -13,7 +13,7 @@
     "test:browser": "playwright test",
     "test:unit": "bun test tests/unit/",
     "typecheck": "tsc --noEmit",
-    "test:mutation": "bunx @stryker-mutator/core@10 run"
+    "test:mutation": "bunx @stryker-mutator/core@10.0.0 run"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.13.0",

@@ -181,7 +181,7 @@ test("should serve the side files", async ({ request }) => {
   }
 });
 
-// La version texte est le repli accessible : ses contours tiennent 3:1 sur chaque thème.
+// La version texte est le repli : ses contours tiennent 3:1 sur chaque thème.
 for (const theme of ["dark", "light", "noctis", "azureus", "uva", "bordo", "lux", "hibernus"]) {
   test(`should draw its focus rings at 3:1 or more on the ${theme} theme`, async ({ page }) => {
     await page.addInitScript((chosen) => {
@@ -189,8 +189,8 @@ for (const theme of ["dark", "light", "noctis", "azureus", "uva", "bordo", "lux"
     }, theme);
     await page.goto("/texte.html");
 
-    for (const entry of await page.evaluate(ringRatios, ["main a"])) {
-      expect(Number(entry.split(" ").at(-1)), entry).toBeGreaterThanOrEqual(3);
+    for (const [selector, ratio] of await page.evaluate(ringRatios, ["main a"])) {
+      expect(ratio, selector).toBeGreaterThanOrEqual(3);
     }
   });
 }
