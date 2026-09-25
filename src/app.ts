@@ -90,9 +90,6 @@ interface Share {
   url?: string;
 }
 
-// Valeurs figées après itération dans le canvas. Ne pas les transformer en réglages :
-// voir design/DECISIONS.md, section 23.
-
 // Alpine vient du script vendu a cote de la page : il n'apporte pas ses types.
 
 declare const Alpine: {
@@ -105,13 +102,13 @@ interface GoatCounter {
   count?: (vars: { event?: boolean; path: string; title?: string }) => void;
 }
 
-// L'API Prompt du navigateur, proposee par le W3C, n'existe que dans Chrome et derriere un contexte securise : « absent » est donc le cas majoritaire, pas une erreur.
-// Les types de « @types/dom-chromium-ai » declarent « LanguageModel » toujours present, d'ou le « in globalThis » plutot qu'une comparaison a undefined.
-// « topK », « temperature » et « samplingMode » restent hors du contrat : chrome-only ou en essai d'origine.
 declare global {
   // oxlint-disable-next-line no-var, vars-on-top
   var goatcounter: GoatCounter | undefined;
 }
+
+// Un gestionnaire par genre d'effet : la cle et l'effet recu vont ensemble.
+type EffectRun = { [K in Effect["type"]]: (effect: Extract<Effect, { type: K }>) => void };
 
 // Ce que la page tient en memoire. Les minuteurs en font partie : les declarer les rend
 // visibles. « RadioState » vient de la tranche qui l'emploie, pour ne pas deriver.
@@ -131,7 +128,7 @@ interface State
   booter: Delay | undefined;
   ticker: Beat | undefined;
   anim: boolean;
-  reducedMotion: boolean;
+  reduced: boolean;
   // Le resultat d'une commande qui l'a reclame. La navigation le reprend.
   commandResult: Section | undefined;
   bootTick: number;
@@ -208,9 +205,9 @@ const withMagics = <T>(
 document.addEventListener("alpine:init", () => {
   // Les proprietes sont triees. Les methodes suivent un ordre de lecture : chargement,
   // navigation, commandes. Un tri alphabetique disperserait chaque sujet.
-  // eslint-disable-next-line sort-keys
+  // oxlint-disable-next-line sort-keys
   Alpine.data("terminal", () => {
-    // eslint-disable-next-line sort-keys
+    // oxlint-disable-next-line sort-keys
     const component = withMagics({
       ACHIEVEMENTS,
       THEMES,
@@ -255,7 +252,7 @@ document.addEventListener("alpine:init", () => {
       walker: undefined,
       anim: true,
       at: 0,
-      reducedMotion: globalThis.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false,
+      reduced: globalThis.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false,
       bubble: "",
       clicks: 0,
       commands: [],
@@ -362,18 +359,20 @@ document.addEventListener("alpine:init", () => {
 
       init() {
         // La préférence peut changer en cours de visite. Sans cette écoute, la mascotte et
-        // le glitch l'ignoraient jusqu'au rechargement.
+        // le glitch ignoreraient le changement jusqu'au rechargement.
         globalThis
           .matchMedia?.("(prefers-reduced-motion: reduce)")
           .addEventListener("change", (event) => {
-            this.reducedMotion = event.matches;
+            this.reduced = event.matches;
           });
         this.restore();
         this.ticker = setInterval(() => {
           this.bootTick += 1;
         }, COMPACT_TICK_MS);
         this.startMascot();
-        this.watchNetwork();
+        // « navigator.onLine » ne se trompe jamais sur « hors ligne ». Une valeur « en ligne »
+        // peut être fausse, et la page ne lit cette valeur que pour refuser une commande.
+        this.setOnline(globalThis.navigator?.onLine ?? true);
         void this.learnModel();
         void this.load();
       },
@@ -662,10 +661,6 @@ document.addEventListener("alpine:init", () => {
         return true;
       },
 
-      get reduced(): boolean {
-        return this.reducedMotion;
-      },
-
       // Le meme seuil que la requete de media qui empile les volets. Les deux doivent
       // changer ensemble : la coquille ne peut pas lire la valeur de la feuille de style.
       get stacked() {
@@ -896,7 +891,7 @@ document.addEventListener("alpine:init", () => {
 
         this.seen = [...this.seen, id];
 
-        if ((this.current.suggest ?? "") !== "") {
+        if (this.current.suggest !== "") {
           this.input = this.current.suggest;
         }
 
@@ -943,8 +938,8 @@ document.addEventListener("alpine:init", () => {
         }
 
         // Une question en vol n'a plus rien a dire des que la commande suivante part. Sans cette
-        // coupure, seule une seconde question l'arretait : « clear » vidait le journal, et une
-        // question sans trouvaille laissait la precedente repondre par-dessus son refus.
+        // coupure, seule une seconde question arrêterait la première. La première répondrait
+        // après « clear », ou par-dessus le refus d'une question sans trouvaille.
         this.asker?.abort();
         this.asker = undefined;
         this.thinking = false;
@@ -1067,12 +1062,6 @@ document.addEventListener("alpine:init", () => {
         this.journal = [...this.journal, { c: "ok", m: "✓", mc: "ok", t: "copié" }];
       },
 
-      // « hors ligne » sans se tromper, et « en ligne » avec optimisme : c'est le sens
-      // utile ici, puisque la page ne sert qu'a refuser une commande vouee a l'echec.
-      watchNetwork() {
-        this.setOnline(globalThis.navigator?.onLine ?? true);
-      },
-
       setOnline(online: boolean) {
         this.online = online;
 
@@ -1081,6 +1070,12 @@ document.addEventListener("alpine:init", () => {
         } else {
           this.doze();
         }
+      },
+
+      // L'en-tête et son lien d'évitement vivent hors du composant, pour survivre à un script
+      // absent. Une modale ouverte doit pourtant les rendre inertes, comme le reste.
+      shelterHeader(open: boolean) {
+        document.querySelector("body > header")?.toggleAttribute("inert", open);
       },
 
       // La piste bouge avec la mise en page, la mascotte non : sans cette reprise, une
@@ -1107,157 +1102,109 @@ document.addEventListener("alpine:init", () => {
             return entry.type === "usage";
           });
 
+        // Un genre ajouté à « Effect » sans sa clé casse la compilation ici.
+        const run = {
+          activity: (effect) => {
+            this.mascotPlay(effect.name);
+          },
+          ask: (effect) => {
+            void this.answerWithModel(effect.query, effect.candidates, effect.lexical);
+          },
+          blowUp: () => {
+            this.blowUp("commande");
+          },
+          clear: () => {
+            this.journal = [];
+          },
+          cv: () => {
+            // Un nouvel onglet : le terminal reste ouvert derriere, avec son journal.
+            globalThis.open("texte.html", "_blank", "noopener");
+          },
+          drop: () => {
+            this.drop();
+          },
+          email: () => {
+            void this.copy(this.profileEmail);
+          },
+          emote: (effect) => {
+            this.emote(effect.expression);
+          },
+          evolve: () => {
+            void this.evolve();
+          },
+          glitch: (effect) => {
+            // « sudo » laisse lire son refus avant le glitch ; « matrix » part
+            // avec sa ligne.
+            if (effect.mode === "sudo") {
+              this.glitchLater(effect.mode);
+            } else {
+              this.glitchStart(effect.mode);
+            }
+          },
+          navigate: (effect) => {
+            this.goSection(effect.id, { via: "commande" });
+          },
+          options: () => {
+            this.openOpts("commande");
+          },
+          pending: (effect) => {
+            this.pending = effect.payload;
+            this.input = effect.answer ?? "";
+          },
+          power: (effect) => {
+            this.powerDown(effect.mode);
+          },
+          radio: () => {
+            void this.radioBoot();
+          },
+          replay: () => {
+            this.journal = [];
+            this.commandResult = undefined;
+            this.seen = this.seen.filter((entry) => {
+              return entry !== this.section;
+            });
+            this.play(this.section, "commande");
+          },
+          say: (effect) => {
+            this.say(effect.text, effect.expression);
+          },
+          send: (effect) => {
+            if (this.online) {
+              void this.send(effect.payload);
+            } else {
+              this.refuseOffline(
+                "envoyer une idée",
+                "« mail » copie mon adresse, elle partira au retour du réseau.",
+              );
+            }
+          },
+          sendMail: () => {
+            globalThis.open(`mailto:${encodeURIComponent(this.profileEmail)}`);
+          },
+          share: (effect) => {
+            this.shareTo(effect);
+          },
+          shareMenu: () => {
+            void this.nativeShare();
+          },
+          state: (effect) => {
+            Object.assign(this, effect.patch);
+          },
+          theme: (effect) => {
+            this.setTheme(effect.name, "commande");
+          },
+          track: (effect) => {
+            this.track(effect.event, effect.props);
+          },
+          usage: () => {
+            // « listed » lit cet effet avant la boucle.
+          },
+        } satisfies EffectRun;
+
         for (const effect of effects) {
-          switch (effect.type) {
-            case "track": {
-              this.track(effect.event, effect.props);
-
-              break;
-            }
-            case "pending": {
-              this.pending = effect.payload;
-              this.input = effect.answer ?? "";
-
-              break;
-            }
-            case "ask": {
-              void this.answerWithModel(effect.query, effect.candidates, effect.lexical);
-
-              break;
-            }
-            case "send": {
-              if (this.online) {
-                void this.send(effect.payload);
-              } else {
-                this.refuseOffline(
-                  "envoyer une proposition",
-                  "« mail » copie mon adresse, elle partira au retour du réseau.",
-                );
-              }
-
-              break;
-            }
-            case "share": {
-              this.shareTo(effect);
-
-              break;
-            }
-            case "shareMenu": {
-              void this.nativeShare();
-
-              break;
-            }
-            case "email": {
-              void this.copy(this.profileEmail);
-
-              break;
-            }
-            case "sendMail": {
-              globalThis.open(`mailto:${encodeURIComponent(this.profileEmail)}`);
-
-              break;
-            }
-            case "cv": {
-              // Un nouvel onglet : le terminal reste ouvert derriere, avec son journal.
-              globalThis.open("texte.html", "_blank", "noopener");
-
-              break;
-            }
-            case "say": {
-              this.say(effect.text, effect.expression);
-
-              break;
-            }
-            case "emote": {
-              this.emote(effect.expression);
-
-              break;
-            }
-            case "drop": {
-              this.drop();
-
-              break;
-            }
-            case "blowUp": {
-              this.blowUp("commande");
-
-              break;
-            }
-            case "activity": {
-              this.mascotPlay(effect.name);
-
-              break;
-            }
-            case "navigate": {
-              this.goSection(effect.id, { via: "commande" });
-
-              break;
-            }
-            case "clear": {
-              this.journal = [];
-
-              break;
-            }
-            case "replay": {
-              this.journal = [];
-              this.commandResult = undefined;
-              this.seen = this.seen.filter((entry) => {
-                return entry !== this.section;
-              });
-              this.play(this.section, "commande");
-
-              break;
-            }
-            case "state": {
-              Object.assign(this, effect.patch);
-
-              break;
-            }
-            case "power": {
-              this.powerDown(effect.mode);
-
-              break;
-            }
-            case "theme": {
-              this.setTheme(effect.name, "commande");
-
-              break;
-            }
-            case "evolve": {
-              void this.evolve();
-
-              break;
-            }
-            case "options": {
-              this.openOpts("commande");
-
-              break;
-            }
-            case "radio": {
-              void this.radioBoot();
-
-              break;
-            }
-            case "glitch": {
-              // « sudo » laisse lire son refus avant de tomber en panne ; « matrix » part
-              // avec sa ligne.
-              if (effect.mode === "sudo") {
-                this.glitchLater(effect.mode);
-              } else {
-                this.glitchStart(effect.mode);
-              }
-
-              break;
-            }
-            // Une commande qui liste son usage n'a rien a faire ici : « listed » la lit plus haut.
-            case "usage": {
-              break;
-            }
-            // Un effet ajoute sans son cas casse la compilation ici.
-            default: {
-              effect satisfies never;
-            }
-          }
+          // SAFETY: « effect.type » designe la cle de « run », dont le gestionnaire attend ce
+          // genre d'effet. TypeScript ne relie pas les deux cotes de l'acces indexe.
+          (run[effect.type] as (value: Effect) => void)(effect);
         }
 
         if (found && !moved && !listed) {
@@ -1346,9 +1293,9 @@ document.addEventListener("alpine:init", () => {
       },
     });
 
-    // Les tranches entrent par leurs descripteurs, jamais par un etalement, qui appellerait
-    // les accesseurs et figerait leur valeur ; « reduced » a false laisserait tourner les
-    // animations chez qui demande moins de mouvement. Une methode oubliee dans le litteral perd contre la tranche : c'est le code neuf qui gagne.
+    // Les tranches entrent par leurs descripteurs. Un étalement appellerait les accesseurs et
+    // figerait leur valeur. Une méthode oubliée dans le littéral perd contre la tranche : le
+    // code neuf gagne.
     return Object.defineProperties(component, Object.getOwnPropertyDescriptors(slices()));
   });
 });

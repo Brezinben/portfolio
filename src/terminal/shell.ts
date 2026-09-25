@@ -2,8 +2,7 @@
 // parlent que par « this », comme au temps ou elles vivaient dans un litteral unique. Deux
 // regles tiennent ce decoupage.
 // 1. Aucune tranche ne porte d'accesseur, pour que app.ts reste le seul fichier ou vivent
-//    les valeurs lues par le balisage. L'ADR 0002 l'exige, et l'assemblage dans app.ts
-//    le verifie aussi a l'execution.
+//    les valeurs lues par le balisage. L'ADR 0002 l'exige.
 // 2. Ce fichier n'importe que des types, en forme longue « import type » : le
 //    specificateur en ligne creerait un cycle d'execution invisible ailleurs, que tient la regle dediee de .oxlintrc.jsonc.
 
@@ -36,8 +35,8 @@ export type TrackSource = "commande" | "interface";
 export type Delay = ReturnType<typeof setTimeout>;
 export type Beat = ReturnType<typeof setInterval>;
 
-// Ce que toute tranche peut lire de l'etat, en plus du sien. « reduced » suit la preference
-// du systeme en cours de visite : une tranche le lit, elle ne le copie jamais.
+// Ce que toute tranche peut lire de l'état, en plus du sien. « reduced » suit la préférence
+// du système en cours de visite. Une copie figerait la valeur lue au chargement.
 export interface Shared {
   anim: boolean;
   booting: boolean;

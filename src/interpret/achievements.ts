@@ -46,7 +46,7 @@ export const ACHIEVEMENTS: Achievement[] = [
   { icon: "shield", key: "sudo", title: "non.", trigger: "/sudo" },
   { icon: "teapot", key: "coffee", title: "je suis une théière", trigger: "/coffee" },
   { icon: "esc", key: "vim", title: ":q! ne marche pas ici", trigger: "/vim" },
-  { icon: "matrix", key: "matrix", title: "réveille-toi", trigger: "/matrix" },
+  { icon: "matrix", key: "matrix", title: "réveillez-vous", trigger: "/matrix" },
   { icon: "glitch", key: "glitch", title: "cinq Shift, c'est un aveu", trigger: "cinq Shift" },
   { icon: "sign", key: "name", title: "mon nom dans un terminal", trigger: "/benjamin" },
   {

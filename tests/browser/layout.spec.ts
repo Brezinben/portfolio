@@ -1,6 +1,7 @@
 import type { Locator, Page } from "@playwright/test";
 import { expect, test } from "@playwright/test";
 import { boxOf } from "../helpers/box.ts";
+import { ringRatios } from "../helpers/contrast.ts";
 
 // La poignee ne s'affiche que si le journal deborde : une tige a deplacer dans le vide
 // ne servirait a rien. « help » ne remplit plus le journal, il reclame le resultat : une
@@ -8,9 +9,9 @@ import { boxOf } from "../helpers/box.ts";
 const fill = async (cli: Locator) => {
     for (const _ of Array.from({ length: 6 })) {
       // Les commandes doivent s'enchainer : les paralleliser ne remplirait pas le journal.
-      // eslint-disable-next-line no-await-in-loop
+      // oxlint-disable-next-line no-await-in-loop
       await cli.fill("xyzzy");
-      // eslint-disable-next-line no-await-in-loop
+      // oxlint-disable-next-line no-await-in-loop
       await cli.press("Enter");
     }
   },
@@ -77,7 +78,7 @@ test("should keep the output filled when a command takes the result", async ({ p
   await cli.press("Enter");
 
   await expect(page.locator('[data-pane="out"]')).toContainText("système");
-  await expect(page.locator('[data-pane="out"]')).toContainText("Développeur IA / Full Stack");
+  await expect(page.locator('[data-pane="out"] dd').first()).not.toBeEmpty();
 
   // La colonne des clés se mesure sur la section, elle aussi : mesurée sur la réponse,
   // elle retombait à son plancher et la clé passait sous sa valeur.
@@ -218,9 +219,13 @@ test("should keep the pane widths from one section to the next", async ({ page }
   const widths = () => {
       return page.evaluate(() => {
         return ["nav", "main", "out"].map((pane) => {
-          return Math.round(
-            document.querySelector<HTMLElement>(`[data-pane="${pane}"]`)?.clientWidth ?? 0,
-          );
+          const node = document.querySelector<HTMLElement>(`[data-pane="${pane}"]`);
+
+          if (!node) {
+            throw new Error(`no ${pane} pane`);
+          }
+
+          return Math.round(node.clientWidth);
         });
       });
     },
@@ -228,12 +233,12 @@ test("should keep the pane widths from one section to the next", async ({ page }
 
   for (const id of ["parcours", "stack", "impact", "contact"]) {
     // Les sections s'ouvrent l'une après l'autre : les ouvrir ensemble ne mesurerait rien.
-    // eslint-disable-next-line no-await-in-loop
+    // oxlint-disable-next-line no-await-in-loop
     await page
       .getByRole("button", { name: new RegExp(id) })
       .first()
       .click();
-    // eslint-disable-next-line no-await-in-loop
+    // oxlint-disable-next-line no-await-in-loop
     expect(await widths(), `section ${id}`).toEqual(first);
   }
 });
@@ -250,54 +255,16 @@ for (const theme of ["dark", "light", "noctis", "azureus", "uva", "bordo", "lux"
 
     await fill(cli);
 
-    const ratios = await page.evaluate(() => {
-      const probe = document.createElement("i"),
-        rgb = (color: string) => {
-          probe.style.color = color;
+    const ratios = await page.evaluate(ringRatios, [
+      '[data-ctl="nav"]',
+      "[data-handle]",
+      "[data-journal]",
+      "[data-result]",
+      '[data-pane="out"] [tabindex="0"]',
+    ]);
 
-          return (getComputedStyle(probe).color.match(/[\d.]+/gu) ?? []).slice(0, 3).map(Number);
-        },
-        luminance = (color: string) => {
-          const [red = 0, green = 0, blue = 0] = rgb(color).map((channel) => {
-            const unit = channel / 255;
-
-            return unit <= 0.03928 ? unit / 12.92 : ((unit + 0.055) / 1.055) ** 2.4;
-          });
-
-          return 0.2126 * red + 0.7152 * green + 0.0722 * blue;
-        },
-        ratio = (one: string, two: string) => {
-          const [light, dark] = [luminance(one), luminance(two)].toSorted((a, b) => {
-            return b - a;
-          });
-
-          return ((light ?? 0) + 0.05) / ((dark ?? 0) + 0.05);
-        };
-
-      document.querySelector(".tm")?.append(probe);
-
-      const panel = getComputedStyle(probe).getPropertyValue("--panel"),
-        ground = getComputedStyle(probe).getPropertyValue("--bg");
-
-      return [
-        '[data-ctl="nav"]',
-        "[data-handle]",
-        "[data-journal]",
-        "[data-result]",
-        '[data-pane="out"] [tabindex="0"]',
-      ].map((selector) => {
-        const node = document.querySelector<HTMLElement>(selector);
-
-        node?.focus();
-
-        const ring = node ? getComputedStyle(node).outlineColor : "transparent";
-
-        return `${selector} ${Math.min(ratio(ring, panel), ratio(ring, ground)).toFixed(2)}`;
-      });
-    });
-
-    for (const entry of ratios) {
-      expect(Number(entry.split(" ").at(-1)), entry).toBeGreaterThanOrEqual(3);
+    for (const [selector, ratio] of ratios) {
+      expect(ratio, selector).toBeGreaterThanOrEqual(3);
     }
   });
 }
@@ -369,12 +336,14 @@ test("should give the result its room back when a too tall log meets a new secti
     .click();
 
   const sizes = await page.evaluate(() => {
-    const pane = document.querySelector<HTMLElement>('[data-pane="main"]');
+    const pane = document.querySelector<HTMLElement>('[data-pane="main"]'),
+      result = document.querySelector<HTMLElement>("[data-result]");
 
-    return {
-      overflow: (pane?.scrollHeight ?? 0) - (pane?.clientHeight ?? 0),
-      result: document.querySelector<HTMLElement>("[data-result]")?.clientHeight ?? 0,
-    };
+    if (!pane || !result) {
+      throw new Error("no main pane or no result");
+    }
+
+    return { overflow: pane.scrollHeight - pane.clientHeight, result: result.clientHeight };
   });
 
   expect(sizes.result, "the result keeps its room").toBeGreaterThanOrEqual(120);

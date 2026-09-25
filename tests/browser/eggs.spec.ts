@@ -157,7 +157,7 @@ test("should leave the gauge empty when the panes are only clicked", async ({ pa
   // Les six sections et les quatre missions, une par une : les ouvrir en parallèle ne
   // navigue pas. La première est déjà ouverte au démarrage.
   for (let at = 1; at < entries; at += 1) {
-    // eslint-disable-next-line no-await-in-loop
+    // oxlint-disable-next-line no-await-in-loop
     await nav.nth(at).click();
   }
 

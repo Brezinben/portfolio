@@ -1,16 +1,16 @@
-// La question posée à « ask » et la proposition envoyée par « /propose » : ce qui part
+// La question posée à « ask » et l'idée envoyée par « /propose » : ce qui part
 // du navigateur, vers le modèle local ou vers la mesure d'audience.
 
 import { type Shell, slice } from "../shell.ts";
 import { ASK_MS } from "../settings.ts";
 import type { Line } from "../../interpret.ts";
 
-// Ce que la question et la proposition gardent dans l'etat du composant.
+// Ce que la question et l'idée gardent dans l'etat du composant.
 export interface AskState {
   // La question en vol. L'annuler coupe le modèle au lieu d'attendre sa réponse.
   asker: AbortController | undefined;
   feedback: Record<string, string>;
-  // La proposition qui attend son oui.
+  // L'idée qui attend son oui.
   pending: string | undefined;
   // Le modele cherche, et rien n'est encore affiche : sa reponse remplacera l'attente.
   thinking: boolean;
@@ -25,12 +25,9 @@ export interface AskApi {
   showAskChoice(id: string, lexical: Line[], asker: AbortController): void;
 }
 
-// « responseConstraint » fait rendre du JSON : un identifiant en sort entre guillemets. Le
-// comparer tel quel ne trouvait jamais le passage, et la reponse du corpus sortait a chaque
-// fois. Un modele qui ignore la contrainte rend du texte brut, qui reste utilisable.
-// Un identifiant du corpus n'a ni guillemet ni echappement : retirer la paire suffit, et
-// evite de decoder du JSON pour en tirer une chaine. L'identifiant est de toute facon
-// cherche dans le corpus, ou un inconnu ne designe rien.
+// « responseConstraint » fait rendre du JSON : l'identifiant sort entre guillemets. Sans le
+// retrait des guillemets, l'identifiant ne trouverait aucun passage. Un identifiant n'a pas
+// d'échappement : retirer la paire suffit. Un texte brut, hors contrainte, reste utilisable.
 const readChoice = (raw: string) => {
   const trimmed = raw.trim();
 
@@ -47,9 +44,9 @@ const askFailure = (cause: unknown) => {
 
 export const askSlice = () => {
   return slice<AskApi>({
-    // Le modele local choisit un identifiant dans une liste fermee, jamais du texte libre :
-    // cela evite d'inventer sur le parcours de Benjamin, et rattrape les recherches par
-    // mots qui ratent un passage reformule. « lexical » n'arrive que si l'interpreteur a garde sa reponse pour laisser le modele choisir ; elle sort telle quelle des qu'il echoue, refuse ou tarde.
+    // Le modèle choisit un identifiant dans une liste fermée. Ainsi, le modèle n'invente rien
+    // sur Benjamin, et rattrape un passage reformulé. « lexical » est la réponse du corpus :
+    // l'interpréteur la garde, et « lexical » sort si le modèle échoue, refuse ou tarde.
     async answerWithModel(query: string, candidateIds: string[], lexical?: Line[]) {
       if (lexical === undefined || !("LanguageModel" in globalThis)) {
         return;
@@ -65,6 +62,8 @@ export const askSlice = () => {
       let answered = false;
 
       try {
+        // « topK », « temperature » et « samplingMode » restent absents : ces options sont
+        // propres à Chrome, ou en essai d'origine.
         const session = await LanguageModel.create({
           // La question et les passages sont en francais. Le declarer laisse le navigateur
           // refuser tout de suite plutot que de repondre depuis un modele d'une autre langue.
@@ -84,9 +83,9 @@ export const askSlice = () => {
           session.destroy();
         }
       } catch (error) {
-        // Le modele muet, refuse ou trop lent ne doit pas laisser la question sans reponse :
-        // celle du corpus la remplace, sauf si une autre question a deja pris sa place. Son
-        // echec se dit aussi : « rien ne repond » et « le modele a lache » se lisaient pareil, et menaient a chercher le defaut du mauvais cote.
+        // Si le modèle échoue, la réponse du corpus sort, sauf si une autre question a pris sa
+        // place. Sans le message d'échec, « rien ne répond » et « le modèle a lâché » se liraient
+        // pareil, et le défaut se chercherait du mauvais côté.
         if (!answered && this.asker === asker) {
           this.journal = [
             ...this.journal,
@@ -126,6 +125,9 @@ export const askSlice = () => {
     // « availability » est asynchrone, l'interpreteur ne l'est pas : sans cette lecture au
     // demarrage, la premiere question partirait en croyant qu'aucun modele n'est la.
     async learnModel(this: Shell) {
+      // L'API Prompt n'existe que dans Chrome, derrière un contexte sécurisé : son absence est
+      // le cas majoritaire. « @types/dom-chromium-ai » déclare « LanguageModel » toujours
+      // présent : seul « in globalThis » détecte l'absence.
       if (!("LanguageModel" in globalThis)) {
         return;
       }
@@ -161,10 +163,7 @@ export const askSlice = () => {
 
       if (globalThis.goatcounter?.count) {
         this.track(text);
-        this.journal = [
-          ...this.journal,
-          { c: "ok", m: "✓", mc: "ok", t: "proposition envoyée. merci." },
-        ];
+        this.journal = [...this.journal, { c: "ok", m: "✓", mc: "ok", t: "idée envoyée. merci." }];
 
         return;
       }
@@ -176,13 +175,10 @@ export const askSlice = () => {
           throw new Error(String(response.status));
         }
 
-        this.journal = [
-          ...this.journal,
-          { c: "ok", m: "✓", mc: "ok", t: "proposition envoyée. merci." },
-        ];
+        this.journal = [...this.journal, { c: "ok", m: "✓", mc: "ok", t: "idée envoyée. merci." }];
       } catch {
         globalThis.open(
-          `mailto:${feedback.fallbackEmail}?subject=Proposition&body=${encodeURIComponent(text)}`,
+          `mailto:${feedback.fallbackEmail}?subject=Id%C3%A9e&body=${encodeURIComponent(text)}`,
         );
         this.journal = [
           ...this.journal,

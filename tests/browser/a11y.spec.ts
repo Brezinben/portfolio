@@ -154,18 +154,20 @@ test("should give every interactive target at least 44 pixels", async ({ page })
   expect(small).toEqual([]);
 });
 
-// Tab parcourt la page de haut en bas : chaque section doit se trouver sur le chemin.
+// Un visiteur au clavier atteint chaque section avec Tab seul.
 test("should reach every section button with Tab", async ({ page }) => {
   await boot(page);
 
   const sections = await page.locator('[data-ctl="nav"]').count(),
     reached = new Set<number>();
 
+  expect(sections, "the page lists its sections").toBeGreaterThan(0);
+
   for (const _ of Array.from({ length: 40 })) {
     // Le focus avance d'un pas à la fois : paralléliser n'aurait pas de sens.
-    // eslint-disable-next-line no-await-in-loop
+    // oxlint-disable-next-line no-await-in-loop
     await page.keyboard.press("Tab");
-    // eslint-disable-next-line no-await-in-loop
+    // oxlint-disable-next-line no-await-in-loop
     const at = await page.evaluate(() => {
       return [...document.querySelectorAll('[data-ctl="nav"]')].indexOf(
         document.activeElement ?? document.body,

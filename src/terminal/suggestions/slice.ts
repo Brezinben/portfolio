@@ -1,5 +1,5 @@
-// Les propositions de la ligne de commande : la liste, la tabulation, le rappel de
-// l'historique aux flèches.
+// Les propositions de la ligne de commande : la liste, la tabulation, et le rappel aux
+// flèches des commandes déjà tapées.
 
 import { MAX_SUGGESTIONS, candidates, commonPrefix } from "../../interpret.ts";
 import { type Shell, slice } from "../shell.ts";
@@ -84,9 +84,9 @@ export const suggestionsSlice = () => {
         return;
       }
 
-      // Plus rien a gagner. La liste montre deja une ligne en avant, et refuser de la
-      // prendre laissait Tab sans effet : « / » met « /slime » en tete, la tabulation
-      // n'en faisait rien. Ce que la liste designe, Tab l'applique.
+      // Plus rien à gagner, mais la liste met déjà une proposition en avant. Sans cet appel,
+      // Tab resterait sans effet : « / » met « /slime » en tête, et Tab n'en ferait rien.
+      // Tab applique donc ce que la liste désigne.
       this.applySugg(this.suggAt);
     },
 
@@ -119,7 +119,7 @@ export const suggestionsSlice = () => {
       }
 
       // Une liste rouverte veut dire que la commande attend encore un mot, a n'importe
-      // quel niveau. Ne regarder que le premier mot laissait partir « slime expression ».
+      // quel niveau. Sans cette garde, « slime expression » partirait incomplète.
       if (this.suggOpen) {
         return;
       }
@@ -133,7 +133,7 @@ export const suggestionsSlice = () => {
       return this.suggHead ? `${prefix}${this.suggHead} ${word}` : `${prefix}${word}`;
     },
 
-    // La première flèche haut rappelle la commande de la section, puis l'historique.
+    // La flèche haut rappelle la commande de la section, puis les commandes déjà tapées.
     // La commande de section n'arrive en tete que tant que rien n'a ete tape : c'est
     // « la premiere fois dans une section » du journal de conception, pas toujours.
     recall(this: Shell, step: number) {

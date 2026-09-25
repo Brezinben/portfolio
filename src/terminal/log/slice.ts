@@ -95,8 +95,9 @@ export const logSlice = () => {
       this.setLogHeight(this.resizing.height + (this.resizing.y - event.clientY));
     },
 
-    // La borne haute se mesure sur les freres du journal. Un nombre magique la sous-estimait
-    // de pres de cent pixels : le resultat tombait a zero et le volet central debordait.
+    // La borne haute se mesure sur les frères du journal. Un nombre magique sous-estimerait
+    // la borne de près de cent pixels. Le résultat tomberait à zéro, et le volet central
+    // déborderait.
     logRoom(this: Shell) {
       const { journal } = this.$refs,
         pane = journal?.parentElement;

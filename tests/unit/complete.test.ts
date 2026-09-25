@@ -178,17 +178,9 @@ it("should give each search name its own description", () => {
 // La liste ne montre que des noms. « goal » ou « bd » ne s'apprennent pas d'un nom :
 // une ligne sous la liste dit ce que fait la proposition choisie.
 it("should give each first word suggestion a description", () => {
-  const hints = ["bd", "/slime", "cls"].map((word) => {
-    return hintFor("", word);
-  });
-
-  assert.ok(
-    hints.every((hint) => {
-      return hint !== "";
-    }),
-    "every word has a description",
-  );
-  assert.equal(new Set(hints).size, hints.length, "each word has its own description");
+  assert.equal(hintFor("", "bd"), "ouvre une section");
+  assert.equal(hintFor("", "/slime"), "commande le slime");
+  assert.equal(hintFor("", "cls"), "vide le journal");
 });
 
 it("should give each slime subcommand its own description, at every level", () => {
@@ -205,12 +197,11 @@ it("should return an empty string for a suggestion without a description", () =>
   assert.equal(hintFor("xyzzy", "xyzzy"), "");
 });
 
-// Une ligne faite d'espaces n'est pas une ligne vide : la barre d'espace n'ouvre rien.
+// Une saisie faite d'espaces n'est pas une saisie vide. La barre d'espace n'ouvre rien.
 it("should suggest nothing for a line made of spaces", () => {
   assert.deepEqual(hits("   "), []);
 });
 
-// Au second mot, le filtre porte sur le début du mot tapé.
 it("should filter the second word by its start", () => {
   assert.deepEqual(hits("theme no"), ["noctis"]);
 });

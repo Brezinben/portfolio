@@ -16,7 +16,7 @@ export interface Banner {
 
 // Ce que la coquille rend au balisage : trois formes, comme en sortie de l'interpreteur, mais
 // le bandeau y est un objet. « ShapedLine » et « shaped » viennent du glossaire (CONTEXT.md), qui prime sur la regle bannissant « shape ».
-/* eslint-disable anti-slop/no-shape-in-symbol-names */
+/* oxlint-disable anti-slop/no-shape-in-symbol-names */
 export type ShapedLine =
   | { banner: Banner; text: string; tone: Tone }
   | { pad: string; tokens: { c: Tone; t: string; w: string }[] }
@@ -132,7 +132,7 @@ export const pixels = (rows: string[], colour: string) => {
   return shadows.join(",");
 };
 
-/* eslint-disable anti-slop/no-shape-in-symbol-names -- terme du glossaire, voir ShapedLine */
+/* oxlint-disable anti-slop/no-shape-in-symbol-names -- terme du glossaire, voir ShapedLine */
 export const banner = (shaped: { banner: string; text: string }): Banner => {
   const rows = dots(shaped.banner);
 

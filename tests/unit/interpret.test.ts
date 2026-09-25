@@ -628,7 +628,7 @@ it("should list the expressions when slime expression gets no known expression",
   }
 });
 
-it("should no longer say that reboot shuts down", () => {
+it("should announce a reboot and a shutdown apart", () => {
   assert.match(texts(interpret("reboot", CONTEXT))[1] ?? "", /Redémarrage/u);
   assert.match(texts(interpret("shutdown", CONTEXT))[1] ?? "", /Extinction/u);
 });

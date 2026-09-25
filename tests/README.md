@@ -14,9 +14,13 @@ Une mutation qui survit montre un comportement que rien ne vérifie. Lancer Stry
 fichiers d'une MR, avant la revue :
 
 ```sh
-bun run build
 bun run test:mutation --mutate src/interpret/consent.ts
 ```
 
-Le rapport s'écrit dans `reports/mutation/mutation.html`. Les chaînes ne sont pas mutées :
+Stryker n'est pas une dépendance : `bunx` le tire à la demande, et la CI ne l'installe pas.
+Le rapport s'écrit dans `reports/mutation/mutation.html`. Stryker ne mute pas les chaînes :
 un texte changé est un changement de contenu, pas un défaut.
+
+`stryker.config.json` nomme un `tsconfigFile` qui n'existe pas, et c'est voulu. Sans ce
+faux chemin, Stryker réécrirait le tsconfig avec une API que TypeScript 7 n'a plus, puis
+s'arrêterait.

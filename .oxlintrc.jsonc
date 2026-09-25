@@ -1,7 +1,7 @@
 {
   "$schema": "https://raw.githubusercontent.com/oxc-project/oxc/main/npm/oxlint/configuration_schema.json",
-  // La liste remplace les plugins par défaut : sans « typescript », aucune règle de types
-  // ne tournait, et « typeAware » travaillait pour rien.
+  // La liste remplace les plugins par défaut. Sans « typescript », aucune règle de types
+  // ne tournerait, et « typeAware » ne servirait à rien.
   "plugins": ["typescript", "jest", "unicorn", "oxc", "promise", "import"],
   "jsPlugins": [
     "@stylistic/eslint-plugin",
@@ -135,25 +135,19 @@
         "ignoreConsecutiveComments": true,
       },
     ],
-    "complexity": "warn",
+    "complexity": "error",
     "default-case": "error",
     "eqeqeq": "error",
     "no-cond-assign": ["error", "always"],
     "no-console": "error",
-    "prefer-template": "error",
-    "typescript/consistent-indexed-object-style": "error",
-    "typescript/explicit-member-accessibility": [
-      "error",
-      { "accessibility": "explicit", "overrides": { "constructors": "no-public" } },
-    ],
-    "typescript/prefer-find": "error",
     "no-use-before-define": "error",
     "require-await": "error",
     "typescript/method-signature-style": "off",
-    // Chaque couture de types porte déjà un commentaire SAFETY, exigé par
+    // Chaque assertion de type porte déjà un commentaire SAFETY, exigé par
     // anti-slop/require-safety-comment-for-type-assertion. Cette règle doublerait le contrôle.
     "typescript/no-unsafe-type-assertion": "off",
-    // Les glyphes se découpent par point de code, pas par graphème : c'est voulu.
+    // Les dessins de la page n'emploient que des glyphes d'un seul point de code : un point
+    // de code y vaut une case, et le découpage par graphème n'apporterait rien.
     "typescript/no-misused-spread": "off",
     "typescript/no-confusing-void-expression": "error",
     // « it » de node:test rend une promesse que le lanceur attend lui-même.

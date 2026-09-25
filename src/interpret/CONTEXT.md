@@ -25,9 +25,9 @@ une liaison lue avant son initialisation ne casse que l'artefact fondu, jamais l
 _Avoid_: niveau, couche, étage.
 
 **Répartiteur** (`dispatch`) :
-`dispatch.ts`, la fonction `interpret`. Elle reste **d'un seul tenant** : `max-statements`
-est désactivé dans le lint pour cette raison exacte. La découper disperserait le seul
-endroit qui dit, en un coup d'œil, ce que le terminal accepte.
+`dispatch.ts`. La table `COMMANDS` donne un gestionnaire à chaque commande, et se lit
+d'un coup d'œil. La fonction `interpret` garde l'ordre des étapes : la réponse en attente,
+le slash obligatoire, le rejeu, les sections, la table, puis les easter eggs.
 _Avoid_: routeur, aiguilleur, contrôleur.
 
 ## Les rangs

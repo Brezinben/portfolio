@@ -41,7 +41,7 @@ const HINTS = {
     "/coffee": "un café ? pas ici",
     "/cowsay": "une vache dit ce que vous tapez",
     "/joke": "une blague de développeur",
-    "/matrix": "réveille-toi, Néo",
+    "/matrix": "réveillez-vous, Néo",
     "/propose": "suggérez un ajout à ce portfolio",
     "/radio": "une musique fabriquée par une seed",
     "/slime": "commande le slime",
