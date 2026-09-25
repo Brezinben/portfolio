@@ -112,7 +112,7 @@ test("should not break the page when the audience measurement is blocked", async
   await expect(page.locator('[data-pane="main"]')).toBeVisible();
 });
 
-// Le chemin principal d'un recruteur : l'adresse, puis le courrier, puis les profils.
+// L'adresse copiée est le premier geste d'un recruteur.
 test("should copy the address on email", async ({ page, context }) => {
   await context.grantPermissions(["clipboard-read", "clipboard-write"]);
 
@@ -158,7 +158,8 @@ for (const target of ["linkedin", "github"]) {
   });
 }
 
-// Le consentement se juge au réseau : « non » ne part nulle part, « oui » part.
+// Le consentement se vérifie sur le réseau. Après « non », aucune requête ne part. Après « oui »,
+// une requête part.
 for (const [answer, sent] of [
   ["non", 0],
   ["oui", 1],

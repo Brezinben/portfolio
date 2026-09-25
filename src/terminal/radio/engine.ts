@@ -69,8 +69,8 @@ const PAD_DUR = 0.8;
 const PAD_SPREAD = 0.012;
 const BELL_LEVEL = 0.18;
 const BELL_DUR = 0.1;
-// Le grelot sonne sur les trois dernieres croches d'une mesure sur quatre. Toutes les deux
-// mesures, il devenait un tic.
+// Le grelot sonne sur les trois dernières croches d'une mesure sur quatre. Toutes les deux
+// mesures, le grelot deviendrait un tic.
 const BELL_EVERY = 4;
 const BELL_TAIL = 3;
 const BELL_LIFT = 24;

@@ -2,7 +2,7 @@ import { addMark, readMarks } from "../../src/terminal/achievements/store.ts";
 import { beforeEach, it } from "node:test";
 import assert from "node:assert/strict";
 
-// Bun ne fournit pas de stockage local. Celui-ci en a le contrat, et rien d'autre.
+// Bun ne fournit pas de stockage local. Ce faux stockage en a le contrat, et rien d'autre.
 const saved = new Map<string, string>();
 
 globalThis.localStorage = {
@@ -33,7 +33,7 @@ beforeEach(() => {
   saved.clear();
 });
 
-// Deux onglets débloquent le même succès : il ne compte qu'une fois.
+// Deux onglets débloquent le même succès : le succès ne compte qu'une fois.
 it("should keep a mark once when it is added twice", () => {
   addMark("first-command");
   addMark("first-command");

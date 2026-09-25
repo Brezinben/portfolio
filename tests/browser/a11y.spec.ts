@@ -154,7 +154,7 @@ test("should give every interactive target at least 44 pixels", async ({ page })
   expect(small).toEqual([]);
 });
 
-// Tab parcourt la page de haut en bas : chaque section doit se trouver sur le chemin.
+// Un visiteur au clavier atteint chaque section avec Tab seul.
 test("should reach every section button with Tab", async ({ page }) => {
   await boot(page);
 

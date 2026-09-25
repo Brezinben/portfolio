@@ -12,7 +12,7 @@ import type { GlitchMode } from "../../interpret.ts";
 // remet a zero.
 const GLITCH_MS = 5000;
 // La feuille fige le theme permute sur sa derniere image (« both »). Sans cette variable,
-// allonger la panne laissait les couleurs permutees apres son retour, sans une erreur.
+// allonger la panne laisserait les couleurs permutées après la panne, sans aucune erreur.
 const GLITCH_VAR = "--glitch-ms";
 
 export const SHIFT_COUNT = 5;
@@ -25,8 +25,8 @@ const TAP_WINDOW_MS = 1400;
 // puis la panne.
 const SUDO_MS = 900;
 const TICK_MS = 70;
-// Un noeud sur quatre reste intact a chaque passe. Tout corrompre d'un bloc donnait un mur
-// illisible ; ce trou fait scintiller le texte au lieu de l'effacer.
+// Un nœud sur quatre reste intact à chaque passe. Tout corrompre d'un bloc donnerait un mur
+// illisible. Les nœuds intacts font scintiller le texte au lieu de l'effacer.
 const NODE_ODDS = 0.72;
 const RAIN_COLUMNS = 30;
 const RAIN_LENGTH = 18;

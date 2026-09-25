@@ -27,7 +27,7 @@ const boot = async (page: Page) => {
   field = (page: Page) => {
     return page.getByLabel(/^Seed/);
   },
-  // Le nom du bouton suit son état : il annonce toujours sa touche.
+  // Le nom du bouton change avec son état. Seule la touche reste dans le nom.
   play = (page: Page) => {
     // Le glyphe du spectre porte le même nom : le bouton de la barre est le second.
     return page

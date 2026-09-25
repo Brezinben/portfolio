@@ -47,7 +47,7 @@ export const optionsSlice = () => {
       this.optsOpen = false;
       // « isConnected » : « options » lancé depuis la recherche globale a capturé le champ
       // de la zone, que la fermeture détache. Un nœud détaché reste vrai, et le focus
-      // tombait alors sur le corps de la page. Même garde que les deux autres modales.
+      // tomberait sur le corps de la page. Même garde que les deux autres modales.
       this.$nextTick(() => {
         const back = this.optsReturn?.isConnected === true ? this.optsReturn : undefined;
 
@@ -96,9 +96,9 @@ export const optionsSlice = () => {
       (active ?? themeButtons()[0])?.focus();
     },
 
-    // Le reglage courant se lit sur l'element focalise. Le deduire d'un compteur le
-    // desynchronisait des qu'on arrivait par tabulation ou a la souris : le focus
-    // etait sur « animations » et la fleche droite modifiait « dense lines ».
+    // Le réglage courant se lit sur l'élément focalisé. Un compteur se désynchroniserait après
+    // une tabulation ou un clic. Le focus serait sur « animations », et la flèche droite
+    // modifierait « dense lines ».
     focused(this: Shell) {
       const active = document.activeElement,
         theme = active instanceof HTMLElement ? themeButtons().indexOf(active) : -1;
@@ -259,7 +259,7 @@ export const optionsSlice = () => {
       this.achievements = keepKnown(stored);
 
       // Le nettoyage se réécrit, et ne reste pas en mémoire. « addMark » relit le stockage
-      // brut avant d'écrire : sans cette passe, l'orphelin revenait au premier déblocage.
+      // brut avant d'écrire : sans cette passe, l'orphelin reviendrait au premier déblocage.
       if (this.achievements.length !== stored.length) {
         writeMarks(this.achievements);
       }

@@ -90,9 +90,6 @@ interface Share {
   url?: string;
 }
 
-// Valeurs figées après itération dans le canvas. Ne pas les transformer en réglages :
-// voir design/DECISIONS.md, section 23.
-
 // Alpine vient du script vendu a cote de la page : il n'apporte pas ses types.
 
 declare const Alpine: {
@@ -105,9 +102,6 @@ interface GoatCounter {
   count?: (vars: { event?: boolean; path: string; title?: string }) => void;
 }
 
-// L'API Prompt du navigateur, proposee par le W3C, n'existe que dans Chrome et derriere un contexte securise : « absent » est donc le cas majoritaire, pas une erreur.
-// Les types de « @types/dom-chromium-ai » declarent « LanguageModel » toujours present, d'ou le « in globalThis » plutot qu'une comparaison a undefined.
-// « topK », « temperature » et « samplingMode » restent hors du contrat : chrome-only ou en essai d'origine.
 declare global {
   // oxlint-disable-next-line no-var, vars-on-top
   var goatcounter: GoatCounter | undefined;
@@ -365,7 +359,7 @@ document.addEventListener("alpine:init", () => {
 
       init() {
         // La préférence peut changer en cours de visite. Sans cette écoute, la mascotte et
-        // le glitch l'ignoraient jusqu'au rechargement.
+        // le glitch ignoreraient le changement jusqu'au rechargement.
         globalThis
           .matchMedia?.("(prefers-reduced-motion: reduce)")
           .addEventListener("change", (event) => {
@@ -945,8 +939,8 @@ document.addEventListener("alpine:init", () => {
         }
 
         // Une question en vol n'a plus rien a dire des que la commande suivante part. Sans cette
-        // coupure, seule une seconde question l'arretait : « clear » vidait le journal, et une
-        // question sans trouvaille laissait la precedente repondre par-dessus son refus.
+        // coupure, seule une seconde question arrêterait la première. La première répondrait
+        // après « clear », ou par-dessus le refus d'une question sans trouvaille.
         this.asker?.abort();
         this.asker = undefined;
         this.thinking = false;

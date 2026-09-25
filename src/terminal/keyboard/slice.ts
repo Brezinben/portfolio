@@ -74,9 +74,9 @@ const items = (pane: string) => {
   ];
 };
 
-// Une grille se parcourt aux quatre fleches. La stack en compte une par domaine : un pas
-// fixe, deduit de la premiere ligne, changeait de colonne des qu'une ligne etait incomplete
-// ou qu'on passait au domaine suivant. Les lignes se lisent donc sur la position reelle des cellules.
+// Une grille se parcourt aux quatre flèches. La stack compte une grille par domaine. Un pas
+// fixe, déduit de la première ligne, changerait de colonne sur une ligne incomplète ou au
+// domaine suivant. Les lignes se lisent donc sur la position réelle des cellules.
 const gridMove = (selector: string, key: string) => {
   const cells = [...document.querySelectorAll<HTMLElement>(selector)],
     at = document.activeElement instanceof HTMLElement ? cells.indexOf(document.activeElement) : -1;
@@ -96,9 +96,9 @@ const gridMove = (selector: string, key: string) => {
     return true;
   }
 
-  // La colonne prime sur la ligne. Une derniere ligne plus courte n'a pas de cellule dans la
-  // colonne du curseur : viser la ligne d'a cote le faisait glisser tout a gauche, et les
-  // frappes suivantes partaient d'ailleurs. Le curseur saute donc cette ligne pour retrouver sa colonne.
+  // La colonne prime sur la ligne. Une dernière ligne courte n'a pas de cellule sous le curseur.
+  // Viser cette ligne ferait glisser le curseur à gauche, et la frappe suivante partirait de là.
+  // Le curseur saute donc cette ligne pour retrouver sa colonne.
   const inColumn = beyond.filter((cell) => {
     return Math.abs(rect(cell).left - from.left) < 1;
   });
@@ -140,11 +140,11 @@ export const keyboardSlice = () => {
   return slice<KeyboardApi>({
     // Les raccourcis de caractere : Shift pour le glitch, « / », « j » et « k ».
     characterKey(this: Shell, event: KeyboardEvent) {
-      // Cinq appuis sur Shift corrompent l'affichage. La garde ci-dessus laisse deja
-      // passer la majuscule tapee dans la ligne de commande : elle ne compte pas.
+      // Cinq appuis sur Shift corrompent l'affichage. Une majuscule tapée dans une saisie ne
+      // compte pas : passesKey() arrête cette touche avant characterKey().
       if (event.key === "Shift") {
-        // Le systeme repete une touche maintenue : sans cette sortie, garder Shift
-        // enfonce armait l'egg tout seul en une fraction de seconde.
+        // Le système répète une touche maintenue. Sans cette sortie, Shift maintenu
+        // armerait l'egg tout seul en une fraction de seconde.
         if (!event.repeat) {
           this.glitchShift();
         }
@@ -251,9 +251,9 @@ export const keyboardSlice = () => {
         listMove('[data-ctl="nav"]', event.key, (at) => {
           const entries = [...document.querySelectorAll<HTMLElement>('[data-ctl="nav"]')];
 
-          // De gauche a droite : valider une section amene a sa premiere prise (stack, frise), ou a
-          // la ligne de commande si elle n'en a pas. L'intention se pose avant le clic : une section
-          // deja vue s'affiche sans frappe, et la prise se ferait avant que l'intention soit connue.
+          // Valider une section amène à sa première prise (stack, frise), sinon à la ligne de
+          // commande. L'intention se pose avant le clic. Une section déjà vue s'affiche sans
+          // frappe : sans cette garde, la prise se ferait avant l'intention.
           this.wantResult = true;
           entries[at]?.click();
         }) ||
@@ -314,7 +314,7 @@ export const keyboardSlice = () => {
       }
 
       // Entrée maintenue : le système répète la touche, et le navigateur fabrique un clic
-      // par répétition. Valider au clavier envoyait alors dix mesures pour un seul geste.
+      // par répétition. Sans cette garde, un geste au clavier enverrait dix mesures.
       // Les flèches gardent leur répétition, qui sert à parcourir une liste.
       if (event.repeat && event.key === "Enter") {
         event.preventDefault();
@@ -338,7 +338,7 @@ export const keyboardSlice = () => {
 
       // Toute saisie garde ses touches : « j », « k » et « / » s'y tapent, et les flèches
       // y déplacent le curseur. Seule la ligne de commande vide rend la main aux volets.
-      // Sans cette garde, le champ de seed devenait impossible à corriger.
+      // Sans cette garde, le champ de seed serait impossible à corriger.
       if (event.target instanceof HTMLInputElement) {
         const leaving =
           event.target === this.$refs.cli &&

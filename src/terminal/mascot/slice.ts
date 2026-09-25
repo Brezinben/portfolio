@@ -92,7 +92,7 @@ export const mascotSlice = () => {
   return slice<MascotApi>({
     blowUp(this: Shell, via: TrackSource = "interface") {
       // Deja absente, une seconde explosion repousserait son retour sans rien montrer.
-      // Le clic passait par poke(), qui garde deja ; la commande arrive ici en direct.
+      // Le clic passe par poke(), qui garde déjà. La commande arrive ici en direct.
       if (this.gone) {
         return;
       }
@@ -234,9 +234,9 @@ export const mascotSlice = () => {
       }, AWAY_MS);
     },
 
-    // La feuille d'une forme ne part qu'a la demande : le cube et le pingouin pesent plus que
-    // le slime. La construction pose l'adresse sur la piste, et la reecrit comme tout chemin
-    // d'actif.
+    // La feuille d'une forme se charge à la demande : le cube et le pingouin pèsent plus que
+    // le slime. La construction pose l'adresse de la feuille sur la piste. La construction
+    // réécrit cette adresse comme tout chemin d'actif.
     async loadForm(this: Shell, form: string) {
       if (this.loaded.has(form)) {
         return;
@@ -266,13 +266,13 @@ export const mascotSlice = () => {
         return;
       }
 
-      // Explose, le slime ne repond plus : rien ne le rejoue avant qu'il reprenne forme.
-      // Une transition de forme tient ses 2,4 s : la frappe, une section, un clic ou un
-      // changement de theme la couperaient au milieu. Meme forme de garde que « gone ».
+      // Une transition de forme tient ses 2,4 s. Sans cette garde, la frappe, une section, un
+      // clic ou un changement de thème couperait la transition au milieu.
       if (TRANSITIONS.has(this.mascotState) && this.mascotState !== state) {
         return;
       }
 
+      // Explosée, la mascotte ne répond plus : rien ne la rejoue avant qu'elle reprenne forme.
       if (this.gone && state !== "boom") {
         return;
       }
@@ -324,8 +324,8 @@ export const mascotSlice = () => {
       }, hold);
     },
 
-    // Reaction seulement a proximite : un seuil large donnait un declenchement fantome,
-    // curseur encore loin du slime.
+    // Réaction seulement à proximité. Un seuil large donnerait un déclenchement fantôme, avec
+    // le curseur encore loin de la mascotte.
     nearby(this: Shell, event: PointerEvent) {
       if (this.dragging || !this.$refs.mascot || this.mascotState !== MASCOT_REST) {
         return;
@@ -356,7 +356,7 @@ export const mascotSlice = () => {
 
     poke(this: Shell) {
       // Un clic suit toujours le relachement du pointeur. Trainer la mascotte n'est pas
-      // cliquer dessus : sans cette garde, chaque glisser rapprochait l'explosion.
+      // cliquer dessus : sans cette garde, chaque glisser rapprocherait l'explosion.
       if (this.dragged) {
         this.dragged = false;
 
@@ -490,9 +490,9 @@ export const mascotSlice = () => {
       this.rouse();
     },
 
-    // Une passe unique rend la main au repos ; les boucles, elles, ne finissent jamais. « load »
-    // boucle sans fin : couper son minuteur sans rendre la main y laisserait la mascotte pour
-    // toujours. Passer par settle() rendait aussi la main sur les autres etats, coupant le voyage en train avant son terme.
+    // Une passe unique rend la main au repos, mais une boucle ne finit jamais. Sans settle(),
+    // la mascotte resterait en « load » pour toujours. Sans la garde sur « load », settle()
+    // couperait aussi le voyage en train avant son terme.
     stopLoading(this: Shell) {
       if (this.mascotState === "load") {
         this.settle();
