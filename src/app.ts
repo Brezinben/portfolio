@@ -113,6 +113,9 @@ declare global {
   var goatcounter: GoatCounter | undefined;
 }
 
+// Un gestionnaire par genre d'effet : la cle et l'effet recu vont ensemble.
+type EffectRun = { [K in Effect["type"]]: (effect: Extract<Effect, { type: K }>) => void };
+
 // Ce que la page tient en memoire. Les minuteurs en font partie : les declarer les rend
 // visibles. « RadioState » vient de la tranche qui l'emploie, pour ne pas deriver.
 interface State
@@ -1107,157 +1110,111 @@ document.addEventListener("alpine:init", () => {
             return entry.type === "usage";
           });
 
+        // Un gestionnaire par genre d'effet. Un genre ajoute a « Effect » sans sa cle casse la
+        // compilation ici.
+        const run = {
+          activity: (effect) => {
+            this.mascotPlay(effect.name);
+          },
+          ask: (effect) => {
+            void this.answerWithModel(effect.query, effect.candidates, effect.lexical);
+          },
+          blowUp: () => {
+            this.blowUp("commande");
+          },
+          clear: () => {
+            this.journal = [];
+          },
+          cv: () => {
+            // Un nouvel onglet : le terminal reste ouvert derriere, avec son journal.
+            globalThis.open("texte.html", "_blank", "noopener");
+          },
+          drop: () => {
+            this.drop();
+          },
+          email: () => {
+            void this.copy(this.profileEmail);
+          },
+          emote: (effect) => {
+            this.emote(effect.expression);
+          },
+          evolve: () => {
+            void this.evolve();
+          },
+          glitch: (effect) => {
+            // « sudo » laisse lire son refus avant de tomber en panne ; « matrix » part
+            // avec sa ligne.
+            if (effect.mode === "sudo") {
+              this.glitchLater(effect.mode);
+            } else {
+              this.glitchStart(effect.mode);
+            }
+          },
+          navigate: (effect) => {
+            this.goSection(effect.id, { via: "commande" });
+          },
+          options: () => {
+            this.openOpts("commande");
+          },
+          pending: (effect) => {
+            this.pending = effect.payload;
+            this.input = effect.answer ?? "";
+          },
+          power: (effect) => {
+            this.powerDown(effect.mode);
+          },
+          radio: () => {
+            void this.radioBoot();
+          },
+          replay: () => {
+            this.journal = [];
+            this.commandResult = undefined;
+            this.seen = this.seen.filter((entry) => {
+              return entry !== this.section;
+            });
+            this.play(this.section, "commande");
+          },
+          say: (effect) => {
+            this.say(effect.text, effect.expression);
+          },
+          send: (effect) => {
+            if (this.online) {
+              void this.send(effect.payload);
+            } else {
+              this.refuseOffline(
+                "envoyer une idée",
+                "« mail » copie mon adresse, elle partira au retour du réseau.",
+              );
+            }
+          },
+          sendMail: () => {
+            globalThis.open(`mailto:${encodeURIComponent(this.profileEmail)}`);
+          },
+          share: (effect) => {
+            this.shareTo(effect);
+          },
+          shareMenu: () => {
+            void this.nativeShare();
+          },
+          state: (effect) => {
+            Object.assign(this, effect.patch);
+          },
+          theme: (effect) => {
+            this.setTheme(effect.name, "commande");
+          },
+          track: (effect) => {
+            this.track(effect.event, effect.props);
+          },
+          // Une commande qui liste son usage n'a rien a faire ici : « listed » la lit plus haut.
+          usage: () => {
+            // « listed » lit cet effet avant la boucle.
+          },
+        } satisfies EffectRun;
+
         for (const effect of effects) {
-          switch (effect.type) {
-            case "track": {
-              this.track(effect.event, effect.props);
-
-              break;
-            }
-            case "pending": {
-              this.pending = effect.payload;
-              this.input = effect.answer ?? "";
-
-              break;
-            }
-            case "ask": {
-              void this.answerWithModel(effect.query, effect.candidates, effect.lexical);
-
-              break;
-            }
-            case "send": {
-              if (this.online) {
-                void this.send(effect.payload);
-              } else {
-                this.refuseOffline(
-                  "envoyer une idée",
-                  "« mail » copie mon adresse, elle partira au retour du réseau.",
-                );
-              }
-
-              break;
-            }
-            case "share": {
-              this.shareTo(effect);
-
-              break;
-            }
-            case "shareMenu": {
-              void this.nativeShare();
-
-              break;
-            }
-            case "email": {
-              void this.copy(this.profileEmail);
-
-              break;
-            }
-            case "sendMail": {
-              globalThis.open(`mailto:${encodeURIComponent(this.profileEmail)}`);
-
-              break;
-            }
-            case "cv": {
-              // Un nouvel onglet : le terminal reste ouvert derriere, avec son journal.
-              globalThis.open("texte.html", "_blank", "noopener");
-
-              break;
-            }
-            case "say": {
-              this.say(effect.text, effect.expression);
-
-              break;
-            }
-            case "emote": {
-              this.emote(effect.expression);
-
-              break;
-            }
-            case "drop": {
-              this.drop();
-
-              break;
-            }
-            case "blowUp": {
-              this.blowUp("commande");
-
-              break;
-            }
-            case "activity": {
-              this.mascotPlay(effect.name);
-
-              break;
-            }
-            case "navigate": {
-              this.goSection(effect.id, { via: "commande" });
-
-              break;
-            }
-            case "clear": {
-              this.journal = [];
-
-              break;
-            }
-            case "replay": {
-              this.journal = [];
-              this.commandResult = undefined;
-              this.seen = this.seen.filter((entry) => {
-                return entry !== this.section;
-              });
-              this.play(this.section, "commande");
-
-              break;
-            }
-            case "state": {
-              Object.assign(this, effect.patch);
-
-              break;
-            }
-            case "power": {
-              this.powerDown(effect.mode);
-
-              break;
-            }
-            case "theme": {
-              this.setTheme(effect.name, "commande");
-
-              break;
-            }
-            case "evolve": {
-              void this.evolve();
-
-              break;
-            }
-            case "options": {
-              this.openOpts("commande");
-
-              break;
-            }
-            case "radio": {
-              void this.radioBoot();
-
-              break;
-            }
-            case "glitch": {
-              // « sudo » laisse lire son refus avant de tomber en panne ; « matrix » part
-              // avec sa ligne.
-              if (effect.mode === "sudo") {
-                this.glitchLater(effect.mode);
-              } else {
-                this.glitchStart(effect.mode);
-              }
-
-              break;
-            }
-            // Une commande qui liste son usage n'a rien a faire ici : « listed » la lit plus haut.
-            case "usage": {
-              break;
-            }
-            // Un effet ajoute sans son cas casse la compilation ici.
-            default: {
-              effect satisfies never;
-            }
-          }
+          // SAFETY: « effect.type » designe la cle de « run », dont le gestionnaire attend ce
+          // genre d'effet. TypeScript ne relie pas les deux cotes de l'acces indexe.
+          (run[effect.type] as (value: Effect) => void)(effect);
         }
 
         if (found && !moved && !listed) {
