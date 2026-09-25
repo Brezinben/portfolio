@@ -27,7 +27,7 @@ export const answerPending = (input: string, pending: string): Outcome => {
 
 // Consentement en deux temps : la commande dit ce qui part, ou, et ce qui ne part pas.
 // Rien n'est envoye avant un oui.
-export const proposalPrompt = (text: string, feedback: Record<string, string>): Line[] => {
+export const ideaPrompt = (text: string, feedback: Record<string, string>): Line[] => {
   return [
     line({ marker: "›", markerTone: "acc", text: `« ${text} »`, tone: "fg" }),
     line({
