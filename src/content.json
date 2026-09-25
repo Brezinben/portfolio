@@ -104,7 +104,7 @@
         "lines": [
           [
             "poste",
-            "Développeur IA / Full Stack"
+            "Développeur IA & Full Stack"
           ],
           [
             "entreprise",
@@ -248,7 +248,7 @@
         {
           "m": "✓",
           "mc": "ok",
-          "t": "Arbitrage : une fonctionnalité qui coûte plus qu'elle n'apporte sort."
+          "t": "Arbitrage : une fonctionnalité qui coûte plus qu'elle n'apporte est retirée."
         },
         {
           "m": "›",
@@ -366,7 +366,7 @@
           ]
         ]
       },
-      "ask": "Depuis 2021 : veille sur l'IA et les nouvelles technologies, bêta-testeur de GitHub Copilot à ses débuts. Titre Professionnel Concepteur Développeur d'Applications en 2021, BTS SIO option SISR en alternance en 2020, Baccalauréat STI2D en 2018."
+      "ask": "Depuis 2021 : veille sur l'IA et les nouvelles technologies, bêta-testeur de GitHub Copilot à ses débuts. Titre Professionnel Concepteur Développeur d'Applications en 2021, BTS SIO option SISR en alternance en 2020, baccalauréat STI2D en 2018."
     },
     {
       "id": "contact",
@@ -502,7 +502,7 @@
           ]
         ]
       },
-      "ask": "Contact : benjamin.david1@hotmail.fr, réponse sous 48 heures. LinkedIn in/benjamin--david, GitHub brezinben. Basé à Nantes, ouvert aux missions IA, full stack et numérique responsable."
+      "ask": "Contact : benjamin.david1@hotmail.fr, réponse sous 48 heures. LinkedIn in/benjamin--david, GitHub brezinben. Basé à Nantes, ouvert aux opportunités IA, full stack et numérique responsable."
     }
   ],
   "missions": [
@@ -549,7 +549,7 @@
           "ls": "-.02em"
         },
         {
-          "t": "mai 2026 → aujourd'hui · Développeur IA / Full Stack · via digital4better",
+          "t": "mai 2026 → aujourd'hui · Développeur IA & Full Stack · via digital4better",
           "tone": "acc"
         },
         {
@@ -712,7 +712,7 @@
           ]
         ]
       },
-      "ask": "Assist'enGare, pour SNCF Gares & Connexions de septembre 2024 à mai 2026 : réservation de prestations d'assistance pour les personnes en situation de handicap souhaitant accéder à leur train. Front grand public à 96 % de conformité RGAA, tenu sous audits successifs. Environ 3 000 dossiers par jour, une dizaine de notifications chacun. Côté échanges, la brique parle à tout le SI SNCF et aux transporteurs étrangers : ActiveMQ réécrit d'AMQP vers STOMP, routage dynamique par entité métier."
+      "ask": "Assist'enGare, pour SNCF Gares & Connexions de septembre 2024 à mai 2026 : réservation de prestations d'assistance pour les personnes handicapées ou à mobilité réduite souhaitant accéder à leur train. Front grand public à 96 % de conformité RGAA, tenu sous audits successifs. Environ 3 000 dossiers par jour, une dizaine de notifications chacun. Côté échanges, la brique parle à tout le SI SNCF et aux transporteurs étrangers : ActiveMQ réécrit d'AMQP vers STOMP, routage dynamique par entité métier."
     },
     {
       "id": "m-run",
@@ -890,7 +890,7 @@
       "id": "t0",
       "years": "2026 → …",
       "org": "Kereis",
-      "role": "Développeur IA / Full Stack · pôle DSI",
+      "role": "Développeur IA & Full Stack · pôle DSI",
       "note": "Preuves de concept IA pour une DSI qui construit plutôt qu'elle n'achète. Serveurs MCP, Specification-Driven Development, et le cadrage du code écrit avant la première fonctionnalité.",
       "detail": "m-kereis"
     },
@@ -1083,7 +1083,7 @@
       "note": "Serveur de développement et construction. Le rechargement instantané raccourcit la boucle d'essai."
     },
     "Laravel": {
-      "where": "LDC Services, Transway (WeFlo Pro), digital4better",
+      "where": "formation en alternance, Transway (WeFlo Pro), digital4better",
       "note": "API et back-offices : Eloquent, files de traitement, authentification."
     },
     "NestJS": {
@@ -1136,7 +1136,7 @@
     },
     "Claude": {
       "where": "Kereis, 2026",
-      "note": "Toute la gamme Anthropic : Claude Code pour le code, Claude Design pour les maquettes. Le cadrage vient des règles du dépôt, qui survivent à la session."
+      "note": "Toute la gamme Anthropic : Claude Code et Claude Design. Le cadrage vient des règles du dépôt, qui survivent à la session."
     },
     "herdr": {
       "where": "Kereis, 2026",

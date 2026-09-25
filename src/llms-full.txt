@@ -17,7 +17,7 @@ ce domaine n'en héberge aucun.
 
 - Nom : Benjamin David
 - Titre : Concepteur orchestrateur IA · Développeur Full Stack · Nantes
-- Poste : Développeur IA / Full Stack
+- Poste : Développeur IA & Full Stack
 - Entreprise : Kereis · via digital4better
 - Depuis : mai 2026
 - Statut : en poste, ouvert aux opportunités
@@ -51,14 +51,17 @@ alternance), FPEE Industries (2018-2020, technicien réseau en alternance).
 
 ### Kereis · pôle DSI
 
-mai 2026 → aujourd'hui · Développeur IA / Full Stack · via digital4better
+mai 2026 → aujourd'hui · Développeur IA & Full Stack · via digital4better
 
-Kereis construit plutôt qu'elle n'achète : on me demande de tester par le code avant de payer une licence très chère pour une fonction peu utilisée.
+Kereis construit plutôt qu'elle n'achète : on me demande de tester par le code avant de
+payer une licence très chère pour une fonction peu utilisée.
 
 - Le cadrage du code passe en premier. Linter et règles avant la première
   fonctionnalité : l'IA produit sous contrainte, un humain relit.
-- Serveurs MCP : les outils internes s'ouvrent aux agents. La partie la plus délicate est l'autorisation.
-- Plugin ChatGPT de simulation de tarif d'assurance de prêt : l'utilisateur décrit son projet en langage naturel, un serveur MCP propose un premier tarif.
+- Serveurs MCP : les outils internes s'ouvrent aux agents. La partie la plus délicate
+  est l'autorisation.
+- Plugin ChatGPT de simulation de tarif d'assurance de prêt : l'utilisateur décrit son
+  projet en langage naturel, un serveur MCP propose un premier tarif.
 - Cartographie du SI sous Backstage. Sources AWS, GitLab et Zeenea branchées, puis
   un MCP pour que les agents lisent la carte.
 - Application de compte rendu. Le texte dicté est nettoyé, l'e-mail rédigé, la
@@ -73,11 +76,13 @@ cadrer l'IA par la spec.
 
 sept. 2024 → mai 2026 · Développeur Full Stack · via digital4better
 
-- Réservation de prestations d'assistance pour les personnes handicapées ou à mobilité réduite (PSH/PMR) souhaitant accéder à leur train.
+- Réservation de prestations d'assistance pour les personnes handicapées ou à mobilité
+  réduite (PSH/PMR) souhaitant accéder à leur train.
 - Front grand public de Gares & Connexions. La déclaration d'accessibilité affiche
   96 % de conformité moyenne au RGAA 4.1, sous audits successifs.
 - Règles axe au linter, essais au lecteur d'écran sous NVDA et TalkBack.
-- Au-delà du RGAA, des aides pour tous : copie automatique des références, vocalisation correcte des marques.
+- Au-delà du RGAA, des aides pour tous : copie automatique des références, vocalisation
+  correcte des marques.
 - La brique parle à tout le SI SNCF. Le spécifique devient générique : ActiveMQ
   réécrit d'AMQP vers STOMP, routage dynamique par entité métier.
 - Voyage en deux segments SNCF et Trenitalia : chaque transporteur ne reçoit que
@@ -100,8 +105,8 @@ NestJS, PostgreSQL.
 oct. 2023 → sept. 2024 · Développeur Full Stack / IA
 
 - Quatre projets clients en parallèle : Body Nature, Dorval AM, PiLeJe et Servier.
-- Chaque client a sa pile et son historique : le RUN oblige à entrer vite dans du code qu'on
-  n'a pas écrit.
+- Chaque client a sa pile et son historique : le RUN oblige à entrer vite dans du code
+  qu'on n'a pas écrit.
 - Supervision : monitoring des performances, détection et analyse des anomalies
   avant la remontée utilisateur.
 - Maintenance et montées de version. Correctifs de sécurité tenus à jour sur le
@@ -161,13 +166,14 @@ En parallèle du BTS SIO option SISR.
 - Sobriété : aucune vidéo, aucune photo, une seule police, animations
   désactivables.
 - Mesure : l'impact environnemental se chiffre avec un outil, fruggr par exemple.
-- Arbitrage : une fonctionnalité qui coûte plus qu'elle n'apporte sort.
+- Arbitrage : une fonctionnalité qui coûte plus qu'elle n'apporte est retirée.
 - Fréquentation mesurée par GoatCounter auto-hébergé : aucun cookie, aucun
   identifiant, aucune donnée revendue.
 - Cette page suit vos réglages système : animations réduites, thème clair ou
   sombre.
 
-Le numérique responsable est une contrainte de conception, au même titre que la sécurité.
+Le numérique responsable est une contrainte de conception, au même titre que la
+sécurité.
 
 ## Compétences techniques
 
@@ -204,8 +210,8 @@ Cinq domaines, 57 briques. Chaque brique indique où elle a été pratiquée.
 
 ### Backend — services et données
 
-- Laravel — LDC Services, Transway (WeFlo Pro), digital4better — API et back-offices :
-  Eloquent, files de traitement, authentification.
+- Laravel — formation en alternance, Transway (WeFlo Pro), digital4better — API et
+  back-offices : Eloquent, files de traitement, authentification.
 - NestJS — Transway, SNCF, Kereis — Architecture modulaire, injection de dépendances,
   TypeORM.
 - PHP — LDC Services, Transway, digital4better — Langage des back-offices Laravel.
@@ -233,9 +239,8 @@ Cinq domaines, 57 briques. Chaque brique indique où elle a été pratiquée.
   référence, le code en découle.
 - SDD — Kereis — Specification-Driven Development : décrire l'intention, faire valider,
   puis générer et vérifier.
-- Claude — Kereis, 2026 — Toute la gamme Anthropic : Claude Code pour le code, Claude
-  Design pour les maquettes. Le cadrage vient des règles du dépôt, qui survivent à la
-  session.
+- Claude — Kereis, 2026 — Toute la gamme Anthropic : Claude Code et Claude Design. Le
+  cadrage vient des règles du dépôt, qui survivent à la session.
 - herdr — Kereis, 2026 — Multiplexeur de terminal en Rust. Plusieurs agents travaillent
   en parallèle et leur état reste lisible.
 - LiteLLM — Kereis, 2026 — Passerelle unique devant plusieurs fournisseurs de modèles.

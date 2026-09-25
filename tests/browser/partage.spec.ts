@@ -210,7 +210,7 @@ for (const [answer, sent] of [
     await run(cli, answer);
 
     await expect(page.locator("[data-journal]")).toContainText(
-      sent === 0 ? "rien n'a été envoyé" : "proposition envoyée",
+      sent === 0 ? "rien n'a été envoyé" : "idée envoyée",
     );
     expect(counted).toHaveLength(sent);
   });

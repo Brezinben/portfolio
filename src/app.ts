@@ -1130,7 +1130,7 @@ document.addEventListener("alpine:init", () => {
                 void this.send(effect.payload);
               } else {
                 this.refuseOffline(
-                  "envoyer une proposition",
+                  "envoyer une idée",
                   "« mail » copie mon adresse, elle partira au retour du réseau.",
                 );
               }

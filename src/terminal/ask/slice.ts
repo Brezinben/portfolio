@@ -1,16 +1,16 @@
-// La question posée à « ask » et la proposition envoyée par « /propose » : ce qui part
+// La question posée à « ask » et l'idée envoyée par « /propose » : ce qui part
 // du navigateur, vers le modèle local ou vers la mesure d'audience.
 
 import { type Shell, slice } from "../shell.ts";
 import { ASK_MS } from "../settings.ts";
 import type { Line } from "../../interpret.ts";
 
-// Ce que la question et la proposition gardent dans l'etat du composant.
+// Ce que la question et l'idée gardent dans l'etat du composant.
 export interface AskState {
   // La question en vol. L'annuler coupe le modèle au lieu d'attendre sa réponse.
   asker: AbortController | undefined;
   feedback: Record<string, string>;
-  // La proposition qui attend son oui.
+  // L'idée qui attend son oui.
   pending: string | undefined;
   // Le modele cherche, et rien n'est encore affiche : sa reponse remplacera l'attente.
   thinking: boolean;
@@ -161,10 +161,7 @@ export const askSlice = () => {
 
       if (globalThis.goatcounter?.count) {
         this.track(text);
-        this.journal = [
-          ...this.journal,
-          { c: "ok", m: "✓", mc: "ok", t: "proposition envoyée. merci." },
-        ];
+        this.journal = [...this.journal, { c: "ok", m: "✓", mc: "ok", t: "idée envoyée. merci." }];
 
         return;
       }
@@ -176,13 +173,10 @@ export const askSlice = () => {
           throw new Error(String(response.status));
         }
 
-        this.journal = [
-          ...this.journal,
-          { c: "ok", m: "✓", mc: "ok", t: "proposition envoyée. merci." },
-        ];
+        this.journal = [...this.journal, { c: "ok", m: "✓", mc: "ok", t: "idée envoyée. merci." }];
       } catch {
         globalThis.open(
-          `mailto:${feedback.fallbackEmail}?subject=Proposition&body=${encodeURIComponent(text)}`,
+          `mailto:${feedback.fallbackEmail}?subject=Id%C3%A9e&body=${encodeURIComponent(text)}`,
         );
         this.journal = [
           ...this.journal,

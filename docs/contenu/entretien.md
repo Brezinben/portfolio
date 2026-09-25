@@ -294,6 +294,19 @@ Réponses de Benjamin aux questions de fidélité de la revue critique
 - **Libellés de l'interface** : ils restent en anglais, comme un terminal. Ils portent
   `lang="en"`.
 
+## Réponses du 2026-09-25
+
+- **Laravel** : appris en formation, pendant l'alternance, et pas chez LDC Services.
+  Pratiqué chez Transway (WeFlo Pro) et chez digital4better.
+- **LDC Services** : Sass, PHP et MySQL y sont vrais.
+- **FPEE Industries** : Linux et Bash y sont vrais.
+- **Pair-programming** : chez Transway et chez Kereis.
+- **Claude Design** : sans usage précis à publier. La fiche dit « Claude Code et Claude
+  Design ».
+- **Poste** : « Développeur IA & Full Stack », la même forme que le titre du site.
+- **Néo** : la citation vouvoie aussi : « Réveillez-vous, Néo ».
+- **/propose** : ce que la commande envoie s'appelle une idée.
+
 ## LDC Services · 2020 → 2021
 
 À recueillir. Aucune fiche mission aujourd'hui.

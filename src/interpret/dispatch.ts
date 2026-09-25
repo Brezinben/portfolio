@@ -149,7 +149,7 @@ export const interpret = (raw: string, context: Context): Outcome => {
 
   if (command === "matrix") {
     return out(
-      [line({ marker: "·", text: "Réveille-toi, Néo.", tone: "ok" })],
+      [line({ marker: "·", text: "Réveillez-vous, Néo.", tone: "ok" })],
       [track("easter_egg", { nom: "matrix" }), { mode: "matrix", type: "glitch" }],
     );
   }

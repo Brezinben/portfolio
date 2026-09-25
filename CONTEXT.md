@@ -121,6 +121,11 @@ Une entrée rendue par la recherche globale. Son rang est celui de la liste enti
 celui de son groupe : c'est ce rang que les flèches déplacent.
 _Avoid_: résultat, proposition, suggestion, match.
 
+**Idée** (`pending`) :
+Le texte que `/propose` envoie à l'auteur. Rien ne part avant un oui : tant qu'elle attend,
+la ligne de commande lit la saisie suivante comme la réponse.
+_Avoid_: proposition, avis, suggestion, feedback.
+
 **Proposition** (`suggestion`) :
 Une entrée de la liste qui s'ouvre au-dessus de la ligne de commande pendant la frappe.
 `Tab` ou la flèche droite l'applique. Elle complète la saisie, là où une trouvaille rend
@@ -166,7 +171,9 @@ Décorative : un lecteur d'écran ne l'annonce jamais. La page introuvable est l
 exception : la mascotte y est le seul contrôle, donc elle y est annoncée. Elle disparaît
 quand le visiteur demande moins de mouvement. Le réseau coupé, elle dort : elle ne se déplace plus et ne répond plus,
 ni à une commande, ni à la souris, jusqu'au retour du réseau.
-_Avoid_: slime, avatar, personnage.
+« Le slime » dans les messages que la page affiche, « la mascotte » dans les réglages et
+la documentation. La forme `slime` reste une valeur de **Forme**.
+_Avoid_: avatar, personnage.
 
 **Forme** (`form`) :
 La créature que la mascotte montre. Trois valeurs : `slime`, `cube`, `pingouin`. La commande
