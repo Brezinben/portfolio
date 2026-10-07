@@ -17,7 +17,7 @@
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.13.0",
-    "@oxlint/plugins": "^1.81.0",
+    "@oxlint/plugins": "^1.86.0",
     "@playwright/test": "1.63.0",
     "@stylistic/eslint-plugin": "^5.10.0",
     "@types/dom-chromium-ai": "0.0.17",
