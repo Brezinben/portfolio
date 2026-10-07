@@ -21,7 +21,7 @@
     "@playwright/test": "1.63.0",
     "@stylistic/eslint-plugin": "^5.10.0",
     "@types/dom-chromium-ai": "0.0.17",
-    "@types/node": "^26.4.1",
+    "@types/node": "^26.6.4",
     "html-minifier-terser": "^7.2.0",
     "oxfmt": "0.66.0",
     "oxlint": "1.81.0",
