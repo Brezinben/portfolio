@@ -2334,6 +2334,17 @@ a:hover {
   color: var(--acc-text);
 }
 
+/* Lu par le lecteur d'écran, absent de l'écran : le badge montre « 0 | 29 » et se lit
+ « succès : 0 sur 29 ». */
+.tm [data-sr] {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
 .tm [data-ach-count] {
   color: var(--acc-text);
 }

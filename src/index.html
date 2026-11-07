@@ -980,7 +980,6 @@
           <button
             type="button"
             data-ctl="ach"
-            :aria-label="badgeLabel"
             @click="openAchievements('interface')"
           >
             <span data-ach-mark :data-ach-nudge="unseen > 0 ? '' : null"
@@ -988,7 +987,9 @@
               ><template x-if="unseen > 0"
                 ><span data-ach-new aria-hidden="true"></span></template></span
             ><span
-              ><span data-ach-count x-text="won"></span> | <span x-text="ACHIEVEMENTS.length"></span
+              ><span data-sr>succès : </span><span data-ach-count x-text="won"></span
+              ><span aria-hidden="true"> | </span><span data-sr> sur </span
+              ><span x-text="ACHIEVEMENTS.length"></span><span data-sr x-text="unseenLabel"></span
             ></span></button
           ><a href="texte.html">texte</a><a href="llms.txt">llms.txt</a>
         </p>

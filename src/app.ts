@@ -721,11 +721,8 @@ document.addEventListener("alpine:init", () => {
         return Math.max(0, this.won - seenCount(this.achievements));
       },
 
-      get badgeLabel() {
-        const left =
-          this.unseen === 0 ? "" : `, ${this.unseen} non regardé${this.unseen > 1 ? "s" : ""}`;
-
-        return `succès : ${this.won} sur ${ACHIEVEMENTS.length}${left}`;
+      get unseenLabel() {
+        return this.unseen === 0 ? "" : `(${this.unseen} non regardé${this.unseen > 1 ? "s" : ""})`;
       },
 
       // Un succès verrouillé garde son rang et son cadenas. La longueur de son sous-titre
