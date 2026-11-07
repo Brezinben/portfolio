@@ -5,9 +5,10 @@ Bun runs the build and the unit tests. Code, comments and commit subjects are in
 
 ## Commands
 
-- Check everything: `bun run check` (`hk check --all`, the same steps as CI).
+- Static checks: `bun run check` (`hk check --all`: format, lint, types, dead code, secrets, workflows).
 - Unit tests: `bun run test`. Browser tests: `bun run test:browser`. Mutation: `bun run test:mutation`.
-- Build: `bun run build`. Package updates: `bun run deps`.
+- Build: `bun run build` publishes the live site (`dist` is the served folder, ADR 0003). To test a
+  build, set `PORTFOLIO_DIST=dist.test`. Package updates: `bun run deps`.
 
 ## Tools
 

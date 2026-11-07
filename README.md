@@ -19,12 +19,12 @@ Domaine cible : `https://me.brezinben.dpdns.org/`
 ## Mise en route
 
 ```
-mise install                      # bun, node, oxlint, oxfmt
+mise install                      # bun, node, hk et ses outils
 bun install                       # Playwright et les outils de construction
 npx playwright install chromium   # le navigateur du seam page
 ```
 
-Les versions des outils sont figées dans `.config/mise/config.toml`. `bun` fournit
+Les versions des outils sont figées dans `.config/mise.toml`. `bun` fournit
 Playwright et les deux outils de construction.
 
 ## Commandes
@@ -38,8 +38,8 @@ bun run test          # seam interpréteur, sans navigateur
 bun run test:browser  # seam page, navigateur réel
 ```
 
-hk lance ces vérifications à chaque commit, et Claude Code les lance après chaque édition.
-La configuration est dans `.config/hk.pkl`.
+hk lance format, lint et secrets après chaque édition de Claude, et y ajoute le code mort à
+chaque commit. `bun run check` ajoute les types. La configuration est dans `.config/hk.pkl`.
 
 `npx oxlint --fix` corrige automatiquement la plupart des violations de style.
 

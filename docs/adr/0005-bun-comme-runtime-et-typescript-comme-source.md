@@ -41,7 +41,7 @@ fichier TypeScript, et un test le vérifie.
 `erasableSyntaxOnly`. Bun et oxc effacent les types sans les contrôler : sans `tsc`, écrire
 `: string` ne garantirait rien.
 
-**Bun devient le runtime**, épinglé à une version exacte dans `.config/mise/config.toml`,
+**Bun devient le runtime**, épinglé à une version exacte dans `.config/mise.toml`,
 comme les autres outils. `bun.lock` remplace `package-lock.json`.
 
 **Node reste, pour Playwright seulement.** Playwright fonctionne sous Bun — mesuré, Chromium

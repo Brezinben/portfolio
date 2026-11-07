@@ -8,8 +8,7 @@ local code = List("**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx", "**/*.mjs", "**/
 local branch_pattern = #"^(main|[a-z0-9]+(-[a-z0-9]+)*)$"#
 local formatted = code + List("**/*.css", "**/*.json", "**/*.jsonc", "**/*.yaml", "**/*.yml", "**/*.md")
 
-// Les étapes qui lisent ou réécrivent un seul fichier : le commit, chaque édition de Claude
-// et le hook Stop les lancent toutes.
+// Les étapes qui ne lisent qu'un fichier : hk peut les lancer sur la seule édition de Claude.
 local per_file = new Mapping<String, Step> {
   ["ox_lint"] = (Builtins.ox_lint) {
     glob = code
@@ -32,9 +31,9 @@ local per_file = new Mapping<String, Step> {
   }
 }
 
-// hk n'a pas de builtin pour le nom de branche.
 local branch_name = new Mapping<String, Step> {
   ["protected_branch"] = Builtins.no_commit_to_branch
+  // hk n'a pas de builtin pour le nom de branche.
   ["branch_name"] {
     check = new CommandSpec {
       command = new Command {
@@ -46,8 +45,8 @@ local branch_name = new Mapping<String, Step> {
   }
 }
 
-// rev-dep lit tout le graphe d'imports en quelques millisecondes : fichiers, exports et
-// dépendances inutilisés, cycles. hk n'a pas de builtin pour rev-dep.
+// rev-dep lit tout le graphe d'imports : un linter fichier par fichier ne voit pas un export
+// inutilisé.
 local dead_code = new Step {
   check = new CommandSpec {
     command = new Command { argv = List("rev-dep", "config", "run") }
@@ -55,13 +54,15 @@ local dead_code = new Step {
   }
 }
 
-// Le dépôt écrit ses sujets de commit en français, à l'impératif, sans préfixe de type.
+// Sujet de commit : 50 caractères au plus, sans préfixe de type. Les sujets que git écrit
+// lui-même (fusion, revert, fixup) échappent à la règle.
 local commit_message = new Step {
   check = new CommandSpec {
     command = new Command {
       argv = List("bash", "-c", #"""
         export LC_ALL=C.UTF-8
         subject=$(head -n 1 "$1")
+        case "$subject" in "Merge "*|"Revert \""*|"fixup! "*|"squash! "*|"amend! "*) exit 0 ;; esac
         length=$(printf %s "$subject" | wc -m)
         if [ "$length" -gt 50 ]; then
           echo "Commit subject has $length characters, 50 maximum: $subject"

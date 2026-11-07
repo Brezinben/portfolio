@@ -17,7 +17,7 @@ function isBooleanTyped(parameter: FunctionParameter): boolean {
     return true;
   }
 
-  // TypeScript infers a boolean for an unannotated parameter defaulted to `true` or `false`.
+  // TypeScript déduit un booléen pour un paramètre sans type dont la valeur par défaut est `true` ou `false`.
   return (
     parameter.type === "AssignmentPattern" &&
     annotation === undefined &&

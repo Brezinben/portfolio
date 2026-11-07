@@ -1,7 +1,8 @@
-import { section } from "./format.ts";
 // Les valeurs figees du terminal : durees, seuils, tables de reglage. Arretees apres
 // iteration dans le canvas, elles ne doivent pas redevenir des reglages.
 // Voir design/DECISIONS.md, section 23.
+
+import { section } from "./format.ts";
 
 export const BOOT_MS = 2000;
 export const FADE_MS = 620;

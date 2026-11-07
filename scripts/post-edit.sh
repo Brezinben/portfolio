@@ -1,18 +1,18 @@
 #!/usr/bin/env bash
-# Claude Code PostToolUse hook: run the hk.pkl steps on the file Claude just edited.
-# Exit 2 sends the remaining errors back to Claude, which fixes them before going on.
-# Workaround (assumption 7): replace when `hk agent hooks` prints a PostToolUse hook.
+# Hook PostToolUse de Claude Code : lance les étapes de .config/hk.pkl sur le fichier édité.
+# La sortie 2 renvoie les erreurs restantes à Claude, qui les corrige avant de continuer.
+# Contournement : à remplacer quand `hk agent hooks` produira un hook PostToolUse.
 set -uo pipefail
 
 file=$(mise x -- jq -r '.tool_input.file_path // empty')
 [ -f "$file" ] || exit 0
 
-# In a worktree, CLAUDE_PROJECT_DIR is the original checkout: take the root from the file.
+# Dans un worktree, CLAUDE_PROJECT_DIR désigne le checkout d'origine : la racine vient du fichier.
 root=$(git -C "$(dirname -- "$file")" rev-parse --show-toplevel 2>/dev/null) || exit 0
-[ -f "$root/.config/hk.pkl" ] || [ -f "$root/hk.pkl" ] || exit 0
+[ -f "$root/.config/hk.pkl" ] || exit 0
 cd "$root" || exit 0
 
-# hk skips files outside the step globs; --no-stage keeps the edit out of the git index.
+# hk ignore les fichiers hors des globs ; --no-stage garde l'édition hors de l'index git.
 if ! out=$(mise x -- hk fix --no-stage --stash none --quiet "$file" 2>&1); then
   echo "$out" >&2
   exit 2

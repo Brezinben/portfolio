@@ -10,5 +10,5 @@ node = "26.13.0"
 worktrunk = "0.81.0"
 
 [env]
-# Les hooks appellent hk par `mise x` : oxlint et oxfmt de node_modules doivent être sur son PATH.
+# Les hooks appellent hk par `mise x` : les binaires de node_modules doivent être sur son PATH.
 _.path = ["{{config_root}}/node_modules/.bin"]

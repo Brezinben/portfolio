@@ -60,14 +60,16 @@ function groupComments(comments: readonly ESTree.Comment[], text: string): Block
  * A block gets the budget of what it documents. A module header explains a file, a function
  * explains behaviour, and everything else explains one value.
  */
-function budgetFor(block: Block, context: { firstStatement: number; functionStarts: Set<number>; text: string }): Budget {
+function budgetFor(
+  block: Block,
+  context: { firstStatement: number; functionStarts: Set<number>; text: string },
+): Budget {
   if (block.end <= context.firstStatement) {
     return "module";
   }
   for (const start of context.functionStarts) {
     const between = context.text.slice(block.end, start);
 
-    // The comment sits right above the function: only indentation and one line break between them.
     if (start >= block.end && between.trim() === "" && between.split("\n").length <= 2) {
       return "function";
     }
@@ -83,14 +85,19 @@ function isPrelude(statement: ESTree.Directive | ESTree.Statement): boolean {
 
 function declaresFunction(node: ESTree.Node): boolean {
   if (node.type === "VariableDeclaration") {
-    return node.declarations.some(
-      (declarator) =>
-        {return declarator.init?.type === "ArrowFunctionExpression" ||
-        declarator.init?.type === "FunctionExpression"},
-    );
+    return node.declarations.some((declarator) => {
+      return (
+        declarator.init?.type === "ArrowFunctionExpression" ||
+        declarator.init?.type === "FunctionExpression"
+      );
+    });
   }
 
-  return node.type === "FunctionDeclaration" || node.type === "ClassDeclaration" || node.type === "MethodDefinition";
+  return (
+    node.type === "FunctionDeclaration" ||
+    node.type === "ClassDeclaration" ||
+    node.type === "MethodDefinition"
+  );
 }
 
 /** Cap the height of a comment block, so a reason stays a reason and not an essay. */
@@ -99,13 +106,17 @@ export const maxLinesPerCommentBlockRule = defineRule({
     const functionStarts = new Set<number>();
 
     const note = (node: ESTree.Node) => {
-      if (declaresFunction(node)) {functionStarts.add(node.start);}
+      if (declaresFunction(node)) {
+        functionStarts.add(node.start);
+      }
     };
 
     return {
       ClassDeclaration: note,
       ExportDefaultDeclaration(node) {
-        if (declaresFunction(node.declaration)) {functionStarts.add(node.start);}
+        if (declaresFunction(node.declaration)) {
+          functionStarts.add(node.start);
+        }
       },
       ExportNamedDeclaration(node) {
         if (node.declaration !== null && declaresFunction(node.declaration)) {
@@ -115,7 +126,7 @@ export const maxLinesPerCommentBlockRule = defineRule({
       FunctionDeclaration: note,
       MethodDefinition: note,
       "Program:exit"(node) {
-        // SAFETY: meta.schema restricts the first option to these integer fields.
+        // SAFETY: meta.schema limite la première option à ces champs entiers.
         const budgets = (context.options[0] ?? {}) as CommentBudgets;
         const limits = {
           default: budgets.maxLines ?? DEFAULT_MAX_LINES,
@@ -124,7 +135,9 @@ export const maxLinesPerCommentBlockRule = defineRule({
         };
         const text = context.sourceCode.getText();
         const firstStatement =
-          node.body.find((statement) => {return !isPrelude(statement)})?.start ?? text.length;
+          node.body.find((statement) => {
+            return !isPrelude(statement);
+          })?.start ?? text.length;
 
         for (const block of groupComments(node.comments, text)) {
           const budget = budgetFor(block, { firstStatement, functionStarts, text });
