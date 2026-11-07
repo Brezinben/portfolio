@@ -54,7 +54,7 @@ jobs:
       - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         id: navigateurs
         with:
-          key: playwright-${{ runner.os }}-1.63.0
+          key: playwright-${{ runner.os }}-1.64.1
           path: ~/.cache/ms-playwright
 
       - if: steps.navigateurs.outputs.cache-hit != 'true'
