@@ -54,9 +54,9 @@ test("should group the missions under their employer", async ({ page }) => {
 
 test("should open the mission when a timeline entry is confirmed", async ({ page }) => {
   await open(page, "#parcours");
-  await page.getByRole("option", { name: /Kereis/ }).click();
+  await page.getByRole("option", { name: /Kereis/u }).click();
 
-  await expect(page).toHaveURL(/#m-kereis$/);
+  await expect(page).toHaveURL(/#m-kereis$/u);
 });
 
 // Le canvas dispose la stack comme la sortie d'un ls : un rail par domaine, et les

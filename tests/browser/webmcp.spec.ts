@@ -25,7 +25,8 @@ const withAgent = async (page: Page) => {
       });
       document.addEventListener("agent-call", (event) => {
         if (event instanceof CustomEvent) {
-          const { input, name } = event.detail;
+          // SAFETY: seul ce test émet « agent-call », toujours avec ce détail.
+          const { input, name } = event.detail as { input: ToolInput; name: string };
 
           document.documentElement.dataset.agentAnswer = registered.get(name)?.(input) ?? "";
         }
@@ -45,7 +46,7 @@ const withAgent = async (page: Page) => {
       [name, input] as const,
     );
 
-    return page.locator("html").getAttribute("data-agent-answer");
+    return await page.locator("html").getAttribute("data-agent-answer");
   };
 
 test("should declare one tool per intent once the content is loaded", async ({ page }) => {

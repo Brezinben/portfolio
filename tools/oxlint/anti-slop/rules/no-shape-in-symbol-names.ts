@@ -9,15 +9,24 @@ function containsForbiddenSymbolName(name: string): boolean {
 
 /** Return whether an identifier names a statically accessed member owned by another value. */
 function isBorrowedMemberName(node: ESTree.Node): boolean {
-  const { parent } = node;
-  if (parent === null || parent.type !== "MemberExpression") {
-    return false;
-  }
+  const parent = node.parent;
+  if (parent === null || parent.type !== "MemberExpression") return false;
   return parent.property === node && parent.computed === false;
 }
 
 /** Ban the case-insensitive substring "shape" in every JavaScript and TypeScript symbol name. */
 export const noForbiddenTermInSymbolNamesRule = defineRule({
+  meta: {
+    type: "problem",
+    docs: {
+      description:
+        'Disallow the case-insensitive substring "shape" in JavaScript, TypeScript, private, and JSX symbol names.',
+    },
+    messages: {
+      forbiddenSymbolName:
+        'Rename symbol "{{name}}" for its domain role; "shape" describes structure rather than ownership.',
+    },
+  },
   createOnce(context) {
     const reportForbiddenSymbolName = (node: ESTree.Node & { name: string }) => {
       if (!containsForbiddenSymbolName(node.name) || isBorrowedMemberName(node)) return;
@@ -33,16 +42,5 @@ export const noForbiddenTermInSymbolNamesRule = defineRule({
       PrivateIdentifier: reportForbiddenSymbolName,
       JSXIdentifier: reportForbiddenSymbolName,
     };
-  },
-  meta: {
-    docs: {
-      description:
-        'Disallow the case-insensitive substring "shape" in JavaScript, TypeScript, private, and JSX symbol names.',
-    },
-    messages: {
-      forbiddenSymbolName:
-        'Rename symbol "{{name}}" for its domain role; "shape" describes structure rather than ownership.',
-    },
-    type: "problem",
   },
 });

@@ -261,7 +261,7 @@ const route = (call: Call): Outcome => {
 };
 
 export const interpret = (raw: string, context: Context): Outcome => {
-  const input = raw.trim().replace(/\s+/g, " ");
+  const input = raw.trim().replaceAll(/\s+/gu, " ");
 
   if (!input) {
     return { effects: [], lines: [] };
@@ -271,8 +271,8 @@ export const interpret = (raw: string, context: Context): Outcome => {
     return answerPending(input, context.pending);
   }
 
-  const prefixed = /^[/:]/.test(input),
-    parts = input.replace(/^[/:]+/, "").split(" "),
+  const prefixed = /^[/:]/u.test(input),
+    parts = input.replace(/^[/:]+/u, "").split(" "),
     typed = (parts[0] ?? "").toLowerCase(),
     command = lookup(ALIASES, typed) ?? typed,
     argument = (parts[1] ?? "").toLowerCase(),

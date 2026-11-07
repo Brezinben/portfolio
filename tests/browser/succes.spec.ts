@@ -23,7 +23,7 @@ const boot = async (page: Page) => {
     return page.evaluate(() => {
       // SAFETY: la page vient d'écrire ce tableau elle-même. L'affirmation ne sert qu'à
       // rendre le contenu comparable, et un JSON illisible ferait tomber le test ici.
-      const marks = JSON.parse(localStorage["bd-term-achievements"] ?? "[]") as string[];
+      const marks = JSON.parse(localStorage.getItem("bd-term-achievements") ?? "[]") as string[];
 
       return marks;
     });

@@ -25,7 +25,7 @@ const boot = async (page: Page) => {
     return page.locator(".radio__params b");
   },
   field = (page: Page) => {
-    return page.getByLabel(/^Seed/);
+    return page.getByLabel(/^Seed/u);
   },
   // Le nom du bouton change avec son état. Seule la touche reste dans le nom.
   play = (page: Page) => {

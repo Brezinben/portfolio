@@ -1,3 +1,4 @@
+import { section } from "./format.ts";
 // Les valeurs figees du terminal : durees, seuils, tables de reglage. Arretees apres
 // iteration dans le canvas, elles ne doivent pas redevenir des reglages.
 // Voir design/DECISIONS.md, section 23.
@@ -75,11 +76,4 @@ export const CONTENT_URL = "content.json";
 // secondes. L'attente se voit a l'ecran, donc mieux vaut la laisser courir que rendre
 // une reponse par defaut alors que le modele allait repondre.
 export const ASK_MS = 15_000;
-export const EMPTY = {
-  cmd: "",
-  id: "",
-  lines: [],
-  out: { lines: [], title: "" },
-  suggest: "",
-  view: "pairs",
-};
+export const EMPTY = section({ id: "", label: "" });

@@ -361,13 +361,13 @@ document.addEventListener("alpine:init", () => {
         return this.power !== "on";
       },
 
-      get current() {
+      get current(): Section {
         return this.commandResult ?? this.open;
       },
 
       // La sortie appartient a la section ouverte, pas a la derniere commande. Une reponse
       // qui prend le resultat ne doit pas vider le volet de droite.
-      get open() {
+      get open(): Section {
         return (
           this.all.find((entry: Section) => {
             return entry.id === this.section;
@@ -411,7 +411,7 @@ document.addEventListener("alpine:init", () => {
 
       // La stack s'arme à la première validation, puis suit le focus. Avant l'armement,
       // aucun texte d'invite ne s'affiche.
-      get stackSummary() {
+      get stackSummary(): string {
         const bricks = this.stack.reduce((total: number, root: Brick) => {
           return total + root.kids.length;
         }, 0);
@@ -547,7 +547,7 @@ document.addEventListener("alpine:init", () => {
       // Le journal se redimensionne au glisser, entre 44 px et la place disponible, et sa
       // hauteur est conservée sur l'appareil. « logH » vaut 0 tant que rien n'a ete regle : la
       // hauteur effective doit donc toujours passer par ce getter, sinon un reglage part de zero.
-      get logHeight() {
+      get logHeight(): number {
         return this.logH || 120;
       },
 
@@ -620,7 +620,7 @@ document.addEventListener("alpine:init", () => {
         );
       },
 
-      get outKeyWidth() {
+      get outKeyWidth(): string {
         const keys = this.open.out.lines.map((row: { k: unknown }) => {
           return String(row.k).length;
         });
@@ -893,7 +893,7 @@ document.addEventListener("alpine:init", () => {
         });
       },
 
-      get all() {
+      get all(): Section[] {
         return [...this.sections, ...this.details];
       },
 
@@ -1271,7 +1271,8 @@ document.addEventListener("alpine:init", () => {
           throw new Error(`HTTP ${response.status}`);
         }
 
-        return response.json();
+        // SAFETY: applyContent valide la forme du contenu avant que rien n'entre dans l'état.
+        return (await response.json()) as RawContent;
       },
 
       // Le contenu arrive du reseau : rien n'entre dans l'etat avant sa lecture ici.
@@ -1280,8 +1281,12 @@ document.addEventListener("alpine:init", () => {
           throw new Error("sections manquantes ou vides");
         }
 
-        this.sections = content.sections.map(section);
-        this.details = (content.details ?? []).map(section);
+        this.sections = content.sections.map((raw) => {
+          return section(raw);
+        });
+        this.details = (content.details ?? []).map((raw) => {
+          return section(raw);
+        });
         this.jokes = content.jokes ?? [];
         this.share = content.share ?? {};
         this.share.url = globalThis.location.origin + globalThis.location.pathname;

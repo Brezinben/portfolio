@@ -31,17 +31,15 @@ Playwright et les deux outils de construction.
 
 ```
 bun run build         # produit dist/ à partir de src/
-bun run lint          # oxlint, via npx : voir la note ci-dessous
+bun run check         # format, lint, types, code mort, secrets : les étapes de la CI
+bun run lint          # oxlint seul
 bun run format        # oxfmt, écriture en place
-bun run format:check  # oxfmt, vérification seule
-bun run test:unit     # seam interpréteur, sans navigateur
+bun run test          # seam interpréteur, sans navigateur
 bun run test:browser  # seam page, navigateur réel
-bun run test          # les deux
 ```
 
-Le script `lint` appelle `npx oxlint` et non `oxlint`. Les règles `@stylistic` sont un
-greffon JavaScript, que le binaire autonome ne charge pas. Lancé directement, il ne signale
-aucune erreur **et n'applique pas ces règles non plus**, sans le dire.
+hk lance ces vérifications à chaque commit, et Claude Code les lance après chaque édition.
+La configuration est dans `.config/hk.pkl`.
 
 `npx oxlint --fix` corrige automatiquement la plupart des violations de style.
 

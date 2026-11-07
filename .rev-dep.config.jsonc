@@ -1,0 +1,36 @@
+{
+  "configVersion": "2.2",
+  "$schema": "https://github.com/jayu/rev-dep/blob/master/config-schema/2.2.schema.json?raw=true",
+  "failOnEmptyWorkspace": true,
+  "ignoreFiles": [".claude/**", "dist*/**", "src/vendor/**", "tools/oxlint/anti-slop/**"],
+  "nodeModulesResolution": {
+    "resolutionType": "entry-package",
+    "includeDevDepsFromRoot": false,
+  },
+  "workspaces": [
+    {
+      "path": ".",
+      "prodEntryPoints": ["src/app.ts", "src/404.ts"],
+      "devEntryPoints": ["tests/**", "tools/*.ts", "*.config.*", "**/*.d.ts"],
+      "circularImportsDetection": { "enabled": true, "ignoreTypeImports": true },
+      "orphanFilesDetection": true,
+      "unresolvedImportsDetection": true,
+      "unusedExportsDetection": { "enabled": true, "ignoreTypeExports": true },
+      "unusedNodeModulesDetection": {
+        "enabled": true,
+        "excludeModules": [
+          "@types/**",
+          "@oxlint/plugins",
+          "@stryker-mutator/core",
+          "@stylistic/eslint-plugin",
+          "npm-check-updates",
+          "oxfmt",
+          "oxlint",
+          "oxlint-tsgolint",
+          "rev-dep",
+          "typescript",
+        ],
+      },
+    },
+  ],
+}

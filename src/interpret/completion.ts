@@ -102,9 +102,9 @@ export const candidates = (value: string, context: CompletionContext) => {
   // L'interpréteur normalise les espaces avant de lire la commande. La complétion suit le
   // même chemin, sinon un espace de trop la rend muette. L'espace final, lui, reste : c'est
   // lui qui annonce l'argument suivant.
-  const input = value.replace(/^\s+/u, "").replace(/\s+/gu, " "),
-    slash = /^[/:]/.test(input),
-    bare = input.replace(/^[/:]+/, ""),
+  const input = value.replace(/^\s+/u, "").replaceAll(/\s+/gu, " "),
+    slash = /^[/:]/u.test(input),
+    bare = input.replace(/^[/:]+/u, ""),
     parts = bare.split(" "),
     first = (parts[0] ?? "").toLowerCase();
 

@@ -8,6 +8,9 @@ on:
   push:
     branches: [main]
 
+permissions:
+  contents: read
+
 # Une nouvelle poussee annule la precedente : deux suites navigateur sur la meme branche
 # n'apprennent rien de plus, et occupent un runner pour rien.
 concurrency:
@@ -17,16 +20,14 @@ concurrency:
 jobs:
   verification:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: 1.4.2
+      # mise installe les versions de .config/mise.toml : bun, node, hk et ses outils.
+      - uses: jdx/mise-action@b44d12e7d0d8ee7461bb893e1b1993500433185b # v5.2.7
 
       - run: bun install --frozen-lockfile
-
-      - run: bun run typecheck
 
       # « artefact-sans-source » lit le dossier construit : sans cette etape il ne trouve
       # rien et echoue. En local la suite navigateur l'avait deja construit.
@@ -34,33 +35,24 @@ jobs:
         env:
           PORTFOLIO_DIST: dist.test
 
-      - run: bun run test:unit
+      - run: bun run test
 
-      - run: bun run format:check
-
-      # « lint » ecrit ses corrections : en integration il doit constater, pas reparer.
-      - run: bun x oxlint --format=github
+      # Un commit fait avec --no-verify, ou hors d'un agent, n'est passe par aucun hook local.
+      - run: bun run check
 
   navigateur:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: 1.4.2
-
-      # La construction et le serveur de test passent par « npm run build » : Node reste
-      # necessaire, meme si bun execute le script.
-      - uses: actions/setup-node@v6
-        with:
-          node-version: 26
+      - uses: jdx/mise-action@b44d12e7d0d8ee7461bb893e1b1993500433185b # v5.2.7
 
       - run: bun install --frozen-lockfile
 
       # Les navigateurs pesent plus que les dependances. La cle porte la version de
       # Playwright : une montee de version tire une nouvelle archive, pas l'ancienne.
-      - uses: actions/cache@v4
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         id: navigateurs
         with:
           key: playwright-${{ runner.os }}-1.63.0
@@ -81,7 +73,7 @@ jobs:
           PORTFOLIO_WORKERS: 4
 
       - if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: rapport-playwright
           path: |

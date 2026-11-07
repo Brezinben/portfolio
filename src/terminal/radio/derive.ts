@@ -167,7 +167,7 @@ export const newSeed = () => {
 
 // Le chiffrage est calcule, pas ecrit : la tierce reelle de l'accord decide de la casse. Le
 // volet annonce donc les accords qu'il joue, y compris quand la gamme change leur qualite.
-export const romanNumerals = (scale: Scale, prog: readonly number[]) => {
+const romanNumerals = (scale: Scale, prog: readonly number[]) => {
   return prog
     .map((step) => {
       const third = degreeToMidi(scale, 0, step + 2) - degreeToMidi(scale, 0, step),

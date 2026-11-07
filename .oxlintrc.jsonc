@@ -1,31 +1,27 @@
 {
-  "$schema": "https://raw.githubusercontent.com/oxc-project/oxc/main/npm/oxlint/configuration_schema.json",
-  // La liste remplace les plugins par défaut. Sans « typescript », aucune règle de types
-  // ne tournerait, et « typeAware » ne servirait à rien.
-  "plugins": ["typescript", "jest", "unicorn", "oxc", "promise", "import"],
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["eslint", "typescript", "jest", "unicorn", "oxc", "promise", "import"],
   "jsPlugins": [
     "@stylistic/eslint-plugin",
-    {
-      "name": "anti-slop",
-      "specifier": "./tools/oxlint/anti-slop/index.ts",
-    },
+    { "name": "anti-slop", "specifier": "./tools/oxlint/anti-slop/index.ts" },
   ],
-  "env": {
-    "browser": true,
-    "es2024": true,
-  },
-  "options": {
-    "typeAware": true,
-  },
+  "env": { "browser": true, "es2024": true },
+  "options": { "typeAware": true },
   "categories": {
     "correctness": "error",
     "perf": "error",
     "style": "error",
     "suspicious": "error",
+    "pedantic": "warn",
   },
   "rules": {
     "anti-slop/max-lines-per-comment-block": "error",
     "anti-slop/no-boolean-flag-parameter": "error",
+    // La cible ES2024 n'a pas les helpers d'itérateur que la règle propose.
+    "anti-slop/no-array-filter-map": "off",
+    "anti-slop/no-reduce-accumulator-copy": "error",
+    // @stylistic/padding-line-between-statements porte déjà l'espacement de la maison.
+    "anti-slop/require-readable-spacing": "off",
     "anti-slop/no-chained-type-assertions": "error",
     "anti-slop/no-conditional-empty-object-spread": "error",
     "anti-slop/no-known-value-widening": "error",
@@ -70,86 +66,98 @@
     ],
     "@stylistic/padding-line-between-statements": [
       "error",
-      {
-        "blankLine": "always",
-        "prev": "*",
-        "next": "if",
-      },
-      {
-        "blankLine": "always",
-        "prev": "*",
-        "next": "return",
-      },
-      {
-        "blankLine": "always",
-        "prev": "*",
-        "next": ["class", "function"],
-      },
-      {
-        "blankLine": "always",
-        "prev": ["class", "function"],
-        "next": "*",
-      },
-      {
-        "blankLine": "always",
-        "prev": "*",
-        "next": "break",
-      },
-      {
-        "blankLine": "always",
-        "prev": "*",
-        "next": "throw",
-      },
-      {
-        "blankLine": "always",
-        "prev": ["const", "let", "var"],
-        "next": "*",
-      },
-      {
-        "blankLine": "any",
-        "prev": ["const", "let", "var"],
-        "next": ["const", "let", "var"],
-      },
-      {
-        "blankLine": "never",
-        "prev": "singleline-const",
-        "next": "singleline-const",
-      },
+      { "blankLine": "always", "prev": "*", "next": "if" },
+      { "blankLine": "always", "prev": "*", "next": "return" },
+      { "blankLine": "always", "prev": "*", "next": ["class", "function"] },
+      { "blankLine": "always", "prev": ["class", "function"], "next": "*" },
+      { "blankLine": "always", "prev": "*", "next": "break" },
+      { "blankLine": "always", "prev": "*", "next": "throw" },
+      { "blankLine": "always", "prev": ["const", "let", "var"], "next": "*" },
+      { "blankLine": "any", "prev": ["const", "let", "var"], "next": ["const", "let", "var"] },
+      { "blankLine": "never", "prev": "singleline-const", "next": "singleline-const" },
     ],
     "@stylistic/spaced-comment": [
       "error",
       "always",
-      {
-        "markers": ["/"],
-        "exceptions": ["-", "+", "*"],
-      },
+      { "markers": ["/"], "exceptions": ["-", "+", "*"] },
     ],
-    // Une fonction porte ses accolades et son return, rappel d'une ligne compris. La forme
-    // courte faisait lire deux styles dans un meme fichier, et l'objet qu'elle rend demande
-    // une paire de parentheses qu'on retire par erreur : l'objet devient alors un bloc.
+    // Braces always: a returned object literal needs parentheses that get removed by mistake.
     "arrow-body-style": ["error", "always"],
-    "capitalized-comments": [
-      "error",
-      "always",
-      {
-        "ignoreConsecutiveComments": true,
-      },
-    ],
+    "capitalized-comments": ["error", "always", { "ignoreConsecutiveComments": true }],
     "complexity": "error",
     "default-case": "error",
-    "eqeqeq": "error",
     "no-cond-assign": ["error", "always"],
     "no-console": "error",
     "no-use-before-define": "error",
-    "require-await": "error",
+    // Named helpers are declarations; callbacks stay arrows. The style category defaults to expressions.
+    "func-style": ["error", "declaration", { "allowArrowFunctions": true }],
+    // `!!value` reads as a boolean cast; other implicit coercions hide intent.
+    "no-implicit-coercion": ["error", { "boolean": false }],
+    // A leading underscore marks a parameter or binding kept on purpose.
+    "no-unused-vars": ["error", { "varsIgnorePattern": "^_", "argsIgnorePattern": "^_" }],
+    // import/no-duplicates covers it and allows a separate `import type` from the same module.
+    "no-duplicate-imports": "off",
+    "import/no-webpack-loader-syntax": "error",
+    // An index that re-exports a folder hides where code lives and defeats tree shaking.
+    "oxc/no-barrel-file": "error",
+    "promise/catch-or-return": "error",
+    // Both method forms are fine; the rule only picks one.
     "typescript/method-signature-style": "off",
-    // Chaque assertion de type porte déjà un commentaire SAFETY, exigé par
-    // anti-slop/require-safety-comment-for-type-assertion. Cette règle doublerait le contrôle.
+    // Every type assertion already has a SAFETY comment required by anti-slop/require-safety-comment-for-type-assertion.
     "typescript/no-unsafe-type-assertion": "off",
+    "typescript/no-explicit-any": "error",
+    "typescript/no-non-null-assertion": "error",
+    "typescript/strict-boolean-expressions": [
+      "error",
+      { "allowNullableBoolean": true, "allowNullableString": true },
+    ],
+    "import/no-cycle": "error",
+    "max-statements": ["error", 20],
+    // It fires on every literal, including 0, 1 and array indexes.
+    "no-magic-numbers": "off",
+    // It bans the ternary operator outright.
+    "no-ternary": "off",
+    // Named exports are the convention: these rules push toward default exports or one export block.
+    "import/no-named-export": "off",
+    "import/prefer-default-export": "off",
+    "import/group-exports": "off",
+    "import/exports-last": "off",
+    // It flags short names that read well in a small scope: i, x, e.
+    "id-length": "off",
+    // One declaration per statement reads better than a merged one.
+    "eslint/one-var": "off",
+    // The specifier style changes nothing in the output unless tsconfig sets verbatimModuleSyntax (see lint.md).
+    "import/consistent-type-specifier-style": "off",
+    // The formatter decides the case of number literals.
+    "unicorn/number-literal-case": "off",
+    // Awaiting in a loop is often the intent: sequential calls, rate limits, ordered side effects.
+    "no-await-in-loop": "off",
+    // Leading underscores are a naming convention, not a defect.
+    "no-underscore-dangle": "off",
+    // An if/else often reads better than the ternary the rule asks for.
+    "unicorn/prefer-ternary": "off",
+    // Both `type` and `interface` are fine; the rule only picks one.
+    "typescript/consistent-type-definitions": "off",
+    // The rule sorts by the first member name, which scatters the library and local import groups.
+    "sort-imports": "off",
+    // DOM APIs take and return null.
+    "unicorn/no-null": "off",
+    // DOM types are mutable, so almost no parameter can be deeply readonly.
+    "typescript/prefer-readonly-parameter-types": "off",
+    // getElementById is the direct API for an id lookup.
+    "unicorn/prefer-query-selector": "off",
+    // Stylesheets are imported for their side effects.
+    "import/no-unassigned-import": ["error", { "allow": ["**/*.css"] }],
+    "eqeqeq": "error",
+    "require-await": "error",
+    "import/no-nodejs-modules": "error",
+    "typescript/no-confusing-void-expression": "error",
+    "typescript/prefer-nullish-coalescing": "error",
+    "typescript/switch-exhaustiveness-check": "error",
+    "unicorn/no-negated-condition": "error",
     // Les dessins de la page n'emploient que des glyphes d'un seul point de code : un point
     // de code y vaut une case, et le découpage par graphème n'apporterait rien.
     "typescript/no-misused-spread": "off",
-    "typescript/no-confusing-void-expression": "error",
     // « it » de node:test rend une promesse que le lanceur attend lui-même.
     "typescript/no-floating-promises": [
       "error",
@@ -159,30 +167,29 @@
         ],
       },
     ],
-    "typescript/no-explicit-any": "error",
-    "typescript/no-non-null-assertion": "error",
-    "typescript/prefer-nullish-coalescing": "error",
-    "typescript/strict-boolean-expressions": [
-      "error",
-      { "allowNullableBoolean": true, "allowNullableString": true },
-    ],
-    "typescript/switch-exhaustiveness-check": "error",
-    "unicorn/no-negated-condition": "error",
-    "import/no-nodejs-modules": "error",
-    "no-magic-numbers": "off",
-    "no-ternary": "off",
-    "import/no-named-export": "off",
-    "import/prefer-default-export": "off",
-    "import/group-exports": "off",
-    "import/exports-last": "off",
-    "id-length": "off",
-    "eslint/one-var": "off",
-    "import/no-cycle": "error",
+    // L'ordre des déclarations suit leurs dépendances : une constante lit souvent celle du dessus.
+    "sort-vars": "off",
+    // Elle contredit consistent-return et init-declarations, qui exigent un « undefined » explicite.
+    "unicorn/no-useless-undefined": "off",
+    // max-statements et complexity bornent déjà la taille d'une fonction.
+    "max-lines-per-function": "off",
+    // Le découpage en fichiers suit les contextes de CONTEXT-MAP.md, pas un compte de lignes.
+    "max-lines": "off",
+    // Le point d'entrée compose toutes les tranches de la coquille : il les importe toutes.
+    "import/max-dependencies": "off",
+    // Elle compte aussi les conditions des rappels (filter, page.evaluate), pas seulement le test.
+    "jest/no-conditional-in-test": "off",
+    // Un rappel async qui rend une promesse sous condition l'attend : sinon require-await et
+    // await-thenable se contredisent sur Promise.all.
+    "typescript/return-await": ["error", "always"],
+    // parseFloat lit les longueurs CSS (« 12px ») : Number y rend NaN.
+    "unicorn/prefer-number-coercion": "off",
+    // Un Element hors HTML et un Locator de Playwright n'ont pas de dataset.
+    "unicorn/prefer-dom-node-dataset": "off",
+    // Un tableau de cas lu par it.each cache le scénario que chaque test raconte.
     "jest/prefer-each": "off",
+    // bun test n'a pas besoin d'un hook pour préparer l'état au niveau du module.
     "jest/require-hook": "off",
-    "import/consistent-type-specifier-style": "off",
-    "max-statements": ["error", 20],
-    "unicorn/number-literal-case": "off",
   },
   "ignorePatterns": [
     ".agents/**",

@@ -12,21 +12,21 @@ type ParameterOwner = ESTree.ArrowFunctionExpression | ESTree.Function;
 
 function isBooleanTyped(parameter: FunctionParameter): boolean {
   const annotation = functionParameterTypeAnnotation(parameter)?.typeAnnotation;
+
   if (annotation?.type === "TSBooleanKeyword") {
     return true;
   }
 
-  // Un parametre sans annotation, mais defaite par un litteral vrai ou faux, est infere
-  // booleen par TypeScript au meme titre qu'une annotation explicite.
+  // TypeScript infers a boolean for an unannotated parameter defaulted to `true` or `false`.
   return (
     parameter.type === "AssignmentPattern" &&
     annotation === undefined &&
     parameter.right.type === "Literal" &&
-    typeof parameter.right.value === "boolean"
+    (parameter.right.value === true || parameter.right.value === false)
   );
 }
 
-/** Ban a second-or-later boolean parameter, a call-site flag that only the signature explains. */
+/** Ban a boolean parameter in a function of two or more parameters: the call site needs the signature. */
 export const noBooleanFlagParameterRule = defineRule({
   createOnce(context) {
     const checkParameters = (node: ParameterOwner) => {
@@ -34,10 +34,7 @@ export const noBooleanFlagParameterRule = defineRule({
         return;
       }
 
-      for (const parameter of node.params) {
-        if (!isBooleanTyped(parameter)) {
-          continue;
-        }
+      for (const parameter of node.params.filter(isBooleanTyped)) {
         context.report({
           data: { parameter: functionParameterBindingName(parameter, context.sourceCode) },
           messageId: "booleanParameter",

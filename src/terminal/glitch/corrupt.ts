@@ -42,7 +42,8 @@ export const MOJIBAKE = {
   "✳": "âœ³",
 };
 
-export const POOL = "ĄßĆÐЄҒĢĦƗĴЌŁӍИФ¶ҚЯŞŦЦVЩЖ¥ƵǂǃΔΣΞ∎▓▒░#@&§¤ï¿½�01101";
+const POOL = "ĄßĆÐЄҒĢĦƗĴЌŁӍИФ¶ҚЯŞŦЦVЩЖ¥ƵǂǃΔΣΞ∎▓▒░#@&§¤ï¿½�01101";
+
 export const RAIN = "アイウエオカキクケコサシスセソタチツテトナニヌネノ0123456789";
 
 // Une passe sur trois cent quarante : la corruption doit rester lisible comme un texte

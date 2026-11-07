@@ -168,7 +168,7 @@ test("should pull the mascot out of thinking when a section already seen opens a
 
   const aller = (nom: string) => {
     return page
-      .getByRole("button", { name: new RegExp(nom) })
+      .getByRole("button", { name: new RegExp(nom, "u") })
       .first()
       .click();
   };
@@ -330,7 +330,7 @@ test("should return to idle when animations come back after a theme change", asy
   await boot(page);
   await page.getByRole("button", { name: "options" }).click();
   await page.getByRole("button", { name: "noctis" }).click();
-  await page.getByRole("button", { name: /animations/ }).click();
+  await page.getByRole("button", { name: /animations/u }).click();
   await page.getByRole("dialog").press("Escape");
 
   await expect(mascot(page)).toHaveCount(1);
@@ -484,7 +484,7 @@ test("should reform the mascot after its explosion", async ({ page }) => {
 test("should remove the mascot when animations are turned off", async ({ page }) => {
   await boot(page);
   await page.getByRole("button", { name: "options" }).click();
-  await page.getByRole("button", { name: /animations/ }).click();
+  await page.getByRole("button", { name: /animations/u }).click();
   await page.getByRole("dialog").press("Escape");
 
   await expect(mascot(page)).toHaveCount(0);

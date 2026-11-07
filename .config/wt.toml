@@ -1,0 +1,3 @@
+# Un nouveau worktree n'a pas de node_modules.
+[[post-start]]
+install = "bun install --frozen-lockfile"

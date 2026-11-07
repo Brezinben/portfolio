@@ -21,7 +21,7 @@ const boot = async (page: Page) => {
     return page.evaluate(() => {
       // SAFETY: la page vient d'écrire ce tableau elle-même. Un JSON illisible ferait tomber
       // le test ici, ce qui est le bon endroit.
-      const marks = JSON.parse(localStorage["bd-term-achievements"] ?? "[]") as string[];
+      const marks = JSON.parse(localStorage.getItem("bd-term-achievements") ?? "[]") as string[];
 
       return marks;
     });

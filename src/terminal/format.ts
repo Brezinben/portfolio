@@ -83,14 +83,14 @@ export const barParts = (done: number, total: number, tick?: number) => {
     hollow: HOLLOW.repeat(total - placed - (head?.length ?? 0)),
   };
 };
-export const TONE = {
+const TONE = {
   acc: "var(--acc)",
   fg: "var(--fg)",
   fg2: "var(--fg2)",
   ok: "var(--ok)",
   warn: "var(--warn)",
 };
-export const GLYPHS = {
+const GLYPHS = {
   " ": ["  ", "  ", "  ", "  ", "  ", "  ", "  ", "  "],
   A: [" ██ ", "█  █", "█  █", "████", "█  █", "█  █", "█  █", "    "],
   B: ["███ ", "█  █", "█  █", "███ ", "█  █", "█  █", "███ ", "    "],
@@ -102,7 +102,7 @@ export const GLYPHS = {
   N: ["█  █", "██ █", "██ █", "█ ██", "█ ██", "█  █", "█  █", "    "],
   V: ["█  █", "█  █", "█  █", "█  █", "█  █", " ██ ", "  █ ", "    "],
 };
-export const dots = (word: string) => {
+const dots = (word: string) => {
   const rows = ["", "", "", "", "", "", "", ""];
 
   for (const character of word.toUpperCase()) {
@@ -117,8 +117,8 @@ export const dots = (word: string) => {
 };
 // Le bandeau est dessiné en box-shadow, comme la mascotte : aucune image, aucun
 // caractère. Valeurs figées du canvas : pixel de 5 px, point de 4 px.
-export const BANNER_PX = 5;
-export const pixels = (rows: string[], colour: string) => {
+const BANNER_PX = 5;
+const pixels = (rows: string[], colour: string) => {
   const shadows: string[] = [];
 
   rows.forEach((row, y) => {
@@ -133,7 +133,7 @@ export const pixels = (rows: string[], colour: string) => {
 };
 
 /* oxlint-disable anti-slop/no-shape-in-symbol-names -- terme du glossaire, voir ShapedLine */
-export const banner = (shaped: { banner: string; text: string }): Banner => {
+const banner = (shaped: { banner: string; text: string }): Banner => {
   const rows = dots(shaped.banner);
 
   return {
@@ -150,6 +150,7 @@ export const banner = (shaped: { banner: string; text: string }): Banner => {
     }px`,
   };
 };
+
 // Ce qu'une sortie a réellement imprimé, jetons compris.
 export const printed = (lines: Printable[]) => {
   return lines.reduce((total: number, entry: Printable) => {
@@ -166,7 +167,7 @@ export const printed = (lines: Printable[]) => {
 };
 // Le bandeau change de nature ici : l'interpreteur rend le mot a dessiner, la coquille
 // rend la geometrie et l'ombre que le balisage ne sait pas calculer.
-export const line = (raw: ContentLine): ShapedLine => {
+const line = (raw: ContentLine): ShapedLine => {
   const shaped = contentLine(raw);
 
   if (shaped.banner !== undefined && shaped.text !== undefined && shaped.tone !== undefined) {
@@ -181,7 +182,7 @@ export const line = (raw: ContentLine): ShapedLine => {
 };
 /* eslint-enable anti-slop/no-shape-in-symbol-names */
 
-export const outPane = (out: RawOut | undefined) => {
+const outPane = (out: RawOut | undefined) => {
   return {
     lines: (out?.lines ?? []).map((row: (number | string)[]) => {
       return {
@@ -194,6 +195,7 @@ export const outPane = (out: RawOut | undefined) => {
     title: out?.title ?? "",
   };
 };
+
 export const section = (raw: RawSection) => {
   return {
     ask: raw.ask ?? "",
@@ -201,7 +203,9 @@ export const section = (raw: RawSection) => {
     dot: safeTone(raw.dot, "ok"),
     id: raw.id,
     label: raw.label,
-    lines: (raw.lines ?? []).map(line),
+    lines: (raw.lines ?? []).map((entry) => {
+      return line(entry);
+    }),
     out: outPane(raw.out),
     sub: raw.sub ?? "",
     suggest: raw.suggest ?? "",

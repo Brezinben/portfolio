@@ -21,7 +21,7 @@ const boot = async (page: Page, hash = "") => {
 test("should move to the first inner element of the section on arrow right", async ({ page }) => {
   await boot(page);
   await page
-    .getByRole("button", { name: /^stack/ })
+    .getByRole("button", { name: /^stack/u })
     .first()
     .focus();
   await page.keyboard.press("ArrowRight");
@@ -50,9 +50,9 @@ test("should keep the focus outline inside the result, down to the last column",
 
 test("should give every section a shareable anchor", async ({ page }) => {
   await boot(page);
-  await page.getByRole("button", { name: /^stack/ }).click();
+  await page.getByRole("button", { name: /^stack/u }).click();
 
-  await expect(page).toHaveURL(/#stack$/);
+  await expect(page).toHaveURL(/#stack$/u);
   await expect(main(page)).toContainText("bd stack --tree");
 });
 
@@ -70,7 +70,7 @@ test("should fall back to whoami on an unknown anchor", async ({ page }) => {
 
 test("should go back to the previous section on the browser back button", async ({ page }) => {
   await boot(page);
-  await page.getByRole("button", { name: /^stack/ }).click();
+  await page.getByRole("button", { name: /^stack/u }).click();
   await expect(main(page)).toContainText("bd stack --tree");
 
   await page.goBack();
@@ -80,9 +80,9 @@ test("should go back to the previous section on the browser back button", async 
 
 test("should make every mission reachable and give it an anchor", async ({ page }) => {
   await boot(page);
-  await page.getByRole("button", { name: /kereis/i }).click();
+  await page.getByRole("button", { name: /kereis/iu }).click();
 
-  await expect(page).toHaveURL(/#m-kereis$/);
+  await expect(page).toHaveURL(/#m-kereis$/u);
 });
 
 // Première visite : la commande se tape. Retour : immédiat, l'effet ne devient pas une attente.
@@ -90,7 +90,7 @@ test("should type the command on the first visit and answer at once on return", 
   page,
 }) => {
   await boot(page);
-  await page.getByRole("button", { name: /^stack/ }).click();
+  await page.getByRole("button", { name: /^stack/u }).click();
 
   const typing = Date.now();
 
@@ -98,12 +98,12 @@ test("should type the command on the first visit and answer at once on return", 
 
   const first = Date.now() - typing;
 
-  await page.getByRole("button", { name: /^whoami/ }).click();
+  await page.getByRole("button", { name: /^whoami/u }).click();
   await expect(main(page)).toContainText("bd whoami --verbose");
 
   const again = Date.now();
 
-  await page.getByRole("button", { name: /^stack/ }).click();
+  await page.getByRole("button", { name: /^stack/u }).click();
   await expect(main(page)).toContainText("bd stack --tree --depth=2");
 
   expect(Date.now() - again, "a section already seen answers faster").toBeLessThan(first);
