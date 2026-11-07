@@ -19,29 +19,27 @@ Domaine cible : `https://me.brezinben.dpdns.org/`
 ## Mise en route
 
 ```
-mise install                      # bun, node, oxlint, oxfmt
+mise install                      # bun, node, hk et ses outils
 bun install                       # Playwright et les outils de construction
 npx playwright install chromium   # le navigateur du seam page
 ```
 
-Les versions des outils sont figées dans `.config/mise/config.toml`. `bun` fournit
+Les versions des outils sont figées dans `.config/mise.toml`. `bun` fournit
 Playwright et les deux outils de construction.
 
 ## Commandes
 
 ```
 bun run build         # produit dist/ à partir de src/
-bun run lint          # oxlint, via npx : voir la note ci-dessous
+bun run check         # format, lint, types, code mort, secrets : les étapes de la CI
+bun run lint          # oxlint seul
 bun run format        # oxfmt, écriture en place
-bun run format:check  # oxfmt, vérification seule
-bun run test:unit     # seam interpréteur, sans navigateur
+bun run test          # seam interpréteur, sans navigateur
 bun run test:browser  # seam page, navigateur réel
-bun run test          # les deux
 ```
 
-Le script `lint` appelle `npx oxlint` et non `oxlint`. Les règles `@stylistic` sont un
-greffon JavaScript, que le binaire autonome ne charge pas. Lancé directement, il ne signale
-aucune erreur **et n'applique pas ces règles non plus**, sans le dire.
+hk lance format, lint et secrets après chaque édition de Claude, et y ajoute le code mort à
+chaque commit. `bun run check` ajoute les types. La configuration est dans `.config/hk.pkl`.
 
 `npx oxlint --fix` corrige automatiquement la plupart des violations de style.
 

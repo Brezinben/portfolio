@@ -16,6 +16,9 @@ const SOURCE = new URL("../../src/", import.meta.url),
   llms = read("llms.txt"),
   llmsFull = read("llms-full.txt"),
   texte = read("texte.html"),
+  absent = (valeur: string) => {
+    return !texte.includes(valeur.replaceAll("&", "&amp;")) || !llmsFull.includes(valeur);
+  },
   errorSheet = read("404.css"),
   styles = read("styles.css"),
   locs = [...sitemap.matchAll(/<loc>(?<url>[^<]+)<\/loc>/gu)].map((found) => {
@@ -81,7 +84,7 @@ it("should follow the grammar of the convention in llms.txt", () => {
 
   const sections = llms.split(/^## .+$/mu).slice(1);
 
-  assert.ok(sections.length >= 1, "llms.txt carries no section");
+  assert.ok(sections.length > 0, "llms.txt carries no section");
 
   for (const section of sections) {
     const entrees = section.trim().split(/\n(?=- )/u);
@@ -162,16 +165,15 @@ it("should carry all of content.json in the text version and in the full content
   // SAFETY: content.json est un artefact du dépôt, versionné à côté de ce test, et son
   // schéma est tenu par tests/unit/content.test.ts. Seules trois clés sont lues ici.
   const contenu = JSON.parse(read("content.json")) as {
-      stack: { kids: string[] }[];
-      techNotes: Record<string, { note: string; where: string }>;
-      timeline: { org: string }[];
-    },
-    absent = (valeur: string) => {
-      return !texte.includes(valeur.replaceAll("&", "&amp;")) || !llmsFull.includes(valeur);
-    };
+    stack: { kids: string[] }[];
+    techNotes: Record<string, { note: string; where: string }>;
+    timeline: { org: string }[];
+  };
 
   assert.deepEqual(
-    Object.keys(contenu.techNotes).filter(absent),
+    Object.keys(contenu.techNotes).filter((valeur) => {
+      return absent(valeur);
+    }),
     [],
     "some tech notes are missing",
   );
@@ -180,7 +182,9 @@ it("should carry all of content.json in the text version and in the full content
       .flatMap((groupe) => {
         return groupe.kids;
       })
-      .filter(absent),
+      .filter((valeur) => {
+        return absent(valeur);
+      }),
     [],
     "some stack technologies are missing",
   );
@@ -189,7 +193,9 @@ it("should carry all of content.json in the text version and in the full content
       .map((entree) => {
         return entree.org;
       })
-      .filter(absent),
+      .filter((valeur) => {
+        return absent(valeur);
+      }),
     [],
     "some timeline entries are missing",
   );
@@ -231,7 +237,9 @@ it("should carry the same notes, places and contact in every copy", () => {
         .flatMap((entry) => {
           return [entry.role, entry.note];
         }),
-    ].map(flat);
+    ].map((fact) => {
+      return flat(fact);
+    });
 
   for (const [name, copy] of copies) {
     assert.deepEqual(

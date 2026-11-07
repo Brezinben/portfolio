@@ -101,8 +101,8 @@ test.describe("on touch", () => {
   // Les listes sont sous le volet central : sans ce deplacement, toucher une section
   // laissait le visiteur devant la liste, et rendait le resultat au-dessus de l'ecran.
   for (const [quoi, nom] of [
-    ["section", /impact/],
-    ["mission", /kereis/],
+    ["section", /impact/u],
+    ["mission", /kereis/u],
   ] as const) {
     test(`should bring the result on screen when a ${quoi} is touched`, async ({ page }) => {
       await boot(page);

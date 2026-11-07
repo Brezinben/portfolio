@@ -14,7 +14,7 @@ const THEMES = ["dark", "light", "noctis", "azureus", "uva", "bordo", "lux", "hi
 test("should load the text version with no image and no external script", async ({ page }) => {
   await page.goto("/texte.html");
 
-  await expect(page).toHaveTitle(/Benjamin David/);
+  await expect(page).toHaveTitle(/Benjamin David/u);
   await expect(page.locator("html")).toHaveAttribute("lang", "fr");
   await expect(page.locator("img")).toHaveCount(0);
   await expect(page.locator("script[src]")).toHaveCount(0);
@@ -71,7 +71,7 @@ test("should not give the same background for two themes", async ({ page }) => {
     }, theme);
     await page.goto("/texte.html");
 
-    return fond(page);
+    return await fond(page);
   };
 
   expect(await lire("noctis")).not.toBe(await lire("bordo"));

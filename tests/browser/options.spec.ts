@@ -92,14 +92,14 @@ test("should change the setting that holds the focus on arrow right", async ({ p
   await boot(page);
   await openOpts(page);
 
-  const animations = page.getByRole("button", { name: /animations/ });
+  const animations = page.getByRole("button", { name: /animations/u });
 
   await animations.focus();
   await animations.press("ArrowRight");
 
   await expect(animations).toHaveAttribute("aria-pressed", "false");
   await expect(
-    page.getByRole("button", { name: /output pane/ }),
+    page.getByRole("button", { name: /output pane/u }),
     "the neighbour does not move",
   ).toHaveAttribute("aria-pressed", "true");
 });
@@ -189,7 +189,7 @@ test("should remove the output pane from the page when it is hidden", async ({ p
   await expect(page.locator('[data-pane="out"]')).toBeVisible();
 
   await openOpts(page);
-  await page.getByRole("button", { name: /output pane/ }).click();
+  await page.getByRole("button", { name: /output pane/u }).click();
   await page.getByRole("dialog").press("Escape");
 
   await expect(page.locator('[data-pane="out"]')).toBeHidden();

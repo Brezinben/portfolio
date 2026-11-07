@@ -51,7 +51,7 @@ test("should keep the ligatures off", async ({ page }) => {
     };
   });
 
-  expect(`${settings.features} ${settings.ligatures}`).toMatch(/none|liga/);
+  expect(`${settings.features} ${settings.ligatures}`).toMatch(/none|liga/u);
 });
 
 test("should raise the context gauge on every command", async ({ page }) => {

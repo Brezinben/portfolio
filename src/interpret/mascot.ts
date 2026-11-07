@@ -13,7 +13,7 @@ export interface Told {
   lines: Line[];
 }
 
-export const EXPRESSIONS: Record<Expression, string> = {
+const EXPRESSIONS: Record<Expression, string> = {
   alert: "surpris",
   happy: "content",
   idle: "neutre",
@@ -22,6 +22,7 @@ export const EXPRESSIONS: Record<Expression, string> = {
   scared: "apeuré",
   sleep: "endormi",
 };
+
 // Deux listes, et elles disent deux choses différentes. « EXPRESSIONS » nomme toutes les
 // expressions, « idle » compris, car « say » s'en sert pour ramener la mascotte au repos.
 // « OFFERED » est ce que la commande propose, et « idle » n'y est pas : elle y est déjà.

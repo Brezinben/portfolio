@@ -23,7 +23,7 @@ const boot = async (page: Page) => {
     return page.evaluate(() => {
       // SAFETY: la page vient d'écrire ce tableau elle-même. L'affirmation ne sert qu'à
       // rendre le contenu comparable, et un JSON illisible ferait tomber le test ici.
-      const marks = JSON.parse(localStorage["bd-term-achievements"] ?? "[]") as string[];
+      const marks = JSON.parse(localStorage.getItem("bd-term-achievements") ?? "[]") as string[];
 
       return marks;
     });
@@ -32,8 +32,16 @@ const boot = async (page: Page) => {
 test("should start with nothing won and nothing to look at", async ({ page }) => {
   await boot(page);
 
-  await expect(badge(page)).toHaveAttribute("aria-label", `succès : 0 sur ${ACHIEVEMENTS.length}`);
+  await expect(badge(page)).toHaveAccessibleName(`succès : 0 sur ${ACHIEVEMENTS.length}`);
   await expect(page.locator("[data-ach-new]")).toHaveCount(0);
+});
+
+// Le badge montre « 0 | 29 » et se lit « 0 sur 29 » : la barre ne se prononce pas.
+test("should show a bar between the counts and say « sur » instead", async ({ page }) => {
+  await boot(page);
+
+  await expect(badge(page).locator('[aria-hidden="true"]', { hasText: "|" })).toBeVisible();
+  await expect(badge(page)).not.toHaveAttribute("aria-label", /.*/u);
 });
 
 // Une commande tapée en débloque deux : la première commande, et la commande elle-même.
@@ -45,8 +53,7 @@ test("should queue one alert per unlocked achievement", async ({ page }) => {
   await expect(alert(page)).toContainText("succès débloqué");
   await expect(alert(page)).toContainText("première commande");
   await expect(alert(page)).toContainText("le manuel", { timeout: 15_000 });
-  await expect(badge(page)).toHaveAttribute(
-    "aria-label",
+  await expect(badge(page)).toHaveAccessibleName(
     new RegExp(`succès : 2 sur ${ACHIEVEMENTS.length}`, "u"),
   );
 });
@@ -101,7 +108,7 @@ test("should unlock nothing on a command that does not exist", async ({ page }) 
   await type(page, "pipo");
 
   await expect(alert(page)).toBeHidden();
-  await expect(badge(page)).toHaveAttribute("aria-label", `succès : 0 sur ${ACHIEVEMENTS.length}`);
+  await expect(badge(page)).toHaveAccessibleName(`succès : 0 sur ${ACHIEVEMENTS.length}`);
 });
 
 // L'alerte qui a ouvert la liste disparaît au bout de dix secondes. Le focus doit revenir
@@ -160,15 +167,13 @@ test("should hide what is still locked", async ({ page }) => {
 test("should keep a won achievement across a reload", async ({ page }) => {
   await boot(page);
   await type(page, "ls");
-  await expect(badge(page)).toHaveAttribute(
-    "aria-label",
+  await expect(badge(page)).toHaveAccessibleName(
     new RegExp(`succès : 2 sur ${ACHIEVEMENTS.length}`, "u"),
   );
 
   await page.reload();
   await expect(page.locator("[data-boot]")).toHaveCount(0, { timeout: 10_000 });
-  await expect(badge(page)).toHaveAttribute(
-    "aria-label",
+  await expect(badge(page)).toHaveAccessibleName(
     new RegExp(`succès : 2 sur ${ACHIEVEMENTS.length}`, "u"),
   );
   expect(await saved(page)).toContain("ls");
@@ -201,9 +206,8 @@ test("should pick up what the side pages wrote", async ({ page }) => {
   await page.goto("/une/route/qui-n-existe-pas");
   await boot(page);
 
-  await expect(badge(page)).toHaveAttribute(
-    "aria-label",
-    `succès : 2 sur ${ACHIEVEMENTS.length}, 2 non regardés`,
+  await expect(badge(page)).toHaveAccessibleName(
+    `succès : 2 sur ${ACHIEVEMENTS.length} (2 non regardés)`,
   );
   await expect(alert(page)).toHaveCount(0);
 });
@@ -215,8 +219,7 @@ test("should ignore a key the catalogue no longer carries", async ({ page }) => 
   });
   await boot(page);
 
-  await expect(badge(page)).toHaveAttribute(
-    "aria-label",
+  await expect(badge(page)).toHaveAccessibleName(
     new RegExp(`succès : 1 sur ${ACHIEVEMENTS.length}`, "u"),
   );
 });

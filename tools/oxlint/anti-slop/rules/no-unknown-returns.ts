@@ -3,9 +3,9 @@ import { defineRule } from "@oxlint/plugins";
 import type { ESTree } from "@oxlint/plugins";
 
 import {
-  type TypeAliasEnvironment,
   createTypeAliasEnvironment,
   resolvedTypeMatches,
+  type TypeAliasEnvironment,
 } from "../shared/type-alias-resolution.ts";
 
 type FunctionWithReturnType =
@@ -19,6 +19,17 @@ type FunctionWithReturnType =
 
 /** Ban function contracts that return unknown instead of a parsed domain type. */
 export const noUnknownReturnsRule = defineRule({
+  meta: {
+    type: "problem",
+    docs: {
+      description:
+        "Disallow functions whose explicit return contract is unknown or Promise<unknown>.",
+    },
+    messages: {
+      unknownReturn:
+        "This function exposes `unknown` to its caller. Parse the value at its boundary and return a named domain type.",
+    },
+  },
   createOnce(context) {
     let environment: TypeAliasEnvironment | null = null;
 
@@ -33,7 +44,8 @@ export const noUnknownReturnsRule = defineRule({
         if (
           resolved.type !== "TSTypeReference" ||
           resolved.typeName.type !== "Identifier" ||
-          (resolved.typeName.name !== "Promise" && resolved.typeName.name !== "PromiseLike")
+          (resolved.typeName.name !== "Promise" &&
+            resolved.typeName.name !== "PromiseLike")
         ) {
           return false;
         }
@@ -50,7 +62,10 @@ export const noUnknownReturnsRule = defineRule({
 
     return {
       Program(node) {
-        environment = createTypeAliasEnvironment(node, context.sourceCode.visitorKeys);
+        environment = createTypeAliasEnvironment(
+          node,
+          context.sourceCode.visitorKeys,
+        );
       },
       ArrowFunctionExpression: checkReturnType,
       FunctionDeclaration: checkReturnType,
@@ -63,16 +78,5 @@ export const noUnknownReturnsRule = defineRule({
       TSFunctionType: checkReturnType,
       TSMethodSignature: checkReturnType,
     };
-  },
-  meta: {
-    docs: {
-      description:
-        "Disallow functions whose explicit return contract is unknown or Promise<unknown>.",
-    },
-    messages: {
-      unknownReturn:
-        "This function exposes `unknown` to its caller. Parse the value at its boundary and return a named domain type.",
-    },
-    type: "problem",
   },
 });

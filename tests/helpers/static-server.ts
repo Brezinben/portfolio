@@ -74,7 +74,7 @@ const ROOT = resolve(
 
     if (
       COMPRESSIBLE.has(extname(target)) &&
-      /\bgzip\b/.test(request.headers["accept-encoding"] ?? "")
+      /\bgzip\b/u.test(request.headers["accept-encoding"] ?? "")
     ) {
       response.writeHead(status, {
         "content-encoding": "gzip",
@@ -118,7 +118,7 @@ const ROOT = resolve(
 
     return true;
   },
-  server = createServer(async (request, response) => {
+  respond = async (request: IncomingMessage, response: ServerResponse) => {
     // Node ne garantit pas l'URL sur une requete mal formee : sans chemin, rien a servir.
     const target = request.url === undefined ? undefined : resolveTarget(request.url);
 
@@ -133,6 +133,9 @@ const ROOT = resolve(
     }
 
     notFound(response);
+  },
+  server = createServer((request, response) => {
+    void respond(request, response);
   });
 
 server.listen(Number(process.argv[2] ?? 4173), "127.0.0.1");

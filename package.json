@@ -6,27 +6,30 @@
   "type": "module",
   "scripts": {
     "build": "bun tools/build.ts",
+    "check": "hk check --all",
+    "deps": "npm-check-updates --interactive --format group",
     "format": "oxfmt .",
-    "format:check": "oxfmt --check .",
-    "lint": "npx oxlint --fix --format=agent",
-    "test": "bun run typecheck && bun run test:unit",
+    "lint": "oxlint --deny-warnings",
+    "test": "bun test tests/unit/",
     "test:browser": "playwright test",
-    "test:unit": "bun test tests/unit/",
-    "typecheck": "tsc --noEmit",
-    "test:mutation": "bunx @stryker-mutator/core@10.0.0 run"
+    "test:mutation": "stryker run",
+    "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
-    "@axe-core/playwright": "^4.13.0",
-    "@oxlint/plugins": "^1.81.0",
-    "@playwright/test": "1.63.0",
-    "@stylistic/eslint-plugin": "^5.10.0",
-    "@types/dom-chromium-ai": "0.0.17",
-    "@types/node": "^26.4.1",
-    "html-minifier-terser": "^7.2.0",
-    "oxfmt": "0.66.0",
-    "oxlint": "1.81.0",
-    "oxlint-tsgolint": "^7.0.2001",
-    "rolldown": "^1.2.7",
-    "typescript": "^7.0.2"
+    "@axe-core/playwright": "4.14.0",
+    "@oxlint/plugins": "1.91.0",
+    "@playwright/test": "1.64.1",
+    "@stryker-mutator/core": "10.1.1",
+    "@stylistic/eslint-plugin": "5.10.0",
+    "@types/dom-chromium-ai": "0.0.18",
+    "@types/node": "26.6.6",
+    "html-minifier-terser": "7.2.0",
+    "npm-check-updates": "23.1.1",
+    "oxfmt": "0.76.0",
+    "oxlint": "1.91.0",
+    "oxlint-tsgolint": "7.0.2005",
+    "rev-dep": "3.3.0",
+    "rolldown": "1.2.16",
+    "typescript": "7.0.2"
   }
 }

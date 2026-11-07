@@ -1,0 +1,14 @@
+# Versions exactes, et non « latest » : la seule reproductibilité disponible est celle que
+# ce fichier déclare.
+[tools]
+betterleaks = "1.10.0"
+bun = "1.4.4"
+hk = "2.11.1"
+jactionlint = "2.5.0"
+jq = "1.8.2"
+node = "26.13.0"
+worktrunk = "0.81.0"
+
+[env]
+# Les hooks appellent hk par `mise x` : les binaires de node_modules doivent être sur son PATH.
+_.path = ["{{config_root}}/node_modules/.bin"]

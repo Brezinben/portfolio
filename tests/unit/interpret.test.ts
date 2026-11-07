@@ -118,8 +118,8 @@ it("should list the commands and recall the keyboard in the result of help", () 
   const result = interpret("help", CONTEXT),
     body = resultTexts(result).join("\n");
 
-  assert.match(body, /ls · cd <section>/);
-  assert.match(body, /Clavier/);
+  assert.match(body, /ls · cd <section>/u);
+  assert.match(body, /Clavier/u);
   // Rien d'autre n'annonce la recherche globale : la ligne clavier est sa seule affiche.
   assert.match(body, /⌘K ou Ctrl\+K ouvre la recherche globale/u);
   assert.deepEqual(texts(result), ["help", "aide affichée dans le résultat"]);
@@ -146,7 +146,7 @@ it("should navigate to a section named alone", () => {
       return effect.type === "navigate" && effect.id === "stack";
     }),
   );
-  assert.match(result.lines[1]?.t ?? "", /section « stack » chargée/);
+  assert.match(result.lines[1]?.t ?? "", /section « stack » chargée/u);
 });
 
 it("should navigate with cd, and with its aliases open and bd", () => {
@@ -184,7 +184,7 @@ it("should empty the log without showing anything", () => {
 it("should refuse and say so on sudo", () => {
   const result = interpret("/sudo", CONTEXT);
 
-  assert.match(result.lines[1]?.t ?? "", /sudoers/);
+  assert.match(result.lines[1]?.t ?? "", /sudoers/u);
   assert.equal(result.lines[1]?.m, "✗");
 });
 
@@ -194,7 +194,7 @@ it("should answer 418 on coffee", () => {
 
 it("should trap vim, nano and emacs the same way", () => {
   for (const editor of ["/vim", "/nano", "/emacs"]) {
-    assert.match(interpret(editor, CONTEXT).lines[1]?.t ?? "", /:q!/);
+    assert.match(interpret(editor, CONTEXT).lines[1]?.t ?? "", /:q!/u);
   }
 });
 
@@ -211,7 +211,7 @@ it("should put the mascot to sleep on sleep", () => {
 it("should introduce Benjamin and give his address", () => {
   const result = interpret("/benjamin", CONTEXT);
 
-  assert.match(texts(result).join("\n"), /benjamin\.david1@hotmail\.fr/);
+  assert.match(texts(result).join("\n"), /benjamin\.david1@hotmail\.fr/u);
   assert.ok(
     result.effects.some((effect) => {
       return effect.type === "track" && effect.event === "easter_egg";
@@ -260,7 +260,7 @@ it("should accept the real commands without a slash", () => {
 it("should say so and track an unknown command", () => {
   const result = interpret("xyzzy", CONTEXT);
 
-  assert.match(result.lines[1]?.t ?? "", /commande introuvable : xyzzy/);
+  assert.match(result.lines[1]?.t ?? "", /commande introuvable : xyzzy/u);
   assert.ok(
     result.effects.some((effect) => {
       return effect.type === "track" && effect.event === "commande_inconnue";

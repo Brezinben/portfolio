@@ -64,7 +64,9 @@ const SITE = "https://me.brezinben.dpdns.org/",
   declared = (html: string) => {
     return [
       ...new Set(
-        [...html.matchAll(LIEN), ...html.matchAll(META), ...html.matchAll(CSS)].flatMap(chemin),
+        [...html.matchAll(LIEN), ...html.matchAll(META), ...html.matchAll(CSS)].flatMap((found) => {
+          return chemin(found);
+        }),
       ),
     ];
   },

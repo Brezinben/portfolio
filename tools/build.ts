@@ -397,7 +397,7 @@ const unfilter = (filter: number, value: number, around: Around) => {
       const merged = merges[index];
 
       files.forEach((file, band) => {
-        return bands.set(file, band);
+        bands.set(file, band);
       });
       sizes.set(dir, {
         height: (merged?.height ?? 0) * SCALE,
@@ -429,7 +429,7 @@ const unfilter = (filter: number, value: number, around: Around) => {
       // L'adresse de l'image fusionnée reprend la forme de celles qu'elle remplace : une page
       // servie sur une adresse quelconque écrit des chemins absolus, et les garde.
       root = (declared[0] ?? "").startsWith("/") ? "/" : "",
-      folded = text.replace(SHEET_RULE, (_rule, indent: string, file: string) => {
+      folded = text.replaceAll(SHEET_RULE, (_rule, indent: string, file: string) => {
         const band = plan.bands.get(file.replace(LEADING_SLASH, ""));
 
         if (band === undefined) {

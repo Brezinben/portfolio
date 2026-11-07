@@ -2,6 +2,8 @@
 // iteration dans le canvas, elles ne doivent pas redevenir des reglages.
 // Voir design/DECISIONS.md, section 23.
 
+import { section } from "./format.ts";
+
 export const BOOT_MS = 2000;
 export const FADE_MS = 620;
 export const PANES = ["nav", "main", "out"];
@@ -75,11 +77,4 @@ export const CONTENT_URL = "content.json";
 // secondes. L'attente se voit a l'ecran, donc mieux vaut la laisser courir que rendre
 // une reponse par defaut alors que le modele allait repondre.
 export const ASK_MS = 15_000;
-export const EMPTY = {
-  cmd: "",
-  id: "",
-  lines: [],
-  out: { lines: [], title: "" },
-  suggest: "",
-  view: "pairs",
-};
+export const EMPTY = section({ id: "", label: "" });

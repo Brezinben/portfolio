@@ -1,0 +1,110 @@
+amends "package://github.com/jdx/hk/releases/download/v2.11.1/hk@2.11.1#/Config.pkl"
+import "package://github.com/jdx/hk/releases/download/v2.11.1/hk@2.11.1#/Builtins.pkl"
+
+// Le code tiers garde la forme de sa source.
+exclude = List("src/vendor/**", "src/assets/fonts/**", "tools/oxlint/anti-slop/**")
+
+local code = List("**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx", "**/*.mjs", "**/*.cjs")
+local branch_pattern = #"^(main|[a-z0-9]+(-[a-z0-9]+)*)$"#
+local formatted = code + List("**/*.css", "**/*.json", "**/*.jsonc", "**/*.yaml", "**/*.yml", "**/*.md")
+
+// Les étapes qui ne lisent qu'un fichier : hk peut les lancer sur la seule édition de Claude.
+local per_file = new Mapping<String, Step> {
+  ["ox_lint"] = (Builtins.ox_lint) {
+    glob = code
+  }
+  ["oxfmt"] = (Builtins.oxfmt) {
+    glob = formatted
+    depends = "ox_lint"
+  }
+  ["merge_conflict"] = Builtins.check_merge_conflict
+  ["case_conflict"] = Builtins.check_case_conflict
+  ["private_key"] = Builtins.detect_private_key
+  ["large_files"] = Builtins.check_added_large_files
+  ["trailing_whitespace"] = Builtins.trailing_whitespace
+  ["newlines"] = Builtins.newlines
+  ["mise"] = Builtins.mise
+  ["workflows"] = Builtins.jactionlint
+  // Le builtin ne passe aucune configuration, et betterleaks ne lit que celle qu'on lui désigne.
+  ["secrets"] = (Builtins.betterleaks) {
+    env { ["BETTERLEAKS_CONFIG"] = ".config/betterleaks.toml" }
+  }
+}
+
+local branch_name = new Mapping<String, Step> {
+  ["protected_branch"] = Builtins.no_commit_to_branch
+  // hk n'a pas de builtin pour le nom de branche.
+  ["branch_name"] {
+    check = new CommandSpec {
+      command = new Command {
+        // Une tête détachée (rebase, bisect) n'a pas de nom de branche à vérifier.
+        argv = List("sh", "-c", "b=$(git branch --show-current); [ -z \"$b\" ] || printf %s \"$b\" | grep -Eq \"$1\" || { echo \"Branch name must match $1\"; exit 1; }", "sh", branch_pattern)
+      }
+      effect = "read"
+    }
+  }
+}
+
+// rev-dep lit tout le graphe d'imports : un linter fichier par fichier ne voit pas un export
+// inutilisé.
+local dead_code = new Step {
+  check = new CommandSpec {
+    command = new Command { argv = List("rev-dep", "config", "run") }
+    effect = "read"
+  }
+}
+
+// Sujet de commit : 50 caractères au plus, sans préfixe de type. Les sujets que git écrit
+// lui-même (fusion, revert, fixup) échappent à la règle.
+local commit_message = new Step {
+  check = new CommandSpec {
+    command = new Command {
+      argv = List("bash", "-c", #"""
+        export LC_ALL=C.UTF-8
+        subject=$(head -n 1 "$1")
+        case "$subject" in "Merge "*|"Revert \""*|"fixup! "*|"squash! "*|"amend! "*) exit 0 ;; esac
+        length=$(printf %s "$subject" | wc -m)
+        if [ "$length" -gt 50 ]; then
+          echo "Commit subject has $length characters, 50 maximum: $subject"
+          exit 1
+        fi
+        if printf %s "$subject" | grep -Eq '^[a-z]+(\([^)]*\))?!?: '; then
+          echo "Commit subject takes no type prefix: $subject"
+          exit 1
+        fi
+        """#, "bash", "{{commit_msg_file}}")
+    }
+    effect = "read"
+  }
+}
+
+hooks {
+  ["pre-commit"] {
+    fix = true
+    stash = "git"
+    steps {
+      ...per_file
+      ...branch_name
+      ["dead_code"] = dead_code
+    }
+  }
+  ["pre-push"] {
+    steps = branch_name
+  }
+  ["commit-msg"] {
+    steps {
+      ["commit_message"] = commit_message
+    }
+  }
+  ["fix"] {
+    fix = true
+    steps = per_file
+  }
+  ["check"] {
+    steps {
+      ...per_file
+      ["tsc"] = Builtins.tsc
+      ["dead_code"] = dead_code
+    }
+  }
+}
