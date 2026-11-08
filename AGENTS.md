@@ -22,6 +22,7 @@ a rule, edit its config:
 - Secrets: betterleaks, config in `.config/betterleaks.toml`.
 - Machine tools and versions: mise, `.config/mise.toml`. Project tools: `package.json`.
 - Claude Code hooks: `.claude/settings.json`, which calls `scripts/post-edit.sh` and `hk agent stop-hook`.
+- Browser and mutation tests: `.config/playwright.config.ts`, `.config/stryker.config.json`.
 - Worktrees: Worktrunk, `.config/wt.toml`.
 
 ## Agent skills

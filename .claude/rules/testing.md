@@ -28,5 +28,5 @@ Run axe (`@axe-core/playwright`) on every page and state that a browser test rea
 
 ## Mutation tests
 
-`bun run test:mutation` (Stryker, scope in `stryker.config.json`). Run it on the modules you
+`bun run test:mutation` (Stryker, scope in `.config/stryker.config.json`). Run it on the modules you
 changed. A surviving mutant is a missing assertion: add the test, do not raise the threshold.

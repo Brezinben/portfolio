@@ -11,8 +11,8 @@
     "format": "oxfmt .",
     "lint": "oxlint --deny-warnings",
     "test": "bun test tests/unit/",
-    "test:browser": "playwright test",
-    "test:mutation": "stryker run",
+    "test:browser": "playwright test -c .config/playwright.config.ts",
+    "test:mutation": "stryker run .config/stryker.config.json",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {

@@ -11,7 +11,7 @@
     {
       "path": ".",
       "prodEntryPoints": ["src/app.ts", "src/404.ts"],
-      "devEntryPoints": ["tests/**", "tools/*.ts", "*.config.*", "**/*.d.ts"],
+      "devEntryPoints": ["tests/**", "tools/*.ts", ".config/*.config.ts", "**/*.d.ts"],
       "circularImportsDetection": { "enabled": true, "ignoreTypeImports": true },
       "orphanFilesDetection": true,
       "unresolvedImportsDetection": true,
