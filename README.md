@@ -21,7 +21,7 @@ Domaine cible : `https://me.brezinben.dpdns.org/`
 ```
 mise install                      # bun, node, hk et ses outils
 bun install                       # Playwright et les outils de construction
-npx playwright install chromium   # le navigateur du seam page
+bun x playwright install chromium # le navigateur du seam page
 ```
 
 Les versions des outils sont figées dans `.config/mise.toml`. `bun` fournit
@@ -51,17 +51,17 @@ synchrone : il rend les lignes à afficher et des descripteurs d'effets, sans to
 **La page servie** se teste dans un navigateur réel, avec Playwright. Ce seam couvre le
 démarrage, le clavier, le focus, l'accessibilité et le budget de poids.
 
-Playwright sert `dist/` et lance la construction avant. Le seam exerce donc la page compacte, celle
-que le visiteur reçoit, et non la source. Le seam interpréteur, lui, garde
-`src/interpret.js`.
+Playwright construit l'artefact dans `dist.test/`, puis le sert. Le seam exerce donc la page
+compacte, celle que le visiteur reçoit, et non la source. Le seam interpréteur, lui, garde
+`src/interpret.ts`.
 
 Le serveur de test compresse comme le ferait un serveur de production : le budget de poids
 se mesure après compression, sinon le chiffre ne veut rien dire.
 
 ## Déploiement
 
-Un conteneur Caddy monte le dépôt en lecture seule et sert `dist/`. Publier, c'est donc
-`bun run build`. Une sauvegarde de fichier ne part plus en ligne.
+Sur l'hôte `beta`, un conteneur Caddy monte le dépôt en lecture seule et sert `dist/`.
+Publier, c'est donc lancer `bun run build` sur `beta`. Ailleurs, la construction ne publie rien.
 
 `dist` est un lien symbolique vers `.versions/dist/<horodatage>/`. La construction écrit la
 version neuve à côté, puis remplace le lien en une seule opération. Le chemin servi désigne
