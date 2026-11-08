@@ -7,8 +7,9 @@ Bun runs the build and the unit tests. Code, comments and commit subjects are in
 
 - Static checks: `bun run check` (`hk check --all`: format, lint, types, dead code, secrets, workflows).
 - Unit tests: `bun run test`. Browser tests: `bun run test:browser`. Mutation: `bun run test:mutation`.
-- Build: `bun run build` publishes the live site (`dist` is the served folder, ADR 0003). To test a
-  build, set `PORTFOLIO_DIST=dist.test`. Package updates: `bun run deps`.
+- Build: `bun run build` writes `dist`. Only the host `beta` serves `dist` (ADR 0003): a build
+  there publishes the live site, a build elsewhere publishes nothing. To test a build, set
+  `PORTFOLIO_DIST=dist.test`. Package updates: `bun run deps`.
 
 ## Tools
 
@@ -22,21 +23,5 @@ a rule, edit its config:
 - Secrets: betterleaks, config in `.config/betterleaks.toml`.
 - Machine tools and versions: mise, `.config/mise.toml`. Project tools: `package.json`.
 - Claude Code hooks: `.claude/settings.json`, which calls `scripts/post-edit.sh` and `hk agent stop-hook`.
+- Browser and mutation tests: `.config/playwright.config.ts`, `.config/stryker.config.json`.
 - Worktrees: Worktrunk, `.config/wt.toml`.
-
-## Agent skills
-
-### Issue tracker
-
-Issues and specs live as markdown files under `.scratch/<feature-slug>/`.
-See `docs/agents/issue-tracker.md`.
-
-### Triage labels
-
-The five canonical roles. Each label string equals its role name.
-See `docs/agents/triage-labels.md`.
-
-### Domain docs
-
-Single-context: `CONTEXT.md` and `docs/adr/` at the repository root.
-See `docs/agents/domain.md`.

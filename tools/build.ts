@@ -23,7 +23,7 @@ import { minify } from "html-minifier-terser";
 const ROOT = fileURLToPath(new URL("../", import.meta.url)),
   SOURCE = join(ROOT, "src"),
   // La racine servie en ligne est dist/. Les tests construisent ailleurs, sinon lancer la
-  // suite publierait l'arbre de travail. Voir playwright.config.ts.
+  // suite publierait l'arbre de travail. Voir .config/playwright.config.ts.
   OUTPUT = process.env.PORTFOLIO_DIST ?? "dist",
   TARGET = join(ROOT, OUTPUT),
   VERSIONS = join(ROOT, ".versions", OUTPUT),

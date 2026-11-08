@@ -338,7 +338,7 @@ _Avoid_: production, app, sources.
 **Artefact compact** (`dist/`) :
 Le dossier que la construction produit. Les trois mêmes pages que `src/`, sous forme
 minifiée.
-Hors de git. Les tests navigateur servent ce dossier.
+Hors de git. Les tests navigateur servent le même artefact, construit dans `dist.test/`.
 _Avoid_: sortie, distribution, bundle.
 
 **Construction** (`bun run build`) :

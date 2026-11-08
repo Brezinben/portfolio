@@ -65,7 +65,7 @@ jobs:
       - if: steps.navigateurs.outputs.cache-hit == 'true'
         run: bun x playwright install-deps chromium
 
-      # Le plafond de deux workers vient du poste de travail, qui a 7 Go. Le runner en a 16
+      # Le plafond de deux workers vient de beta, qui a 7 Go. Le runner en a 16
       # pour quatre coeurs : il en tient quatre, et la suite passe de neuf minutes a cinq.
       - run: bun run test:browser
         env:
