@@ -10,6 +10,7 @@ The skills speak in terms of five canonical triage roles. This file maps those r
 | `ready-for-human`          | `ready-for-human`    | Requires human implementation            |
 | `wontfix`                  | `wontfix`            | Will not be actioned                     |
 | —                          | `needs-design`       | Waiting on a design decision before any implementation |
+| —                          | `map`                | The map issue of a `/wayfinder` effort  |
 
 When a skill mentions a role (e.g. "apply the AFK-ready triage label"), use the corresponding label string from this table.
 
