@@ -148,3 +148,15 @@ test("should declare and serve an svg and a png favicon on every page", async ({
     }
   }
 });
+
+// Sans crossorigin, le navigateur télécharge la police deux fois : le préchargement et la
+// requête de la feuille de style n'ont pas le même mode de requête.
+test("should preload the terminal font with crossorigin", async ({ page }) => {
+  await page.goto("/");
+
+  const preload = page.locator("link[rel='preload'][as='font']");
+
+  await expect(preload).toHaveAttribute("href", /jetbrains-mono[^/]*\.woff2$/u);
+  await expect(preload).toHaveAttribute("type", "font/woff2");
+  await expect(preload).toHaveAttribute("crossorigin", "");
+});
