@@ -64,15 +64,41 @@
 
       /* Les huit thèmes sont recopiés de index.html. Un test unitaire compare les deux
      relevés : une couleur qui change d'un côté doit changer de l'autre. */
+      /* Un navigateur sans light-dark() ignore le dernier bloc : les deux premiers suffisent
+     à suivre le schéma du système. */
       :root {
         color-scheme: light dark;
-        --bg: light-dark(#f3ecec, #1c1d2b);
-        --panel: light-dark(#fff6f6, #242538);
-        --edge: light-dark(#ded2d2, #33344a);
-        --fg: light-dark(#242538, #fff6f6);
-        --fg2: light-dark(#5a5a70, #9b9db8);
-        --acc: light-dark(#e6a000, #f5b83b);
-        --acc-text: light-dark(#8f5f00, #f5b83b);
+        --bg: #f3ecec;
+        --panel: #fff6f6;
+        --edge: #ded2d2;
+        --fg: #242538;
+        --fg2: #5a5a70;
+        --acc: #e6a000;
+        --acc-text: #8f5f00;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #1c1d2b;
+          --panel: #242538;
+          --edge: #33344a;
+          --fg: #fff6f6;
+          --fg2: #9b9db8;
+          --acc: #f5b83b;
+          --acc-text: #f5b83b;
+        }
+      }
+
+      @supports (color: light-dark(white, black)) {
+        :root {
+          --bg: light-dark(#f3ecec, #1c1d2b);
+          --panel: light-dark(#fff6f6, #242538);
+          --edge: light-dark(#ded2d2, #33344a);
+          --fg: light-dark(#242538, #fff6f6);
+          --fg2: light-dark(#5a5a70, #9b9db8);
+          --acc: light-dark(#e6a000, #f5b83b);
+          --acc-text: light-dark(#8f5f00, #f5b83b);
+        }
       }
 
       :root[data-theme="dark"] {
