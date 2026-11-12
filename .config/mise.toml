@@ -7,6 +7,8 @@ hk = "2.11.1"
 jactionlint = "2.5.0"
 jq = "1.8.2"
 node = "26.13.0"
+# jactionlint vérifie les blocs `run:` des workflows avec le shellcheck du PATH.
+shellcheck = "0.11.0"
 worktrunk = "0.81.0"
 
 [env]

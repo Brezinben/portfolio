@@ -12,6 +12,14 @@
       "path": ".",
       "prodEntryPoints": ["src/app.ts", "src/404.ts"],
       "devEntryPoints": ["tests/**", "tools/*.ts", ".config/*.config.ts", "**/*.d.ts"],
+      "moduleBoundaries": [
+        {
+          "name": "interpreteur",
+          "pattern": "src/interpret/**/*",
+          "deny": ["src/terminal/**/*", "src/app.ts"],
+        },
+        { "name": "coquille", "pattern": "src/terminal/**/*", "deny": ["src/interpret/**/*"] },
+      ],
       "circularImportsDetection": { "enabled": true, "ignoreTypeImports": true },
       "orphanFilesDetection": true,
       "unresolvedImportsDetection": true,
