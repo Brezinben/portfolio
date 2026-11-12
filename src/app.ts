@@ -1080,7 +1080,7 @@ document.addEventListener("alpine:init", () => {
 
       async copy(text: string) {
         try {
-          await globalThis.navigator?.clipboard?.writeText?.(text);
+          await navigator.clipboard.writeText(text);
         } catch {
           this.journal = [
             ...this.journal,
