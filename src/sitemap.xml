@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Le site publie deux pages. llms.txt n'est pas listé ici : un sitemap déclare des pages,
-     et robots.txt le désigne déjà par sa ligne Sitemap et son lien alternate. -->
+     et les deux pages le lient dans leur pied de page. -->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://me.brezinben.dpdns.org/</loc>
