@@ -111,3 +111,40 @@ test("should serve every address the pages declare", async ({ request }) => {
 
   expect(absentes.flat()).toEqual([]);
 });
+
+// Les navigateurs demandent /favicon.ico sans balise : sans fichier, chaque visite écrit un 404
+// dans les journaux et l'onglet reste sans icône.
+test("should serve /favicon.ico as an icon", async ({ request }) => {
+  const response = await request.get("/favicon.ico");
+
+  expect(response.status()).toBe(200);
+  expect(response.headers()["content-type"]).toMatch(/^image\//u);
+});
+
+test("should declare and serve an svg and a png favicon on every page", async ({
+  page,
+  request,
+}) => {
+  for (const address of ["/", "/texte.html", "/page-introuvable"]) {
+    await page.goto(address);
+
+    const icons = await page.locator("head link[rel='icon']").evaluateAll((links) => {
+      return links.map((link) => {
+        return { href: link.getAttribute("href") ?? "", type: link.getAttribute("type") ?? "" };
+      });
+    });
+
+    expect(
+      icons.map((icon) => {
+        return icon.type || icon.href.split(".").pop();
+      }),
+      `${address} icons: ${JSON.stringify(icons)}`,
+    ).toEqual(expect.arrayContaining(["image/svg+xml", "png"]));
+
+    for (const icon of icons) {
+      const response = await request.get(new URL(icon.href, page.url()).href);
+
+      expect(response.status(), `${address} → ${icon.href}`).toBe(200);
+    }
+  }
+});
