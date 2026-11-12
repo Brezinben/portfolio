@@ -33,6 +33,7 @@ import {
   EXEC_MS,
   FADE_MS,
   GLOBAL_LIMIT,
+  TECH_TRACK_MS,
   THEMES,
   TOGGLES,
   TYPE_CPS,
@@ -181,6 +182,7 @@ interface State
   stack: Brick[];
   tech: string;
   techNotes: Record<string, TechNote>;
+  techTimer: Delay | undefined;
   timeline: Step[];
   timelineAt: number;
   typed: string;
@@ -353,6 +355,7 @@ document.addEventListener("alpine:init", () => {
       suggTop: 0,
       tech: "",
       techNotes: {},
+      techTimer: undefined,
       theme: "dark",
       timeline: [],
       timelineAt: 0,
@@ -423,10 +426,13 @@ document.addEventListener("alpine:init", () => {
         return this.techNotes[this.tech];
       },
 
-      // La fiche suit le focus des la premiere techno atteinte. Rien ne s'affiche
-      // tant qu'aucune n'a le focus, donc aucun texte d'invite au depart.
+      // La fiche suit le focus dès la première techno atteinte. La mesure attend que le focus
+      // se pose : une mesure par techno survolée aux flèches noierait le compteur.
       followTech(name: string) {
-        this.track("techno", { nom: name, via: "interface" });
+        clearTimeout(this.techTimer);
+        this.techTimer = setTimeout(() => {
+          this.track("techno", { nom: name, via: "interface" });
+        }, TECH_TRACK_MS);
         this.tech = name;
       },
 

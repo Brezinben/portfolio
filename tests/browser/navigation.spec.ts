@@ -228,3 +228,42 @@ test("should measure one section when enter is held down", async ({ page }) => {
 
   expect(sections, "one gesture, one measure").toBe(1);
 });
+
+// Parcourir la stack aux flèches fait passer le focus sur chaque techno : une mesure par
+// techno noyait le compteur pour un seul geste.
+test("should measure one techno when the arrows run through the stack", async ({ page }) => {
+  await page.route("**/analytics.brezinben.dpdns.org/**", (route) => {
+    return route.abort();
+  });
+  await page.addInitScript(() => {
+    globalThis.hits = [];
+    globalThis.goatcounter = {
+      count: (vars) => {
+        globalThis.hits.push(vars.path);
+      },
+    };
+  });
+  await boot(page, "#stack");
+  await page.evaluate(() => {
+    globalThis.hits = [];
+  });
+  await page.locator("[data-tech]").first().focus();
+  await page.keyboard.press("ArrowRight");
+  await page.keyboard.press("ArrowRight");
+  await page.keyboard.press("ArrowRight");
+
+  const last = (await page.locator("[data-tech]:focus").textContent()) ?? "";
+
+  await expect
+    .poll(
+      () => {
+        return page.evaluate(() => {
+          return globalThis.hits.filter((name) => {
+            return name.startsWith("techno:");
+          });
+        });
+      },
+      { message: "one measure, for the techno the focus rests on" },
+    )
+    .toEqual([`techno:${last.replace(/^[├└]/u, "").trim()},interface`]);
+});
