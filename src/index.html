@@ -3,6 +3,17 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <!-- Classique et en ligne : un script différé ou module passerait après le premier rendu.
+       Il ne pose que le thème choisi. Sans thème choisi, le schéma du système s'applique. -->
+    <script>
+      try {
+        document.documentElement.dataset.theme =
+          JSON.parse(localStorage["bd-term-opts"] || "{}").theme || "";
+      } catch {}
+    </script>
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f3ecec" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#1c1d2b" />
     <title>Benjamin David · Développeur IA &amp; Full Stack</title>
     <meta
       name="description"

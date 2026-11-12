@@ -12,9 +12,24 @@
    inconnue ne charge ni content.json ni app.ts : elle ne peut pas tirer sa feuille de la
    version terminal. Un test unitaire compare les deux tables. */
 :root {
+  color-scheme: light dark;
   --radius: 5px;
   --acc-text: var(--acc);
   --hue: 0deg;
+}
+
+:root[data-theme="dark"],
+:root[data-theme="noctis"],
+:root[data-theme="azureus"],
+:root[data-theme="uva"],
+:root[data-theme="bordo"] {
+  color-scheme: dark;
+}
+
+:root[data-theme="light"],
+:root[data-theme="lux"],
+:root[data-theme="hibernus"] {
+  color-scheme: light;
 }
 
 :root[data-theme="dark"] {

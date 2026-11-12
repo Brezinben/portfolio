@@ -280,3 +280,38 @@ test("should not toggle a locked option with the arrow", async ({ page }) => {
 
   await expect(anim).toContainText("système");
 });
+
+for (const path of ["/", "/texte.html"]) {
+  test(`should paint the chosen scheme before any script file runs on ${path}`, async ({
+    page,
+  }) => {
+    await page.emulateMedia({ colorScheme: "light" });
+    await page.addInitScript(() => {
+      localStorage.setItem("bd-term-opts", JSON.stringify({ theme: "noctis" }));
+    });
+    await page.route("**/*", async (route) => {
+      await (route.request().resourceType() === "script" ? route.abort() : route.continue());
+    });
+    await page.goto(path);
+
+    const scheme = await page.evaluate(() => {
+      return getComputedStyle(document.documentElement).colorScheme;
+    });
+
+    expect(scheme).toBe("dark");
+  });
+}
+
+test("should declare a theme color for each scheme on the three pages", async ({ request }) => {
+  for (const path of ["/", "/texte.html", "/introuvable"]) {
+    const response = await request.get(path),
+      html = await response.text();
+
+    expect(html, `${path} lacks the light theme color`).toMatch(
+      /name="theme-color"[^>]*prefers-color-scheme: light/u,
+    );
+    expect(html, `${path} lacks the dark theme color`).toMatch(
+      /name="theme-color"[^>]*prefers-color-scheme: dark/u,
+    );
+  }
+});

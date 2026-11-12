@@ -13,6 +13,26 @@
   display: none !important;
 }
 
+/* Sans thème choisi, la page suit le schéma du système. Un thème choisi le fixe, pour que
+ le fond du canevas et les barres natives s'accordent à la palette avant le premier rendu. */
+:root {
+  color-scheme: light dark;
+}
+
+:root[data-theme="dark"],
+:root[data-theme="noctis"],
+:root[data-theme="azureus"],
+:root[data-theme="uva"],
+:root[data-theme="bordo"] {
+  color-scheme: dark;
+}
+
+:root[data-theme="light"],
+:root[data-theme="lux"],
+:root[data-theme="hibernus"] {
+  color-scheme: light;
+}
+
 /* Premier element focalisable de la page. Un lecteur d'écran l'annonce avant tout le
  reste, et une tabulation le fait apparaître. Hors de .tm, donc sans variable de
  thème : il doit tenir même si le script ne se charge jamais. */
