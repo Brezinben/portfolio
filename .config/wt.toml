@@ -1,3 +1,7 @@
-# Un nouveau worktree n'a pas de node_modules.
+# Un nouveau worktree reçoit d'abord les fichiers ignorés du worktree principal (node_modules,
+# caches). L'installation part ensuite de cette copie et ne tire que la différence.
+[[post-start]]
+copy = "wt step copy-ignored"
+
 [[post-start]]
 install = "bun install --frozen-lockfile"
