@@ -30,6 +30,7 @@ export const globalSearchSlice = () => {
   return {
     closeGlobal(this: Shell) {
       this.globalOpen = false;
+      this.alertResume();
       // Le nœud qui a ouvert la zone a pu partir entre-temps. Un nœud détaché reste vrai :
       // sans « isConnected », le focus tombe sur le corps de la page.
       this.$nextTick(() => {

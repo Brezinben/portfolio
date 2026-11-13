@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { ACHIEVEMENTS } from "../../src/interpret.ts";
+import { AxeBuilder } from "@axe-core/playwright";
 import type { Page } from "@playwright/test";
 
 // La liste des succès ne s'ouvre qu'après le démarrage : le badge vit dans le pied, que le
@@ -77,10 +78,10 @@ test("should nudge the badge until the list is opened, and not one second longer
 test("should mark the focus on the alert like every other inner element", async ({ page }) => {
   await boot(page);
   await type(page, "ls");
-  await alert(page).locator("button").focus();
+  await alert(page).locator("[data-ctl='ach-alert']").focus();
 
   const marked = await alert(page)
-    .locator("button")
+    .locator("[data-ctl='ach-alert']")
     .evaluate((node) => {
       const style = getComputedStyle(node);
 
@@ -124,7 +125,7 @@ test("should give the focus back to the badge when the alert that opened the lis
   });
   await boot(page);
   await type(page, "ls");
-  await alert(page).locator("button").click();
+  await alert(page).locator("[data-ctl='ach-alert']").click();
   await expect(alert(page)).toBeHidden({ timeout: 20_000 });
   await page.keyboard.press("Escape");
 
@@ -222,4 +223,64 @@ test("should ignore a key the catalogue no longer carries", async ({ page }) => 
   await expect(badge(page)).toHaveAccessibleName(
     new RegExp(`succès : 1 sur ${ACHIEVEMENTS.length}`, "u"),
   );
+});
+
+// Les sept premiers thèmes sont déjà essayés : le huitième, choisi dans la modale des
+// options, débloque « les huit ambiances » pendant que la modale est ouverte.
+test("should hold an achievement earned behind a modal until the modal closes", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await page.evaluate(() => {
+    const tried = ["dark", "light", "noctis", "azureus", "uva", "bordo", "lux"].map((id) => {
+      return `theme:${id}`;
+    });
+
+    localStorage.setItem("bd-term-achievements", JSON.stringify(["first-command", ...tried]));
+  });
+  await boot(page);
+  await page.getByRole("button", { name: "options" }).click();
+  await page.locator("[data-theme-choice='hibernus']").click();
+
+  await expect(alert(page)).toHaveCount(0);
+  await page.keyboard.press("Escape");
+
+  await expect(alert(page)).toContainText("les huit ambiances");
+});
+
+test("should close the alert and give the focus back to where it was", async ({ page }) => {
+  await page.goto("/");
+  await page.evaluate(() => {
+    localStorage.setItem("bd-term-achievements", JSON.stringify(["first-command"]));
+  });
+  await boot(page);
+  await type(page, "ls");
+
+  const cli = page.locator("#cli"),
+    close = alert(page).getByRole("button", { name: "Fermer l'alerte" });
+
+  await cli.focus();
+  await close.focus();
+  await page.keyboard.press("Enter");
+
+  await expect(alert(page)).toHaveCount(0);
+  await expect(cli).toBeFocused();
+});
+
+test("should move the focus to the next alert when a focused alert closes", async ({ page }) => {
+  await boot(page);
+  await type(page, "help");
+
+  const close = alert(page).getByRole("button", { name: "Fermer l'alerte" });
+
+  await expect(alert(page)).toContainText("première commande");
+  await close.focus();
+  await page.keyboard.press("Enter");
+
+  await expect(alert(page)).toContainText("le manuel");
+  await expect(close).toBeFocused();
+
+  const { violations } = await new AxeBuilder({ page }).include("[data-ach-live]").analyze();
+
+  expect(violations).toEqual([]);
 });

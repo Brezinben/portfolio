@@ -252,6 +252,7 @@ document.addEventListener("alpine:init", () => {
       alertCells: [],
       alertLeaving: false,
       alertQueue: [],
+      alertReturn: undefined,
       alertTimer: undefined,
       asker: undefined,
       bubbleTimer: undefined,

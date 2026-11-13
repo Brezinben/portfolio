@@ -124,7 +124,7 @@ test("should keep a focused achievement alert on screen", async ({ page }) => {
   await page.locator("#cli").fill("ls");
   await page.keyboard.press("Enter");
 
-  const button = page.locator("[data-ach-alert] button");
+  const button = page.locator("[data-ctl='ach-alert']");
 
   await button.focus();
   await page.clock.fastForward(30_000);

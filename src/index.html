@@ -642,7 +642,11 @@
              remplie n'annonce rien, faute d'un changement à observer. -->
           <div data-ach-live role="status">
             <template x-if="alerted">
-              <div data-ach-alert :data-ach-leaving="alertLeaving ? '' : null">
+              <div
+                data-ach-alert
+                :data-ach-leaving="alertLeaving ? '' : null"
+                @focusin="alertFocus($event)"
+              >
                 <button type="button" data-ctl="ach-alert" @click="openAchievements('alerte')">
                   <svg class="icon" aria-hidden="true"><use :href="`#i-${alerted.icon}`" /></svg
                   ><span
@@ -652,6 +656,21 @@
                       ><span x-text="alerted.trigger"></span
                       ><span data-ach-caret aria-hidden="true"></span></span
                   ></span>
+                </button>
+                <button
+                  type="button"
+                  data-ctl="ach-alert-close"
+                  aria-label="Fermer l'alerte"
+                  @click="closeAlert()"
+                >
+                  <svg class="icon" aria-hidden="true" viewBox="0 0 16 16">
+                    <path
+                      d="M3 3l10 10M13 3L3 13"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    />
+                  </svg>
                 </button>
                 <template x-if="anim && !reduced">
                   <span data-ach-mask aria-hidden="true">
@@ -977,11 +996,7 @@
           <span data-tone="acc">help</span>
         </p>
         <p data-footer-links>
-          <button
-            type="button"
-            data-ctl="ach"
-            @click="openAchievements('interface')"
-          >
+          <button type="button" data-ctl="ach" @click="openAchievements('interface')">
             <span data-ach-mark :data-ach-nudge="unseen > 0 ? '' : null"
               ><svg class="icon" aria-hidden="true"><use href="#i-trophy" /></svg
               ><template x-if="unseen > 0"

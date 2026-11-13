@@ -67,6 +67,7 @@ export const optionsSlice = () => {
   return slice<OptionsApi>({
     closeOpts(this: Shell) {
       this.optsOpen = false;
+      this.alertResume();
       // « isConnected » : « options » lancé depuis la recherche globale a capturé le champ
       // de la zone, que la fermeture détache. Un nœud détaché reste vrai, et le focus
       // tomberait sur le corps de la page. Même garde que les deux autres modales.

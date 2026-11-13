@@ -82,6 +82,16 @@ a:hover {
   border-bottom-color: var(--acc);
 }
 
+.tm {
+  --target-size: 24px;
+}
+
+@media (pointer: coarse) {
+  .tm {
+    --target-size: 44px;
+  }
+}
+
 .tm[data-theme="dark"],
 .tm [data-swatch][data-theme="dark"] {
   --bg: #1c1d2b;
@@ -2687,14 +2697,14 @@ a:hover {
  6,4:1 au pire des huit thèmes et l'accent de l'icône 3,8:1.
  Le fondu plutôt qu'une couche translucide : la grille de masques passe par-dessus, et
  un fond à demi transparent laisserait voir deux surfaces au lieu d'une. */
-.tm [data-ach-alert] button {
+.tm [data-ach-alert] [data-ctl="ach-alert"] {
   display: grid;
   grid-template-columns: 32px minmax(0, 1fr);
   align-items: center;
   gap: 12px;
   width: 100%;
   box-sizing: border-box;
-  padding: 10px 12px;
+  padding: 10px calc(var(--target-size) + 12px) 10px 12px;
   border: 0;
   border-top: 1px solid var(--edge);
   border-left: 2px solid var(--acc);
@@ -2702,6 +2712,21 @@ a:hover {
   color: var(--fg);
   font: inherit;
   text-align: left;
+  cursor: pointer;
+}
+
+.tm [data-ach-alert] [data-ctl="ach-alert-close"] {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: grid;
+  place-items: center;
+  width: var(--target-size);
+  min-height: var(--target-size);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
   cursor: pointer;
 }
 
