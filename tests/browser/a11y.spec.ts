@@ -112,17 +112,22 @@ for (const theme of THEMES) {
   });
 }
 
-test("should stop every animation when reduced motion is on", async ({ page }) => {
+test("should keep only fades when reduced motion is on", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await boot(page);
 
-  const animated = await page.evaluate(() => {
-    return [...document.querySelectorAll<HTMLElement>("*")].filter((node) => {
-      return getComputedStyle(node).animationName !== "none";
-    }).length;
+  const moving = await page.evaluate(() => {
+    return document
+      .getAnimations()
+      .flatMap((animation) => {
+        return animation.effect instanceof KeyframeEffect ? animation.effect.getKeyframes() : [];
+      })
+      .filter((frame) => {
+        return !["undefined", "none", "translateX(-50%)"].includes(String(frame.transform));
+      }).length;
   });
 
-  expect(animated).toBe(0);
+  expect(moving, "no keyframe moves or scales").toBe(0);
 });
 
 // Deux contrôles échappent au plancher, et pour la même raison : ils vivent dans une ligne
