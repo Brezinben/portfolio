@@ -28,5 +28,6 @@
     "excludedMutations": ["StringLiteral"]
   },
   "reporters": ["clear-text", "progress", "html"],
+  "thresholds": { "break": 75 },
   "tsconfigFile": "stryker-sans-tsconfig.json"
 }

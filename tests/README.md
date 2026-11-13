@@ -17,9 +17,14 @@ fichiers d'une MR, avant la revue :
 bun run test:mutation --mutate src/interpret/consent.ts
 ```
 
-Stryker n'est pas une dépendance : `bunx` le tire à la demande, et la CI ne l'installe pas.
-Le rapport s'écrit dans `reports/mutation/mutation.html`. Stryker ne mute pas les chaînes :
-un texte changé est un changement de contenu, pas un défaut.
+Stryker est une dépendance de développement (`@stryker-mutator/core`). La CI ne lance pas la
+mutation. Le rapport s'écrit dans `reports/mutation/mutation.html`. Stryker ne mute pas les
+chaînes : un texte changé est un changement de contenu, pas un défaut.
+
+`thresholds.break` de `.config/stryker.config.json` fait sortir Stryker en erreur sous ce score.
+Le seuil vaut pour le run entier. Un run sur un seul fichier note ce seul fichier : il peut
+échouer sans défaut dans la suite. Ne baisse pas le seuil pour faire passer une MR : ajoute le
+test qui tue le mutant. Monte le seuil quand le score global monte.
 
 `.config/stryker.config.json` nomme un `tsconfigFile` qui n'existe pas, et c'est voulu. Sans ce
 faux chemin, Stryker réécrirait le tsconfig avec une API que TypeScript 7 n'a plus, puis
