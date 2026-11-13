@@ -50,7 +50,7 @@ const SITE = "https://me.brezinben.dpdns.org/",
   LIEN = /(?:^|\s)(?:href|src)="(?<url>[^"]+)"/gu,
   // Les métadonnées de partage donnent une adresse absolue. Sans ce relevé, l'image de
   // partage échapperait au test.
-  META = /content="(?<url>https:\/\/portfolio\.brezinben\.dpdns\.org\/[^"]*)"/gu,
+  META = /content="(?<url>https:\/\/me\.brezinben\.dpdns\.org\/[^"]*)"/gu,
   CSS = /url\(["']?(?<url>[^"')]+)["']?\)/gu,
   EMPREINTE = /\.[\da-f]{8}\./u,
   // La page mêle ses propres adresses, celles de la mesure d'audience et ses ancres. Seules
