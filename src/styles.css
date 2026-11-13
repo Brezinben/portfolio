@@ -13,6 +13,26 @@
   display: none !important;
 }
 
+/* Sans thème choisi, la page suit le schéma du système. Un thème choisi le fixe, pour que
+ le fond du canevas et les barres natives s'accordent à la palette avant le premier rendu. */
+:root {
+  color-scheme: light dark;
+}
+
+:root[data-theme="dark"],
+:root[data-theme="noctis"],
+:root[data-theme="azureus"],
+:root[data-theme="uva"],
+:root[data-theme="bordo"] {
+  color-scheme: dark;
+}
+
+:root[data-theme="light"],
+:root[data-theme="lux"],
+:root[data-theme="hibernus"] {
+  color-scheme: light;
+}
+
 /* Premier element focalisable de la page. Un lecteur d'écran l'annonce avant tout le
  reste, et une tabulation le fait apparaître. Hors de .tm, donc sans variable de
  thème : il doit tenir même si le script ne se charge jamais. */
@@ -438,20 +458,193 @@ a:hover {
   box-sizing: border-box;
 }
 
-.tm ::-webkit-scrollbar {
-  width: 0;
-  height: 0;
+.tm {
+  --scrollbar-thumb: var(--fg2);
+  --scrollbar-track: transparent;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+  scrollbar-width: thin;
 }
 
-.tm * {
-  scrollbar-width: none;
-  -ms-overflow-style: none;
+@supports not (scrollbar-color: auto) {
+  .tm ::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+  }
+
+  .tm ::-webkit-scrollbar-track {
+    background: var(--scrollbar-track);
+  }
+
+  .tm ::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb);
+    border: 3px solid transparent;
+    border-radius: 6px;
+    background-clip: content-box;
+  }
 }
 
+/* Sous mouvement réduit, les fondus d'opacité restent et seul le déplacement part. Une
+ animation qui garde son nom et sa durée émet toujours « animationend ». */
 @media (prefers-reduced-motion: reduce) {
-  * {
-    animation: none !important;
-    transition: none !important;
+  @keyframes suggIn {
+    from {
+      opacity: 0;
+    }
+
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes suggOut {
+    from {
+      opacity: 1;
+    }
+
+    to {
+      opacity: 0;
+    }
+  }
+
+  @keyframes suggRow {
+    from {
+      opacity: 0;
+    }
+
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes lineIn {
+    from {
+      opacity: 0;
+    }
+
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes popIn {
+    from {
+      opacity: 0;
+    }
+
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes bang {
+    from {
+      opacity: 0;
+      transform: translateX(-50%);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateX(-50%);
+    }
+  }
+
+  @keyframes spark {
+    0%,
+    100% {
+      opacity: 0;
+    }
+
+    25% {
+      opacity: 1;
+    }
+  }
+
+  @keyframes bootLine {
+    from {
+      opacity: 0;
+    }
+
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes bootOut {
+    from {
+      opacity: 1;
+    }
+
+    to {
+      opacity: 0;
+    }
+  }
+
+  @keyframes revealUp {
+    from {
+      opacity: 0;
+    }
+
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes reveal {
+    from {
+      opacity: 0;
+    }
+
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes crtOff {
+    from {
+      opacity: 1;
+    }
+
+    to {
+      opacity: 0;
+    }
+  }
+
+  @keyframes scan {
+    from,
+    to {
+      transform: none;
+    }
+  }
+
+  @keyframes rain {
+    from,
+    to {
+      transform: none;
+    }
+  }
+
+  @keyframes caret {
+    from,
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes ach-nudge {
+    from,
+    to {
+      transform: none;
+    }
+  }
+
+  @keyframes globalRow {
+    from {
+      opacity: 0;
+    }
+
+    to {
+      opacity: 1;
+    }
   }
 }
 
@@ -463,8 +656,7 @@ a:hover {
 }
 
 /* Le réglage d'animation coupe ici, et nulle part ailleurs.
- Il ne coupe pas « transition » : la règle de mouvement réduit coupe les deux, et
- celle-ci ne le doit pas, sinon les transitions d'Alpine sur les suggestions
+ Il ne coupe pas « transition » : sinon les transitions d'Alpine sur les suggestions
  changeraient de comportement dès que le réglage est éteint.
  Il épargne le démarrage : là où le mouvement réduit met BOOT_MS et FADE_MS à zéro, ce
  réglage laisse les minuteries entières. Couper y figerait un écran dessiné pendant
@@ -2965,5 +3157,46 @@ a:hover {
 
   100% {
     opacity: 0;
+  }
+}
+
+/* Les couleurs forcées effacent les fonds et imposent leurs teintes aux bordures : l'état
+ se lit alors sur une bordure en couleur système, plus épaisse, et le focus sur un anneau
+ « Highlight », y compris là où la feuille retire le contour. */
+@media (forced-colors: active) {
+  .tm .zone,
+  .tm .zone__head {
+    border-color: CanvasText;
+  }
+
+  .tm [data-ctl="nav"][aria-current="true"],
+  .tm [data-ctl="tl"][aria-selected="true"],
+  .tm [data-suggestion][aria-selected="true"],
+  .tm [data-global-row][aria-selected="true"],
+  .tm [data-toggle][aria-pressed="true"] {
+    border-left: 4px solid Highlight;
+  }
+
+  .tm [data-theme-choice][aria-pressed="true"] {
+    border: 2px solid Highlight;
+  }
+
+  .tm [data-ctl]:focus-visible,
+  .tm [data-handle]:focus-visible,
+  .tm [data-journal]:focus-visible,
+  .tm [data-result]:focus-visible,
+  .tm [data-pane="out"] [tabindex="0"]:focus-visible,
+  .tm footer a:focus-visible,
+  .tm #cli:focus,
+  .tm .radio__number input:focus,
+  .tm .radio__glyph:focus-visible,
+  .tm .radio__ctl button:focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
+  }
+
+  .tm [data-swatch],
+  .tm [data-swatch] > span {
+    forced-color-adjust: none;
   }
 }

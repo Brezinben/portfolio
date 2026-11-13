@@ -23,7 +23,8 @@ import {
   ALERT_OUT_MS,
   ALERT_OUT_TOTAL_MS,
   ALERT_ROWS,
-  THEMES,
+  PALETTES,
+  SYSTEM_THEME,
 } from "../settings.ts";
 import type { Delay, Shell } from "../shell.ts";
 import { addMark, setMark } from "./store.ts";
@@ -215,10 +216,13 @@ export const achievementsSlice = () => {
     },
 
     markTheme(this: Shell, id: string) {
-      this.achievements = addMark(`${THEME_MARK}${id}`);
+      // « système » rend une palette que le visiteur n'a pas choisie : elle ne compte pas.
+      if (id !== SYSTEM_THEME) {
+        this.achievements = addMark(`${THEME_MARK}${id}`);
+      }
 
       if (
-        THEMES.every((entry) => {
+        PALETTES.every((entry) => {
           return this.achievements.includes(`${THEME_MARK}${entry.id}`);
         })
       ) {

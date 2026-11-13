@@ -159,17 +159,7 @@ test("should centre the layout beyond 2400 px", async ({ page }) => {
   expect(width).toBeLessThanOrEqual(2400);
 });
 
-test("should hide the scrollbars", async ({ page }) => {
-  await boot(page);
-
-  const width = await page.locator("[data-journal]").evaluate((node: HTMLElement) => {
-    return node.offsetWidth - node.clientWidth;
-  });
-
-  expect(width, "no scrollbar gutter").toBe(0);
-});
-
-// La barre masquee est remplacee par un indicateur : sinon rien ne dit qu'il reste
+// Une barre fine ne suffit pas toujours : sans indicateur, rien ne dit qu'il reste
 // du contenu plus bas.
 test("should show an indicator while content remains below", async ({ page }) => {
   const cli = await boot(page);
@@ -378,4 +368,20 @@ test("should keep the focus on the result while a command runs", async ({ page }
   await page.keyboard.press("j");
 
   await expect(page.locator("[data-result]")).toBeFocused();
+});
+
+// Le Chromium de Playwright masque les barres par defaut : sans ce retrait, la mesure
+// serait toujours zero, meme quand la feuille les cache.
+test.use({ launchOptions: { ignoreDefaultArgs: ["--hide-scrollbars"] } });
+
+test("should show a scrollbar in a zone that scrolls", async ({ page }) => {
+  const cli = await boot(page);
+
+  await fill(cli);
+
+  const gutter = await page.locator("[data-journal]").evaluate((node: HTMLElement) => {
+    return node.offsetWidth - node.clientWidth;
+  });
+
+  expect(gutter, "the journal reserves room for its scrollbar").toBeGreaterThan(0);
 });
