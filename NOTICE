@@ -1,0 +1,24 @@
+# Notice
+
+Le fichier `LICENSE` couvre le code source seulement. Ce fichier liste le reste.
+
+## Contenu
+
+Les fichiers suivants sont © 2026 Benjamin David, tous droits réservés :
+
+- Les textes : `src/content.json`, `src/texte.html`, `src/llms.txt`, `src/llms-full.txt`.
+- Les images : `src/assets/sprites/`, `src/assets/*.png`, `docs/mascotte/`.
+- L'identité : le nom de Benjamin David.
+
+## Polices
+
+Les polices de `src/assets/fonts/` gardent leur licence : SIL Open Font License 1.1.
+Chaque police a son texte de licence à côté d'elle :
+
+- `src/assets/fonts/atkinson-hyperlegible-next.LICENSE.txt`
+- `src/assets/fonts/jetbrains-mono.LICENSE.txt`
+
+## Alpine
+
+Le fichier `src/vendor/alpine.js` vient d'Alpine.js, sous licence MIT.
+La notice, la version et la source sont dans `src/vendor/alpine.LICENSE.txt`.
