@@ -1,87 +1,50 @@
 # Portfolio Benjamin David
 
-Portfolio personnel servi en pages statiques. Le contenu vit dans `content.json`, chargé au
-démarrage, pour être modifié sans redéploiement.
+[![tests](https://github.com/Brezinben/portfolio/actions/workflows/tests.yml/badge.svg)](https://github.com/Brezinben/portfolio/actions/workflows/tests.yml)
 
-Domaine cible : `https://me.brezinben.dpdns.org/`
+Le portfolio de Benjamin David prend la forme d'un terminal. Le visiteur tape des commandes ou navigue au clavier.
+Une version texte existe aussi.
 
-## Arborescence
+[Voir le site en ligne](https://me.brezinben.dpdns.org/)
 
-| Dossier | Rôle |
-|---|---|
-| `src/` | La source. Lisible, sans dépendance, servable telle quelle. |
-| `dist/` | L'artefact compact, produit par `bun run build`. Hors de git. |
-| `docs/adr/` | Décisions d'architecture. |
+![Le portfolio dans le thème sombre](docs/capture.png)
 
-`CONTEXT.md` est le glossaire du projet et fait foi sur le vocabulaire.
+## Licence
 
-## Mise en route
+Le code est sous licence MIT : voir [`LICENSE`](LICENSE).
+Les textes, les images et les polices ont d'autres conditions : voir [`NOTICE`](NOTICE).
+
+## Démarrer
+
+Installez les outils, puis les dépendances, puis le navigateur de test :
 
 ```
-mise install                      # bun, node, hk et ses outils
-bun install                       # Playwright et les outils de construction
-bun x playwright install chromium # le navigateur du seam page
+mise install
+bun install
+bun x playwright install chromium
 ```
 
-Les versions des outils sont figées dans `.config/mise.toml`. `bun` fournit
-Playwright et les deux outils de construction.
+`mise` fixe les versions des outils dans `.config/mise.toml`.
 
 ## Commandes
 
 ```
-bun run build         # produit dist/ à partir de src/
-bun run check         # format, lint, types, code mort, secrets : les étapes de la CI
-bun run lint          # oxlint seul
-bun run format        # oxfmt, écriture en place
-bun run test          # seam interpréteur, sans navigateur
-bun run test:browser  # seam page, navigateur réel
+bun run build          # produit dist/ à partir de src/
+bun run check          # format, lint, types, code mort, secrets, workflows
+bun run test           # tests unitaires de l'interpréteur, sans navigateur
+bun run test:browser   # tests de la page construite, dans Chromium
+bun run test:mutation  # mutations Stryker sur l'interpréteur
+bun run deps           # mise à jour interactive des paquets
 ```
 
-hk lance format, lint et secrets après chaque édition de Claude, et y ajoute le code mort à
-chaque commit. `bun run check` ajoute les types. La configuration est dans `.config/hk.pkl`.
+Lancez `bun run test`, et non `bun test`. Sans `run`, Bun lance son propre lanceur, qui ramasse aussi `tests/browser/`.
 
-`npx oxlint --fix` corrige automatiquement la plupart des violations de style.
+Sur l'hôte `beta`, `bun run build` publie le site en ligne. Ailleurs, il ne publie rien.
+Pour tester une construction, écrivez `PORTFOLIO_DIST=dist.test`.
 
-## Les deux seams de test
+## Pour aller plus loin
 
-**L'interpréteur de commandes** se teste sans navigateur, avec `node:test`. Il est pur et
-synchrone : il rend les lignes à afficher et des descripteurs d'effets, sans toucher au DOM.
-
-**La page servie** se teste dans un navigateur réel, avec Playwright. Ce seam couvre le
-démarrage, le clavier, le focus, l'accessibilité et le budget de poids.
-
-Playwright construit l'artefact dans `dist.test/`, puis le sert. Le seam exerce donc la page
-compacte, celle que le visiteur reçoit, et non la source. Le seam interpréteur, lui, garde
-`src/interpret.ts`.
-
-Le serveur de test compresse comme le ferait un serveur de production : le budget de poids
-se mesure après compression, sinon le chiffre ne veut rien dire.
-
-## Déploiement
-
-Sur l'hôte `beta`, un conteneur Caddy monte le dépôt en lecture seule et sert `dist/`.
-Publier, c'est donc lancer `bun run build` sur `beta`. Ailleurs, la construction ne publie rien.
-
-`dist` est un lien symbolique vers `.versions/dist/<horodatage>/`. La construction écrit la
-version neuve à côté, puis remplace le lien en une seule opération. Le chemin servi désigne
-donc toujours une version complète, même si la construction meurt.
-
-La construction pose une empreinte du contenu dans le nom des actifs. `content.json`,
-`llms.txt`, `robots.txt`, `sitemap.xml` et `apple-touch-icon.png` gardent le leur : ce sont
-des adresses fixes par convention.
-
-Les tests construisent dans `dist.test/` et ne publient rien. `PORTFOLIO_DIST` choisit la
-sortie, `PORTFOLIO_PORT` le port.
-
-`bun run test` ne lance que les tests unitaires. Les tests navigateur coûtent deux minutes
-pour une page et trois fichiers : ils restent disponibles sous `bun run test:browser`, à
-lancer quand le rendu change.
-
-Écrire `bun run test`, et non `bun test`. Sans `run`, Bun lance son propre lanceur de tests,
-qui ramasse aussi les fichiers de `tests/browser/`.
-
-Playwright garde Node. Son lanceur démarre par un shebang `node`, et Bun n'y change rien.
-
-Voir `docs/adr/0003-publier-par-bascule-d-un-lien-symbolique.md`.
-
-`content.json` doit rester à côté de la page. La page le charge par une URL relative.
+- [`AGENTS.md`](AGENTS.md) : les règles de travail du dépôt.
+- [`CONTEXT.md`](CONTEXT.md) : le vocabulaire du projet.
+- [`CONTEXT-MAP.md`](CONTEXT-MAP.md) : les deux contextes et leurs tests.
+- [`docs/adr/`](docs/adr/) : les décisions d'architecture.
