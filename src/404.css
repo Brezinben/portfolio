@@ -12,9 +12,46 @@
    inconnue ne charge ni content.json ni app.ts : elle ne peut pas tirer sa feuille de la
    version terminal. Un test unitaire compare les deux tables. */
 :root {
+  color-scheme: light dark;
   --radius: 5px;
   --acc-text: var(--acc);
   --hue: 0deg;
+  --scrollbar-thumb: var(--fg2);
+  --scrollbar-track: transparent;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+  scrollbar-width: thin;
+}
+
+@supports not (scrollbar-color: auto) {
+  ::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--scrollbar-track);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb);
+    border: 3px solid transparent;
+    border-radius: 6px;
+    background-clip: content-box;
+  }
+}
+
+:root[data-theme="dark"],
+:root[data-theme="noctis"],
+:root[data-theme="azureus"],
+:root[data-theme="uva"],
+:root[data-theme="bordo"] {
+  color-scheme: dark;
+}
+
+:root[data-theme="light"],
+:root[data-theme="lux"],
+:root[data-theme="hibernus"] {
+  color-scheme: light;
 }
 
 :root[data-theme="dark"] {
@@ -496,9 +533,38 @@ footer {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  * {
-    animation: none !important;
-    transition: none !important;
+  @keyframes revealUp {
+    from {
+      opacity: 0;
+    }
+
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes lineIn {
+    from {
+      opacity: 0;
+    }
+
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes caret {
+    from,
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes flip {
+    from,
+    to {
+      transform: none;
+    }
   }
 
   [data-track] {
@@ -512,4 +578,21 @@ footer {
 
 :root[data-anim="false"] [data-track] {
   display: none;
+}
+
+@media (forced-colors: active) {
+  .zone,
+  .zone__head {
+    border-color: CanvasText;
+  }
+
+  [data-ctl="nav"][data-primary] {
+    border-left: 4px solid Highlight;
+  }
+
+  [data-ctl="nav"]:focus-visible,
+  .slime:focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
+  }
 }

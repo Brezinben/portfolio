@@ -33,6 +33,8 @@ import {
   EXEC_MS,
   FADE_MS,
   GLOBAL_LIMIT,
+  PALETTES,
+  SYSTEM_THEME,
   TECH_TRACK_MS,
   THEMES,
   TOGGLES,
@@ -356,8 +358,9 @@ document.addEventListener("alpine:init", () => {
       suggTop: 0,
       tech: "",
       techNotes: {},
+      systemLight: globalThis.matchMedia?.("(prefers-color-scheme: light)").matches ?? false,
       techTimer: undefined,
-      theme: "dark",
+      theme: SYSTEM_THEME,
       timeline: [],
       timelineAt: 0,
       typed: "",
@@ -388,6 +391,7 @@ document.addEventListener("alpine:init", () => {
             this.reduced = event.matches;
           });
         this.restore();
+        this.watchTheme();
         this.ticker = setInterval(() => {
           this.bootTick += 1;
         }, COMPACT_TICK_MS);
@@ -711,12 +715,30 @@ document.addEventListener("alpine:init", () => {
         return globalThis.matchMedia?.("(max-width: 900px)").matches ?? false;
       },
 
+      get activeTheme() {
+        if (this.theme !== SYSTEM_THEME) {
+          return this.theme;
+        }
+
+        return this.systemLight ? "light" : "dark";
+      },
+
       get themeLabel() {
-        return (
+        const label =
           THEMES.find((entry) => {
             return entry.id === this.theme;
-          })?.label ?? ""
-        );
+          })?.label ?? "";
+
+        if (this.theme !== SYSTEM_THEME) {
+          return label;
+        }
+
+        // Le visiteur voit ce que « système » donne en ce moment.
+        const shown = PALETTES.find((entry) => {
+          return entry.id === this.activeTheme;
+        });
+
+        return `${label} · ${shown?.label ?? ""}`;
       },
 
       get won() {

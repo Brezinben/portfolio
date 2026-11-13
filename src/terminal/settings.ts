@@ -27,7 +27,9 @@ export const ALERT_OUT_GRAIN_MS = 190;
 // L'enveloppe de la sortie, du premier retard à la dernière case éteinte. La coquille
 // attend ce total avant de rendre la place ; la feuille porte la durée d'une case.
 export const ALERT_OUT_TOTAL_MS = 810;
-export const THEMES = [
+// Le choix « système » n'est pas une palette : il rend celle que le système demande.
+export const SYSTEM_THEME = "system";
+export const PALETTES = [
   { id: "dark", label: "ambra" },
   { id: "light", label: "solis" },
   { id: "noctis", label: "noctis" },
@@ -37,6 +39,7 @@ export const THEMES = [
   { id: "lux", label: "lux" },
   { id: "hibernus", label: "hibernus" },
 ];
+export const THEMES = [{ id: SYSTEM_THEME, label: "systema" }, ...PALETTES];
 // Les valeurs d'etat restent en anglais : c'est la langue d'un terminal.
 // Les réglages qui se basculent. Nommer l'union permet d'indexer l'etat par la
 // cle sans effacer son type.
