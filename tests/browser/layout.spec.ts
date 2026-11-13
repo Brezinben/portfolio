@@ -379,3 +379,21 @@ test("should keep the focus on the result while a command runs", async ({ page }
 
   await expect(page.locator("[data-result]")).toBeFocused();
 });
+
+// Le Chromium de Playwright masque les barres par defaut : sans ce retrait, la mesure
+// serait toujours zero, meme quand la feuille les cache.
+test.describe("scrollbars", () => {
+  test.use({ launchOptions: { ignoreDefaultArgs: ["--hide-scrollbars"] } });
+
+  test("should show a scrollbar in a zone that scrolls", async ({ page }) => {
+    const cli = await boot(page);
+
+    await fill(cli);
+
+    const gutter = await page.locator("[data-journal]").evaluate((node: HTMLElement) => {
+      return node.offsetWidth - node.clientWidth;
+    });
+
+    expect(gutter, "the journal reserves room for its scrollbar").toBeGreaterThan(0);
+  });
+});
