@@ -16,6 +16,28 @@
   --radius: 5px;
   --acc-text: var(--acc);
   --hue: 0deg;
+  --scrollbar-thumb: var(--fg2);
+  --scrollbar-track: transparent;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+  scrollbar-width: thin;
+}
+
+@supports not (scrollbar-color: auto) {
+  ::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--scrollbar-track);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb);
+    border: 3px solid transparent;
+    border-radius: 6px;
+    background-clip: content-box;
+  }
 }
 
 :root[data-theme="dark"],
@@ -510,9 +532,38 @@ footer {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  * {
-    animation: none !important;
-    transition: none !important;
+  @keyframes revealUp {
+    from {
+      opacity: 0;
+    }
+
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes lineIn {
+    from {
+      opacity: 0;
+    }
+
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes caret {
+    from,
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes flip {
+    from,
+    to {
+      transform: none;
+    }
   }
 
   [data-track] {
