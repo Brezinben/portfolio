@@ -1,12 +1,12 @@
-Alpine.js 3.17.1
+Alpine.js 3.17.5
 https://github.com/alpinejs/alpine
 
-Le fichier alpine.js est dist/cdn.min.js du paquet npm alpinejs 3.17.1, sans modification.
-Paquet : https://registry.npmjs.org/alpinejs/-/alpinejs-3.17.1.tgz
-Intégrité npm : sha512-HDUhA9juSA/pNYZ5FAAlW4qNsdeVORFSVONEIu0hVasqCOqLitf15R9tCr5GBCV0ZxiZW2Qx6BYdMSF7iGLT/Q==
-Source : https://github.com/alpinejs/alpine/tree/v3.17.1
+Le fichier alpine.js est dist/cdn.min.js du paquet npm alpinejs 3.17.5, sans modification.
+Paquet : https://registry.npmjs.org/alpinejs/-/alpinejs-3.17.5.tgz
+Intégrité npm : sha512-XewMqRC6zjy8iaUPn86dxjvooAsNai3hUtQbdn0A5H2w7Jt10xHGZ1SczN5+Dvp3UKkuSEt9moy/UaUWOwKdnQ==
+Source : https://github.com/alpinejs/alpine/tree/v3.17.5
 Le paquet npm ne contient pas de fichier de licence. Le texte ci-dessous vient de LICENSE.md
-dans le dépôt, au tag v3.17.1.
+dans le dépôt, au tag v3.17.5.
 
 -----------------------------------------------------------
 
