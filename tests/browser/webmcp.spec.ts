@@ -64,7 +64,7 @@ test("should open a section the way the visitor would", async ({ page }) => {
 
   const answer = await call(page, "open_section", { section: "stack" });
 
-  await expect(page.locator('[data-ctl="nav"][aria-current="true"]')).toContainText("stack");
+  await expect(page.locator('[data-ctl="nav"][aria-current="page"]')).toContainText("stack");
   await expect(page.locator("[data-journal]")).toContainText("cd stack");
   expect(answer).toMatch(/^stack : ./u);
 });

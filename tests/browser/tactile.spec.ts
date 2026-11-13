@@ -106,7 +106,7 @@ test.describe("on touch", () => {
   ] as const) {
     test(`should bring the result on screen when a ${quoi} is touched`, async ({ page }) => {
       await boot(page);
-      await page.getByRole("button", { name: nom }).first().click();
+      await page.getByRole("link", { name: nom }).first().click();
 
       await expect(page.locator("[data-result]")).toBeInViewport();
     });

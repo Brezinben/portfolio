@@ -108,7 +108,7 @@ test("should take the result back from the command when a section opens", async 
 
   await cli.fill("help");
   await cli.press("Enter");
-  await page.getByRole("button", { name: /stack/u }).first().click();
+  await page.getByRole("link", { name: /stack/u }).first().click();
 
   await expect(page.locator("[data-result]")).not.toContainText("à vos risques");
   await expect(page.locator('[data-pane="main"]')).toContainText("~/stack");
@@ -235,7 +235,7 @@ test("should keep the pane widths from one section to the next", async ({ page }
     // Les sections s'ouvrent l'une après l'autre : les ouvrir ensemble ne mesurerait rien.
     // oxlint-disable-next-line no-await-in-loop
     await page
-      .getByRole("button", { name: new RegExp(id, "u") })
+      .getByRole("link", { name: new RegExp(id, "u") })
       .first()
       .click();
     // oxlint-disable-next-line no-await-in-loop
@@ -331,7 +331,7 @@ test("should give the result its room back when a too tall log meets a new secti
   });
   await boot(page);
   await page
-    .getByRole("button", { name: /contact/u })
+    .getByRole("link", { name: /contact/u })
     .first()
     .click();
 

@@ -647,7 +647,7 @@ a:hover {
   background: var(--fg);
 }
 
-.tm [data-ctl="nav"][aria-current="true"] [data-nav-label] {
+.tm [data-ctl="nav"][aria-current="page"] [data-nav-label] {
   font-weight: 700;
 }
 
@@ -657,7 +657,7 @@ a:hover {
   overflow-wrap: anywhere;
 }
 
-.tm [data-ctl="nav"][aria-current="true"] [data-nav-note] {
+.tm [data-ctl="nav"][aria-current="page"] [data-nav-note] {
   color: var(--fg);
 }
 
@@ -1819,6 +1819,12 @@ a:hover {
   border-bottom-color: var(--acc-text);
 }
 
+.tm a[data-ctl="nav"],
+.tm a[data-ctl="nav"]:hover {
+  color: var(--fg);
+  text-decoration: none;
+}
+
 /* Le canvas exprimait le survol et le focus en attributs style-hover et style-focus,
  que son runtime synthétisait. Un navigateur ne sait pas les mettre en inline. */
 /* La mascotte est visqueuse : sa partie haute se deforme quand on la deplace. La
@@ -1905,7 +1911,7 @@ a:hover {
   cursor: pointer;
 }
 
-.tm [data-ctl="nav"][aria-current="true"],
+.tm [data-ctl="nav"][aria-current="page"],
 .tm [data-ctl="tl"][aria-selected="true"],
 .tm [data-suggestion][aria-selected="true"] {
   border-left-color: var(--acc);
@@ -1913,6 +1919,7 @@ a:hover {
 }
 
 .tm [data-ctl="nav"] {
+  box-sizing: border-box;
   width: 100%;
   min-height: 44px;
   display: grid;

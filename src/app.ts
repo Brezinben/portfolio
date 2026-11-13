@@ -828,6 +828,23 @@ document.addEventListener("alpine:init", () => {
         );
       },
 
+      // Un clic modifié ou un autre bouton garde le comportement du lien : nouvel onglet,
+      // copie de l'adresse. Le clic simple reste dans la page.
+      navClick(event: MouseEvent, id: string) {
+        if (
+          event.button !== 0 ||
+          event.ctrlKey ||
+          event.metaKey ||
+          event.shiftKey ||
+          event.altKey
+        ) {
+          return;
+        }
+
+        event.preventDefault();
+        this.goSection(id);
+      },
+
       goSection(id: string, options: { push?: boolean; via?: TrackSource } = {}) {
         const { push = true, via = "interface" } = options;
 

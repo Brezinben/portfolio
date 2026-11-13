@@ -120,18 +120,18 @@
               <ul class="zone__list">
                 <template x-for="item in sections" :key="item.id">
                   <li>
-                    <button
-                      type="button"
+                    <a
+                      :href="`#${item.id}`"
                       data-ctl="nav"
-                      :aria-current="item.id === section ? 'true' : 'false'"
-                      @click="goSection(item.id)"
+                      :aria-current="item.id === section ? 'page' : null"
+                      @click="navClick($event, item.id)"
                     >
                       <span aria-hidden="true" :data-dot="item.dot"></span>
                       <span data-nav-lines>
                         <span data-nav-label x-text="item.label"></span>
                         <span data-nav-note x-text="item.sub"></span>
                       </span>
-                    </button>
+                    </a>
                   </li>
                 </template>
               </ul>
@@ -141,18 +141,18 @@
               <ul class="zone__list">
                 <template x-for="item in missions" :key="item.id">
                   <li>
-                    <button
-                      type="button"
+                    <a
+                      :href="`#${item.id}`"
                       data-ctl="nav"
-                      :aria-current="item.id === section ? 'true' : 'false'"
-                      @click="goSection(item.id)"
+                      :aria-current="item.id === section ? 'page' : null"
+                      @click="navClick($event, item.id)"
                     >
                       <span aria-hidden="true" :data-dot="item.dot"></span>
                       <span data-nav-lines>
                         <span data-nav-label x-text="item.label"></span>
                         <span data-tone="fg2" data-nav-sub x-text="item.state"></span>
                       </span>
-                    </button>
+                    </a>
                   </li>
                 </template>
               </ul>
