@@ -5,4 +5,4 @@
 copy = "wt step copy-ignored"
 
 [[post-start]]
-install = "bun install --frozen-lockfile"
+install = "$(command -v hochet) bun install --frozen-lockfile"
