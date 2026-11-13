@@ -34,6 +34,55 @@ const readChoice = (raw: string) => {
   return trimmed.startsWith('"') && trimmed.endsWith('"') ? trimmed.slice(1, -1) : trimmed;
 };
 
+// « create » paie le chargement du modèle : une session de base sert toutes les questions, et
+// chacune travaille sur un clone. Elle vit hors de l'état, que le proxy d'Alpine rendrait
+// inutilisable. Sans signal : la première question coupée détruirait la session partagée.
+interface BaseSession {
+  session: Promise<LanguageModel> | undefined;
+}
+
+const base: BaseSession = { session: undefined };
+
+const baseSession = async () => {
+  // « topK », « temperature » et « samplingMode » restent absents : ces options sont propres à
+  // Chrome, ou en essai d'origine.
+  base.session ??= LanguageModel.create({
+    // La question et les passages sont en français. Le déclarer laisse le navigateur
+    // refuser tout de suite plutôt que de répondre depuis un modèle d'une autre langue.
+    expectedInputs: [{ languages: ["fr"], type: "text" }],
+  });
+
+  const started = base.session;
+
+  try {
+    return await started;
+  } catch (error) {
+    // Un échec ne s'installe pas : la question suivante retente la création.
+    if (base.session === started) {
+      base.session = undefined;
+    }
+
+    throw error;
+  }
+};
+
+// La création partagée ne porte pas le signal, mais l'attente de la question reste bornée.
+const until = <T>(work: Promise<T>, signal: AbortSignal) => {
+  signal.throwIfAborted();
+
+  const { promise, reject } = Promise.withResolvers<never>();
+
+  signal.addEventListener(
+    "abort",
+    () => {
+      reject(signal.reason);
+    },
+    { once: true },
+  );
+
+  return Promise.race([work, promise]);
+};
+
 // L'attente depassee et le refus ne se reparent pas de la meme facon : l'une demande de
 // patienter, l'autre de regarder l'etat du modele.
 const askFailure = (cause: unknown) => {
@@ -62,19 +111,14 @@ export const askSlice = () => {
       let answered = false;
 
       try {
-        // « topK », « temperature » et « samplingMode » restent absents : ces options sont
-        // propres à Chrome, ou en essai d'origine.
-        const session = await LanguageModel.create({
-          // La question et les passages sont en francais. Le declarer laisse le navigateur
-          // refuser tout de suite plutot que de repondre depuis un modele d'une autre langue.
-          expectedInputs: [{ languages: ["fr"], type: "text" }],
-          signal: AbortSignal.any([asker.signal, AbortSignal.timeout(ASK_MS)]),
-        });
+        const signal = AbortSignal.any([asker.signal, AbortSignal.timeout(ASK_MS)]),
+          model = await until(baseSession(), signal),
+          session = await model.clone({ signal });
 
         try {
           const choice = await session.prompt(this.askPrompt(query, candidateIds), {
             responseConstraint: { enum: candidateIds, type: "string" },
-            signal: AbortSignal.any([asker.signal, AbortSignal.timeout(ASK_MS)]),
+            signal,
           });
 
           this.showAskChoice(readChoice(choice), lexical, asker);
