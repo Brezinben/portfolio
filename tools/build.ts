@@ -45,11 +45,12 @@ const ROOT = fileURLToPath(new URL("../", import.meta.url)),
     "index.html",
     "texte.html",
   ]),
-  // Ces noms sont des contrats avec l'extérieur : iOS demande /apple-touch-icon.png sans
-  // balise, la page charge content.json par une URL relative, et les robots lisent llms.txt.
+  // Ces noms sont des contrats avec l'extérieur : iOS demande /apple-touch-icon.png et les
+  // navigateurs /favicon.ico sans balise, la page charge content.json par une URL relative, et les robots lisent llms.txt.
   FIXED_NAMES = new Set([
     "apple-touch-icon.png",
     "content.json",
+    "favicon.ico",
     "llms-full.txt",
     "llms.txt",
     "robots.txt",
