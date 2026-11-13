@@ -160,3 +160,9 @@ test("should preload the terminal font with crossorigin", async ({ page }) => {
   await expect(preload).toHaveAttribute("type", "font/woff2");
   await expect(preload).toHaveAttribute("crossorigin", "");
 });
+
+test("should load the analytics script at low priority", async ({ page }) => {
+  await page.goto("/");
+
+  await expect(page.locator("script[data-goatcounter]")).toHaveAttribute("fetchpriority", "low");
+});
