@@ -23,7 +23,15 @@
     <link rel="canonical" href="https://me.brezinben.dpdns.org/" />
     <link rel="icon" href="assets/icons/favicon.svg" type="image/svg+xml" />
     <link rel="icon" href="assets/icons/favicon-32.png" sizes="32x32" />
+    <link rel="icon" href="assets/icons/favicon-192.png" sizes="192x192" />
     <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+    <link
+      rel="preload"
+      href="assets/fonts/jetbrains-mono.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
     <meta property="og:type" content="profile" />
     <meta property="og:title" content="Benjamin David · Développeur IA &amp; Full Stack" />
     <meta
@@ -73,6 +81,7 @@
        budget de poids : si elle est bloquée, la page ne change pas d'un octet. -->
     <script
       defer
+      fetchpriority="low"
       data-goatcounter="https://analytics.brezinben.dpdns.org/count"
       src="https://analytics.brezinben.dpdns.org/count.js"
     ></script>

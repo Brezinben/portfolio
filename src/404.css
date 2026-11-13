@@ -163,6 +163,7 @@ body {
   overflow: hidden;
   padding: 14px clamp(12px, 2.5vw, 26px);
   font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size-adjust: from-font;
   font-variant-ligatures: none;
   font-feature-settings:
     "liga" 0,
