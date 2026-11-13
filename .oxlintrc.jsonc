@@ -124,11 +124,14 @@
     // Les exports nommés sont la convention : ces règles poussent vers l'export par défaut.
     "import/no-named-export": "off",
     "import/prefer-default-export": "off",
+    // Chaque export reste à sa définition : ces règles les veulent groupés ou en fin de fichier.
     "import/group-exports": "off",
     "import/exports-last": "off",
     // Elle signale les noms courts, lisibles dans une petite portée : i, x, e.
     "id-length": "off",
+    // Elle exige une seule déclaration par portée, ce qui mélange des lignes sans rapport.
     "eslint/one-var": "off",
+    // Les imports de type en ligne sont la forme courante ; un override plus bas impose l'autre.
     "import/consistent-type-specifier-style": "off",
     // Le formateur décide de la casse des littéraux numériques.
     "unicorn/number-literal-case": "off",
@@ -215,11 +218,12 @@
       },
     },
     {
-      "files": ["tests/**", "tools/**", "playwright.config.js"],
+      "files": ["tests/**", "tools/**"],
       "env": {
         "node": true,
       },
       "rules": {
+        // Les tests et les outils tournent sous Bun ou Node : « node:fs » et « node:path » y sont normaux.
         "import/no-nodejs-modules": "off",
         // Un outil en ligne de commande parle sur la console.
         "no-console": "off",
@@ -230,7 +234,6 @@
       "rules": {
         // Un scénario de test se lit d'un bloc : le découper disperserait ses étapes.
         "max-statements": "off",
-        "eslint/no-duplicate-imports": "off",
       },
     },
   ],
