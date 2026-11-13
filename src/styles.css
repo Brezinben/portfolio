@@ -1929,6 +1929,7 @@ a:hover {
 
 .tm [data-ctl="nav"] {
   box-sizing: border-box;
+  line-height: normal;
   width: 100%;
   min-height: 44px;
   display: grid;
@@ -2744,6 +2745,11 @@ a:hover {
   background: transparent;
   color: inherit;
   cursor: pointer;
+}
+
+.tm [data-ach-alert] [data-ctl="ach-alert-close"] .icon {
+  width: 12px;
+  height: 12px;
 }
 
 .tm [data-ach-alert] [data-ach-title] {
