@@ -1,7 +1,25 @@
 # AGENTS.md
 
 Benjamin David's portfolio: static pages in a terminal interface, content in `src/content.json`.
-Bun runs the build and the unit tests. Code, comments and commit subjects are in French.
+Bun runs the build and the unit tests.
+
+## Languages
+
+- French: documents, code comments, commit subjects and commit descriptions.
+- English: identifiers and test labels. A test label starts with `should`.
+
+## Commit messages
+
+The subject uses the infinitive. The description uses the present indicative and says why the
+change exists. The diff already shows what changed. The subject length and prefix rules live in
+`.config/hk.pkl`.
+
+```
+Rattacher le nom au site par une fiche Person
+
+Le site n'apparaît pas quand on cherche « Benjamin David ». La fiche schema.org Person, avec ses
+liens sameAs vers LinkedIn et GitHub, dit à Google que cette page désigne cette personne.
+```
 
 ## Commands
 
@@ -27,3 +45,5 @@ a rule, edit its config:
 - Claude Code hooks: `.claude/settings.json`, which calls `scripts/post-edit.sh` and `hk agent stop-hook`.
 - Browser and mutation tests: `.config/playwright.config.ts`, `.config/stryker.config.json`.
 - Worktrees: Worktrunk, `.config/wt.toml`.
+- Issues and specs: GitHub Issues of `Brezinben/portfolio`, through `gh`. Labels and commands in
+  `docs/agents/issue-tracker.md` and `docs/agents/triage-labels.md`. No local issue files.

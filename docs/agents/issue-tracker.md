@@ -1,30 +1,47 @@
-# Issue tracker: Local Markdown
+# Issue tracker: GitHub Issues
 
-Issues and specs for this repo live as markdown files in `.scratch/`.
+Issues and specs for this repo live in the GitHub Issues of `Brezinben/portfolio`. Use the
+`gh` CLI for every operation. Never keep an issue, a spec or a ticket in a file of the
+repository: `.scratch/` is gone on purpose, and such a file is invisible to the owner and to
+the next agent.
 
 ## Conventions
 
-- One feature per directory: `.scratch/<feature-slug>/`
-- The spec is `.scratch/<feature-slug>/spec.md`
-- Implementation issues are one file per ticket at `.scratch/<feature-slug>/issues/<NN>-<slug>.md`, numbered from `01`, never a single combined tickets file
-- Triage state is recorded as a `Status:` line near the top of each issue file (see `triage-labels.md` for the role strings)
-- Comments and conversation history append to the bottom of the file under a `## Comments` heading
+- One spec per issue. The issue body follows the spec template of the skill that writes it.
+- An implementation ticket is its own issue. Its body starts with `Part of #<spec>`.
+- The triage state is a label (see `triage-labels.md`). An issue carries exactly one triage
+  label. The `map` label is not a triage state: a map issue carries only `map`.
+- Conversation goes in issue comments, never in edits of the body.
 
 ## When a skill says "publish to the issue tracker"
 
-Create a new file under `.scratch/<feature-slug>/` (creating the directory if needed).
+```sh
+gh issue create --repo Brezinben/portfolio --title "<title>" --body-file <file> --label <triage-label>
+```
+
+Write the body to a temporary file outside the repository, pass it with `--body-file`, then
+delete the file. The issue URL that `gh` prints is the reference to give the user.
 
 ## When a skill says "fetch the relevant ticket"
 
-Read the file at the referenced path. The user will normally pass the path or the issue number directly.
+```sh
+gh issue view <number> --repo Brezinben/portfolio --comments
+```
+
+The user passes the issue number or its URL.
 
 ## Wayfinding operations
 
-Used by `/wayfinder`. The **map** is a file with one **child** file per ticket.
+Used by `/wayfinder`. The **map** is an issue; each **child** ticket is an issue that points
+to it.
 
-- **Map**: `.scratch/<effort>/map.md` (the Notes / Decisions-so-far / Fog body).
-- **Child ticket**: `.scratch/<effort>/issues/NN-<slug>.md`, numbered from `01`, with the question in the body. A `Type:` line records the ticket type (`research`/`prototype`/`grilling`/`task`); a `Status:` line records `claimed`/`resolved`.
-- **Blocking**: a `Blocked by: NN, NN` line near the top. A ticket is unblocked when every file it lists is `resolved`.
-- **Frontier**: scan `.scratch/<effort>/issues/` for files that are open, unblocked, and unclaimed; first by number wins.
-- **Claim**: set `Status: claimed` and save before any work.
-- **Resolve**: append the answer under an `## Answer` heading, set `Status: resolved`, then append a context pointer (gist + link) to the map's Decisions-so-far in `map.md`.
+- **Map**: an issue labelled `map`, with the Notes / Decisions-so-far / Fog body.
+- **Child ticket**: an issue whose body starts with `Part of #<map>` and a `Type:` line
+  (`research`/`prototype`/`grilling`/`task`), then the question.
+- **Blocking**: a `Blocked by: #NN, #NN` line under `Part of`. A ticket is unblocked when
+  every issue it lists is closed.
+- **Frontier**: `gh issue list --repo Brezinben/portfolio --search '"Part of #<map>" in:body no:assignee' --state open --limit 100`,
+  then keep the unblocked issues; the lowest number wins.
+- **Claim**: `gh issue edit <number> --add-assignee @me` before any work.
+- **Resolve**: comment the answer under an `## Answer` heading, close the issue, then comment
+  a context pointer (gist + issue link) on the map, headed `Decisions-so-far`.
