@@ -131,7 +131,7 @@
     "id-length": "off",
     // Elle exige une seule déclaration par portée, ce qui mélange des lignes sans rapport.
     "eslint/one-var": "off",
-    // Les imports de type en ligne (« import { type X, y } ») sont la forme courante : seul shell.ts impose l'autre, plus bas.
+    // Les imports de type en ligne sont la forme courante ; un override plus bas impose l'autre.
     "import/consistent-type-specifier-style": "off",
     // Le formateur décide de la casse des littéraux numériques.
     "unicorn/number-literal-case": "off",
