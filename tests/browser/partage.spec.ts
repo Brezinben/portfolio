@@ -44,6 +44,19 @@ test("should copy the address on share link", async ({ page, context }) => {
   ).toContain(here);
 });
 
+test("should say the copy failed when the clipboard is missing", async ({ page }) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, "clipboard", { value: undefined });
+  });
+
+  const cli = await boot(page);
+
+  await run(cli, "share link");
+
+  await expect(page.locator("[data-journal]")).toContainText("copie refusée");
+  await expect(page.locator("[data-journal]")).not.toContainText("copié");
+});
+
 test("should say so without opening anything on an unknown target", async ({ page }) => {
   const cli = await boot(page);
 

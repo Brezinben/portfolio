@@ -6,6 +6,8 @@ import type { Page } from "@playwright/test";
 declare global {
   // oxlint-disable-next-line no-var, vars-on-top
   var repondre: ((id: string) => void) | undefined;
+  // oxlint-disable-next-line no-var, vars-on-top
+  var creations: { bound: boolean }[];
 }
 
 const boot = async (page: Page) => {
@@ -33,14 +35,19 @@ const boot = async (page: Page) => {
             return Promise.resolve("available");
           },
           create: () => {
-            return Promise.resolve({
+            const session = {
+              clone: () => {
+                return Promise.resolve(session);
+              },
               destroy: () => {
                 return undefined;
               },
               prompt: () => {
                 return Promise.resolve(JSON.stringify(id));
               },
-            });
+            };
+
+            return Promise.resolve(session);
           },
         },
       });
@@ -62,7 +69,10 @@ const boot = async (page: Page) => {
             return Promise.resolve("available");
           },
           create: () => {
-            return Promise.resolve({
+            const session = {
+              clone: () => {
+                return Promise.resolve(session);
+              },
               destroy: () => {
                 return undefined;
               },
@@ -73,7 +83,9 @@ const boot = async (page: Page) => {
 
                 return promise;
               },
-            });
+            };
+
+            return Promise.resolve(session);
           },
         },
       });
@@ -328,14 +340,19 @@ test("should still use an identifier returned without JSON", async ({ page }) =>
           return Promise.resolve("available");
         },
         create: () => {
-          return Promise.resolve({
+          const session = {
+            clone: () => {
+              return Promise.resolve(session);
+            },
             destroy: () => {
               return undefined;
             },
             prompt: () => {
               return Promise.resolve("  contact  ");
             },
-          });
+          };
+
+          return Promise.resolve(session);
         },
       },
     });
@@ -374,4 +391,71 @@ test("should tell a model failure apart from a missing answer", async ({ page })
 
   await expect(journal).toContainText("le modèle local a refusé de répondre");
   await expect(journal, "the corpus answer follows anyway").toContainText("rien ne répond");
+});
+
+// Le faux modele note chaque creation de session, et si elle porte le signal de la question.
+const poserModeleCompteur = (page: Page) => {
+    return page.addInitScript(() => {
+      globalThis.creations = [];
+      Object.defineProperty(globalThis, "LanguageModel", {
+        configurable: true,
+        value: {
+          availability: () => {
+            return Promise.resolve("available");
+          },
+          create: (options?: { signal?: AbortSignal }) => {
+            globalThis.creations.push({ bound: options?.signal !== undefined });
+
+            const session = {
+              clone: () => {
+                return Promise.resolve(session);
+              },
+              destroy: () => {
+                return undefined;
+              },
+              prompt: () => {
+                return Promise.resolve(JSON.stringify("contact"));
+              },
+            };
+
+            return Promise.resolve(session);
+          },
+        },
+      });
+    });
+  },
+  poserDeuxQuestions = async (page: Page) => {
+    await poserModeleCompteur(page);
+
+    const cli = await boot(page),
+      journal = page.locator("[data-journal]");
+
+    await cli.fill("ask où travailles-tu");
+    await cli.press("Enter");
+    await expect(journal).toContainText("48 heures");
+    await cli.fill("clear");
+    await cli.press("Enter");
+    await cli.fill("ask comment te joindre");
+    await cli.press("Enter");
+    await expect(journal).toContainText("48 heures");
+  };
+
+test("should create the model session once for two questions", async ({ page }) => {
+  await poserDeuxQuestions(page);
+
+  expect(
+    await page.evaluate(() => {
+      return globalThis.creations.length;
+    }),
+  ).toBe(1);
+});
+
+test("should keep the model session out of the question signal", async ({ page }) => {
+  await poserDeuxQuestions(page);
+
+  expect(
+    await page.evaluate(() => {
+      return globalThis.creations;
+    }),
+  ).toEqual([{ bound: false }]);
 });

@@ -43,6 +43,7 @@ export interface Shared {
   current: Section;
   details: Section[];
   goSection(id: string, options?: { push?: boolean; via?: TrackSource }): void;
+  navClick(event: MouseEvent, id: string): void;
   // Les deux accesseurs de la recherche globale. Ils vivent dans app.ts : aucune tranche n'en
   // porte, et une tranche qui les recalculerait classerait l'index une seconde fois.
   globalGhost: string;

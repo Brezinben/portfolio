@@ -10,3 +10,19 @@ export const boxOf = async (locator: Locator) => {
 
   return box;
 };
+
+// La cible tactile d'un élément peut dépasser sa boîte (pseudo-élément). Seul le test de
+// frappe la voit : on touche au-dessus et au-dessous du centre, et on lit qui répond.
+export const answersAround = (locator: Locator, reach: number) => {
+  return locator.evaluate((node, distance) => {
+    node.scrollIntoView({ block: "center" });
+
+    const box = node.getBoundingClientRect(),
+      x = box.x + box.width / 2,
+      middle = box.y + box.height / 2;
+
+    return [-distance, distance].map((shift) => {
+      return document.elementFromPoint(x, middle + shift)?.closest("[data-handle]") === node;
+    });
+  }, reach);
+};

@@ -81,3 +81,5 @@ export const CONTENT_URL = "content.json";
 // une reponse par defaut alors que le modele allait repondre.
 export const ASK_MS = 15_000;
 export const EMPTY = section({ id: "", label: "" });
+// Délai de repos du focus avant qu'une techno compte comme regardée.
+export const TECH_TRACK_MS = 600;

@@ -65,7 +65,7 @@ const listMove = (selector: string, key: string, activate: (at: number) => void)
 const items = (pane: string) => {
   return [
     ...document.querySelectorAll<HTMLElement>(
-      `[data-pane="${pane}"] button:not(:disabled), [data-pane="${pane}"] input`,
+      `[data-pane="${pane}"] button:not(:disabled), [data-pane="${pane}"] a[data-ctl="nav"], [data-pane="${pane}"] input`,
     ),
   ];
 };

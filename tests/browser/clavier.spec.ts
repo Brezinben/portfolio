@@ -124,7 +124,7 @@ test("should keep a focused achievement alert on screen", async ({ page }) => {
   await page.locator("#cli").fill("ls");
   await page.keyboard.press("Enter");
 
-  const button = page.locator("[data-ach-alert] button");
+  const button = page.locator("[data-ctl='ach-alert']");
 
   await button.focus();
   await page.clock.fastForward(30_000);
@@ -163,7 +163,7 @@ test("should only close the global search on Enter over its close button", async
 
   // Une trouvaille lancée changerait de section dans le même geste.
   await expect(page.locator("[data-global]")).toHaveCount(0);
-  await expect(page.locator('[data-ctl="nav"][aria-current="true"]')).toContainText("whoami");
+  await expect(page.locator('[data-ctl="nav"][aria-current="page"]')).toContainText("whoami");
 });
 
 // Une modale à la fois, et la page derrière elle ne prend plus le focus.
@@ -186,7 +186,7 @@ test("should ignore the single-key shortcuts once they are turned off", async ({
   await page.locator("body").press("j");
 
   // La section change dans le gestionnaire de touche : l'état se lit dès que la touche rend.
-  await expect(page.locator('[data-ctl="nav"][aria-current="true"]')).toContainText("whoami");
+  await expect(page.locator('[data-ctl="nav"][aria-current="page"]')).toContainText("whoami");
 });
 
 // Une annonce passe par une région toujours montée : insérée déjà remplie, elle se tait.

@@ -168,7 +168,7 @@ test("should pull the mascot out of thinking when a section already seen opens a
 
   const aller = (nom: string) => {
     return page
-      .getByRole("button", { name: new RegExp(nom, "u") })
+      .getByRole("link", { name: new RegExp(nom, "u") })
       .first()
       .click();
   };

@@ -1,6 +1,6 @@
 import type { Locator, Page } from "@playwright/test";
 import { expect, test } from "@playwright/test";
-import { boxOf } from "../helpers/box.ts";
+import { answersAround, boxOf } from "../helpers/box.ts";
 import { ringRatios } from "../helpers/contrast.ts";
 
 // La poignee ne s'affiche que si le journal deborde : une tige a deplacer dans le vide
@@ -108,7 +108,7 @@ test("should take the result back from the command when a section opens", async 
 
   await cli.fill("help");
   await cli.press("Enter");
-  await page.getByRole("button", { name: /stack/u }).first().click();
+  await page.getByRole("link", { name: /stack/u }).first().click();
 
   await expect(page.locator("[data-result]")).not.toContainText("à vos risques");
   await expect(page.locator('[data-pane="main"]')).toContainText("~/stack");
@@ -225,7 +225,7 @@ test("should keep the pane widths from one section to the next", async ({ page }
     // Les sections s'ouvrent l'une après l'autre : les ouvrir ensemble ne mesurerait rien.
     // oxlint-disable-next-line no-await-in-loop
     await page
-      .getByRole("button", { name: new RegExp(id, "u") })
+      .getByRole("link", { name: new RegExp(id, "u") })
       .first()
       .click();
     // oxlint-disable-next-line no-await-in-loop
@@ -321,7 +321,7 @@ test("should give the result its room back when a too tall log meets a new secti
   });
   await boot(page);
   await page
-    .getByRole("button", { name: /contact/u })
+    .getByRole("link", { name: /contact/u })
     .first()
     .click();
 
@@ -368,6 +368,17 @@ test("should keep the focus on the result while a command runs", async ({ page }
   await page.keyboard.press("j");
 
   await expect(page.locator("[data-result]")).toBeFocused();
+});
+
+// Le trait de la poignée fait 14 px, la cible en fait 24 : 12 px de part et d'autre du centre.
+test("should give the log handle a 24 px target", async ({ page }) => {
+  const cli = await boot(page);
+
+  await fill(cli);
+
+  expect(
+    await answersAround(page.getByRole("separator", { name: "Redimensionner le journal" }), 11),
+  ).toEqual([true, true]);
 });
 
 // Le Chromium de Playwright masque les barres par defaut : sans ce retrait, la mesure

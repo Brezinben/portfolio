@@ -43,13 +43,18 @@ export interface AchievementsState {
   alertCells: string[];
   alertLeaving: boolean;
   alertQueue: string[];
+  // Là où le focus était avant d'entrer dans l'alerte : la fermeture l'y ramène.
+  alertReturn: HTMLElement | undefined;
   alertTimer: Delay | undefined;
 }
 
 export interface AchievementsApi {
   achievementsKey(event: KeyboardEvent): void;
+  alertFocus(event: FocusEvent): void;
   alertNext(): void;
+  alertResume(): void;
   alertOut(): void;
+  closeAlert(): void;
   closeAchievements(): void;
   markActivity(name: string): void;
   markSection(id: string): void;
@@ -132,11 +137,33 @@ export const achievementsSlice = () => {
       ]?.focus();
     },
 
+    alertFocus(this: Shell, event: FocusEvent) {
+      const from = event.relatedTarget;
+
+      if (
+        event.currentTarget instanceof HTMLElement &&
+        from instanceof Node &&
+        event.currentTarget.contains(from)
+      ) {
+        return;
+      }
+
+      this.alertReturn = from instanceof HTMLElement ? from : undefined;
+    },
+
     alertNext(this: Shell) {
       const [key, ...rest] = this.alertQueue;
 
       clearTimeout(this.alertTimer);
       this.alertLeaving = false;
+
+      // Une alerte derrière une modale passerait inaperçue : la clé reste dans la file.
+      if (this.modalOpen) {
+        this.alert = "";
+
+        return;
+      }
+
       this.alert = key ?? "";
 
       if (!key) {
@@ -175,8 +202,19 @@ export const achievementsSlice = () => {
       }, ALERT_OUT_TOTAL_MS);
     },
 
+    // Le report laisse la modale suivante s'ouvrir : une alerte lancée entre deux modales
+    // passerait derrière la seconde.
+    alertResume(this: Shell) {
+      this.$nextTick(() => {
+        if (this.alert === "" && this.alertQueue.length > 0) {
+          this.alertNext();
+        }
+      });
+    },
+
     closeAchievements(this: Shell) {
       this.achievementsOpen = false;
+      this.alertResume();
       // L'alerte qui a ouvert la liste a pu disparaître entre-temps : elle ne tient que dix
       // secondes. Un nœud détaché reste vrai, donc sans « isConnected » le repli ne part
       // jamais et le focus tombe sur le corps de la page.
@@ -185,6 +223,27 @@ export const achievementsSlice = () => {
           this.achievementsReturn?.isConnected === true ? this.achievementsReturn : undefined;
 
         (back ?? document.querySelector<HTMLElement>("[data-ctl='ach']"))?.focus();
+      });
+    },
+
+    closeAlert(this: Shell) {
+      const focused = document.querySelector("[data-ach-alert]")?.matches(":focus-within") === true;
+
+      this.alertNext();
+
+      if (!focused) {
+        return;
+      }
+
+      // Le focus était dans l'alerte. Sans cette reprise, il tomberait sur le corps de la page.
+      this.$nextTick(() => {
+        const back = this.alertReturn?.isConnected === true ? this.alertReturn : undefined;
+
+        (
+          document.querySelector<HTMLElement>("[data-ctl='ach-alert-close']") ??
+          back ??
+          document.querySelector<HTMLElement>("[data-ctl='ach']")
+        )?.focus();
       });
     },
 

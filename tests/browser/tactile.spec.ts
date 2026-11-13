@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 import type { Page } from "@playwright/test";
-import { boxOf } from "../helpers/box.ts";
+import { answersAround, boxOf } from "../helpers/box.ts";
 
 const TELEPHONE = { hasTouch: true, isMobile: true, viewport: { height: 640, width: 360 } },
   boot = async (page: Page, hash = "/") => {
@@ -106,7 +106,7 @@ test.describe("on touch", () => {
   ] as const) {
     test(`should bring the result on screen when a ${quoi} is touched`, async ({ page }) => {
       await boot(page);
-      await page.getByRole("button", { name: nom }).first().click();
+      await page.getByRole("link", { name: nom }).first().click();
 
       await expect(page.locator("[data-result]")).toBeInViewport();
     });
@@ -146,6 +146,45 @@ test.describe("on touch", () => {
     expect(overflow, "the overflow goes into the column, never into the page").toBeLessThanOrEqual(
       1,
     );
+  });
+});
+
+// Sous 900 px le journal n'a plus de plafond, donc plus de poignée : elle ne se touche que
+// sur une tablette, assez large pour garder les trois volets côte à côte.
+test.describe("on a tablet", () => {
+  test.use({ hasTouch: true, isMobile: true, viewport: { height: 768, width: 1024 } });
+
+  test("should give the log handle and the suggestions a 44 px touch target", async ({ page }) => {
+    await boot(page);
+
+    const cli = page.getByLabel("Commande");
+
+    for (const _ of Array.from({ length: 6 })) {
+      // Les commandes doivent s'enchaîner : les paralléliser ne remplirait pas le journal.
+      // oxlint-disable-next-line no-await-in-loop
+      await cli.fill("xyzzy");
+      // oxlint-disable-next-line no-await-in-loop
+      await cli.press("Enter");
+    }
+
+    expect(
+      await answersAround(page.getByRole("separator", { name: "Redimensionner le journal" }), 21),
+    ).toEqual([true, true]);
+
+    await cli.fill("s");
+    await cli.dispatchEvent("input");
+
+    for (const suggestion of await page.locator("[data-suggestion]").all()) {
+      // L'entrée s'anime à l'ouverture de la liste : on attend que sa hauteur se pose.
+      // oxlint-disable-next-line no-await-in-loop
+      await expect
+        .poll(async () => {
+          const box = await boxOf(suggestion);
+
+          return box.height;
+        })
+        .toBeGreaterThanOrEqual(44);
+    }
   });
 });
 

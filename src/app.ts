@@ -35,6 +35,7 @@ import {
   GLOBAL_LIMIT,
   PALETTES,
   SYSTEM_THEME,
+  TECH_TRACK_MS,
   THEMES,
   TOGGLES,
   TYPE_CPS,
@@ -183,6 +184,7 @@ interface State
   stack: Brick[];
   tech: string;
   techNotes: Record<string, TechNote>;
+  techTimer: Delay | undefined;
   timeline: Step[];
   timelineAt: number;
   typed: string;
@@ -252,6 +254,7 @@ document.addEventListener("alpine:init", () => {
       alertCells: [],
       alertLeaving: false,
       alertQueue: [],
+      alertReturn: undefined,
       alertTimer: undefined,
       asker: undefined,
       bubbleTimer: undefined,
@@ -356,6 +359,7 @@ document.addEventListener("alpine:init", () => {
       tech: "",
       techNotes: {},
       systemLight: globalThis.matchMedia?.("(prefers-color-scheme: light)").matches ?? false,
+      techTimer: undefined,
       theme: SYSTEM_THEME,
       timeline: [],
       timelineAt: 0,
@@ -427,10 +431,13 @@ document.addEventListener("alpine:init", () => {
         return this.techNotes[this.tech];
       },
 
-      // La fiche suit le focus des la premiere techno atteinte. Rien ne s'affiche
-      // tant qu'aucune n'a le focus, donc aucun texte d'invite au depart.
+      // La fiche suit le focus dès la première techno atteinte. La mesure attend que le focus
+      // se pose : une mesure par techno survolée aux flèches noierait le compteur.
       followTech(name: string) {
-        this.track("techno", { nom: name, via: "interface" });
+        clearTimeout(this.techTimer);
+        this.techTimer = setTimeout(() => {
+          this.track("techno", { nom: name, via: "interface" });
+        }, TECH_TRACK_MS);
         this.tech = name;
       },
 
@@ -843,6 +850,23 @@ document.addEventListener("alpine:init", () => {
         );
       },
 
+      // Un clic modifié ou un autre bouton garde le comportement du lien : nouvel onglet,
+      // copie de l'adresse. Le clic simple reste dans la page.
+      navClick(event: MouseEvent, id: string) {
+        if (
+          event.button !== 0 ||
+          event.ctrlKey ||
+          event.metaKey ||
+          event.shiftKey ||
+          event.altKey
+        ) {
+          return;
+        }
+
+        event.preventDefault();
+        this.goSection(id);
+      },
+
       goSection(id: string, options: { push?: boolean; via?: TrackSource } = {}) {
         const { push = true, via = "interface" } = options;
 
@@ -1102,7 +1126,7 @@ document.addEventListener("alpine:init", () => {
 
       async copy(text: string) {
         try {
-          await globalThis.navigator?.clipboard?.writeText?.(text);
+          await navigator.clipboard.writeText(text);
         } catch {
           this.journal = [
             ...this.journal,

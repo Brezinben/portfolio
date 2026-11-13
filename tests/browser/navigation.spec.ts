@@ -21,7 +21,7 @@ const boot = async (page: Page, hash = "") => {
 test("should move to the first inner element of the section on arrow right", async ({ page }) => {
   await boot(page);
   await page
-    .getByRole("button", { name: /^stack/u })
+    .getByRole("link", { name: /^stack/u })
     .first()
     .focus();
   await page.keyboard.press("ArrowRight");
@@ -50,7 +50,7 @@ test("should keep the focus outline inside the result, down to the last column",
 
 test("should give every section a shareable anchor", async ({ page }) => {
   await boot(page);
-  await page.getByRole("button", { name: /^stack/u }).click();
+  await page.getByRole("link", { name: /^stack/u }).click();
 
   await expect(page).toHaveURL(/#stack$/u);
   await expect(main(page)).toContainText("bd stack --tree");
@@ -70,7 +70,7 @@ test("should fall back to whoami on an unknown anchor", async ({ page }) => {
 
 test("should go back to the previous section on the browser back button", async ({ page }) => {
   await boot(page);
-  await page.getByRole("button", { name: /^stack/u }).click();
+  await page.getByRole("link", { name: /^stack/u }).click();
   await expect(main(page)).toContainText("bd stack --tree");
 
   await page.goBack();
@@ -80,7 +80,7 @@ test("should go back to the previous section on the browser back button", async 
 
 test("should make every mission reachable and give it an anchor", async ({ page }) => {
   await boot(page);
-  await page.getByRole("button", { name: /kereis/iu }).click();
+  await page.getByRole("link", { name: /kereis/iu }).click();
 
   await expect(page).toHaveURL(/#m-kereis$/u);
 });
@@ -90,7 +90,7 @@ test("should type the command on the first visit and answer at once on return", 
   page,
 }) => {
   await boot(page);
-  await page.getByRole("button", { name: /^stack/u }).click();
+  await page.getByRole("link", { name: /^stack/u }).click();
 
   const typing = Date.now();
 
@@ -98,12 +98,12 @@ test("should type the command on the first visit and answer at once on return", 
 
   const first = Date.now() - typing;
 
-  await page.getByRole("button", { name: /^whoami/u }).click();
+  await page.getByRole("link", { name: /^whoami/u }).click();
   await expect(main(page)).toContainText("bd whoami --verbose");
 
   const again = Date.now();
 
-  await page.getByRole("button", { name: /^stack/u }).click();
+  await page.getByRole("link", { name: /^stack/u }).click();
   await expect(main(page)).toContainText("bd stack --tree --depth=2");
 
   expect(Date.now() - again, "a section already seen answers faster").toBeLessThan(first);
@@ -227,4 +227,73 @@ test("should measure one section when enter is held down", async ({ page }) => {
   });
 
   expect(sections, "one gesture, one measure").toBe(1);
+});
+
+// Parcourir la stack aux flèches fait passer le focus sur chaque techno : une mesure par
+// techno noyait le compteur pour un seul geste.
+test("should measure one techno when the arrows run through the stack", async ({ page }) => {
+  await page.route("**/analytics.brezinben.dpdns.org/**", (route) => {
+    return route.abort();
+  });
+  await page.addInitScript(() => {
+    globalThis.hits = [];
+    globalThis.goatcounter = {
+      count: (vars) => {
+        globalThis.hits.push(vars.path);
+      },
+    };
+  });
+  await boot(page, "#stack");
+  await page.evaluate(() => {
+    globalThis.hits = [];
+  });
+  await page.locator("[data-tech]").first().focus();
+  await page.keyboard.press("ArrowRight");
+  await page.keyboard.press("ArrowRight");
+  await page.keyboard.press("ArrowRight");
+
+  const last = (await page.locator("[data-tech]:focus").textContent()) ?? "";
+
+  await expect
+    .poll(
+      () => {
+        return page.evaluate(() => {
+          return globalThis.hits.filter((name) => {
+            return name.startsWith("techno:");
+          });
+        });
+      },
+      { message: "one measure, for the techno the focus rests on" },
+    )
+    .toEqual([`techno:${last.replace(/^[├└]/u, "").trim()},interface`]);
+});
+
+test("should expose each section as a link to its anchor", async ({ page }) => {
+  await boot(page);
+
+  const stack = page.getByRole("link", { name: /^stack/u });
+
+  await expect(stack).toHaveAttribute("href", "#stack");
+  await expect(page.getByRole("link", { name: /^whoami/u })).toHaveAttribute(
+    "aria-current",
+    "page",
+  );
+  await expect(stack).not.toHaveAttribute("aria-current", /.*/u);
+});
+
+test("should open a section in a new tab on a middle click without changing the current one", async ({
+  page,
+}) => {
+  await boot(page);
+
+  const opened = page.context().waitForEvent("page");
+
+  await page.getByRole("link", { name: /^stack/u }).click({ button: "middle" });
+  await opened;
+
+  await expect(page).not.toHaveURL(/#stack$/u);
+  await expect(page.getByRole("link", { name: /^whoami/u })).toHaveAttribute(
+    "aria-current",
+    "page",
+  );
 });
