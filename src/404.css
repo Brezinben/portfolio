@@ -578,3 +578,20 @@ footer {
 :root[data-anim="false"] [data-track] {
   display: none;
 }
+
+@media (forced-colors: active) {
+  .zone,
+  .zone__head {
+    border-color: CanvasText;
+  }
+
+  [data-ctl="nav"][data-primary] {
+    border-left: 4px solid Highlight;
+  }
+
+  [data-ctl="nav"]:focus-visible,
+  .slime:focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
+  }
+}

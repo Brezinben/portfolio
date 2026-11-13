@@ -3141,3 +3141,44 @@ a:hover {
     opacity: 0;
   }
 }
+
+/* Les couleurs forcées effacent les fonds et imposent leurs teintes aux bordures : l'état
+ se lit alors sur une bordure en couleur système, plus épaisse, et le focus sur un anneau
+ « Highlight », y compris là où la feuille retire le contour. */
+@media (forced-colors: active) {
+  .tm .zone,
+  .tm .zone__head {
+    border-color: CanvasText;
+  }
+
+  .tm [data-ctl="nav"][aria-current="true"],
+  .tm [data-ctl="tl"][aria-selected="true"],
+  .tm [data-suggestion][aria-selected="true"],
+  .tm [data-global-row][aria-selected="true"],
+  .tm [data-toggle][aria-pressed="true"] {
+    border-left: 4px solid Highlight;
+  }
+
+  .tm [data-theme-choice][aria-pressed="true"] {
+    border: 2px solid Highlight;
+  }
+
+  .tm [data-ctl]:focus-visible,
+  .tm [data-handle]:focus-visible,
+  .tm [data-journal]:focus-visible,
+  .tm [data-result]:focus-visible,
+  .tm [data-pane="out"] [tabindex="0"]:focus-visible,
+  .tm footer a:focus-visible,
+  .tm #cli:focus,
+  .tm .radio__number input:focus,
+  .tm .radio__glyph:focus-visible,
+  .tm .radio__ctl button:focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
+  }
+
+  .tm [data-swatch],
+  .tm [data-swatch] > span {
+    forced-color-adjust: none;
+  }
+}
