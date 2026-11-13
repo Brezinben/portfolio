@@ -64,8 +64,8 @@
 
       /* Les huit thèmes sont recopiés de index.html. Un test unitaire compare les deux
      relevés : une couleur qui change d'un côté doit changer de l'autre. */
-      /* Un navigateur sans light-dark() ignore le dernier bloc : les deux premiers suffisent
-     à suivre le schéma du système. */
+      /* Sans light-dark(), le bloc :root clair et le bloc prefers-color-scheme sombre
+     suivent le schéma du système. */
       :root {
         color-scheme: light dark;
         --bg: #f3ecec;

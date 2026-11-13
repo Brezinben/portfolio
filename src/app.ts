@@ -708,7 +708,6 @@ document.addEventListener("alpine:init", () => {
         return globalThis.matchMedia?.("(max-width: 900px)").matches ?? false;
       },
 
-      // La palette que la page affiche : le choix « système » rend celle du système.
       get activeTheme() {
         if (this.theme !== SYSTEM_THEME) {
           return this.theme;

@@ -628,6 +628,23 @@ a:hover {
       opacity: 1;
     }
   }
+
+  @keyframes ach-nudge {
+    from,
+    to {
+      transform: none;
+    }
+  }
+
+  @keyframes globalRow {
+    from {
+      opacity: 0;
+    }
+
+    to {
+      opacity: 1;
+    }
+  }
 }
 
 /* L'ambre du theme clair donne 2,1:1 : correct pour une pastille ou un trait, pas

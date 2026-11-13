@@ -45,9 +45,8 @@ export const knownTheme = (saved: SavedOpts): string => {
   return theme === SYSTEM_THEME ? systemPalette() : theme;
 };
 
-// Fusionne dans le stockage au lieu de le remplacer : chaque réglage n'écrit que ses clés.
-// Une valeur « undefined » retire la clé. C'est ce qui garde le thème libre de suivre le
-// système quand une autre option est enregistrée.
+// Une valeur « undefined » retire la clé : le thème reste libre de suivre le système
+// quand une autre option est enregistrée.
 export const writeOpts = (patch: SavedOpts): void => {
   try {
     globalThis.localStorage.setItem(OPTS_KEY, JSON.stringify({ ...readOpts(), ...patch }));
