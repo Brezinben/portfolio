@@ -1,5 +1,6 @@
-# Un nouveau worktree reçoit d'abord les fichiers ignorés du worktree principal (node_modules,
-# caches). L'installation part ensuite de cette copie et ne tire que la différence.
+# Un nouveau worktree reçoit d'abord les fichiers ignorés du worktree principal : node_modules,
+# dist*, reports/, .scratch/. L'installation part de cette copie et ne tire que la différence.
+# Le pipeline s'arrête à la première étape en échec : sans copie, l'installation ne part pas.
 [[post-start]]
 copy = "wt step copy-ignored"
 

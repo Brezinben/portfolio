@@ -49,10 +49,11 @@ jobs:
 
       - run: bun install --frozen-lockfile
 
-      # La version vient du paquet installe : une montee de Dependabot change la cle sans
-      # qu'on touche au workflow.
+      # La version vient du paquet installe : Dependabot change la cle sans toucher au workflow.
       - id: playwright
-        run: echo "version=$(jq -r .version node_modules/@playwright/test/package.json)" >> "$GITHUB_OUTPUT"
+        run: |
+          version=$(jq -r .version node_modules/@playwright/test/package.json)
+          echo "version=$version" >> "$GITHUB_OUTPUT"
 
       # Les navigateurs pesent plus que les dependances. La cle porte la version de
       # Playwright : une montee de version tire une nouvelle archive, pas l'ancienne.

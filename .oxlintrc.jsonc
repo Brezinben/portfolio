@@ -121,17 +121,17 @@
     "no-magic-numbers": "off",
     // Elle interdit l'opérateur ternaire.
     "no-ternary": "off",
-    // Les exports nommés sont la convention : ces deux règles poussent vers l'export par défaut.
+    // Les exports nommés sont la convention : ces règles poussent vers l'export par défaut.
     "import/no-named-export": "off",
     "import/prefer-default-export": "off",
-    // Chaque export reste à sa définition : ces deux règles les veulent groupés ou en fin de fichier.
+    // Chaque export reste à sa définition : ces règles les veulent groupés ou en fin de fichier.
     "import/group-exports": "off",
     "import/exports-last": "off",
     // Elle signale les noms courts, lisibles dans une petite portée : i, x, e.
     "id-length": "off",
-    // Elle fusionne les « const » consécutifs en une seule déclaration, et mélange les lignes sans rapport.
+    // Elle exige une seule déclaration par portée, ce qui mélange des lignes sans rapport.
     "eslint/one-var": "off",
-    // Les imports de type en ligne (« import { type X, y } ») sont la forme de la maison.
+    // Les imports de type en ligne (« import { type X, y } ») sont la forme courante : seul shell.ts impose l'autre, plus bas.
     "import/consistent-type-specifier-style": "off",
     // Le formateur décide de la casse des littéraux numériques.
     "unicorn/number-literal-case": "off",
