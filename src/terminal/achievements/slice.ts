@@ -140,12 +140,14 @@ export const achievementsSlice = () => {
       const from = event.relatedTarget;
 
       if (
-        from instanceof HTMLElement &&
         event.currentTarget instanceof HTMLElement &&
-        !event.currentTarget.contains(from)
+        from instanceof Node &&
+        event.currentTarget.contains(from)
       ) {
-        this.alertReturn = from;
+        return;
       }
+
+      this.alertReturn = from instanceof HTMLElement ? from : undefined;
     },
 
     alertNext(this: Shell) {
@@ -154,8 +156,7 @@ export const achievementsSlice = () => {
       clearTimeout(this.alertTimer);
       this.alertLeaving = false;
 
-      // Une alerte derrière une modale passerait inaperçue : la clé reste dans la file, et
-      // chaque fermeture de modale rappelle « alertNext ».
+      // Une alerte derrière une modale passerait inaperçue : la clé reste dans la file.
       if (this.modalOpen) {
         this.alert = "";
 
@@ -200,11 +201,14 @@ export const achievementsSlice = () => {
       }, ALERT_OUT_TOTAL_MS);
     },
 
-    // Appelée par chaque fermeture de modale. Une alerte déjà affichée n'est pas touchée.
+    // Le report laisse la modale suivante s'ouvrir : une alerte lancée entre deux modales
+    // passerait derrière la seconde.
     alertResume(this: Shell) {
-      if (this.alert === "" && this.alertQueue.length > 0) {
-        this.alertNext();
-      }
+      this.$nextTick(() => {
+        if (this.alert === "" && this.alertQueue.length > 0) {
+          this.alertNext();
+        }
+      });
     },
 
     closeAchievements(this: Shell) {

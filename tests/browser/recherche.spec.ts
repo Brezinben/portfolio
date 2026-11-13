@@ -394,8 +394,6 @@ test("should tell a model failure apart from a missing answer", async ({ page })
 });
 
 // Le faux modele note chaque creation de session, et si elle porte le signal de la question.
-// Un signal passe a « create » detruit la session quand il s'abandonne : la session
-// partagee mourrait avec la premiere question coupee.
 const poserModeleCompteur = (page: Page) => {
     return page.addInitScript(() => {
       globalThis.creations = [];

@@ -78,6 +78,5 @@ export const CONTENT_URL = "content.json";
 // une reponse par defaut alors que le modele allait repondre.
 export const ASK_MS = 15_000;
 export const EMPTY = section({ id: "", label: "" });
-// Le focus doit se poser sur une techno avant qu'elle compte comme regardée. Une flèche
-// maintenue passe plus vite : la mesure ne part que si le focus s'arrête.
+// Délai de repos du focus avant qu'une techno compte comme regardée.
 export const TECH_TRACK_MS = 600;

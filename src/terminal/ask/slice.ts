@@ -67,20 +67,21 @@ const baseSession = async () => {
 };
 
 // La création partagée ne porte pas le signal, mais l'attente de la question reste bornée.
-const until = <T>(work: Promise<T>, signal: AbortSignal) => {
+const until = async <T>(work: Promise<T>, signal: AbortSignal) => {
   signal.throwIfAborted();
 
-  const { promise, reject } = Promise.withResolvers<never>();
-
-  signal.addEventListener(
-    "abort",
-    () => {
+  const { promise, reject } = Promise.withResolvers<never>(),
+    onAbort = () => {
       reject(signal.reason);
-    },
-    { once: true },
-  );
+    };
 
-  return Promise.race([work, promise]);
+  signal.addEventListener("abort", onAbort, { once: true });
+
+  try {
+    return await Promise.race([work, promise]);
+  } finally {
+    signal.removeEventListener("abort", onAbort);
+  }
 };
 
 // L'attente depassee et le refus ne se reparent pas de la meme facon : l'une demande de

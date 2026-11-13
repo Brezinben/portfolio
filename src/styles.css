@@ -3015,9 +3015,7 @@ a:hover {
   }
 }
 
-/* L'appui assombrit l'élément d'un voile noir. Le voile passe en image de fond : il se pose
- sur le fond de chaque état, sélectionné ou non, sans recalculer leur couleur, et il se
- distingue du survol, qui ne touche pas au fond. */
+/* Le voile passe en image de fond : il couvre le fond de chaque état sans recalculer sa couleur. */
 .tm [data-ctl]:active:not(:disabled),
 .tm [data-handle]:active,
 .tm [data-suggestion]:active,
