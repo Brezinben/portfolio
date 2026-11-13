@@ -149,6 +149,45 @@ test.describe("on touch", () => {
   });
 });
 
+// Sous 900 px le journal n'a plus de plafond, donc plus de poignée : elle ne se touche que
+// sur une tablette, assez large pour garder les trois volets côte à côte.
+test.describe("on a tablet", () => {
+  test.use({ hasTouch: true, isMobile: true, viewport: { height: 768, width: 1024 } });
+
+  test("should give the log handle and the suggestions a 44 px touch target", async ({ page }) => {
+    await boot(page);
+
+    const cli = page.getByLabel("Commande");
+
+    for (const _ of Array.from({ length: 6 })) {
+      // Les commandes doivent s'enchaîner : les paralléliser ne remplirait pas le journal.
+      // oxlint-disable-next-line no-await-in-loop
+      await cli.fill("xyzzy");
+      // oxlint-disable-next-line no-await-in-loop
+      await cli.press("Enter");
+    }
+
+    expect(
+      await answersAround(page.getByRole("separator", { name: "Redimensionner le journal" }), 21),
+    ).toEqual([true, true]);
+
+    await cli.fill("s");
+    await cli.dispatchEvent("input");
+
+    for (const suggestion of await page.locator("[data-suggestion]").all()) {
+      // L'entrée s'anime à l'ouverture de la liste : on attend que sa hauteur se pose.
+      // oxlint-disable-next-line no-await-in-loop
+      await expect
+        .poll(async () => {
+          const box = await boxOf(suggestion);
+
+          return box.height;
+        })
+        .toBeGreaterThanOrEqual(44);
+    }
+  });
+});
+
 test.describe("on desktop", () => {
   test.use({ viewport: { height: 900, width: 1440 } });
 
@@ -174,33 +213,5 @@ test.describe("on desktop", () => {
     );
     expect(main.x + main.width, "the main pane ends before the output").toBeLessThanOrEqual(out.x);
     expect(Math.abs(nav.y - out.y), "the panes share one row").toBeLessThan(1);
-  });
-
-  test("should give the log handle and the suggestions a 44 px touch target", async ({ page }) => {
-    await boot(page);
-
-    const cli = page.getByLabel("Commande");
-
-    for (const _ of Array.from({ length: 6 })) {
-      // Les commandes doivent s'enchaîner : les paralléliser ne remplirait pas le journal.
-      // oxlint-disable-next-line no-await-in-loop
-      await cli.fill("xyzzy");
-      // oxlint-disable-next-line no-await-in-loop
-      await cli.press("Enter");
-    }
-
-    expect(
-      await answersAround(page.getByRole("separator", { name: "Redimensionner le journal" }), 21),
-    ).toEqual([true, true]);
-
-    await cli.fill("s");
-    await cli.dispatchEvent("input");
-
-    for (const suggestion of await page.locator("[data-suggestion]").all()) {
-      // oxlint-disable-next-line no-await-in-loop
-      const box = await boxOf(suggestion);
-
-      expect(box.height).toBeGreaterThanOrEqual(44);
-    }
   });
 });
