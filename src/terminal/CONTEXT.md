@@ -27,6 +27,20 @@ Durée ou seuil arrêté après itération. `settings.ts` porte celles du termin
 `mascot/constants.ts` celles de la mascotte.
 _Avoid_: constante, paramètre, réglage.
 
+**Thème système** (`system`) :
+Choix qui suit le schéma de couleurs du système. Le stockage ne garde aucune clé `theme`
+tant que le visiteur n'a pas choisi une palette différente de celle du système.
+_Avoid_: thème auto, thème par défaut.
+
+**Palette affichée** (`activeTheme`) :
+La palette réellement peinte. Avec le thème système, c'est la palette du système. `.tm` et
+`<html>` la portent dans `data-theme`.
+_Avoid_: thème courant, thème résolu.
+
+La comparaison avec le système se fait au stockage, jamais après. Choisir la palette du
+système remet l'état à `system` et retire la clé. Si le système rejoint plus tard la
+palette stockée, la clé reste.
+
 ## Deux règles dont la violation ne se voit pas au typecheck
 
 **Aucune tranche ne porte d'accesseur.** Ce n'est pas une nécessité technique : la fusion
