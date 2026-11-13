@@ -45,3 +45,5 @@ a rule, edit its config:
 - Claude Code hooks: `.claude/settings.json`, which calls `scripts/post-edit.sh` and `hk agent stop-hook`.
 - Browser and mutation tests: `.config/playwright.config.ts`, `.config/stryker.config.json`.
 - Worktrees: Worktrunk, `.config/wt.toml`.
+- Issues and specs: GitHub Issues of `Brezinben/portfolio`, through `gh`. Labels and commands in
+  `docs/agents/issue-tracker.md` and `docs/agents/triage-labels.md`. No local issue files.
