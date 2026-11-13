@@ -6,7 +6,7 @@ Bun runs the build and the unit tests.
 ## Languages
 
 - French: documents, code comments, commit subjects and commit descriptions.
-- English: identifiers and test labels. A test label starts with `should`.
+- English: identifiers, branch names and test labels. A test label starts with `should`.
 
 ## Commit messages
 
