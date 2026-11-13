@@ -194,3 +194,12 @@ for (const theme of ["dark", "light", "noctis", "azureus", "uva", "bordo", "lux"
     }
   });
 }
+
+test("should announce a large image card when the text version is shared", async ({ page }) => {
+  await page.goto("/texte.html");
+
+  await expect(page.locator("meta[name='twitter:card']")).toHaveAttribute(
+    "content",
+    "summary_large_image",
+  );
+});
