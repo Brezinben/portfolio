@@ -1,16 +1,16 @@
 # Issue tracker: GitHub Issues
 
 Issues and specs for this repo live in the GitHub Issues of `Brezinben/portfolio`. Use the
-`gh` CLI for every operation. Never write an issue, a spec or a ticket to a local file:
-`.scratch/` is gone on purpose, and a local file is invisible to the owner and to the next
-agent.
+`gh` CLI for every operation. Never keep an issue, a spec or a ticket in a file of the
+repository: `.scratch/` is gone on purpose, and such a file is invisible to the owner and to
+the next agent.
 
 ## Conventions
 
 - One spec per issue. The issue body follows the spec template of the skill that writes it.
 - An implementation ticket is its own issue. Its body starts with `Part of #<spec>`.
 - The triage state is a label (see `triage-labels.md`). An issue carries exactly one triage
-  label.
+  label. The `map` label is not a triage state: a map issue carries only `map`.
 - Conversation goes in issue comments, never in edits of the body.
 
 ## When a skill says "publish to the issue tracker"
@@ -40,8 +40,8 @@ to it.
   (`research`/`prototype`/`grilling`/`task`), then the question.
 - **Blocking**: a `Blocked by: #NN, #NN` line under `Part of`. A ticket is unblocked when
   every issue it lists is closed.
-- **Frontier**: `gh issue list --repo Brezinben/portfolio --search "Part of #<map> in:body" --state open`,
-  then keep the unblocked issues with no assignee; the lowest number wins.
+- **Frontier**: `gh issue list --repo Brezinben/portfolio --search '"Part of #<map>" in:body no:assignee' --state open --limit 100`,
+  then keep the unblocked issues; the lowest number wins.
 - **Claim**: `gh issue edit <number> --add-assignee @me` before any work.
 - **Resolve**: comment the answer under an `## Answer` heading, close the issue, then comment
-  a context pointer (gist + issue link) on the map under Decisions-so-far.
+  a context pointer (gist + issue link) on the map, headed `Decisions-so-far`.
