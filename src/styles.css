@@ -998,11 +998,20 @@ a:hover {
   display: flex;
   justify-content: center;
   align-items: center;
+  position: relative;
   height: 14px;
   cursor: row-resize;
   font-size: 12px;
   letter-spacing: 0.3em;
   user-select: none;
+}
+
+/* Le trait reste à 14 px : la cible grandit par l'espace autour de lui, sans pousser les
+ volets voisins. */
+.tm [data-handle]::before {
+  content: "";
+  position: absolute;
+  inset: calc((14px - var(--target-size)) / 2) 0;
 }
 
 .tm [data-more] {
@@ -1975,7 +1984,7 @@ a:hover {
 }
 
 .tm [data-suggestion] {
-  min-height: 32px;
+  min-height: max(32px, var(--target-size));
   display: flex;
   align-items: center;
   gap: 8px;
@@ -2997,4 +3006,17 @@ a:hover {
   100% {
     opacity: 0;
   }
+}
+
+/* L'appui assombrit l'élément d'un voile noir. Le voile passe en image de fond : il se pose
+ sur le fond de chaque état, sélectionné ou non, sans recalculer leur couleur, et il se
+ distingue du survol, qui ne touche pas au fond. */
+.tm [data-ctl]:active:not(:disabled),
+.tm [data-handle]:active,
+.tm [data-suggestion]:active,
+.tm [data-theme-choice]:active {
+  background-image: linear-gradient(
+    color-mix(in srgb, black 18%, transparent),
+    color-mix(in srgb, black 18%, transparent)
+  );
 }

@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 import type { Page } from "@playwright/test";
-import { boxOf } from "../helpers/box.ts";
+import { answersAround, boxOf } from "../helpers/box.ts";
 
 const TELEPHONE = { hasTouch: true, isMobile: true, viewport: { height: 640, width: 360 } },
   boot = async (page: Page, hash = "/") => {
@@ -174,5 +174,33 @@ test.describe("on desktop", () => {
     );
     expect(main.x + main.width, "the main pane ends before the output").toBeLessThanOrEqual(out.x);
     expect(Math.abs(nav.y - out.y), "the panes share one row").toBeLessThan(1);
+  });
+
+  test("should give the log handle and the suggestions a 44 px touch target", async ({ page }) => {
+    await boot(page);
+
+    const cli = page.getByLabel("Commande");
+
+    for (const _ of Array.from({ length: 6 })) {
+      // Les commandes doivent s'enchaîner : les paralléliser ne remplirait pas le journal.
+      // oxlint-disable-next-line no-await-in-loop
+      await cli.fill("xyzzy");
+      // oxlint-disable-next-line no-await-in-loop
+      await cli.press("Enter");
+    }
+
+    expect(
+      await answersAround(page.getByRole("separator", { name: "Redimensionner le journal" }), 21),
+    ).toEqual([true, true]);
+
+    await cli.fill("s");
+    await cli.dispatchEvent("input");
+
+    for (const suggestion of await page.locator("[data-suggestion]").all()) {
+      // oxlint-disable-next-line no-await-in-loop
+      const box = await boxOf(suggestion);
+
+      expect(box.height).toBeGreaterThanOrEqual(44);
+    }
   });
 });

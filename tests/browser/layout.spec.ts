@@ -1,6 +1,6 @@
 import type { Locator, Page } from "@playwright/test";
 import { expect, test } from "@playwright/test";
-import { boxOf } from "../helpers/box.ts";
+import { answersAround, boxOf } from "../helpers/box.ts";
 import { ringRatios } from "../helpers/contrast.ts";
 
 // La poignee ne s'affiche que si le journal deborde : une tige a deplacer dans le vide
@@ -378,4 +378,15 @@ test("should keep the focus on the result while a command runs", async ({ page }
   await page.keyboard.press("j");
 
   await expect(page.locator("[data-result]")).toBeFocused();
+});
+
+// Le trait de la poignée fait 14 px, la cible en fait 24 : 12 px de part et d'autre du centre.
+test("should give the log handle a 24 px target", async ({ page }) => {
+  const cli = await boot(page);
+
+  await fill(cli);
+
+  expect(
+    await answersAround(page.getByRole("separator", { name: "Redimensionner le journal" }), 11),
+  ).toEqual([true, true]);
 });
