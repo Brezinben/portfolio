@@ -1,6 +1,4 @@
-design/.thumbnail
-design/_ds/
-design/uploads/
+design/
 node_modules/
 playwright-report/
 test-results/
