@@ -67,7 +67,7 @@ version neuve à côté, puis remplace le lien en une seule opération. Le chemi
 donc toujours une version complète, même si la construction meurt.
 
 La construction pose une empreinte du contenu dans le nom des actifs. `content.json`,
-`llms.txt`, `robots.txt`, `sitemap.xml` et `apple-touch-icon.png` gardent le leur : ce sont
+`favicon.ico`, `llms.txt`, `robots.txt`, `sitemap.xml` et `apple-touch-icon.png` gardent le leur : ce sont
 des adresses fixes par convention.
 
 Les tests construisent dans `dist.test/` et ne publient rien. `PORTFOLIO_DIST` choisit la
