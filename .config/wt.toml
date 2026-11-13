@@ -1,3 +1,8 @@
-# Un nouveau worktree n'a pas de node_modules.
+# Le worktree reçoit d'abord les fichiers ignorés du worktree principal : l'installation ne tire que la différence.
+# Le pipeline s'arrête à la première étape en échec : sans copie, l'installation ne part pas.
+# hochet met l'installation en file ; absent, la substitution est vide et bun install part seul.
 [[post-start]]
-install = "bun install --frozen-lockfile"
+copy = "wt step copy-ignored"
+
+[[post-start]]
+install = "$(command -v hochet) bun install --frozen-lockfile"
