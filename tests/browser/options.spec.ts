@@ -34,11 +34,21 @@ test("should open the modal and move the focus into it on the options button", a
   await expect(dialog.locator(":focus")).toHaveCount(1);
 });
 
-test("should offer the eight themes", async ({ page }) => {
+test("should offer the system choice and the eight themes", async ({ page }) => {
   await boot(page);
   await openOpts(page);
 
-  const labels = ["ambra", "solis", "noctis", "azureus", "uva", "bordo", "lux", "hibernus"];
+  const labels = [
+    "systema",
+    "ambra",
+    "solis",
+    "noctis",
+    "azureus",
+    "uva",
+    "bordo",
+    "lux",
+    "hibernus",
+  ];
 
   await Promise.all(
     labels.map((label) => {
@@ -70,6 +80,8 @@ test("should move through the theme grid with the four arrows", async ({ page })
   await boot(page);
   const dialog = await openOpts(page);
 
+  // Le focus entre sur « système », la première case : ambra, puis solis.
+  await dialog.press("ArrowRight");
   await dialog.press("ArrowRight");
   await expect(page.locator(".tm")).toHaveAttribute("data-theme", "light");
 
@@ -219,7 +231,7 @@ test("should apply the named theme on the theme command", async ({ page }) => {
   await cli.fill("theme noctis");
   await cli.press("Enter");
 
-  await expect(page.locator("[data-theme]")).toHaveAttribute("data-theme", "noctis");
+  await expect(page.locator(".tm")).toHaveAttribute("data-theme", "noctis");
   await expect(page.locator("[data-journal]")).toContainText("noctis");
 });
 
@@ -314,4 +326,64 @@ test("should declare a theme color for each scheme on the three pages", async ({
       /name="theme-color"[^>]*prefers-color-scheme: dark/u,
     );
   }
+});
+
+const storedOpts = (page: Page) => {
+  return page.evaluate(() => {
+    return localStorage.getItem("bd-term-opts") ?? "{}";
+  });
+};
+
+test("should return to the system theme from the system choice", async ({ page }) => {
+  await boot(page);
+  await openOpts(page);
+  await page.getByRole("button", { name: "bordo" }).click();
+  await expect(page.locator(".tm")).toHaveAttribute("data-theme", "bordo");
+
+  await page.getByRole("button", { name: "systema" }).click();
+
+  await expect(page.locator(".tm")).toHaveAttribute("data-theme", "dark");
+  expect(await storedOpts(page)).not.toContain("theme");
+});
+
+test("should follow a change of the system theme while the system choice is on", async ({
+  page,
+}) => {
+  await boot(page);
+  await page.emulateMedia({ colorScheme: "light" });
+
+  await expect(page.locator(".tm")).toHaveAttribute("data-theme", "light");
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+});
+
+test("should keep the theme free when another option is saved", async ({ page }) => {
+  await boot(page);
+  await openOpts(page);
+  await page.getByRole("button", { name: /animations/u }).click();
+
+  expect(await storedOpts(page)).not.toContain("theme");
+
+  await page.emulateMedia({ colorScheme: "light" });
+  await expect(page.locator(".tm")).toHaveAttribute("data-theme", "light");
+});
+
+test("should keep a chosen theme when the system theme changes", async ({ page }) => {
+  await boot(page);
+  await openOpts(page);
+  await page.getByRole("button", { name: "bordo" }).click();
+  await page.emulateMedia({ colorScheme: "light" });
+
+  await expect(page.locator(".tm")).toHaveAttribute("data-theme", "bordo");
+});
+
+test("should apply a theme chosen in another tab", async ({ context, page }) => {
+  await boot(page);
+
+  const other = await context.newPage();
+
+  await boot(other);
+  await openOpts(other);
+  await other.getByRole("button", { name: "bordo" }).click();
+
+  await expect(page.locator(".tm")).toHaveAttribute("data-theme", "bordo");
 });

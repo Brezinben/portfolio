@@ -1,8 +1,8 @@
 // La modale des options : le thème, les bascules, et leur stockage sur l'appareil.
 
 import { type Delay, type Shell, type TrackSource, slice } from "../shell.ts";
-import { OPTS_KEY, TOGGLES, type ToggleKey } from "../settings.ts";
-import { knownTheme, readOpts } from "../opts.ts";
+import { OPTS_KEY, SYSTEM_THEME, TOGGLES, type ToggleKey } from "../settings.ts";
+import { readOpts, savedTheme, systemPalette, writeOpts } from "../opts.ts";
 import { readMarks, writeMarks } from "../achievements/store.ts";
 import { MORPH_HOLD_MS } from "../mascot/constants.ts";
 import { keepKnown } from "../../interpret.ts";
@@ -14,6 +14,9 @@ export interface OptionsState {
   optsOpen: boolean;
   // Qui a ouvert la modale : le bouton de l'en-tete, ou la saisie via la commande.
   optsReturn: HTMLElement | undefined;
+  // La préférence du système, tenue à jour : la palette affichée en dépend quand le choix est
+  // « système ».
+  systemLight: boolean;
   theme: string;
 }
 
@@ -32,6 +35,7 @@ export interface OptionsApi {
   setTheme(id: string, via?: TrackSource): void;
   themeColumns(): number;
   value(key: ToggleKey): boolean;
+  watchTheme(): void;
 }
 
 const themeButtons = () => {
@@ -222,20 +226,8 @@ export const optionsSlice = () => {
     },
 
     persist(this: Shell) {
-      try {
-        globalThis.localStorage.setItem(
-          OPTS_KEY,
-          JSON.stringify({
-            anim: this.anim,
-            logH: this.logH,
-            out: this.out,
-            shortcuts: this.shortcuts,
-            theme: this.theme,
-          }),
-        );
-      } catch {
-        // Navigation privée ou stockage plein : le réglage vaut pour cette visite.
-      }
+      // Le thème n'y est pas : enregistrer un réglage ne doit jamais l'épingler.
+      writeOpts({ anim: this.anim, logH: this.logH, out: this.out, shortcuts: this.shortcuts });
     },
 
     restore(this: Shell) {
@@ -258,7 +250,7 @@ export const optionsSlice = () => {
         this.logH = Number(saved.logH);
       }
 
-      this.theme = knownTheme(saved);
+      this.theme = savedTheme(saved);
 
       // Le catalogue bouge, le stockage non : une clé retirée disparaît sans laisser
       // d'orphelin. Les pages annexes écrivent ici, depuis un autre onglet.
@@ -283,9 +275,14 @@ export const optionsSlice = () => {
       clearTimeout(this.morphTimer);
       this.morphHeld = this.optsOpen;
 
+      // La comparaison avec le système se fait ici, au stockage, et jamais plus tard : un
+      // thème que le système rejoint ensuite reste choisi. Choisir la palette du système
+      // défait le choix, au lieu de l'épingler sans le dire.
       const apply = () => {
-        this.theme = id;
-        this.persist();
+        const pinned = id !== SYSTEM_THEME && id !== systemPalette();
+
+        this.theme = pinned ? id : SYSTEM_THEME;
+        writeOpts({ theme: pinned ? id : undefined });
         this.mascotPlay("morph");
       };
 
@@ -317,6 +314,21 @@ export const optionsSlice = () => {
 
     value(this: Shell, key: ToggleKey) {
       return this[key] && !this.lockedToggle(key);
+    },
+
+    // Le système peut changer en cours de visite, et un autre onglet peut choisir un thème.
+    watchTheme(this: Shell) {
+      globalThis
+        .matchMedia?.("(prefers-color-scheme: light)")
+        .addEventListener("change", (event) => {
+          this.systemLight = event.matches;
+        });
+      globalThis.addEventListener("storage", (event) => {
+        // « key » est nul quand l'autre onglet a vidé tout le stockage.
+        if (event.key === OPTS_KEY || event.key === null) {
+          this.theme = savedTheme(readOpts());
+        }
+      });
     },
   });
 };
