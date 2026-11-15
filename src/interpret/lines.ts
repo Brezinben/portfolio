@@ -1,8 +1,8 @@
 // Les lignes du journal et les six fabriques qui les produisent.
 //
-// « MAX_SUGGESTIONS » vit ici et non avec la completion. Deux lecteurs le partagent :
-// « offer », juste en dessous, et la coquille, qui en fait la taille de sa fenetre de
-// propositions. Le descendre dans la completion forcerait l'arete inverse vers ce module.
+// « MAX_SUGGESTIONS » vit ici et non avec la complétion. Deux lecteurs le partagent :
+// « offer », juste en dessous, et la coquille, qui en fait la taille de sa fenêtre de
+// propositions. Le descendre dans la complétion forcerait l'arête inverse vers ce module.
 
 import type { Tone } from "./tone.ts";
 
@@ -58,8 +58,8 @@ export const echoed = (t: string) => {
   return line({ marker: "›", markerTone: "acc", text: t, tone: "fg2" });
 };
 
-// Sous dix valeurs, la liste tient sur une ligne et se lit d'un coup. Au-dela, elle
-// deborde du volet : la completion la montre mieux, et la ligne apprend la touche.
+// Sous dix valeurs, la liste tient sur une ligne et se lit d'un coup. Au-delà, elle
+// déborde du volet : la complétion la montre mieux, et la ligne apprend la touche.
 export const offer = (usage: string, values: string[]) => {
   return info(
     values.length < MAX_SUGGESTIONS

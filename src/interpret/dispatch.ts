@@ -1,4 +1,4 @@
-// Le repartiteur : le point unique ou une ligne tapee devient des lignes et des effets.
+// Le répartiteur : le point unique ou une ligne tapée devient des lignes et des effets.
 //
 // « COMMANDS » donne un gestionnaire à chaque commande. « interpret » garde l'ordre des
 // étapes : la réponse en attente, le slash obligatoire, le rejeu, les sections, la table,
@@ -16,8 +16,8 @@ import { lookup } from "./lookup.ts";
 import { shareTarget } from "./share.ts";
 import { slime } from "./mascot.ts";
 
-// Ce qu'un gestionnaire recoit : la ligne decoupee, le contexte, et « out », qui pose
-// l'echo et la mesure de la commande devant ses lignes et ses effets.
+// Ce qu'un gestionnaire reçoit : la ligne découpée, le contexte, et « out », qui pose
+// l'écho et la mesure de la commande devant ses lignes et ses effets.
 interface Call {
   argument: string;
   command: string;
@@ -57,8 +57,8 @@ const COMMANDS = {
     };
   },
   cowsay: ({ command, context, out, rest }) => {
-    // Les huit visages de l'original restent, mais sans drapeau a retenir : un portfolio
-    // n'est pas une page de manuel. Le tirage rend la commande vivante a chaque appel.
+    // Les huit visages de l'original restent, mais sans drapeau à retenir : un portfolio
+    // n'est pas une page de manuel. Le tirage rend la commande vivante à chaque appel.
     const mode = COW_MODES[Math.floor(Math.random() * COW_MODES.length)] ?? "",
       said = rest.trim();
 
@@ -69,8 +69,8 @@ const COMMANDS = {
       [track("easter_egg", { nom: command })],
     );
   },
-  // Il n'y a pas de PDF a servir, et la version texte porte deja tout le parcours. La
-  // commande l'ouvre, et l'annonce : une navigation muette se lit comme une commande cassee.
+  // Il n'y a pas de PDF à servir, et la version texte porte déjà tout le parcours. La
+  // commande l'ouvre, et l'annonce : une navigation muette se lit comme une commande cassée.
   cv: ({ out }) => {
     return out([info("le parcours complet s'ouvre dans la version texte.")], [{ type: "cv" }]);
   },
@@ -79,8 +79,8 @@ const COMMANDS = {
   email: ({ out }) => {
     return out([], [{ type: "email" }]);
   },
-  // Sept lignes ne tiennent pas dans le journal d'un ecran large. La reponse va donc dans
-  // le resultat. Le resultat n'est pas une region live : le journal dit ou lire la reponse.
+  // Sept lignes ne tiennent pas dans le journal d'un écran large. La réponse va donc dans
+  // le résultat. Le résultat n'est pas une région live : le journal dit où lire la réponse.
   help: ({ context, out }) => {
     return {
       ...out([muted("aide affichée dans le résultat")], [say("essayez « /joke »", "happy")]),
@@ -156,7 +156,7 @@ const COMMANDS = {
     ]);
   },
   // La commande ne fabrique aucun son : elle demande le volet, et le volet attend un geste.
-  // L'interpreteur reste pur, l'AudioContext vit dans la coquille.
+  // L'interpréteur reste pur, l'AudioContext vit dans la coquille.
   radio: ({ out }) => {
     return out(
       [

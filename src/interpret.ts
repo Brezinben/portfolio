@@ -4,7 +4,7 @@
 // minuteur. Il rend les lignes à afficher et des descripteurs d'effets que la coquille
 // applique. C'est ce qui permet de couvrir les commandes sans navigateur.
 
-// La facade : les tests et la coquille passent par cette porte, jamais par un module de
+// La façade : les tests et la coquille passent par cette porte, jamais par un module de
 // « interpret/ ». Elle n'expose que ce qui a un consommateur.
 export {
   ACHIEVEMENTS,

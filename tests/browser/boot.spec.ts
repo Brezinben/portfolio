@@ -53,7 +53,7 @@ test("should keep the boot screen on while the content is slow", async ({ page }
   await expect(page.locator("[data-boot]")).toHaveCount(0, { timeout: 15_000 });
 });
 
-// Le retry relance le meme chargement : il ne sert qu'une fois le contenu revenu.
+// Le retry relance le même chargement : il ne sert qu'une fois le contenu revenu.
 test("should offer retry and the text version on the panic screen", async ({ page }) => {
   let broken = true;
 

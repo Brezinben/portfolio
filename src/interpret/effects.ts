@@ -1,4 +1,4 @@
-// Le contrat interpreteur vers coquille : ce que l'interpreteur decrit, et que la coquille
+// Le contrat interpréteur vers coquille : ce que l'interpréteur décrit, et que la coquille
 // applique. Il ne touche jamais au DOM.
 
 import type { ContentLine } from "./content.ts";
@@ -13,12 +13,12 @@ export type GlitchMode = "matrix" | "shift" | "sudo";
 
 export type Expression = "alert" | "happy" | "idle" | "laugh" | "sad" | "scared" | "sleep";
 
-// Ce que la coquille doit faire. L'interpreteur ne touche jamais au DOM : il decrit, elle
+// Ce que la coquille doit faire. L'interpréteur ne touche jamais au DOM : il décrit, elle
 // applique. Cette union est le contrat entre les deux seams.
 export type Effect =
   | { type: "activity"; name: string }
-  // « lexical » n'est rempli que si un modele doit choisir avant d'afficher. La coquille
-  // le garde sous la main : il sort si le modele echoue ou depasse son delai.
+  // « lexical » n'est rempli que si un modèle doit choisir avant d'afficher. La coquille
+  // le garde sous la main : il sort si le modèle échoue ou dépasse son délai.
   | { candidates: string[]; query: string; type: "ask"; lexical?: Line[] }
   | { type: "blowUp" }
   | { type: "clear" }
@@ -47,8 +47,8 @@ export type Effect =
 export interface Outcome {
   effects: Effect[];
   lines: Line[];
-  // Une commande peut reclamer le resultat au lieu du journal. Le journal garde l'echo, le
-  // corps de la reponse va dans le volet central, ou la place existe.
+  // Une commande peut réclamer le résultat au lieu du journal. Le journal garde l'écho, le
+  // corps de la réponse va dans le volet central, où la place existe.
   result?: ContentLine[];
 }
 

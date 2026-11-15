@@ -1,52 +1,52 @@
-// L'audio : graphe Web Audio, sequenceur, analyseur. Ce module ne touche pas au DOM.
+// L'audio : graphe Web Audio, séquenceur, analyseur. Ce module ne touche pas au DOM.
 //
-// Les valeurs viennent de « design/export-radio/MUSIQUE.md » §4 a §6. Elles ont ete reglees
-// a l'oreille, une par une : ce sont des valeurs figees, pas des reglages.
+// Les valeurs viennent de « design/export-radio/MUSIQUE.md » §4 à §6. Elles ont été réglées
+// à l'oreille, une par une : ce sont des valeurs figées, pas des réglages.
 
 import { type Params, QUARTER_SEC, type Voice, degreeToMidi, midiToHertz } from "./derive.ts";
 
 // La basse, la nappe et le grelot ne sont pas tirables : ce sont les voix
-// d'accompagnement. La basse est un triangle, car la dent de scie gresillait dans le grave.
+// d'accompagnement. La basse est un triangle, car la dent de scie grésillait dans le grave.
 const BASS: Voice = { attack: 0.008, decay: 0.9, gain: 0.5, name: "basse", wave: "triangle" };
 const PAD: Voice = { attack: 0.35, decay: 2.4, gain: 0.34, name: "nappe", wave: "sine" };
 const BELL: Voice = { attack: 0.003, decay: 2.2, gain: 0.44, name: "grelot", wave: "sine" };
-// 5200 Hz et non 3200 : sous 4 kHz la cloche et les aigus de la melodie perdaient leur
-// eclat, et une radio enjouee a besoin de cet eclat.
+// 5200 Hz et non 3200 : sous 4 kHz la cloche et les aigus de la mélodie perdaient leur
+// éclat, et une radio enjouée a besoin de cet éclat.
 const LOWPASS_HZ = 5200;
 const LOWPASS_Q = 0.4;
-// Les percussions sautent le passe-bas et l'echo : une cymbale filtree a 5 kHz n'existe
-// plus, et un echo sur chaque croche noierait la boucle.
+// Les percussions sautent le passe-bas et l'écho : une cymbale filtrée à 5 kHz n'existe
+// plus, et un écho sur chaque croche noierait la boucle.
 const DRY_GAIN = 0.9;
-// Une croche et demie : hors tempo l'echo brouille la boucle, en tempo il l'epaissit.
+// Une croche et demie : hors tempo l'écho brouille la boucle, en tempo il l'épaissit.
 const ECHO_BEATS = 1.5;
 const ECHO_CAP = 0.9;
 const ECHO_FEEDBACK = 0.2;
-// Trois voix, une basse et une percussion qui tombent sur le meme temps saturaient la
-// sortie. Le compresseur passe avant le gain maitre.
+// Trois voix, une basse et une percussion qui tombent sur le même temps saturaient la
+// sortie. Le compresseur passe avant le gain maître.
 const COMP_THRESHOLD = -16;
 const COMP_KNEE = 14;
 const COMP_RATIO = 3.2;
 const COMP_ATTACK = 0.006;
 const COMP_RELEASE = 0.24;
-// Demarrage en fondu, pas en claquement.
+// Démarrage en fondu, pas en claquement.
 const MASTER_GAIN = 0.5;
 const MASTER_RAMP = 0.2;
 const FADE_OUT = 0.08;
-// 1024 points : a 48 kHz un bac fait ~47 Hz. Une FFT plus courte ecrase tout le morceau
-// dans les deux premieres barres.
+// 1024 points : à 48 kHz un bac fait ~47 Hz. Une FFT plus courte écrase tout le morceau
+// dans les deux premières barres.
 const FFT_SIZE = 1024;
 const SMOOTHING = 0.76;
 const NOISE_SEC = 0.4;
-// Le minuteur ne fait que reveiller le planificateur, qui place les notes en avance sur
-// l'horloge de l'AudioContext. « setInterval » derive, cette horloge non.
+// Le minuteur ne fait que réveiller le planificateur, qui place les notes en avance sur
+// l'horloge de l'AudioContext. « setInterval » dérive, cette horloge non.
 const PUMP_MS = 50;
 const LOOKAHEAD_SEC = 0.3;
 const START_SEC = 0.1;
-// Une rampe lineaire vers zero s'entend comme un clic : l'enveloppe retombe en
-// exponentielle, donc jamais jusqu'a zero exactement.
+// Une rampe linéaire vers zéro s'entend comme un clic : l'enveloppe retombe en
+// exponentielle, donc jamais jusqu'à zéro exactement.
 const SILENCE = 0.0001;
 const NOTE_TAIL = 0.05;
-// Un sinus qui chute de 140 a 48 Hz. Pas de bruit dedans, sinon la grosse caisse claque
+// Un sinus qui chute de 140 à 48 Hz. Pas de bruit dedans, sinon la grosse caisse claque
 // sur les petits haut-parleurs.
 const KICK_FROM = 140;
 const KICK_TO = 48;
@@ -54,7 +54,7 @@ const KICK_DROP = 0.14;
 const KICK_PEAK = 0.42;
 const KICK_TAIL = 0.18;
 const KICK_STOP = 0.2;
-// Du bruit blanc coupe sous 7 kHz. L'ecart entre temps et contretemps donne le balancement.
+// Du bruit blanc coupé sous 7 kHz. L'écart entre temps et contretemps donne le balancement.
 const HAT_HZ = 7000;
 const HAT_DECAY = 0.06;
 const HAT_STOP = 0.08;
@@ -74,10 +74,10 @@ const BELL_DUR = 0.1;
 const BELL_EVERY = 4;
 const BELL_TAIL = 3;
 const BELL_LIFT = 24;
-// Une mesure sur huit monte d'une octave : la boucle respire sans se dedoubler.
+// Une mesure sur huit monte d'une octave : la boucle respire sans se dédoubler.
 const LIFT_EVERY = 8;
 const SEMITONES = 12;
-// L'oreille entend en octaves : un decoupage lineaire des bacs donnerait vingt barres de
+// L'oreille entend en octaves : un découpage linéaire des bacs donnerait vingt barres de
 // basses et rien au-dessus.
 const BIN_BASE = 90;
 const BIN_FLOOR = 2;
@@ -87,15 +87,15 @@ const LEVEL_CURVE = 0.78;
 const LEVEL_SCALE = 104;
 const LEVEL_FLOOR = 2;
 const LEVEL_CEIL = 100;
-// Depuis l'arrivee de la basse et de la grosse caisse, les premiers bacs plafonnaient et
-// les trois quarts de la bande restaient plats. Ce basculement vers les aigus les releve.
+// Depuis l'arrivée de la basse et de la grosse caisse, les premiers bacs plafonnaient et
+// les trois quarts de la bande restaient plats. Ce basculement vers les aigus les relève.
 const TILT_FLOOR = 0.58;
 const TILT_SPAN = 0.95;
 
 interface Graph {
   analyser: AnalyserNode;
-  // « getByteFrequencyData » refuse un tampon partageable : le parametre generique dit que
-  // celui-ci ne l'est pas, et evite une assertion de type.
+  // « getByteFrequencyData » refuse un tampon partageable : le paramètre générique dit que
+  // celui-ci ne l'est pas, et évite une assertion de type.
   bins: Uint8Array<ArrayBuffer>;
   bus: BiquadFilterNode;
   ctx: AudioContext;
@@ -117,8 +117,8 @@ export interface Radio {
   toggleMute(): boolean;
 }
 
-// Une note a jouer : quand, quelle hauteur, combien de temps, avec quelle voix et a quel
-// niveau. Les cinq vont ensemble, et les separer en cinq parametres se lit mal a l'appel.
+// Une note à jouer : quand, quelle hauteur, combien de temps, avec quelle voix et à quel
+// niveau. Les cinq vont ensemble, et les séparer en cinq paramètres se lit mal à l'appel.
 interface Hit {
   at: number;
   level: number;
@@ -127,20 +127,20 @@ interface Hit {
   voice: Voice;
 }
 
-// Un pas de croche : l'instant ou il tombe, et son rang depuis le debut de la lecture. Le
-// rang donne la place dans la mesure et le numero de mesure.
+// Un pas de croche : l'instant où il tombe, et son rang depuis le début de la lecture. Le
+// rang donne la place dans la mesure et le numéro de mesure.
 interface Cue {
   at: number;
   position: number;
 }
 
-// Un accord est un empilement de degres, pas d'intervalles : d, d+2, d+4. Cela fonctionne
+// Un accord est un empilement de degrés, pas d'intervalles : d, d+2, d+4. Cela fonctionne
 // pour n'importe quelle longueur de gamme, pentatonique comprise.
 const chordTone = (chord: number, index: number) => {
   return chord + 2 * (index % 3);
 };
 
-// Une reserve de bruit blanc, tiree une fois : c'est la matiere des cymbales.
+// Une réserve de bruit blanc, tirée une fois : c'est la matière des cymbales.
 const fillNoise = (channel: Float32Array) => {
   for (let index = 0; index < channel.length; index += 1) {
     channel[index] = Math.random() * 2 - 1;
@@ -148,8 +148,8 @@ const fillNoise = (channel: Float32Array) => {
 };
 
 // Le graphe se monte au premier geste, jamais au montage du volet : Chrome refuse de
-// demarrer un contexte sans interaction, et un contexte suspendu ne rend aucun son.
-// L'analyseur est en bout de chaine, donc il mesure ce qu'on entend vraiment.
+// démarrer un contexte sans interaction, et un contexte suspendu ne rend aucun son.
+// L'analyseur est en bout de chaîne, donc il mesure ce qu'on entend vraiment.
 const build = (): Graph => {
   const ctx = new AudioContext(),
     bus = new BiquadFilterNode(ctx, { Q: LOWPASS_Q, frequency: LOWPASS_HZ, type: "lowpass" }),
@@ -192,21 +192,21 @@ const build = (): Graph => {
   };
 };
 
-// Le sequenceur et le graphe, derriere une poignee. Le volet ne voit que cette poignee :
-// il ne connait ni les noeuds, ni le minuteur, ni l'horloge.
+// Le séquenceur et le graphe, derrière une poignée. Le volet ne voit que cette poignée :
+// il ne connaît ni les nœuds, ni le minuteur, ni l'horloge.
 export const radioEngine = (): Radio => {
   let graph: Graph | undefined = undefined,
     params: Params | undefined = undefined,
     running = false,
-    // Le moteur porte seul l'etat du son coupe, car il porte le gain maitre. « play » et
-    // « resume » le reecrivent : lu ailleurs, il se desynchroniserait a la premiere pause.
+    // Le moteur porte seul l'état du son coupé, car il porte le gain maître. « play » et
+    // « resume » le réécrivent : lu ailleurs, il se désynchroniserait à la première pause.
     silenced = false,
     timer: ReturnType<typeof setInterval> | undefined = undefined,
     cursor = 0,
     nextAt = 0;
 
-  // Une note : un oscillateur et son enveloppe, crees pour elle seule et jetes apres. C'est
-  // la forme que l'API impose — un oscillateur arrete ne se rejoue pas.
+  // Une note : un oscillateur et son enveloppe, créés pour elle seule et jetés après. C'est
+  // la forme que l'API impose — un oscillateur arrêté ne se rejoue pas.
   const note = (live: Graph, hit: Hit) => {
       const osc = live.ctx.createOscillator(),
         env = live.ctx.createGain(),
@@ -253,16 +253,16 @@ export const radioEngine = (): Radio => {
       source.start(at);
       source.stop(at + HAT_STOP);
     },
-    // Un pas de croche, quatre couches. La seed a ecrit le motif une fois pour toutes, et
-    // la grille tourne sur quatre mesures : chaque croche de melodie vise un degre de
-    // l'accord en cours, donc elle tombe juste sans jamais etre tiree au hasard.
+    // Un pas de croche, quatre couches. La seed a écrit le motif une fois pour toutes, et
+    // la grille tourne sur quatre mesures : chaque croche de mélodie vise un degré de
+    // l'accord en cours, donc elle tombe juste sans jamais être tirée au hasard.
     step = (live: Graph, tune: Params, cue: Cue) => {
       const index = cue.position % tune.meter.steps,
         bar = Math.floor(cue.position / tune.meter.steps),
         chord = tune.prog[bar % tune.prog.length] ?? 0,
         { length } = tune.scale.steps,
         lift = bar % LIFT_EVERY === LIFT_EVERY - 1 ? SEMITONES : 0,
-        // La croche faible arrive en retard : rien ne fait sonner « joue » comme ce decalage.
+        // La croche faible arrive en retard : rien ne fait sonner « joué » comme ce décalage.
         at = index % 2 === 1 ? cue.at + tune.swingSec : cue.at,
         pitch = (degree: number) => {
           return degreeToMidi(tune.scale, tune.root, degree);
@@ -281,8 +281,8 @@ export const radioEngine = (): Radio => {
         });
       }
 
-      // La basse tombe sur les temps, fondamentale de l'accord, sauf sur le troisieme temps
-      // ou elle monte a la quinte.
+      // La basse tombe sur les temps, fondamentale de l'accord, sauf sur le troisième temps
+      // où elle monte à la quinte.
       if (index % 2 === 0) {
         const degree = index / 2 === 2 ? chord + 4 : chord;
 
@@ -295,7 +295,7 @@ export const radioEngine = (): Radio => {
         });
       }
 
-      // La nappe est un fond, pas une voix : deux ou trois notes posees a 12 ms d'ecart.
+      // La nappe est un fond, pas une voix : deux ou trois notes posées à 12 ms d'écart.
       if (index === 0) {
         for (let voice = 0; voice < tune.voices; voice += 1) {
           note(live, {
@@ -327,7 +327,7 @@ export const radioEngine = (): Radio => {
       hat(live, at, index % 2 === 1 ? HAT_OFFBEAT : HAT_ONBEAT);
     },
     // Le planificateur ne fait pas confiance au minuteur : il place les notes en avance sur
-    // l'horloge du contexte, la seule qui ne derive pas.
+    // l'horloge du contexte, la seule qui ne dérive pas.
     pump = () => {
       if (!graph || !params || !running) {
         return;
@@ -341,7 +341,7 @@ export const radioEngine = (): Radio => {
         cursor += 1;
       }
     },
-    // Le niveau que le gain maitre doit viser : zero tant que le son est coupe. « play » et
+    // Le niveau que le gain maître doit viser : zéro tant que le son est coupé. « play » et
     // « resume » passent par ici, sinon ils rendraient le son sans que rien le demande.
     level = () => {
       return silenced ? 0 : MASTER_GAIN;
@@ -367,7 +367,7 @@ export const radioEngine = (): Radio => {
       graph = undefined;
     },
 
-    // « niveaux » rend des hauteurs en pourcentage, lues sur l'analyseur en bout de chaine.
+    // « niveaux » rend des hauteurs en pourcentage, lues sur l'analyseur en bout de chaîne.
     // Le spectre ne peut donc pas mentir sur le son.
     levels(count) {
       if (!graph) {
@@ -428,8 +428,8 @@ export const radioEngine = (): Radio => {
       return running;
     },
 
-    // Reprendre n'est pas rejouer : le curseur reste ou la pause l'a laisse, donc la boucle
-    // continue au lieu de repartir a la premiere mesure. L'horloge du contexte, elle, a
+    // Reprendre n'est pas rejouer : le curseur reste où la pause l'a laissé, donc la boucle
+    // continue au lieu de repartir à la première mesure. L'horloge du contexte, elle, a
     // continue d'avancer pendant la pause : il faut donc replacer le prochain pas.
     resume() {
       if (!graph || !params) {
@@ -451,9 +451,9 @@ export const radioEngine = (): Radio => {
       return graph !== undefined;
     },
 
-    // Couper le son n'arrete pas le sequenceur : le morceau continue de tourner, et le
-    // chronometre avec. C'est ce qui distingue le son coupe de la pause, qui elle arrete
-    // tout. Rend l'etat obtenu, pour que le volet n'ait pas a le tenir en double.
+    // Couper le son n'arrête pas le séquenceur : le morceau continue de tourner, et le
+    // chronomètre avec. C'est ce qui distingue le son coupe de la pause, qui elle arrête
+    // tout. Rend l'état obtenu, pour que le volet n'ait pas à le tenir en double.
     toggleMute() {
       silenced = !silenced;
 

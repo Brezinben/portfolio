@@ -1,10 +1,10 @@
-// L'outil du designer ajoute a chaque PNG un chunk de provenance C2PA (« caBX ») de 5758
-// octets, reecrit a chaque export. C'est plus que les pixels sur la plupart des feuilles, et
+// L'outil du designer ajoute à chaque PNG un chunk de provenance C2PA (« caBX ») de 5758
+// octets, réécrit à chaque export. C'est plus que les pixels sur la plupart des feuilles, et
 // le budget de poids compare des tailles de fichier : sans ce retrait, il ne mesure rien.
 //
 //     bun tools/strip-c2pa.ts src/assets/sprites/cube/*.png
 //
-// Ne garde que les chunks dont le rendu depend. Relancer sur un fichier deja propre ne
+// Ne garde que les chunks dont le rendu dépend. Relancer sur un fichier déjà propre ne
 // change rien.
 
 import { readFile, writeFile } from "node:fs/promises";
@@ -14,7 +14,7 @@ const KEPT = new Set(["IDAT", "IEND", "IHDR", "PLTE", "tRNS"]),
   // que « PNG_SIGNATURE » dans build.ts, donc écrite dans la même base.
   SIGNATURE = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
   HEADER = 8,
-  // Longueur sur 4 octets, type sur 4, puis les donnees, puis 4 octets de CRC.
+  // Longueur sur 4 octets, type sur 4, puis les données, puis 4 octets de CRC.
   AROUND = 12,
   strip = (bytes: Buffer) => {
     if (!bytes.subarray(0, HEADER).equals(SIGNATURE)) {

@@ -13,8 +13,8 @@ const TRACK = { bottom: 100, left: 0, right: 400, top: 0 },
     return dragState(at(x, y), TRACK, step);
   };
 
-// Un coin se teste avant un bord. Sur une diagonale les deux lectures sont vraies au meme
-// instant, et un coin place apres un mur ne serait jamais atteint.
+// Un coin se teste avant un bord. Sur une diagonale les deux lectures sont vraies au même
+// instant, et un coin placé après un mur ne serait jamais atteint.
 it("should prefer the four corners over the four edges", () => {
   assert.equal(state(-10, -50), "splatCeilingLeft");
   assert.equal(state(410, -50), "splatCeilingRight");
@@ -35,7 +35,7 @@ it("should apply the splat margin on the vertical axis only", () => {
 });
 
 // Le sens se lit sur ce que la mascotte a parcouru, pas sur ce que le curseur a parcouru :
-// plaquee, elle ne bouge plus, et sa feuille doit le dire.
+// plaquée, elle ne bouge plus, et sa feuille doit le dire.
 it("should read the drag direction from the step, above a threshold", () => {
   assert.equal(state(200, 50, 3), "dragRight");
   assert.equal(state(200, 50, -3), "dragLeft");
@@ -43,8 +43,8 @@ it("should read the drag direction from the step, above a threshold", () => {
   assert.equal(state(200, 50, -2), "grab", "at the exact threshold, the grab holds");
 });
 
-// Le plaquage decide avant le sens : une mascotte retenue contre un bord suit encore le
-// curseur en abscisse, mais sa feuille doit montrer l'ecrasement.
+// Le plaquage décide avant le sens : une mascotte retenue contre un bord suit encore le
+// curseur en abscisse, mais sa feuille doit montrer l'écrasement.
 it("should prefer the splat over the drag direction", () => {
   assert.equal(state(-10, 50, 99), "splatLeft");
   assert.equal(state(410, 50, -99), "splatRight");

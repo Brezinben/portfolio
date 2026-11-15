@@ -7,12 +7,12 @@ import { readMarks, writeMarks } from "../achievements/store.ts";
 import { MORPH_HOLD_MS } from "../mascot/constants.ts";
 import { keepKnown } from "../../interpret.ts";
 
-// Ce que les options gardent dans l'etat du composant.
+// Ce que les options gardent dans l'état du composant.
 export interface OptionsState {
   // La mue du thème tient jusqu'à la fermeture de la modale, puis ce sursis.
   morphTimer: Delay | undefined;
   optsOpen: boolean;
-  // Qui a ouvert la modale : le bouton de l'en-tete, ou la saisie via la commande.
+  // Qui a ouvert la modale : le bouton de l'en-tête, ou la saisie via la commande.
   optsReturn: HTMLElement | undefined;
   // La préférence du système, tenue à jour : la palette affichée en dépend quand le choix est
   // « système ».
@@ -85,8 +85,8 @@ export const optionsSlice = () => {
         return;
       }
 
-      // Fermer au milieu d'une passe n'en montrerait qu'un eclat. Le sursis passe, la
-      // passe en cours s'acheve, et settle() rend le repos.
+      // Fermer au milieu d'une passe n'en montrerait qu'un éclat. Le sursis passe, la
+      // passe en cours s'achève, et settle() rend le repos.
       clearTimeout(this.morphTimer);
       this.morphTimer = setTimeout(() => {
         this.morphHeld = false;
@@ -102,14 +102,14 @@ export const optionsSlice = () => {
       this.track("option", { cle: key, valeur: this[key] });
       this.persist();
 
-      // La boucle de rendu de la radio s'arrete quand l'animation se coupe. Rien ne la
-      // rallumerait sans cet appel : le depot ne porte aucun observateur de reglage.
+      // La boucle de rendu de la radio s'arrête quand l'animation se coupe. Rien ne la
+      // rallumerait sans cet appel : le dépôt ne porte aucun observateur de réglage.
       if (key === "anim" && this.radioOn) {
         this.radioDraw();
       }
 
       // Le volet de sortie est la seule surface de la radio, et « /radio » le rallume pour
-      // cette raison. L'eteindre la laisserait jouer sans rien pour l'arreter.
+      // cette raison. L'éteindre la laisserait jouer sans rien pour l'arrêter.
       if (key === "out" && !this.out) {
         this.radioStop();
       }
@@ -139,7 +139,7 @@ export const optionsSlice = () => {
       return toggle === -1 ? undefined : { group: "toggle", index: toggle };
     },
 
-    // Le systeme a deja tranche : sous mouvement reduit, la bascule des animations ne
+    // Le système a déjà tranché : sous mouvement réduit, la bascule des animations ne
     // peut plus rien changer. La laisser active ferait croire le contraire.
     lockedToggle(this: Shell, key: ToggleKey) {
       return key === "anim" && this.reduced;
@@ -177,7 +177,7 @@ export const optionsSlice = () => {
           step = { ArrowDown: columns, ArrowLeft: -1, ArrowRight: 1, ArrowUp: -columns }[event.key],
           next = here.index + (step ?? 0);
 
-        // Sortir de la grille par le bas mene au premier reglage suivant.
+        // Sortir de la grille par le bas mène au premier réglage suivant.
         if (next >= themeButtons().length) {
           toggleButtons()[0]?.focus();
         } else {
@@ -234,7 +234,7 @@ export const optionsSlice = () => {
     restore(this: Shell) {
       const saved = readOpts();
 
-      // Cinq clés, et cinq seulement, chacune verifiee avant d'entrer dans l'etat.
+      // Cinq clés, et cinq seulement, chacune vérifiée avant d'entrer dans l'état.
       if (saved.anim === true || saved.anim === false) {
         this.anim = saved.anim;
       }
@@ -270,8 +270,8 @@ export const optionsSlice = () => {
       this.track("theme", { nom: id, via });
       this.markTheme(id);
 
-      // Le choix se fait depuis la modale, donc la mue tient jusqu'a sa fermeture. Le
-      // marquer ici et non dans apply() : startViewTransition differe le rappel, et une
+      // Le choix se fait depuis la modale, donc la mue tient jusqu'à sa fermeture. Le
+      // marquer ici et non dans apply() : startViewTransition diffère le rappel, et une
       // fermeture rapide passerait devant lui.
       clearTimeout(this.morphTimer);
       this.morphHeld = this.optsOpen;
@@ -299,8 +299,8 @@ export const optionsSlice = () => {
       });
     },
 
-    // Les themes sont sur plusieurs lignes : les quatre fleches doivent y naviguer.
-    // Les boutons d'une meme ligne partagent leur position verticale.
+    // Les thèmes sont sur plusieurs lignes : les quatre flèches doivent y naviguer.
+    // Les boutons d'une même ligne partagent leur position verticale.
     themeColumns(this: Shell) {
       const buttons = themeButtons(),
         top = buttons[0]?.offsetTop;

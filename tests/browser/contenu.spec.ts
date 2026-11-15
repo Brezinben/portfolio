@@ -5,7 +5,7 @@ const booted = (page: Page) => {
   return expect(page.locator("[data-boot]")).toHaveCount(0, { timeout: 15_000 });
 };
 
-// Le depot est prive : le contenu est servi a cote de la page, et nulle part ailleurs.
+// Le dépôt est privé : le contenu est servi à côté de la page, et nulle part ailleurs.
 test("should load the content from a relative URL next to the page", async ({ page }) => {
   const asked: string[] = [];
 

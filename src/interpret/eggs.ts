@@ -1,10 +1,10 @@
-// Les easter eggs a reponse fixe. Les plus riches — slime, cowsay, joke, matrix — ont
+// Les easter eggs à réponse fixe. Les plus riches — slime, cowsay, joke, matrix — ont
 // leur propre logique ailleurs : ceux-ci ne rendent que des lignes.
 
 import { type Effect, say } from "./effects.ts";
 import { type Line, failed, info, line, muted } from "./lines.ts";
 
-// Un easter egg : son nom pour la mesure, ses lignes, et ce qu'il declenche. Un seul
+// Un easter egg : son nom pour la mesure, ses lignes, et ce qu'il déclenche. Un seul
 // champ pour les effets : « sudo » en porte deux, et un champ par effet aurait fait du
 // catalogue la liste de ce que la coquille sait faire.
 export interface Egg {

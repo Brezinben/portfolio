@@ -1,7 +1,7 @@
 // La recherche globale : l'ouverture, le clavier et le lancement d'une trouvaille.
 //
-// Elle n'execute rien. Une trouvaille pose sa commande sur la ligne de saisie et la soumet :
-// l'echo, le resultat, le journal et les succes restent ceux du terminal. Ce qui n'est pas
+// Elle n'exécute rien. Une trouvaille pose sa commande sur la ligne de saisie et la soumet :
+// l'écho, le résultat, le journal et les succès restent ceux du terminal. Ce qui n'est pas
 // une commande ouvre la zone qui lui correspond.
 
 import { type GlobalEntry, globalIndex } from "../../interpret.ts";
@@ -97,8 +97,8 @@ export const globalSearchSlice = () => {
       }
 
       this.globalAt = (this.globalAt + step + found) % found;
-      // La selection doit rester visible. « nearest » ne bouge que le conteneur qui defile :
-      // la page, elle, ne defile pas, donc rien d'autre ne se deplace sous les yeux.
+      // La sélection doit rester visible. « nearest » ne bouge que le conteneur qui défile :
+      // la page, elle, ne défile pas, donc rien d'autre ne se déplace sous les yeux.
       this.$nextTick(() => {
         document
           .querySelector(`#global-row-${this.globalAt}`)

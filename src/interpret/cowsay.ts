@@ -1,5 +1,5 @@
-// Cowsay, conforme a l'original : la bulle change de forme selon le nombre de lignes,
-// et le retour a la ligne suit la largeur du volet.
+// Cowsay, conforme à l'original : la bulle change de forme selon le nombre de lignes,
+// et le retour à la ligne suit la largeur du volet.
 
 import { lookup } from "./lookup.ts";
 
@@ -89,5 +89,5 @@ export const cowsay = (
   ];
 };
 
-// Le nom interne dit la table, le nom public dit ce qu'elle sert : des modes de tete.
+// Le nom interne dit la table, le nom public dit ce qu'elle sert : des modes de tête.
 export { COW_MODES as COW_HEAD_MODES };

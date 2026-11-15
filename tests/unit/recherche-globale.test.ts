@@ -86,7 +86,7 @@ it("should search the keywords a row never shows", () => {
 });
 
 // La zone dessine un groupe par genre. Un genre qui reviendrait plus bas ouvrirait un second
-// groupe du meme nom, et la fleche sauterait de l'un a l'autre.
+// groupe du même nom, et la flèche sauterait de l'un à l'autre.
 it("should hand every kind back in a single run", () => {
   for (const query of ["a", "b", "d", "e", "g", "h", "s", "sta", "theme"]) {
     const kinds = globalHits(query).map((hit) => {

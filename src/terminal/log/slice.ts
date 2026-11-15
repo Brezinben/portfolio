@@ -10,7 +10,7 @@ import {
   RESULT_MIN_PX,
 } from "../settings.ts";
 
-// Ce que le journal garde dans l'etat du composant.
+// Ce que le journal garde dans l'état du composant.
 export interface LogState {
   compactTick: number;
   compacting: boolean;
@@ -111,7 +111,7 @@ export const logSlice = () => {
           pane.clientHeight -
           Number.parseFloat(style.paddingTop) -
           Number.parseFloat(style.paddingBottom),
-        // Seules les lignes de la colonne comptent : ni les gabarits, ni les reglages
+        // Seules les lignes de la colonne comptent : ni les gabarits, ni les réglages
         // masques, ni le calque de balayage qui se superpose au volet.
         rows = [...pane.children].filter((node) => {
           const own = globalThis.getComputedStyle(node);
@@ -152,8 +152,8 @@ export const logSlice = () => {
       this.persist();
     },
 
-    // Un redemarrage annule la compaction : sinon son resume s'ecrit dans un journal
-    // qu'on vient de vider, et sa barre s'affiche par-dessus l'ecran de demarrage.
+    // Un redémarrage annule la compaction : sinon son résumé s'écrit dans un journal
+    // qu'on vient de vider, et sa barre s'affiche par-dessus l'écran de démarrage.
     stopCompacting(this: Shell) {
       clearInterval(this.spinner);
       clearTimeout(this.compactor);

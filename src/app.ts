@@ -51,7 +51,7 @@ import type { RadioApi, RadioState } from "./terminal/radio/slice.ts";
 import { type RawSection, type Section, barParts, printed, section } from "./terminal/format.ts";
 import { type SuggestionsState, suggestionsSlice } from "./terminal/suggestions/slice.ts";
 
-// Une mission du volet gauche : sa pastille et son etat.
+// Une mission du volet gauche : sa pastille et son état.
 interface Mission {
   dot: Tone;
   id: string;
@@ -59,7 +59,7 @@ interface Mission {
   state: string;
 }
 
-// Une entree de la frise.
+// Une entrée de la frise.
 interface Step {
   detail?: string | null;
   id: string;
@@ -78,7 +78,7 @@ interface Brick {
   note?: string;
 }
 
-// La fiche attachee a une techno : ou, quoi, pourquoi.
+// La fiche attachée à une techno : où, quoi, pourquoi.
 interface TechNote {
   note: string;
   what?: string;
@@ -86,7 +86,7 @@ interface TechNote {
   why?: string;
 }
 
-// Le partage, tel que content.json le decrit.
+// Le partage, tel que content.json le décrit.
 interface Share {
   targets?: { id: string; kind: string; label: string; url: string }[];
   text?: string;
@@ -94,14 +94,14 @@ interface Share {
   url?: string;
 }
 
-// Alpine vient du script vendu a cote de la page : il n'apporte pas ses types.
+// Alpine vient du script vendu à côté de la page : il n'apporte pas ses types.
 
 declare const Alpine: {
   data: (name: string, factory: () => State) => void;
 };
 
-// GoatCounter est charge par une balise script tierce. Son contrat se declare ici, une
-// fois : « absent » est un cas normal, un bloqueur suffit a le produire.
+// GoatCounter est chargé par une balise script tierce. Son contrat se déclare ici, une
+// fois : « absent » est un cas normal, un bloqueur suffit à le produire.
 interface GoatCounter {
   count?: (vars: { event?: boolean; path: string; title?: string }) => void;
 }
@@ -111,8 +111,8 @@ declare global {
   var goatcounter: GoatCounter | undefined;
 }
 
-// Le contenu tel que le reseau le rend. Chaque champ peut manquer : « applyContent » pose
-// un repli pour chacun, sauf « sections », sans lequel le chargement echoue.
+// Le contenu tel que le réseau le rend. Chaque champ peut manquer : « applyContent » pose
+// un repli pour chacun, sauf « sections », sans lequel le chargement échoue.
 interface RawContent {
   details?: RawSection[];
   feedback?: Record<string, string>;
@@ -126,11 +126,11 @@ interface RawContent {
   timeline?: Step[];
 }
 
-// Un gestionnaire par genre d'effet : la cle et l'effet recu vont ensemble.
+// Un gestionnaire par genre d'effet : la clé et l'effet reçu vont ensemble.
 type EffectRun = { [K in Effect["type"]]: (effect: Extract<Effect, { type: K }>) => void };
 
-// Ce que la page tient en memoire. Les minuteurs en font partie : les declarer les rend
-// visibles. « RadioState » vient de la tranche qui l'emploie, pour ne pas deriver.
+// Ce que la page tient en mémoire. Les minuteurs en font partie : les déclarer les rend
+// visibles. « RadioState » vient de la tranche qui l'emploie, pour ne pas dériver.
 interface State
   extends
     AchievementsState,
@@ -149,7 +149,7 @@ interface State
   ticker: Beat | undefined;
   anim: boolean;
   reduced: boolean;
-  // Le resultat d'une commande qui l'a reclame. La navigation le reprend.
+  // Le résultat d'une commande qui l'a réclamé. La navigation le reprend.
   commandResult: Section | undefined;
   bootTick: number;
   dataErr: boolean;
@@ -169,10 +169,10 @@ interface State
   power: "boot" | "fade" | "off" | "on";
   profileEmail: string;
   // La tranche de la radio arrive par import dynamique : ce drapeau dit si elle a rejoint
-  // le composant, et « radioOn » ne peut valoir vrai qu'apres.
+  // le composant, et « radioOn » ne peut valoir vrai qu'après.
   radioLoaded: boolean;
-  // La commande a ete tapee et la radio n'a pas encore ete quittee. Le chunk arrive apres
-  // un aller-retour reseau : partir entre-temps ne doit pas la faire s'ouvrir quand meme.
+  // La commande a été tapée et la radio n'a pas encore été quittée. Le chunk arrive après
+  // un aller-retour réseau : partir entre-temps ne doit pas la faire s'ouvrir quand même.
   radioWanted: boolean;
   running: boolean;
   section: string;
@@ -190,12 +190,12 @@ interface State
   typed: string;
 }
 
-// Les tranches deja extraites, en un seul endroit. Le type que « this » voit et l'objet
-// reellement fusionne en derivent tous les deux : en declarer une sans la fusionner ne
-// pouvait etre attrape ni par tsc, ni par le lint, ni par un test unitaire, et cassait la
-// page a la premiere utilisation. Cette liste grossit d'une ligne a chaque extraction.
+// Les tranches déjà extraites, en un seul endroit. Le type que « this » voit et l'objet
+// réellement fusionne en dérivent tous les deux : en déclarer une sans la fusionner ne
+// pouvait être attrapé ni par tsc, ni par le lint, ni par un test unitaire, et cassait la
+// page à la première utilisation. Cette liste grossit d'une ligne à chaque extraction.
 //
-// L'etalement est sur ici : une tranche ne porte jamais d'accesseur.
+// L'étalement est sûr ici : une tranche ne porte jamais d'accesseur.
 const slices = () => {
   return {
     ...achievementsSlice(),
@@ -211,12 +211,12 @@ const slices = () => {
 };
 
 // « RadioApi » n'est pas dans « slices » : sa tranche arrive par import dynamique, une fois
-// la commande tapee. Elle rejoint le composant a ce moment, mais « this » la voit des ici.
+// la commande tapée. Elle rejoint le composant à ce moment, mais « this » la voit dès ici.
 type Slices = RadioApi & ReturnType<typeof slices>;
 
 // ThisType ajoute les magies au type de « this » sans rien changer au code produit :
-// cette fonction est l'identite. L'etat vient de State, le reste du litteral vient de T :
-// sans ce partage, un champ initialise a vide prendrait le type du vide.
+// cette fonction est l'identité. L'état vient de State, le reste du littéral vient de T :
+// sans ce partage, un champ initialisé à vide prendrait le type du vide.
 const withMagics = <T>(
   component: State & T & ThisType<Magics & State & Omit<T, keyof State> & Slices>,
 ): State & Omit<T, keyof State> => {
@@ -224,8 +224,8 @@ const withMagics = <T>(
 };
 
 document.addEventListener("alpine:init", () => {
-  // Les proprietes sont triees. Les methodes suivent un ordre de lecture : chargement,
-  // navigation, commandes. Un tri alphabetique disperserait chaque sujet.
+  // Les propriétés sont triées. Les méthodes suivent un ordre de lecture : chargement,
+  // navigation, commandes. Un tri alphabétique disperserait chaque sujet.
   // oxlint-disable-next-line sort-keys
   Alpine.data("terminal", () => {
     // oxlint-disable-next-line sort-keys
@@ -372,8 +372,8 @@ document.addEventListener("alpine:init", () => {
         return this.commandResult ?? this.open;
       },
 
-      // La sortie appartient a la section ouverte, pas a la derniere commande. Une reponse
-      // qui prend le resultat ne doit pas vider le volet de droite.
+      // La sortie appartient à la section ouverte, pas à la dernière commande. Une réponse
+      // qui prend le résultat ne doit pas vider le volet de droite.
       get open(): Section {
         return (
           this.all.find((entry: Section) => {
@@ -441,7 +441,7 @@ document.addEventListener("alpine:init", () => {
         this.tech = name;
       },
 
-      // Chaque entree de la frise annonce la commande qui ouvre sa fiche. La commande vient
+      // Chaque entrée de la frise annonce la commande qui ouvre sa fiche. La commande vient
       // du contenu : la reconstruire ici la ferait mentir au premier renommage.
       missionCue(entry: Step) {
         const detail = this.details.find((item) => {
@@ -452,7 +452,7 @@ document.addEventListener("alpine:init", () => {
       },
 
       // Une mission porte le nom de son employeur dans « via » : elle se range sous lui,
-      // dans le groupe qu'il ouvre. Une entree seule forme un groupe d'une entree.
+      // dans le groupe qu'il ouvre. Une entrée seule forme un groupe d'une entrée.
       timelineGroups() {
         const groups: { key: string; steps: Step[] }[] = [];
 
@@ -481,8 +481,8 @@ document.addEventListener("alpine:init", () => {
         }
       },
 
-      // La jauge monte de ce que la sortie a imprime. Pleine, elle "compacte" avec un
-      // resume ironique, puis repart a zero.
+      // La jauge monte de ce que la sortie a imprimé. Pleine, elle "compacte" avec un
+      // résumé ironique, puis repart à zéro.
       get ctxCells() {
         return Math.min(CTX_CELLS, Math.round((this.used / CTX_BUDGET) * CTX_CELLS));
       },
@@ -491,7 +491,7 @@ document.addEventListener("alpine:init", () => {
         return `${Math.min(100, Math.round((this.used / CTX_BUDGET) * 100))}%`;
       },
 
-      // Sans animation, la barre s'affiche pleine : le temps d'attente reste le meme, il
+      // Sans animation, la barre s'affiche pleine : le temps d'attente reste le même, il
       // ne se raconte simplement plus.
       get compactBar() {
         if (!this.anim || this.reduced) {
@@ -505,8 +505,8 @@ document.addEventListener("alpine:init", () => {
         );
       },
 
-      // La jauge des appuis sur Shift, faite comme celle du contexte. Elle n'apparait
-      // qu'au deuxieme appui : au premier elle trahirait l'egg.
+      // La jauge des appuis sur Shift, faite comme celle du contexte. Elle n'apparaît
+      // qu'au deuxième appui : au premier elle trahirait l'egg.
       get shiftArming() {
         return this.glitchArmed >= GAUGE_AT;
       },
@@ -519,8 +519,8 @@ document.addEventListener("alpine:init", () => {
         return `] ${this.glitchArmed}/${SHIFT_COUNT}`;
       },
 
-      // Meme forme que la compaction, memes durees qu'avant : la barre se remplit sur le
-      // temps minimum du demarrage, puis attend le contenu, pleine.
+      // Même forme que la compaction, mêmes durées qu'avant : la barre se remplit sur le
+      // temps minimum du démarrage, puis attend le contenu, pleine.
       get bootBar() {
         return barParts(
           (this.bootTick * COMPACT_TICK_MS * BOOT_CELLS) / BOOT_MS,
@@ -556,8 +556,8 @@ document.addEventListener("alpine:init", () => {
       },
 
       // Le journal se redimensionne au glisser, entre 44 px et la place disponible, et sa
-      // hauteur est conservée sur l'appareil. « logH » vaut 0 tant que rien n'a ete regle : la
-      // hauteur effective doit donc toujours passer par ce getter, sinon un reglage part de zero.
+      // hauteur est conservée sur l'appareil. « logH » vaut 0 tant que rien n'a été réglé : la
+      // hauteur effective doit donc toujours passer par ce getter, sinon un réglage part de zéro.
       get logHeight(): number {
         return this.logH || 120;
       },
@@ -581,8 +581,8 @@ document.addEventListener("alpine:init", () => {
         }
       },
 
-      // La radio n'est chargee qu'apres la commande : « radioOn » ne peut valoir vrai que si
-      // sa tranche est en place, donc ce test protege aussi l'appel.
+      // La radio n'est chargée qu'après la commande : « radioOn » ne peut valoir vrai que si
+      // sa tranche est en place, donc ce test protège aussi l'appel.
       radioStop() {
         this.radioWanted = false;
 
@@ -593,7 +593,7 @@ document.addEventListener("alpine:init", () => {
 
       // Le code de la radio ne part pas au premier chargement : peu de visiteurs taperont la
       // commande. Sa tranche arrive ici, une fois, et rejoint le composant. Le visiteur peut
-      // partir pendant ce telechargement : la radio ne s'ouvre alors plus.
+      // partir pendant ce téléchargement : la radio ne s'ouvre alors plus.
       async radioBoot() {
         this.radioWanted = true;
 
@@ -609,7 +609,7 @@ document.addEventListener("alpine:init", () => {
         }
       },
 
-      // Extinction facon CRT, puis la sequence de boot complete.
+      // Extinction façon CRT, puis la séquence de boot complète.
       powerDown(mode: PowerMode) {
         this.stopCompacting();
         this.radioStop();
@@ -619,7 +619,7 @@ document.addEventListener("alpine:init", () => {
             this.journal = [];
             this.seen = [];
             this.used = 0;
-            // Une explosion ou un voyage en cours survivait au redemarrage : la mascotte
+            // Une explosion ou un voyage en cours survivait au redémarrage : la mascotte
             // restait absente, et un minuteur de l'ancienne session la ramenait plus tard.
             clearTimeout(this.reformer);
             clearTimeout(this.returner);
@@ -644,7 +644,7 @@ document.addEventListener("alpine:init", () => {
       },
 
       // Ce que le volet de sortie annonce. La radio qui joue reprend « live », le mot que
-      // la sortie emploie deja : un seul mot pour un seul etat.
+      // la sortie emploie déjà : un seul mot pour un seul état.
       get outLabel() {
         if (!this.radioOn) {
           return this.outStatus;
@@ -653,7 +653,7 @@ document.addEventListener("alpine:init", () => {
         return this.radioAudio === "on" ? "live" : this.radioAudio;
       },
 
-      // Le glyphe des deux commandes de lecture. Trois etats, trois signes : le son coupe
+      // Le glyphe des deux commandes de lecture. Trois états, trois signes : le son coupe
       // ne se devinerait pas sous un « ▶ » alors que la musique tourne.
       get radioGlyph() {
         if (this.radioAudio === "muet") {
@@ -663,7 +663,7 @@ document.addEventListener("alpine:init", () => {
         return this.radioAudio === "on" ? "‖" : "▶";
       },
 
-      // Ce que la commande fera au prochain appui, pour un lecteur d'ecran.
+      // Ce que la commande fera au prochain appui, pour un lecteur d'écran.
       get radioAction() {
         if (this.radioAudio === "muet") {
           return "Rendre le son — touche m";
@@ -673,7 +673,7 @@ document.addEventListener("alpine:init", () => {
       },
 
       // Le point suit ce que la sortie fait vraiment. Une radio en pause n'est pas en
-      // ordre, elle attend : elle prend donc le meme ton qu'une commande en vol.
+      // ordre, elle attend : elle prend donc le même ton qu'une commande en vol.
       get outTone() {
         if (this.radioOn) {
           return this.radioAudio === "on" ? "ok" : "warn";
@@ -690,15 +690,15 @@ document.addEventListener("alpine:init", () => {
         setTimeout(
           () => {
             this.power = "on";
-            // Le demarrage decouvre la mascotte : elle arrive plutot qu'elle n'apparait.
+            // Le démarrage découvre la mascotte : elle arrive plutôt qu'elle n'apparaît.
             this.mascotPlay("drop");
           },
           this.reduced ? 0 : FADE_MS,
         );
       },
 
-      // Le boot n'est pas un spectacle obligatoire. Il ne s'abrege que quand le contenu est
-      // deja la : l'ecran de panique doit rester, et son bouton doit garder ses touches.
+      // Le boot n'est pas un spectacle obligatoire. Il ne s'abrège que quand le contenu est
+      // déjà là : l'écran de panique doit rester, et son bouton doit garder ses touches.
       skipBoot() {
         if (this.power !== "boot" || this.dataErr || this.sections.length === 0) {
           return false;
@@ -709,7 +709,7 @@ document.addEventListener("alpine:init", () => {
         return true;
       },
 
-      // Le meme seuil que la requete de media qui empile les volets. Les deux doivent
+      // Le même seuil que la requête de média qui empile les volets. Les deux doivent
       // changer ensemble : la coquille ne peut pas lire la valeur de la feuille de style.
       get stacked() {
         return globalThis.matchMedia?.("(max-width: 900px)").matches ?? false;
@@ -799,12 +799,12 @@ document.addEventListener("alpine:init", () => {
         return found === 0 ? "aucune trouvaille" : `${found} trouvaille${found > 1 ? "s" : ""}`;
       },
 
-      // Les groupes se decoupent dans l'ordre des trouvailles, jamais dans l'ordre declare :
-      // sinon la fleche du bas et l'oeil ne parcourent pas la meme liste. « GLOBAL_GROUPS »
-      // n'apporte plus ici que le libelle et l'etiquette.
+      // Les groupes se découpent dans l'ordre des trouvailles, jamais dans l'ordre déclaré :
+      // sinon la flèche du bas et l'œil ne parcourent pas la même liste. « GLOBAL_GROUPS »
+      // n'apporte plus ici que le libelle et l'étiquette.
       get globalGroups() {
-        // L'annotation casse la circularite : sans elle, TypeScript deduit l'accesseur depuis
-        // le litteral qui le contient, et rend « any ».
+        // L'annotation casse la circularité : sans elle, TypeScript déduit l'accesseur depuis
+        // le littéral qui le contient, et rend « any ».
         const found: GlobalEntry[] = this.globalHits,
           groups: {
             kind: string;
@@ -882,10 +882,10 @@ document.addEventListener("alpine:init", () => {
           this.track("section", { id, via });
         }
 
-        // La navigation reprend le resultat : une reponse de commande n'y survit pas.
+        // La navigation reprend le résultat : une réponse de commande n'y survit pas.
         this.commandResult = undefined;
-        // Le volet de sortie appartient a la section ouverte. La radio le quitte donc, et
-        // son contexte audio se ferme plutot que de continuer a tourner sans volet.
+        // Le volet de sortie appartient à la section ouverte. La radio le quitte donc, et
+        // son contexte audio se ferme plutôt que de continuer à tourner sans volet.
         this.radioStop();
         this.section = id;
 
@@ -901,15 +901,15 @@ document.addEventListener("alpine:init", () => {
         if (push) {
           this.markSection(id);
         }
-        // Une section plus longue que la precedente ne doit pas heriter d'un journal trop
-        // haut : le resultat serait coupe des l'ouverture.
+        // Une section plus longue que la précédente ne doit pas hériter d'un journal trop
+        // haut : le résultat serait coupé dès l'ouverture.
         this.$nextTick(() => {
           this.setLogHeight(this.logHeight);
           this.revealResult();
         });
       },
 
-      // La section se tape avant de s'afficher : au tick qui suit le clic, le resultat est
+      // La section se tape avant de s'afficher : au tick qui suit le clic, le résultat est
       // encore vide et le focus retomberait sur la ligne de commande. Il attend la frappe.
       takeResult() {
         if (!this.wantResult) {
@@ -957,8 +957,8 @@ document.addEventListener("alpine:init", () => {
           return;
         }
 
-        // L'ecran de demarrage couvre la mascotte : tirer sa feuille d'attente a ce
-        // moment-la chargerait deux feuilles au premier rendu au lieu d'une.
+        // L'écran de démarrage couvre la mascotte : tirer sa feuille d'attente à ce
+        // moment-là chargerait deux feuilles au premier rendu au lieu d'une.
         if (!this.booting) {
           this.mascotPlay("load");
         }
@@ -997,8 +997,8 @@ document.addEventListener("alpine:init", () => {
         }, 1000 / TYPE_CPS);
       },
 
-      // La reponse prend la place de la section dans le resultat. La frappe en cours
-      // s'arrete : sans cela, le minuteur de « play » reecrirait la commande affichee.
+      // La réponse prend la place de la section dans le résultat. La frappe en cours
+      // s'arrête : sans cela, le minuteur de « play » réécrirait la commande affichée.
       showResult(raw: string, lines: ContentLine[]) {
         clearInterval(this.typer);
         clearTimeout(this.latency);
@@ -1017,7 +1017,7 @@ document.addEventListener("alpine:init", () => {
           return;
         }
 
-        // Une question en vol n'a plus rien a dire des que la commande suivante part. Sans cette
+        // Une question en vol n'a plus rien à dire dès que la commande suivante part. Sans cette
         // coupure, seule une seconde question arrêterait la première. La première répondrait
         // après « clear », ou par-dessus le refus d'une question sans trouvaille.
         this.asker?.abort();
@@ -1058,7 +1058,7 @@ document.addEventListener("alpine:init", () => {
           }
           this.checkMore("journal");
         });
-        // Le resultat compte comme le journal : deplacer une reponse ne la rend pas
+        // Le résultat compte comme le journal : déplacer une réponse ne la rend pas
         // gratuite, et la jauge mesure ce que la commande a produit.
         this.bump(printed(lines) + printed(result ?? []));
 
@@ -1080,7 +1080,7 @@ document.addEventListener("alpine:init", () => {
         try {
           globalThis.goatcounter?.count?.({ event: true, path });
         } catch {
-          // Un bloqueur a mange le script : ce n'est pas une panne du portfolio.
+          // Un bloqueur a mangé le script : ce n'est pas une panne du portfolio.
         }
       },
 
@@ -1096,12 +1096,12 @@ document.addEventListener("alpine:init", () => {
             url: this.share.url ?? "",
           });
         } catch {
-          // Le visiteur a ferme le menu de partage : ce n'est pas une panne.
+          // Le visiteur a fermé le menu de partage : ce n'est pas une panne.
         }
       },
 
-      // L'URL est ouverte telle qu'elle a ete construite. La decoder annulerait
-      // l'encodage des jetons et pourrait lever une exception sur une sequence
+      // L'URL est ouverte telle qu'elle a été construite. La décoder annulerait
+      // l'encodage des jetons et pourrait lever une exception sur une séquence
       // pourcent invalide.
       shareTo(effect: { kind: string; url: string }) {
         if (effect.kind === "copy") {
@@ -1110,8 +1110,8 @@ document.addEventListener("alpine:init", () => {
           return;
         }
 
-        // Ouvrir un onglet vers LinkedIn sans reseau laisse une page d'erreur du navigateur,
-        // et le visiteur croit que le portfolio a casse.
+        // Ouvrir un onglet vers LinkedIn sans réseau laisse une page d'erreur du navigateur,
+        // et le visiteur croit que le portfolio a cassé.
         if (!this.online) {
           this.refuseOffline(
             `ouvrir ${effect.kind}`,
@@ -1137,8 +1137,8 @@ document.addEventListener("alpine:init", () => {
         }
 
         this.say("copié");
-        // La bulle n'est montee qu'avec son texte : elle n'annonce rien. Le journal, lui,
-        // est une region live toujours presente.
+        // La bulle n'est montée qu'avec son texte : elle n'annonce rien. Le journal, lui,
+        // est une région live toujours présente.
         this.journal = [...this.journal, { c: "ok", m: "✓", mc: "ok", t: "copié" }];
       },
 
@@ -1159,7 +1159,7 @@ document.addEventListener("alpine:init", () => {
       },
 
       // La piste bouge avec la mise en page, la mascotte non : sans cette reprise, une
-      // fenetre redimensionnee la laisserait hors champ. Le journal recale sa hauteur.
+      // fenêtre redimensionnée la laisserait hors champ. Le journal recale sa hauteur.
       onResize() {
         this.setLogHeight(this.logHeight);
         this.place(this.at);
@@ -1168,16 +1168,16 @@ document.addEventListener("alpine:init", () => {
       // La coquille applique ce que l'interpréteur décrit. Les effets des tickets à
       // venir sont ignorés ici plutôt que simulés.
       apply(effects: Effect[]) {
-        // Trouver un easter egg vaut une celebration, mais plusieurs disent deja une
+        // Trouver un easter egg vaut une célébration, mais plusieurs disent déjà une
         // expression : le but ne se joue que si rien d'autre ne bouge la mascotte, sinon il
-        // s'ecraserait aussitot. Il se joue apres la boucle, pour ne pas dependre de l'ordre des effets.
+        // s'écraserait aussitôt. Il se joue après la boucle, pour ne pas dépendre de l'ordre des effets.
         const found = effects.some((effect) => {
             return effect.type === "track" && effect.event === "easter_egg";
           }),
           moved = effects.some((entry) => {
             return ["activity", "blowUp", "drop", "emote", "say"].includes(entry.type);
           }),
-          // Une commande qui a liste son usage n'a rien fait : lire l'aide ne se celebre pas.
+          // Une commande qui a listé son usage n'a rien fait : lire l'aide ne se célèbre pas.
           listed = effects.some((entry) => {
             return entry.type === "usage";
           });
@@ -1197,7 +1197,7 @@ document.addEventListener("alpine:init", () => {
             this.journal = [];
           },
           cv: () => {
-            // Un nouvel onglet : le terminal reste ouvert derriere, avec son journal.
+            // Un nouvel onglet : le terminal reste ouvert derrière, avec son journal.
             globalThis.open("texte.html", "_blank", "noopener");
           },
           drop: () => {
@@ -1282,8 +1282,8 @@ document.addEventListener("alpine:init", () => {
         } satisfies EffectRun;
 
         for (const effect of effects) {
-          // SAFETY: « effect.type » designe la cle de « run », dont le gestionnaire attend ce
-          // genre d'effet. TypeScript ne relie pas les deux cotes de l'acces indexe.
+          // SAFETY: « effect.type » désigne la clé de « run », dont le gestionnaire attend ce
+          // genre d'effet. TypeScript ne relie pas les deux côtés de l'accès indexé.
           (run[effect.type] as (value: Effect) => void)(effect);
         }
 
@@ -1292,21 +1292,21 @@ document.addEventListener("alpine:init", () => {
         }
       },
 
-      // Le nom d'une proposition n'apprend rien a lui seul. La ligne suit la selection,
-      // et se tait quand la proposition vient du contenu : son identifiant se lit deja.
+      // Le nom d'une proposition n'apprend rien à lui seul. La ligne suit la sélection,
+      // et se tait quand la proposition vient du contenu : son identifiant se lit déjà.
       get suggHint() {
         return hintFor(this.suggHead, this.sugg[this.suggAt] ?? "");
       },
 
-      // Dix propositions a l'ecran, sur une liste qui peut etre plus longue. La fenetre
-      // glisse sous la selection au lieu de couper la liste : une proposition tapable
-      // reste atteignable a la fleche.
+      // Dix propositions à l'écran, sur une liste qui peut être plus longue. La fenêtre
+      // glisse sous la sélection au lieu de couper la liste : une proposition tapable
+      // reste atteignable à la flèche.
       get suggWindow() {
         return this.sugg.slice(this.suggTop, this.suggTop + MAX_SUGGESTIONS);
       },
 
-      // Distant d'abord, local ensuite. Le repli n'est pas un luxe : la page dependrait
-      // sinon de la disponibilite de GitHub pour afficher quoi que ce soit.
+      // Distant d'abord, local ensuite. Le repli n'est pas un luxe : la page dépendrait
+      // sinon de la disponibilité de GitHub pour afficher quoi que ce soit.
       async fetchContent(): Promise<RawContent> {
         const response = await fetch(CONTENT_URL);
 
@@ -1318,7 +1318,7 @@ document.addEventListener("alpine:init", () => {
         return (await response.json()) as RawContent;
       },
 
-      // Le contenu arrive du reseau : rien n'entre dans l'etat avant sa lecture ici.
+      // Le contenu arrive du réseau : rien n'entre dans l'état avant sa lecture ici.
       applyContent(content: RawContent) {
         if (!Array.isArray(content.sections) || content.sections.length === 0) {
           throw new Error("sections manquantes ou vides");

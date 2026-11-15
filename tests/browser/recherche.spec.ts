@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 import type { Page } from "@playwright/test";
 
-// Le faux modele pose sa gachette sur la page. La declarer evite de la retrouver par une
+// Le faux modèle pose sa gâchette sur la page. La déclarer évite de la retrouver par une
 // assertion de type, qui masquerait une vraie erreur si le nom changeait.
 declare global {
   // oxlint-disable-next-line no-var, vars-on-top
@@ -16,16 +16,16 @@ const boot = async (page: Page) => {
 
     return page.getByLabel("Commande");
   },
-  // Le modele local n'existe que dans Chrome, derriere un contexte securise. Le faux
-  // modele pose le contrat attendu, rien de plus : il prouve l'usage, pas l'API.
-  // Le Chromium de Playwright annonce un modele telechargeable mais absent, comme la majorite des visiteurs.
+  // Le modèle local n'existe que dans Chrome, derrière un contexte sécurisé. Le faux
+  // modèle pose le contrat attendu, rien de plus : il prouve l'usage, pas l'API.
+  // Le Chromium de Playwright annonce un modèle téléchargeable mais absent, comme la majorité des visiteurs.
   retirerModele = (page: Page) => {
     return page.addInitScript(() => {
       Reflect.deleteProperty(globalThis, "LanguageModel");
     });
   },
-  // « responseConstraint » fait rendre du JSON au vrai modele : un identifiant en sort
-  // entre guillemets. Un faux modele qui rend l'identifiant nu cacherait ce piege.
+  // « responseConstraint » fait rendre du JSON au vrai modèle : un identifiant en sort
+  // entre guillemets. Un faux modèle qui rend l'identifiant nu cacherait ce piège.
   poserModele = (page: Page, choix: string) => {
     return page.addInitScript((id: string) => {
       Object.defineProperty(globalThis, "LanguageModel", {
@@ -53,8 +53,8 @@ const boot = async (page: Page) => {
       });
     }, choix);
   },
-  // Un modele qui ne repond que sur ordre. Un minuteur ferait courir le test contre la
-  // latence de la machine : l'attente doit tenir tant que le test ne l'a pas relachee.
+  // Un modèle qui ne répond que sur ordre. Un minuteur ferait courir le test contre la
+  // latence de la machine : l'attente doit tenir tant que le test ne l'a pas relâchée.
   poserModeleLent = (page: Page) => {
     return page.addInitScript(() => {
       const { promise, reject, resolve } = Promise.withResolvers<string>();
@@ -136,8 +136,8 @@ test("should recall its usage when ask comes without a question", async ({ page 
   await expect(page.locator("[data-journal]")).toContainText("posez une question");
 });
 
-// Le modele choisit un identifiant dans une liste fermee, et c'est son choix qui repond.
-// Ce qui s'affiche reste le texte du corpus : il ne parle jamais a la place de Benjamin.
+// Le modèle choisit un identifiant dans une liste fermée, et c'est son choix qui répond.
+// Ce qui s'affiche reste le texte du corpus : il ne parle jamais à la place de Benjamin.
 test("should let the model answer first and take the text from the corpus", async ({ page }) => {
   await poserModele(page, "contact");
 
@@ -152,8 +152,8 @@ test("should let the model answer first and take the text from the corpus", asyn
   await expect(journal, "one answer, not two").not.toContainText("whoami");
 });
 
-// Un modele qui repond n'importe quoi ne doit rien pouvoir afficher : l'identifiant est
-// cherche dans le corpus, et un inconnu ne designe rien.
+// Un modèle qui répond n'importe quoi ne doit rien pouvoir afficher : l'identifiant est
+// cherche dans le corpus, et un inconnu ne désigne rien.
 test("should let the corpus answer when the model invents an identifier", async ({ page }) => {
   await poserModele(page, "une-section-qui-n-existe-pas");
 
@@ -166,8 +166,8 @@ test("should let the corpus answer when the model invents an identifier", async 
   );
 });
 
-// Deux « ask » de suite : le choix de la premiere question ne doit pas s'ecrire sous la
-// reponse de la seconde. La coupure passe par le signal donne au modele.
+// Deux « ask » de suite : le choix de la première question ne doit pas s'écrire sous la
+// réponse de la seconde. La coupure passe par le signal donné au modèle.
 test("should cut the model choice of the first question when a second one comes", async ({
   page,
 }) => {
@@ -190,7 +190,7 @@ test("should cut the model choice of the first question when a second one comes"
   ).toHaveCount(0);
 });
 
-// Une commande qu'on doit deja connaitre pour la taper n'existe pas pour le visiteur.
+// Une commande qu'on doit déjà connaître pour la taper n'existe pas pour le visiteur.
 test("should make ask discoverable through the completion and through the help", async ({
   page,
 }) => {
@@ -206,8 +206,8 @@ test("should make ask discoverable through the completion and through the help",
   await expect(page.locator("[data-result]")).toContainText("ask <question>");
 });
 
-// Rien ne s'affiche avant que le modele ait choisi. Sans marque d'attente, la commande
-// paraitrait sans effet.
+// Rien ne s'affiche avant que le modèle ait choisi. Sans marque d'attente, la commande
+// paraîtrait sans effet.
 test("should show the wait for the model, then clear it", async ({ page }) => {
   await poserModeleLent(page);
 
@@ -225,8 +225,8 @@ test("should show the wait for the model, then clear it", async ({ page }) => {
   await expect(attente, "the wait clears with the answer").toHaveCount(0);
 });
 
-// « clear » vidait le journal sans arreter la question en vol : la reponse d'avant y
-// tombait toute seule, dans un journal cense etre vide.
+// « clear » vidait le journal sans arrêter la question en vol : la réponse d'avant y
+// tombait toute seule, dans un journal censé être vide.
 test("should stop the question in flight on clear", async ({ page }) => {
   await poserModeleLent(page);
 
@@ -245,8 +245,8 @@ test("should stop the question in flight on clear", async ({ page }) => {
   await expect(journal).not.toContainText("48 heures");
 });
 
-// Le modele repond en premier, donc son silence laisserait la question sans reponse. Celle
-// du corpus attend pour ce cas precis, et elle doit sortir.
+// Le modèle répond en premier, donc son silence laisserait la question sans réponse. Celle
+// du corpus attend pour ce cas précis, et elle doit sortir.
 test("should let the corpus answer come out when the model stays silent", async ({ page }) => {
   await page.addInitScript(() => {
     Object.defineProperty(globalThis, "LanguageModel", {
@@ -273,8 +273,8 @@ test("should let the corpus answer come out when the model stays silent", async 
   await expect(page.locator("[data-thinking]"), "the wait clears too").toHaveCount(0);
 });
 
-// L'etincelle est la seule chose qui dise au visiteur qu'un modele local est la. Sans
-// modele, elle ne doit jamais apparaitre : elle promettrait un choix que personne ne fait.
+// L'étincelle est la seule chose qui dise au visiteur qu'un modèle local est la. Sans
+// modèle, elle ne doit jamais apparaître : elle promettrait un choix que personne ne fait.
 test("should show the sparkle only when a model is there", async ({ page }) => {
   await retirerModele(page);
 
@@ -313,8 +313,8 @@ test("should name the search in the help under the name that is offered", async 
   await expect(page.locator("[data-result]")).toContainText("ask✨ <question>");
 });
 
-// Le defaut que la revue a trouve : le recouvrement de mots ne trouvait rien, et le modele
-// n'etait meme pas consulte. C'est pourtant le seul cas ou il apporte quelque chose.
+// Le défaut que la revue a trouvé : le recouvrement de mots ne trouvait rien, et le modèle
+// n'était même pas consulté. C'est pourtant le seul cas où il apporte quelque chose.
 test("should still go through the model for a question that no word matches", async ({ page }) => {
   await poserModele(page, "contact");
 
@@ -329,8 +329,8 @@ test("should still go through the model for a question that no word matches", as
   await expect(journal).not.toContainText("rien ne répond");
 });
 
-// Un modele qui ignore la contrainte rend l'identifiant nu. Il doit rester utilisable :
-// l'API ne promet pas que tous les modeles la respectent.
+// Un modèle qui ignore la contrainte rend l'identifiant nu. Il doit rester utilisable :
+// l'API ne promet pas que tous les modèles la respectent.
 test("should still use an identifier returned without JSON", async ({ page }) => {
   await page.addInitScript(() => {
     Object.defineProperty(globalThis, "LanguageModel", {
@@ -365,8 +365,8 @@ test("should still use an identifier returned without JSON", async ({ page }) =>
   await expect(page.locator("[data-journal]")).toContainText("48 heures");
 });
 
-// « rien ne repond dans ce portfolio » et « le modele a lache » se lisaient pareil. Le
-// premier envoyait chercher le defaut dans le contenu, quand il etait dans le modele.
+// « rien ne répond dans ce portfolio » et « le modèle a lâché » se lisaient pareil. Le
+// premier envoyait chercher le défaut dans le contenu, quand il était dans le modèle.
 test("should tell a model failure apart from a missing answer", async ({ page }) => {
   await page.addInitScript(() => {
     Object.defineProperty(globalThis, "LanguageModel", {
@@ -393,7 +393,7 @@ test("should tell a model failure apart from a missing answer", async ({ page })
   await expect(journal, "the corpus answer follows anyway").toContainText("rien ne répond");
 });
 
-// Le faux modele note chaque creation de session, et si elle porte le signal de la question.
+// Le faux modèle note chaque création de session, et si elle porte le signal de la question.
 const poserModeleCompteur = (page: Page) => {
     return page.addInitScript(() => {
       globalThis.creations = [];

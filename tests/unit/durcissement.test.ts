@@ -35,7 +35,7 @@ it("should not let a jq token carry an arbitrary tone", () => {
   assert.ok(key && TONES.includes(key.c));
 });
 
-// Une cible declaree dans le contenu ne doit pas pouvoir executer de script.
+// Une cible déclarée dans le contenu ne doit pas pouvoir exécuter de script.
 it("should accept http, https, mailto and relative URLs", () => {
   assert.equal(isSafeUrl("https://exemple.test/"), true);
   assert.equal(isSafeUrl("http://exemple.test/"), true);
@@ -43,8 +43,8 @@ it("should accept http, https, mailto and relative URLs", () => {
   assert.equal(isSafeUrl("/relatif"), true);
 });
 
-// Les URL executables sont composees et non ecrites en clair : la regle no-script-url
-// interdit le litteral, alors qu'il est ici la charge utile du test.
+// Les URL exécutables sont composées et non écrites en clair : la règle no-script-url
+// interdit le littéral, alors qu'il est ici la charge utile du test.
 const SCRIPT = ["java", "script:"].join("");
 
 it("should reject executable URL schemes", () => {
@@ -72,7 +72,7 @@ it("should not return a share target with a forbidden scheme", () => {
   assert.ok(shareTarget("sain", share)?.url.startsWith("https://"));
 });
 
-// Une sequence pourcent invalide ne doit pas lever d'exception.
+// Une séquence pourcent invalide ne doit pas lever d'exception.
 it("should not break the validation on a badly encoded URL", () => {
   assert.doesNotThrow(() => {
     return isSafeUrl("https://x.test/%E0%A4%A");

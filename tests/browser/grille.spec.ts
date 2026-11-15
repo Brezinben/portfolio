@@ -2,8 +2,8 @@ import { expect, test } from "@playwright/test";
 import type { Page } from "@playwright/test";
 
 // La grille des technologies coule en « repeat(auto-fill, minmax(148px, 1fr)) » : le nombre
-// de colonnes depend de la largeur de la fenetre. Un test qui ne pose pas sa fenetre ne
-// prouve rien, il passe ou echoue selon la machine.
+// de colonnes dépend de la largeur de la fenêtre. Un test qui ne pose pas sa fenêtre ne
+// prouve rien, il passe ou échoue selon la machine.
 const LARGEUR = 1280,
   boot = async (page: Page) => {
     await page.setViewportSize({ height: 900, width: LARGEUR });
@@ -91,7 +91,7 @@ test("should keep the column on the down arrow when the next row is shorter", as
   expect(Math.round(apres), "the cursor goes down inside its column").toBe(Math.round(avant));
 });
 
-// Le cas ordinaire ne doit pas regresser : quand la colonne existe en dessous, rien ne change.
+// Le cas ordinaire ne doit pas régresser : quand la colonne existe en dessous, rien ne change.
 test("should keep the column on the down arrow when the next row is full", async ({ page }) => {
   await boot(page);
 

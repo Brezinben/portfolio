@@ -1,10 +1,10 @@
 // La recherche globale : l'index cherchable du site, et le classement d'une saisie.
 //
-// Elle ne cherche pas la meme chose que « ask » : « ask » lit la prose du corpus et rend un
-// passage, la recherche globale lit le contenu structure et rend une commande.
+// Elle ne cherche pas la même chose que « ask » : « ask » lit la prose du corpus et rend un
+// passage, la recherche globale lit le contenu structuré et rend une commande.
 //
-// Rien n'est recopie ici. L'index derive du contenu, des themes, du catalogue des succes et
-// du vocabulaire : une brique ajoutee a content.json y entre sans qu'on y touche.
+// Rien n'est recopié ici. L'index dérive du contenu, des thèmes, du catalogue des succès et
+// du vocabulaire : une brique ajoutée à content.json y entre sans qu'on y touche.
 
 import { ASK, ASK_MODEL, vocabulary } from "./vocabulary.ts";
 import { ACHIEVEMENTS } from "./achievements.ts";
@@ -15,7 +15,7 @@ import { hintFor } from "./completion.ts";
 export type GlobalKind = "achievement" | "command" | "mission" | "section" | "stack" | "theme";
 
 export interface GlobalEntry {
-  // La commande soumise. Vide quand l'entree ouvre une zone au lieu de lancer une commande.
+  // La commande soumise. Vide quand l'entrée ouvre une zone au lieu de lancer une commande.
   cmd: string;
   desc: string;
   // Les mots qui se cherchent sans s'afficher.
@@ -23,11 +23,11 @@ export interface GlobalEntry {
   kind: GlobalKind;
   label: string;
   needsArgument: boolean;
-  // La fiche techno a ouvrir une fois la section stack affichee. Vide ailleurs.
+  // La fiche techno à ouvrir une fois la section stack affichée. Vide ailleurs.
   tech: string;
 }
 
-// L'ordre des groupes est l'ordre d'affichage, et il departage aussi deux entrees de meme
+// L'ordre des groupes est l'ordre d'affichage, et il départage aussi deux entrées de même
 // rang : le tri est stable.
 export const GLOBAL_GROUPS: { kind: GlobalKind; label: string; tag: string }[] = [
   { kind: "section", label: "sections", tag: "section" },
@@ -53,11 +53,11 @@ const NEEDS_ARGUMENT = new Set([
   "theme",
 ]);
 
-// Ce que la coquille apprend a la recherche globale. « Entry » est le contrat que
-// « context » declare deja : le redeclarer ici ferait un troisieme contrat.
+// Ce que la coquille apprend à la recherche globale. « Entry » est le contrat que
+// « context » déclare déjà : le redéclarer ici ferait un troisième contrat.
 export interface GlobalSource {
   details: (Entry & { sub?: string })[];
-  // L'etat d'une mission, tel que le volet gauche l'affiche. Les fiches ne le portent pas.
+  // L'état d'une mission, tel que le volet gauche l'affiche. Les fiches ne le portent pas.
   missions: { id: string; state?: string }[];
   model: boolean;
   sections: (Entry & { sub?: string })[];
@@ -68,8 +68,8 @@ export interface GlobalSource {
 const entry = (partial: Omit<GlobalEntry, "needsArgument" | "tech"> & Partial<GlobalEntry>) => {
   return { needsArgument: false, tech: "", ...partial } satisfies GlobalEntry;
 };
-// Le champ « cmd » du contenu est l'echo decoratif d'une section : « bd log --graph » n'ouvre
-// rien, le repartiteur n'accepte que l'identifiant. Seul « bd <id> » se soumet.
+// Le champ « cmd » du contenu est l'écho décoratif d'une section : « bd log --graph » n'ouvre
+// rien, le répartiteur n'accepte que l'identifiant. Seul « bd <id> » se soumet.
 const open = (id: string) => {
   return `bd ${id}`;
 };
@@ -97,14 +97,14 @@ export const globalIndex = (source: GlobalSource): GlobalEntry[] => {
     ...details.map((detail) => {
       return entry({
         cmd: open(detail.id),
-        // Une fiche sans sous-titre prend l'etat de sa mission.
+        // Une fiche sans sous-titre prend l'état de sa mission.
         desc: detail.sub === undefined || detail.sub === "" ? stateOf(detail.id) : detail.sub,
         keys: `${detail.id} ${detail.ask ?? ""}`,
         kind: "mission",
         label: detail.label,
       });
     }),
-    // Une brique n'a pas de commande a elle. Elle ouvre la section stack, puis la coquille
+    // Une brique n'a pas de commande à elle. Elle ouvre la section stack, puis la coquille
     // pose sa fiche : c'est ce que le visiteur cherchait en tapant son nom.
     ...Object.entries(techNotes).map(([name, note]) => {
       return entry({
@@ -125,7 +125,7 @@ export const globalIndex = (source: GlobalSource): GlobalEntry[] => {
         label: theme.label,
       });
     }),
-    // Un succes ne se lance pas : il s'ouvre. La coquille lit le genre et montre la liste.
+    // Un succès ne se lance pas : il s'ouvre. La coquille lit le genre et montre la liste.
     ...ACHIEVEMENTS.map((achievement) => {
       return entry({
         cmd: "",
@@ -148,14 +148,14 @@ export const globalIndex = (source: GlobalSource): GlobalEntry[] => {
   ];
 };
 
-// La saisie telle que le classement la lit : sans le prefixe qui cible la ligne de
+// La saisie telle que le classement la lit : sans le préfixe qui cible la ligne de
 // commande, « / » ou « : », et sans les espaces en trop.
 const globalQuery = (raw: string): string => {
   return raw.replace(/^[/:]/u, "").replaceAll(/\s+/gu, " ").trim();
 };
 
-// Le classement tient au genre de la trouvaille, jamais a un score flou : l'ordre reste
-// previsible a la frappe.
+// Le classement tient au genre de la trouvaille, jamais à un score flou : l'ordre reste
+// prévisible à la frappe.
 const rank = (query: string, item: GlobalEntry): number => {
   const label = fold(item.label),
     inLabel = label.indexOf(query);
@@ -177,12 +177,12 @@ const rank = (query: string, item: GlobalEntry): number => {
   return elsewhere === -1 ? -1 : 3 + elsewhere / 1000;
 };
 
-// Les trouvailles sortent regroupees par genre, parce que la zone les affiche ainsi : sans
-// ce regroupement, une fleche sauterait d'un groupe a l'autre puis reviendrait.
+// Les trouvailles sortent regroupées par genre, parce que la zone les affiche ainsi : sans
+// ce regroupement, une flèche sauterait d'un groupe à l'autre puis reviendrait.
 //
-// C'est la meilleure trouvaille d'un genre qui place le genre, jamais un ordre declare. Un
-// ordre fige aurait enterre une trouvaille exacte : « theme » nomme une commande, et les
-// huit themes ne la portent que dans leurs mots-cles.
+// C'est la meilleure trouvaille d'un genre qui place le genre, jamais un ordre déclaré. Un
+// ordre figé aurait enterré une trouvaille exacte : « theme » nomme une commande, et les
+// huit thèmes ne la portent que dans leurs mots-clés.
 export const rankHits = (raw: string, index: GlobalEntry[], limit: number): GlobalEntry[] => {
   const query = fold(globalQuery(raw));
 
@@ -201,8 +201,8 @@ export const rankHits = (raw: string, index: GlobalEntry[], limit: number): Glob
         return one.rank - other.rank;
       })
       .slice(0, limit),
-    // La liste est deja triee par rang, donc la premiere apparition d'un genre porte son
-    // meilleur rang. Le tri est stable : le rang departage encore deux trouvailles du meme
+    // La liste est déjà triée par rang, donc la première apparition d'un genre porte son
+    // meilleur rang. Le tri est stable : le rang départage encore deux trouvailles du même
     // genre.
     firstOf = kept.map((hit) => {
       return hit.item.kind;
@@ -217,11 +217,11 @@ export const rankHits = (raw: string, index: GlobalEntry[], limit: number): Glob
     });
 };
 
-// La fin de la premiere trouvaille, affichee derriere la saisie et acceptee par Tab. Elle
-// n'apparait que si cette trouvaille commence par la saisie : completer vers un libelle sans
+// La fin de la première trouvaille, affichée derrière la saisie et acceptée par Tab. Elle
+// n'apparaît que si cette trouvaille commence par la saisie : compléter vers un libelle sans
 // rapport se lirait comme une erreur de frappe.
 //
-// Une saisie bordee d'espaces n'en produit aucune : le calque peint la saisie telle quelle,
+// Une saisie bordée d'espaces n'en produit aucune : le calque peint la saisie telle quelle,
 // donc la suite tomberait une colonne trop loin.
 export const ghostFor = (raw: string, hits: GlobalEntry[]): string => {
   const query = globalQuery(raw),

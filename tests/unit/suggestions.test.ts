@@ -2,39 +2,39 @@ import assert from "node:assert/strict";
 import { it } from "node:test";
 import { windowTop } from "../../src/terminal/suggest.ts";
 
-// Dix propositions a l'ecran, quinze dans la liste : la fenetre est le seul moyen de
-// joindre la onzieme. La tronquer, comme avant, la rendait intapable a la fleche.
+// Dix propositions à l'écran, quinze dans la liste : la fenêtre est le seul moyen de
+// joindre la onzième. La tronquer, comme avant, la rendait intapable à la flèche.
 const SIZE = 10;
 
-// Tant que la selection tient dans la fenetre, la fenetre ne bouge pas. Une liste qui
-// defile a chaque fleche rend le choix impossible a suivre des yeux.
+// Tant que la sélection tient dans la fenêtre, la fenêtre ne bouge pas. Une liste qui
+// défile à chaque flèche rend le choix impossible à suivre des yeux.
 it("should hold the window still while the selection fits in it", () => {
   for (let at = 0; at < SIZE; at += 1) {
     assert.equal(windowTop(0, at, SIZE), 0, `at ${at}`);
   }
 });
 
-// Au onzieme, la fenetre avance d'un cran : la premiere proposition sort par le haut, et
-// la onzieme devient la dixieme affichee.
+// Au onzième, la fenêtre avance d'un cran : la première proposition sort par le haut, et
+// la onzième devient la dixième affichée.
 it("should slide the window by one when the selection leaves it", () => {
   assert.equal(windowTop(0, SIZE, SIZE), 1);
   assert.equal(windowTop(1, SIZE + 1, SIZE), 2);
   assert.equal(windowTop(4, SIZE + 4, SIZE), 5);
 });
 
-// Le bouclage de la fleche basse ramene la selection au debut. La fenetre la suit d'un
-// bond, sinon la premiere proposition s'afficherait seule en bas d'une fenetre vide.
+// Le bouclage de la flèche basse ramène la sélection au début. La fenêtre la suit d'un
+// bond, sinon la première proposition s'afficherait seule en bas d'une fenêtre vide.
 it("should snap the window back when the selection wraps to the first entry", () => {
   assert.equal(windowTop(5, 0, SIZE), 0);
 });
 
-// La fleche haute depuis le premier rang saute au dernier. La fenetre doit cadrer la fin
-// de la liste d'un seul coup, pas defiler de quatorze crans.
+// La flèche haute depuis le premier rang saute au dernier. La fenêtre doit cadrer la fin
+// de la liste d'un seul coup, pas défiler de quatorze crans.
 it("should snap the window to the end when the selection wraps to the last entry", () => {
   assert.equal(windowTop(0, 14, SIZE), 5);
 });
 
-// Une liste plus courte que la fenetre n'a rien a faire glisser.
+// Une liste plus courte que la fenêtre n'a rien à faire glisser.
 it("should never scroll a list shorter than the window", () => {
   for (let at = 0; at < 4; at += 1) {
     assert.equal(windowTop(0, at, SIZE), 0, `at ${at}`);

@@ -21,8 +21,8 @@ test("should draw the cow in the journal with cowsay", async ({ page }) => {
   await expect(page.locator("[data-journal]")).toContainText("bonjour");
 });
 
-// Les espaces multiples de l'art ASCII doivent survivre au rendu : c'est le piege que
-// le drapeau preformaté resout dans le canvas.
+// Les espaces multiples de l'art ASCII doivent survivre au rendu : c'est le piège que
+// le drapeau preformaté résout dans le canvas.
 test("should keep the multiple spaces of the ASCII art", async ({ page }) => {
   const cli = await boot(page);
 
@@ -69,7 +69,7 @@ test("should raise the context gauge on every command", async ({ page }) => {
   expect(await filled()).not.toBe(before);
 });
 
-// La jauge monte de ce que la sortie a imprime : une commande bavarde coute plus qu'un
+// La jauge monte de ce que la sortie a imprimé : une commande bavarde coûte plus qu'un
 // easter egg de deux lignes.
 test("should raise the gauge faster on a long output", async ({ page }) => {
   const cli = await boot(page),
@@ -92,8 +92,8 @@ test("should raise the gauge faster on a long output", async ({ page }) => {
   expect(large, "help prints much more than sudo").toBeGreaterThan(small);
 });
 
-// La compaction est une animation, pas un message : la barre d'etat ne se met pas a
-// ecrire pendant que la fenetre se vide.
+// La compaction est une animation, pas un message : la barre d'état ne se met pas à
+// écrire pendant que la fenêtre se vide.
 test("should announce the compaction with a bar and no word", async ({ page }) => {
   const cli = await boot(page),
     bar = page.locator("[data-compacting]");
@@ -109,7 +109,7 @@ test("should announce the compaction with a bar and no word", async ({ page }) =
   }, Promise.resolve());
 
   await expect(bar).toHaveCount(1);
-  // La jauge entiere est decorative : le journal, lui, dit la compaction en toutes lettres.
+  // La jauge entière est décorative : le journal, lui, dit la compaction en toutes lettres.
   await expect(page.locator("[data-gauge]")).toHaveAttribute("aria-hidden", "true");
 
   const drawn = await bar.textContent();
@@ -117,8 +117,8 @@ test("should announce the compaction with a bar and no word", async ({ page }) =
   expect(drawn, "full cells, spinning head, empty cells").toMatch(/^⣿*[⣾⣽⣻⢿⡿⣟⣯⣷]?░*$/u);
 });
 
-// L'animation remplace la jauge pleine, elle ne s'ajoute pas a elle : deux barres cote
-// a cote, l'utilisateur ne sait plus laquelle compte.
+// L'animation remplace la jauge pleine, elle ne s'ajoute pas à elle : deux barres côte
+// à côte, l'utilisateur ne sait plus laquelle compte.
 test("should keep only one bar on screen during the compaction", async ({ page }) => {
   const cli = await boot(page),
     bar = page.locator("[data-compacting]");
@@ -168,12 +168,12 @@ test("should leave the gauge empty when the panes are only clicked", async ({ pa
   expect(await gauge(), "a typed command costs").toBeGreaterThan(0);
 });
 
-// Pleine, la jauge compacte avec un resume ironique, puis repart a zero.
+// Pleine, la jauge compacte avec un résumé ironique, puis repart à zéro.
 test("should start a compaction and empty itself when the gauge is full", async ({ page }) => {
   const cli = await boot(page),
     warned = page.locator("[data-journal]", { hasText: "fenêtre de contexte pleine" });
 
-  // Le nombre de commandes depend de ce qu'elles impriment : on tape jusqu'a saturation.
+  // Le nombre de commandes dépend de ce qu'elles impriment : on tape jusqu'à saturation.
   await Array.from({ length: 12 }).reduce<Promise<unknown>>((chain) => {
     return chain
       .then(() => {
@@ -196,7 +196,7 @@ test("should start a compaction and empty itself when the gauge is full", async 
   expect(filled, "the gauge restarts from almost zero").toBeLessThanOrEqual(1);
 });
 
-// Compacter prend du temps chez Claude Code, et ca doit se voir ici aussi : la barre se
+// Compacter prend du temps chez Claude Code, et ça doit se voir ici aussi : la barre se
 // remplit case par case, elle ne s'affiche pas d'un bloc.
 test("should fill the compaction bar cell by cell over five seconds", async ({ page }) => {
   const cli = await boot(page),
@@ -230,8 +230,8 @@ test("should fill the compaction bar cell by cell over five seconds", async ({ p
   expect(Date.now() - started, "the wait is visible").toBeGreaterThan(4000);
 });
 
-// Le volet de sortie garde un caractere pour dire l'attente, jamais une barre : la barre
-// de compaction vit dans la barre d'etat, et nulle part ailleurs.
+// Le volet de sortie garde un caractère pour dire l'attente, jamais une barre : la barre
+// de compaction vit dans la barre d'état, et nulle part ailleurs.
 test("should show no compaction bar in the output pane", async ({ page }) => {
   const cli = await boot(page),
     bar = page.locator("[data-compacting]");
@@ -251,10 +251,10 @@ test("should show no compaction bar in the output pane", async ({ page }) => {
   await expect(page.locator('[data-pane="out"]')).not.toContainText("⣿");
 });
 
-// L'ecran de demarrage prend la forme de la compaction : cases pleines, tete qui tourne,
-// cases vides. Meme taille, meme place, memes durees qu'avant.
+// L'écran de démarrage prend la forme de la compaction : cases pleines, tête qui tourne,
+// cases vides. Même taille, même place, mêmes durées qu'avant.
 test("should draw the boot bar with dots", async ({ page }) => {
-  // Le demarrage dure deux secondes au minimum : la barre est a l'ecran sans qu'on ait a
+  // Le démarrage dure deux secondes au minimum : la barre est à l'écran sans qu'on ait à
   // retarder quoi que ce soit.
   await page.goto("/");
 
@@ -265,8 +265,8 @@ test("should draw the boot bar with dots", async ({ page }) => {
   expect((await barre.textContent()) ?? "").toMatch(/^\[⣿*[⣾⣽⣻⢿⡿⣟⣯⣷]?░*\]$/u);
 });
 
-// Un redemarrage annule la compaction : sinon son resume s'ecrit dans un journal qu'on
-// vient de vider, et sa barre s'affiche par-dessus l'ecran de demarrage.
+// Un redémarrage annule la compaction : sinon son résumé s'écrit dans un journal qu'on
+// vient de vider, et sa barre s'affiche par-dessus l'écran de démarrage.
 test("should cancel the running compaction on a reboot", async ({ page }) => {
   const cli = await boot(page),
     bar = page.locator("[data-compacting]");
@@ -302,8 +302,8 @@ test("should shut down then replay the boot with shutdown", async ({ page }) => 
 });
 
 // Les yeux du mode cupide valent « $$ », qui est un motif de remplacement en JavaScript.
-// Un build qui passe par String.replace avec un remplacement litteral les reduit a « $ ».
-// Ce test s'execute sur l'artefact servi, la ou les tests unitaires lisent la source.
+// Un build qui passe par String.replace avec un remplacement littéral les réduit à « $ ».
+// Ce test s'exécute sur l'artefact servi, là où les tests unitaires lisent la source.
 test("should keep the eyes of the greedy mode through the build", async ({ request }) => {
   const page = await request.get("/"),
     servi = await page.text();
@@ -313,7 +313,7 @@ test("should keep the eyes of the greedy mode through the build", async ({ reque
 });
 
 // Le glitch : cinq secondes d'affichage corrompu. Le calque en est la seule trace stable,
-// puisque le texte, lui, change a chaque passe.
+// puisque le texte, lui, change à chaque passe.
 const layer = (page: Page) => {
     return page.locator("[data-glitch-layer]");
   },
@@ -336,7 +336,7 @@ test("should corrupt the display after five taps on Shift", async ({ page }) => 
   await expect(layer(page)).toHaveCount(0, { timeout: 10_000 });
 });
 
-// La jauge n'entre qu'au deuxieme appui : au premier elle trahirait l'easter egg a
+// La jauge n'entre qu'au deuxième appui : au premier elle trahirait l'easter egg à
 // quiconque effleure la touche.
 test("should show the shift gauge only from the second tap", async ({ page }) => {
   await boot(page);
@@ -349,8 +349,8 @@ test("should show the shift gauge only from the second tap", async ({ page }) =>
   await expect(page.locator("[data-shift]")).toContainText("2/5");
 });
 
-// Une majuscule tapee dans la commande ne doit jamais declencher l'egg : sans ce
-// garde-fou, ecrire « Benjamin » corrompait la page.
+// Une majuscule tapée dans la commande ne doit jamais déclencher l'egg : sans ce
+// garde-fou, écrire « Benjamin » corrompait la page.
 test("should ignore the Shift taps typed in the command line", async ({ page }) => {
   const cli = await boot(page);
 
@@ -370,8 +370,8 @@ test("should add the katakana rain on matrix", async ({ page }) => {
   await expect(page.locator("[data-glitch-column]").first()).toBeVisible();
 });
 
-// Le refus de sudo doit se lire avant que l'ecran parte. Le compte se lit sans attendre :
-// une assertion qui reessaie passerait aussi bien si la panne partait tout de suite.
+// Le refus de sudo doit se lire avant que l'écran parte. Le compte se lit sans attendre :
+// une assertion qui réessaie passerait aussi bien si la panne partait tout de suite.
 test("should let the sudo refusal be read before the glitch", async ({ page }) => {
   const cli = await boot(page);
 
@@ -384,7 +384,7 @@ test("should let the sudo refusal be read before the glitch", async ({ page }) =
 
 // La permutation des couleurs passe par une variable, parce que le conteneur des volets
 // porte un style en ligne qui bat la feuille. Elle est partie une fois sans que rien ne le
-// signale : ce test lit l'animation reellement calculee.
+// signale : ce test lit l'animation réellement calculée.
 test("should really run the theme permutation on the panes", async ({ page }) => {
   const cli = await boot(page);
 
@@ -399,8 +399,8 @@ test("should really run the theme permutation on the panes", async ({ page }) =>
     .toBeGreaterThan(0);
 });
 
-// Une touche maintenue se repete. Sans garde, garder Shift enfonce armait l'egg tout seul,
-// et « il ne se declenche jamais tout seul » cessait d'etre vrai.
+// Une touche maintenue se répète. Sans garde, garder Shift enfoncé armait l'egg tout seul,
+// et « il ne se déclenche jamais tout seul » cessait d'être vrai.
 test("should not arm the glitch when Shift is held down", async ({ page }) => {
   await boot(page);
   await page.locator("[data-journal]").focus();
@@ -412,7 +412,7 @@ test("should not arm the glitch when Shift is held down", async ({ page }) => {
   expect(await layer(page).count(), "holding Shift must not corrupt the display").toBe(0);
 });
 
-// Une panne chasse la precedente, minuteur compris : sans cela le glitch de sudo repartait
+// Une panne chasse la précédente, minuteur compris : sans cela le glitch de sudo repartait
 // au milieu de celui de matrix, et emportait la pluie avec lui.
 test("should drop the pending sudo glitch when another one starts", async ({ page }) => {
   const cli = await boot(page);
@@ -427,7 +427,7 @@ test("should drop the pending sudo glitch when another one starts", async ({ pag
   await expect(page.locator("[data-glitch-column]").first()).toBeVisible();
 });
 
-// Le texte d'origine est mis en cache, et rendu tel quel a la fin : cinq secondes de
+// Le texte d'origine est mis en cache, et rendu tel quel à la fin : cinq secondes de
 // panne ne doivent pas coûter une lettre.
 test("should give the pane its text back once the glitch is over", async ({ page }) => {
   const cli = await boot(page),
@@ -441,8 +441,8 @@ test("should give the pane its text back once the glitch is over", async ({ page
   await expect(pane).toHaveText(before ?? "");
 });
 
-// Le mouvement reduit court-circuite tout : un lecteur d'ecran relirait sinon cinq
-// secondes de charabia sans avoir rien demande.
+// Le mouvement réduit court-circuite tout : un lecteur d'écran relirait sinon cinq
+// secondes de charabia sans avoir rien demandé.
 test("should corrupt nothing when reduced motion is on", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
 
@@ -457,8 +457,8 @@ test("should corrupt nothing when reduced motion is on", async ({ page }) => {
   await expect(pane).toHaveText(before ?? "");
 });
 
-// « role="status" » porte la meme semantique qu'« aria-live ». Le texte est echantillonne
-// au rythme du glitch : une assertion qui reessaie passerait aussi bien une fois la panne
+// « role="status" » porte la même sémantique qu'« aria-live ». Le texte est échantillonné
+// au rythme du glitch : une assertion qui réessaie passerait aussi bien une fois la panne
 // finie.
 test("should spare the live region marked with a role", async ({ page }) => {
   const cli = await boot(page),

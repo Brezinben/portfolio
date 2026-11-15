@@ -9,12 +9,12 @@ import {
 import assert from "node:assert/strict";
 import { it } from "node:test";
 
-// La seed temoin. Son morceau est publie des que quelqu'un la note : les valeurs
-// ci-dessous sont donc un contrat, pas un echantillon.
+// La seed témoin. Son morceau est publié dès que quelqu'un la note : les valeurs
+// ci-dessous sont donc un contrat, pas un échantillon.
 const WITNESS = 8_093_451_772_146;
 
-// L'ordre des tirages EST le format de la seed. Ce test tombe le jour ou un tirage se
-// deplace, et c'est alors une decision a prendre, pas un accident a decouvrir en ecoutant.
+// L'ordre des tirages EST le format de la seed. Ce test tombe le jour où un tirage se
+// déplace, et c'est alors une décision à prendre, pas un accident à découvrir en écoutant.
 it("should derive the frozen parameters of the witness seed", () => {
   const params = derive(WITNESS);
 
@@ -38,7 +38,7 @@ it("should derive the frozen parameters of the witness seed", () => {
   );
 });
 
-// La silhouette sort de la seed elle aussi : changer de seed change l'image figee, pas
+// La silhouette sort de la seed elle aussi : changer de seed change l'image figée, pas
 // seulement le son. Vingt-quatre hauteurs, toutes dans la bande de lecture du spectre.
 it("should derive the frozen silhouette of the witness seed", () => {
   const { silhouette } = derive(WITNESS);
@@ -51,14 +51,14 @@ it("should derive the frozen silhouette of the witness seed", () => {
   }
 });
 
-// C'est la propriete centrale de la commande : meme seed, meme morceau, a la note pres.
+// C'est la propriété centrale de la commande : même seed, même morceau, à la note près.
 it("should derive the very same parameters twice", () => {
   assert.deepEqual(derive(WITNESS), derive(WITNESS));
   assert.deepEqual(derive(1), derive(1));
 });
 
 // Deux seeds voisines ne doivent pas rendre deux morceaux voisins, sinon le champ de
-// saisie n'aurait aucun interet : on taperait n'importe quoi et on entendrait la meme chose.
+// saisie n'aurait aucun intérêt : on taperait n'importe quoi et on entendrait la même chose.
 it("should derive a different tune from a neighbouring seed", () => {
   const near = [WITNESS + 1, WITNESS + 2, WITNESS + 3].map((seed) => {
     return derive(seed).silhouette[0];
@@ -67,7 +67,7 @@ it("should derive a different tune from a neighbouring seed", () => {
   assert.equal(new Set(near).size, 3, "three seeds, three silhouettes");
 });
 
-// Le generateur doit rendre une fraction, jamais 1 : une valeur de 1 ferait sortir tout
+// Le générateur doit rendre une fraction, jamais 1 : une valeur de 1 ferait sortir tout
 // tirage « liste[floor(r * longueur)] » de ses bornes.
 it("should roll inside zero and one", () => {
   const roll = rng(12_345);
@@ -79,7 +79,7 @@ it("should roll inside zero and one", () => {
   }
 });
 
-// Un tirage de hauteur passe toujours par un degre : c'est ce qui interdit au sequenceur de
+// Un tirage de hauteur passe toujours par un degré : c'est ce qui interdit au séquenceur de
 // tomber en dehors de la gamme, quel que soit l'accord en cours.
 it("should keep every pitch inside the scale", () => {
   const { root, scale } = derive(WITNESS);
@@ -91,8 +91,8 @@ it("should keep every pitch inside the scale", () => {
   }
 });
 
-// Le chiffrage decide de la casse par la tierce reelle. En pentatonique, la tierce de
-// chaque degre mesure quatre demi-tons ou plus : la grille s'y annonce donc en capitales.
+// Le chiffrage décide de la casse par la tierce réelle. En pentatonique, la tierce de
+// chaque degré mesure quatre demi-tons ou plus : la grille s'y annonce donc en capitales.
 it("should figure the chords from the real third", () => {
   const major = derive(WITNESS);
 
@@ -105,8 +105,8 @@ it("should tune the middle A to 440 hertz", () => {
   assert.equal(midiToHertz(81), 880);
 });
 
-// Une ligne affichee est une valeur que le sequenceur lit vraiment. Le volet decrit un
-// morceau : il doit decrire celui qu'on entend.
+// Une ligne affichée est une valeur que le séquenceur lit vraiment. Le volet décrit un
+// morceau : il doit décrire celui qu'on entend.
 it("should describe the tune with five lines", () => {
   const params = derive(WITNESS),
     lines = radioLines(params);

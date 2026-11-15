@@ -3,12 +3,12 @@ import { expect, test } from "@playwright/test";
 import { answersAround, boxOf } from "../helpers/box.ts";
 import { ringRatios } from "../helpers/contrast.ts";
 
-// La poignee ne s'affiche que si le journal deborde : une tige a deplacer dans le vide
-// ne servirait a rien. « help » ne remplit plus le journal, il reclame le resultat : une
-// commande introuvable y laisse deux lignes, et c'est elle qui le fait deborder.
+// La poignée ne s'affiche que si le journal déborde : une tige à déplacer dans le vide
+// ne servirait à rien. « help » ne remplit plus le journal, il réclame le résultat : une
+// commande introuvable y laisse deux lignes, et c'est elle qui le fait déborder.
 const fill = async (cli: Locator) => {
     for (const _ of Array.from({ length: 6 })) {
-      // Les commandes doivent s'enchainer : les paralleliser ne remplirait pas le journal.
+      // Les commandes doivent s'enchaîner : les paralléliser ne remplirait pas le journal.
       // oxlint-disable-next-line no-await-in-loop
       await cli.fill("xyzzy");
       // oxlint-disable-next-line no-await-in-loop
@@ -22,7 +22,7 @@ const fill = async (cli: Locator) => {
     return page.getByLabel("Commande");
   };
 
-// L'experience terminale tient a une hauteur fixe : la page ne doit jamais grandir.
+// L'expérience terminale tient à une hauteur fixe : la page ne doit jamais grandir.
 test("should never grow the page past the window height", async ({ page }) => {
   const cli = await boot(page);
 
@@ -43,8 +43,8 @@ test("should never grow the page past the window height", async ({ page }) => {
   expect(overflow, "no vertical overflow").toBeLessThanOrEqual(1);
 });
 
-// Sur deux colonnes le journal tient dans 119 px, et la reponse de help en fait sept fois
-// plus. Le resultat a la place, il la prend : le journal ne garde que l'echo.
+// Sur deux colonnes le journal tient dans 119 px, et la réponse de help en fait sept fois
+// plus. Le résultat a la place, il la prend : le journal ne garde que l'écho.
 test("should show the whole help answer in the result", async ({ page }) => {
   const cli = await boot(page);
 
@@ -102,7 +102,7 @@ test("should name in the status bar the command that holds the result", async ({
   await expect(page.locator('[data-pane="main"]')).toContainText("~/help");
 });
 
-// Le resultat appartient a la derniere demande : ouvrir une section le reprend.
+// Le résultat appartient à la dernière demande : ouvrir une section le reprend.
 test("should take the result back from the command when a section opens", async ({ page }) => {
   const cli = await boot(page);
 
@@ -180,11 +180,11 @@ test("should show an indicator while content remains below", async ({ page }) =>
   await expect(page.locator("[data-more]")).toBeVisible();
 });
 
-// Les libelles de mission tenaient sur une ligne avec leur etat, et trois se coupaient.
-// Le nom prend sa ligne, l'etat passe dessous, comme les sections juste au-dessus.
+// Les libelles de mission tenaient sur une ligne avec leur état, et trois se coupaient.
+// Le nom prend sa ligne, l'état passe dessous, comme les sections juste au-dessus.
 test("should never cut a label of the left pane", async ({ page }) => {
-  // Sous 1150 px le volet gauche touche son plancher : c'est la que « numérique
-  // responsable » se coupait. Il passe desormais a la ligne.
+  // Sous 1150 px le volet gauche touche son plancher : c'est là que « numérique
+  // responsable » se coupait. Il passe désormais à la ligne.
   await page.setViewportSize({ height: 900, width: 1024 });
   await boot(page);
 
@@ -201,8 +201,8 @@ test("should never cut a label of the left pane", async ({ page }) => {
   expect(cut, "nothing is cut in the left pane").toEqual([]);
 });
 
-// Les trois volets ont des bases fixes : le contenu d'une section ne decide plus de leur
-// largeur. Une base tiree du contenu faisait sauter la mise en page a chaque changement.
+// Les trois volets ont des bases fixes : le contenu d'une section ne décide plus de leur
+// largeur. Une base tirée du contenu faisait sauter la mise en page à chaque changement.
 test("should keep the pane widths from one section to the next", async ({ page }) => {
   await boot(page);
 
@@ -310,9 +310,9 @@ test("should resize the log with the keyboard and keep its height", async ({ pag
   expect(await height(), "the height survives a reload").toBe(after);
 });
 
-// Une hauteur de journal reglee sur une autre fenetre survit dans le stockage. Trop
-// haute, elle ecrasait le resultat a zero et faisait deborder le volet central : la
-// reponse de « contact » arrivait coupee.
+// Une hauteur de journal réglée sur une autre fenêtre survit dans le stockage. Trop
+// haute, elle écrasait le résultat à zéro et faisait déborder le volet central : la
+// réponse de « contact » arrivait coupée.
 test("should give the result its room back when a too tall log meets a new section", async ({
   page,
 }) => {
@@ -381,8 +381,8 @@ test("should give the log handle a 24 px target", async ({ page }) => {
   ).toEqual([true, true]);
 });
 
-// Le Chromium de Playwright masque les barres par defaut : sans ce retrait, la mesure
-// serait toujours zero, meme quand la feuille les cache.
+// Le Chromium de Playwright masque les barres par défaut : sans ce retrait, la mesure
+// serait toujours zéro, même quand la feuille les cache.
 test.use({ launchOptions: { ignoreDefaultArgs: ["--hide-scrollbars"] } });
 
 test("should show a scrollbar in a zone that scrolls", async ({ page }) => {

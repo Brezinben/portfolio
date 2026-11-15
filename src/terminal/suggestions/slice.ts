@@ -6,16 +6,16 @@ import { type Shell, slice } from "../shell.ts";
 import { THEMES } from "../settings.ts";
 import { windowTop } from "../suggest.ts";
 
-// Ce que les propositions gardent dans l'etat du composant.
+// Ce que les propositions gardent dans l'état du composant.
 export interface SuggestionsState {
   commands: string[];
   recallAt: number;
   sugg: string[];
   suggAt: number;
   suggFrag: string;
-  // La liste vient d'etre calculee par une frappe, et non deplacee par une fleche. Seule
-  // une liste fraiche s'anime : voir surgir chaque entree revelee par la fenetre qui glisse
-  // transformerait un deplacement en clignotement.
+  // La liste vient d'être calculée par une frappe, et non déplacée par une flèche. Seule
+  // une liste fraîche s'anime : voir surgir chaque entrée révélée par la fenêtre qui glisse
+  // transformerait un déplacement en clignotement.
   suggFresh: boolean;
   suggHead: string;
   suggOpen: boolean;
@@ -40,8 +40,8 @@ export interface SuggestionsApi {
 
 export const suggestionsSlice = () => {
   return slice<SuggestionsApi>({
-    // La liste se rouvre sur le mot suivant : une commande completee qui attend un
-    // argument montre ce qu'elle attend, sans qu'on ait a taper une lettre pour le voir.
+    // La liste se rouvre sur le mot suivant : une commande complétée qui attend un
+    // argument montre ce qu'elle attend, sans qu'on ait à taper une lettre pour le voir.
     applySugg(this: Shell, index: number) {
       this.input = `${this.rebuild(this.sugg[index] ?? "")} `;
       this.closeSugg();
@@ -65,7 +65,7 @@ export const suggestionsSlice = () => {
 
       this.unlock("tab");
 
-      // Une proposition choisie a la fleche doit s'appliquer telle quelle : c'est
+      // Une proposition choisie à la flèche doit s'appliquer telle quelle : c'est
       // pour cela qu'on l'a choisie.
       if (this.sugg.length === 1 || this.suggAt > 0) {
         this.applySugg(this.suggAt);
@@ -75,7 +75,7 @@ export const suggestionsSlice = () => {
 
       const shared = commonPrefix(this.sugg);
 
-      // Tant que le prefixe commun avance, il avance : c'est ce que Tab sait faire de
+      // Tant que le préfixe commun avance, il avance : c'est ce que Tab sait faire de
       // moins arbitraire.
       if (shared.length > this.suggFrag.length) {
         this.input = this.rebuild(shared);
@@ -109,8 +109,8 @@ export const suggestionsSlice = () => {
     },
 
     // Le doigt valide en un geste : la proposition part sans passer par la touche
-    // entree. Un premier mot qui attend un argument ouvre sa liste, sinon la commande
-    // partirait incomplete.
+    // entrée. Un premier mot qui attend un argument ouvre sa liste, sinon la commande
+    // partirait incomplète.
     pickSugg(this: Shell, index: number, pointer: PointerEvent) {
       this.applySugg(index);
 
@@ -118,7 +118,7 @@ export const suggestionsSlice = () => {
         return;
       }
 
-      // Une liste rouverte veut dire que la commande attend encore un mot, a n'importe
+      // Une liste rouverte veut dire que la commande attend encore un mot, à n'importe
       // quel niveau. Sans cette garde, « slime expression » partirait incomplète.
       if (this.suggOpen) {
         return;
@@ -134,8 +134,8 @@ export const suggestionsSlice = () => {
     },
 
     // La flèche haut rappelle la commande de la section, puis les commandes déjà tapées.
-    // La commande de section n'arrive en tete que tant que rien n'a ete tape : c'est
-    // « la premiere fois dans une section » du journal de conception, pas toujours.
+    // La commande de section n'arrive en tête que tant que rien n'a été tapé : c'est
+    // « la première fois dans une section » du journal de conception, pas toujours.
     recall(this: Shell, step: number) {
       const pool =
           this.commands.length > 0 ? [...this.commands, this.current.cmd] : [this.current.cmd],
@@ -144,14 +144,14 @@ export const suggestionsSlice = () => {
       this.recallAt = next;
       this.input = next < 0 ? "" : (pool[next] ?? "");
 
-      // Une fleche qui ne ramene rien n'a rien rappele : la ligne vide ne compte pas.
+      // Une flèche qui ne ramène rien n'a rien rappelé : la ligne vide ne compte pas.
       if (next >= 0) {
         this.unlock("history");
       }
     },
 
-    // La fleche droite valide la proposition choisie, comme la tabulation. Curseur
-    // deja en fin de ligne, elle n'a rien d'autre a faire.
+    // La flèche droite valide la proposition choisie, comme la tabulation. Curseur
+    // déjà en fin de ligne, elle n'a rien d'autre à faire.
     right(this: Shell, event: KeyboardEvent) {
       if (!this.suggOpen) {
         return;
@@ -182,9 +182,9 @@ export const suggestionsSlice = () => {
       this.suggOpen = result.hits.length > 0 && this.input !== "";
     },
 
-    // Sans proposition, Tab garde son role de navigation : avaler Tab enferme le visiteur
-    // dans la ligne. Une ligne vide garde tout le vocabulaire en reserve, et n'en propose
-    // rien. Shift+Tab n'est jamais une completion.
+    // Sans proposition, Tab garde son rôle de navigation : avaler Tab enferme le visiteur
+    // dans la ligne. Une ligne vide garde tout le vocabulaire en réserve, et n'en propose
+    // rien. Shift+Tab n'est jamais une complétion.
     tab(this: Shell, event: KeyboardEvent) {
       if (event.shiftKey || this.input === "" || this.sugg.length === 0) {
         return;

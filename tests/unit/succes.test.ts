@@ -45,7 +45,7 @@ const read = (name: string) => {
     return effect?.type === "track" ? unlockedBy(String(effect.props.cmd)) : undefined;
   };
 
-// Deux succes qui partagent une cle n'en font qu'un : le second ne se debloque jamais, et
+// Deux succès qui partagent une clé n'en font qu'un : le second ne se débloque jamais, et
 // rien d'autre ne le signale.
 it("should give every achievement its own key", () => {
   assert.equal(

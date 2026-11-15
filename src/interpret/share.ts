@@ -1,6 +1,6 @@
-// Le partage : les cibles declarees par le contenu, et le durcissement de leurs URL.
+// Le partage : les cibles déclarées par le contenu, et le durcissement de leurs URL.
 
-// La cible de partage declaree dans le contenu.
+// La cible de partage déclarée dans le contenu.
 export interface ShareTarget {
   id: string;
   kind: string;
@@ -15,7 +15,7 @@ export interface Share {
   url?: string;
 }
 
-// Les jetons sont substitues dans les URL de partage declarees par content.json : une
+// Les jetons sont substitués dans les URL de partage déclarées par content.json : une
 // nouvelle cible s'ajoute sans toucher au code.
 export const fillTokens = (template: string, share: Share): string => {
   return template

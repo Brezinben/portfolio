@@ -63,9 +63,9 @@ test("should complete up to the common prefix on tab", async ({ page }) => {
   await expect(list(page)).toContainText("cowsay");
 });
 
-// La liste rend la premiere ligne « aria-selected ». Refuser de la prendre rendait la
-// tabulation muette des que le prefixe commun n'apportait rien : « / » met un egg en tete,
-// et Tab ne faisait rien. La tete est le premier egg dans l'ordre alphabetique.
+// La liste rend la première ligne « aria-selected ». Refuser de la prendre rendait la
+// tabulation muette dès que le préfixe commun n'apportait rien : « / » met un egg en tête,
+// et Tab ne faisait rien. La tête est le premier egg dans l'ordre alphabétique.
 test("should take the leading line on tab when the common prefix adds nothing", async ({
   page,
 }) => {
@@ -175,7 +175,7 @@ test.describe("with touch input", () => {
   });
 
   // Le second niveau doit se toucher comme le premier : la liste rouvre, la commande ne
-  // part pas incomplete. C'est la ou pickSugg ne regardait que le premier mot.
+  // part pas incomplète. C'est là où pickSugg ne regardait que le premier mot.
   test("should open the next level without running when a sub-command is tapped", async ({
     page,
   }) => {
@@ -262,9 +262,9 @@ test("should keep that line silent for a suggestion that comes from the content"
   await expect(page.locator("[data-sugg-hint]")).toHaveCount(0);
 });
 
-// La liste rouverte sur un argument neuf n'a aucun fragment tape : aucun prefixe commun ne
-// peut la faire avancer. Sans ce comportement, il fallait une fleche bas avant chaque
-// tabulation, a chaque niveau.
+// La liste rouverte sur un argument neuf n'a aucun fragment tapé : aucun préfixe commun ne
+// peut la faire avancer. Sans ce comportement, il fallait une flèche bas avant chaque
+// tabulation, à chaque niveau.
 test("should select the leading line on tab for a new argument", async ({ page }) => {
   const cli = await boot(page);
 

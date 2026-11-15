@@ -21,9 +21,9 @@ test("should keep the first load inside the weight budget", async ({ page }) => 
   await expect(page.locator("[data-boot]")).toHaveCount(0, { timeout: 10_000 });
 
   const measured = await page.evaluate(() => {
-      // SAFETY: la specification garantit PerformanceNavigationTiming pour l'entree
+      // SAFETY: la spécification garantit PerformanceNavigationTiming pour l'entrée
       // « navigation » et PerformanceResourceTiming pour « resource ». C'est la
-      // declaration de la lib DOM qui ne sait pas l'exprimer, pas le contrat qui manque.
+      // déclaration de la lib DOM qui ne sait pas l'exprimer, pas le contrat qui manque.
       const [navigation] = performance.getEntriesByType(
           "navigation",
         ) as PerformanceNavigationTiming[],
@@ -74,7 +74,7 @@ test("should pull only one mascot image on the first load", async ({ page }) => 
   await expect(page.locator("[data-boot]")).toHaveCount(0, { timeout: 10_000 });
 
   const images = await page.evaluate(() => {
-    // SAFETY: la specification garantit PerformanceResourceTiming pour « resource ».
+    // SAFETY: la spécification garantit PerformanceResourceTiming pour « resource ».
     const resources = performance.getEntriesByType("resource") as PerformanceResourceTiming[];
 
     return resources
@@ -94,14 +94,14 @@ test("should pull only one mascot image on the first load", async ({ page }) => 
   expect(images[0]?.ko, `measure: ${JSON.stringify(images)}`).toBeLessThanOrEqual(FUSION_KO);
 });
 
-// Le cube et le pingouin pesent plus que le slime, et presque personne ne tapera la
-// commande. Leur feuille ne doit partir qu'a la demande.
+// Le cube et le pingouin pèsent plus que le slime, et presque personne ne tapera la
+// commande. Leur feuille ne doit partir qu'à la demande.
 test("should not send the other shapes on the first load", async ({ page }) => {
   await page.goto("/");
   await expect(page.locator("[data-boot]")).toHaveCount(0, { timeout: 10_000 });
 
   const tirees = await page.evaluate(() => {
-    // SAFETY: la specification garantit PerformanceResourceTiming pour « resource ».
+    // SAFETY: la spécification garantit PerformanceResourceTiming pour « resource ».
     const resources = performance.getEntriesByType("resource") as PerformanceResourceTiming[];
 
     return resources
@@ -147,7 +147,7 @@ test("should keep the text version inside its weight budget", async ({ page }) =
   });
 
   const measured = await page.evaluate(() => {
-      // SAFETY: la specification garantit PerformanceNavigationTiming pour l'entree
+      // SAFETY: la spécification garantit PerformanceNavigationTiming pour l'entrée
       // « navigation » et PerformanceResourceTiming pour « resource ».
       const [navigation] = performance.getEntriesByType(
           "navigation",
@@ -181,7 +181,7 @@ test("should keep the text version inside its weight budget", async ({ page }) =
 
 // La page d'erreur est servie sur toute adresse inconnue : c'est la page que l'on paie le
 // plus souvent sans l'avoir voulu. Elle tire la police et la feuille de la mascotte, toutes
-// deux deja en cache depuis le reste du site. Ce plafond garde la mesure a froid.
+// deux déjà en cache depuis le reste du site. Ce plafond garde la mesure à froid.
 test("should keep the error page inside its weight budget", async ({ page }) => {
   await page.goto("/une/route/qui-n-existe-pas");
   await page.evaluate(() => {
@@ -189,7 +189,7 @@ test("should keep the error page inside its weight budget", async ({ page }) => 
   });
 
   const measured = await page.evaluate(() => {
-      // SAFETY: la specification garantit PerformanceNavigationTiming pour l'entree
+      // SAFETY: la spécification garantit PerformanceNavigationTiming pour l'entrée
       // « navigation » et PerformanceResourceTiming pour « resource ».
       const [navigation] = performance.getEntriesByType(
           "navigation",
@@ -217,6 +217,6 @@ test("should keep the error page inside its weight budget", async ({ page }) => 
 
   expect(totalKo, `detail: ${JSON.stringify(measured.detail)}`).toBeLessThanOrEqual(ERROR_KO);
 
-  // Ni contenu, ni point d'entree, ni mesure d'audience : la page se suffit.
+  // Ni contenu, ni point d'entrée, ni mesure d'audience : la page se suffit.
   expect(measured.tiers).toBe(0);
 });

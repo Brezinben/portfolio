@@ -334,7 +334,7 @@ export const achievementsSlice = () => {
         return;
       }
 
-      // « une commande tapee, pas cliquee » : une trouvaille lancee a la souris ne compte pas.
+      // « une commande tapée, pas cliquée » : une trouvaille lancée à la souris ne compte pas.
       if (source.typed) {
         this.unlock("first-command");
       }

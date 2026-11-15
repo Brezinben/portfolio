@@ -27,8 +27,8 @@ const ROOT = resolve(
   // Le budget de poids se mesure après compression. Sans ces types compressés ici, le test
   // du budget mesurerait deux à quatre fois le poids réel et ne voudrait plus rien dire.
   COMPRESSIBLE = new Set([".css", ".html", ".js", ".json", ".svg", ".txt"]),
-  // Une extension libre dans une table fermee : la table garde le type que l'inference
-  // lui donne, et l'appelant recoit undefined quand l'extension n'y est pas.
+  // Une extension libre dans une table fermée : la table garde le type que l'inférence
+  // lui donne, et l'appelant reçoit undefined quand l'extension n'y est pas.
   lookup = <V>(table: Readonly<Record<string, V>>, key: string): V | undefined => {
     return table[key];
   },
@@ -90,8 +90,8 @@ const ROOT = resolve(
     response.writeHead(status, { "content-length": size, "content-type": type });
     stream.pipe(response);
   },
-  // Un seul point d'envoi pour les deux passes : l'adresse demandee, puis la page
-  // d'erreur. Il rend faux quand le fichier n'est pas la, sans rien ecrire.
+  // Un seul point d'envoi pour les deux passes : l'adresse demandée, puis la page
+  // d'erreur. Il rend faux quand le fichier n'est pas là, sans rien écrire.
   serve = async ({
     request,
     response,
@@ -120,7 +120,7 @@ const ROOT = resolve(
     return true;
   },
   respond = async (request: IncomingMessage, response: ServerResponse) => {
-    // Node ne garantit pas l'URL sur une requete mal formee : sans chemin, rien a servir.
+    // Node ne garantit pas l'URL sur une requête mal formée : sans chemin, rien à servir.
     const target = request.url === undefined ? undefined : resolveTarget(request.url);
 
     if (target !== undefined && (await serve({ request, response, status: OK, target }))) {

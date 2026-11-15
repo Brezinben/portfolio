@@ -3,7 +3,7 @@
 import { PANES, VERTICAL } from "../settings.ts";
 import { type Shell, slice } from "../shell.ts";
 
-// Ce que le clavier garde dans l'etat du composant. Le focus est memorise par volet.
+// Ce que le clavier garde dans l'état du composant. Le focus est mémorisé par volet.
 export interface KeyboardState {
   focusAt: Record<string, number>;
   pane: string;
@@ -37,7 +37,7 @@ const rowMove = (cells: HTMLElement[], at: number, key: string): boolean => {
   return true;
 };
 
-// Dans une liste a une colonne, la fleche droite valide et descend vers le volet
+// Dans une liste à une colonne, la flèche droite valide et descend vers le volet
 // suivant : c'est ce qu'un terminal fait.
 const listMove = (selector: string, key: string, activate: (at: number) => void): boolean => {
   const items = [...document.querySelectorAll<HTMLElement>(selector)],
@@ -82,7 +82,7 @@ const gridMove = (selector: string, key: string) => {
   }
 
   // SAFETY: « at » vient de cells.indexOf et le cas -1 est sorti juste au-dessus,
-  // donc l'index designe une cellule de la liste.
+  // donc l'index désigne une cellule de la liste.
   const from = rect(cells[at] as HTMLElement),
     beyond = cells.filter((cell) => {
       return key === "ArrowDown" ? rect(cell).top > from.top + 1 : rect(cell).top < from.top - 1;
@@ -112,7 +112,7 @@ const gridMove = (selector: string, key: string) => {
   }
 
   // Plus rien dans cette colonne : le curseur prend la cellule la plus proche de la
-  // premiere ligne atteignable, plutot que de rester sur place.
+  // première ligne atteignable, plutôt que de rester sur place.
   const tops = beyond.map((cell) => {
       return rect(cell).top;
     }),
@@ -152,8 +152,8 @@ const globalShortcut = (shell: Shell, event: KeyboardEvent): boolean => {
 // Les touches que le gestionnaire de la page ne traite pas : un modificateur, une touche
 // déjà consommée, Entrée répétée, la fin du boot, une modale, une saisie.
 const passesKey = (shell: Shell, event: KeyboardEvent): boolean => {
-  // Un element qui traite sa touche l'a deja consommee. Sans cette sortie, la
-  // fleche de la poignee deplace aussi le focus de volet.
+  // Un élément qui traite sa touche l'a déjà consommée. Sans cette sortie, la
+  // flèche de la poignée déplace aussi le focus de volet.
   if (event.altKey || event.ctrlKey || event.metaKey || event.defaultPrevented) {
     return true;
   }
@@ -167,7 +167,7 @@ const passesKey = (shell: Shell, event: KeyboardEvent): boolean => {
     return true;
   }
 
-  // La touche qui abrege le boot s'arrete la : sans cette sortie, elle partirait
+  // La touche qui abrège le boot s'arrête là : sans cette sortie, elle partirait
   // aussi dans la saisie, et le visiteur taperait une commande sans le vouloir.
   if (shell.skipBoot()) {
     event.preventDefault();
@@ -212,8 +212,8 @@ const characterKey = (shell: Shell, event: KeyboardEvent): boolean => {
     return true;
   }
 
-  // La bascule ne coupe que les touches de caractere : les fleches restent la
-  // navigation elle-meme, pas un raccourci.
+  // La bascule ne coupe que les touches de caractère : les flèches restent la
+  // navigation elle-même, pas un raccourci.
   if (shell.shortcuts && event.key === "/") {
     event.preventDefault();
     shell.$refs.cli?.focus();
@@ -233,7 +233,7 @@ const characterKey = (shell: Shell, event: KeyboardEvent): boolean => {
 
 const navigationKey = (shell: Shell, event: KeyboardEvent): void => {
   // Chaque zone a sa logique. La stack est une grille, les sections et la frise
-  // sont des listes ou la fleche droite valide, le reste change de volet.
+  // sont des listes où la flèche droite valide, le reste change de volet.
   const handled =
     gridMove("[data-tech]", event.key) ||
     listMove('[data-ctl="nav"]', event.key, (at) => {
@@ -255,7 +255,7 @@ const navigationKey = (shell: Shell, event: KeyboardEvent): void => {
     return;
   }
 
-  // Une region qui defile garde ses fleches verticales : c'est pour les lire qu'elle
+  // Une région qui défile garde ses flèches verticales : c'est pour les lire qu'elle
   // prend le focus.
   if (VERTICAL.has(event.key) && isScrollRegion(event.target)) {
     return;
@@ -300,7 +300,7 @@ export const keyboardSlice = () => {
       entries[this.focusAt[pane] ?? 0]?.focus();
     },
 
-    // Le volet courant se lit sur le focus : Tab et la souris deplacent le focus sans
+    // Le volet courant se lit sur le focus : Tab et la souris déplacent le focus sans
     // passer par focusPane.
     moveInPane(this: Shell, step: number) {
       const pane = paneOf(document.activeElement) ?? this.pane,

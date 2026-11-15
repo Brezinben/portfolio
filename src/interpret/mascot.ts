@@ -1,7 +1,7 @@
-// La mascotte vue de l'interpreteur : son vocabulaire, et la commande qui la pilote.
+// La mascotte vue de l'interpréteur : son vocabulaire, et la commande qui la pilote.
 //
-// « OFFERED » et « ACTIVITIES » ont un lecteur distant, la completion : elle propose ce
-// que la commande accepte. Les restreindre ici casserait l'autocompletion sans bruit.
+// « OFFERED » et « ACTIVITIES » ont un lecteur distant, la complétion : elle propose ce
+// que la commande accepte. Les restreindre ici casserait l'autocomplétion sans bruit.
 
 import { type Effect, type Expression, say } from "./effects.ts";
 import { type Line, done, failed, info, muted, offer } from "./lines.ts";
@@ -58,15 +58,15 @@ const dozing: Told = {
   ],
 };
 
-// La mascotte absente, occupee ou endormie refuse « /slime », quel que soit l'argument.
-// Chaque etat a sa phrase.
+// La mascotte absente, occupée ou endormie refuse « /slime », quel que soit l'argument.
+// Chaque état a sa phrase.
 const REFUSED = { asleep: dozing, away: absent, busy: changing };
 
-// Quatre etats possibles, un seul a la fois : la coquille dit lequel plutot que de passer
-// trois booleens dont la plupart des combinaisons n'existent pas.
+// Quatre états possibles, un seul à la fois : la coquille dit lequel plutôt que de passer
+// trois booléens dont la plupart des combinaisons n'existent pas.
 export const slime = (argument: string, name: string, mascot: Context["mascot"]): Told => {
-  // Annoncer « le slime explose » pendant qu'il est deja parti fait mentir le journal :
-  // la coquille avale le geste, la ligne reste. Endormie, elle avale tout de meme.
+  // Annoncer « le slime explose » pendant qu'il est déjà parti fait mentir le journal :
+  // la coquille avale le geste, la ligne reste. Endormie, elle avale tout de même.
   const refused = lookup(REFUSED, mascot);
 
   if (refused) {
@@ -109,7 +109,7 @@ export const slime = (argument: string, name: string, mascot: Context["mascot"])
   }
 
   // « /slime happy » reste un raccourci : il marche, mais l'aide annonce le chemin long,
-  // symetrique de « /slime activity <nom> ».
+  // symétrique de « /slime activity <nom> ».
   if (!isExpression(argument)) {
     return {
       effects: [{ type: "usage" }],

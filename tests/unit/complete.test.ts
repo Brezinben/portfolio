@@ -9,7 +9,7 @@ const CONTEXT = {
     shareTargets: ["linkedin", "github", "link"],
     themes: ["dark", "light", "noctis"],
   },
-  // Le meme contexte, avec un modele local disponible : la recherche y porte l'etincelle.
+  // Le même contexte, avec un modèle local disponible : la recherche y porte l'étincelle.
   AVEC_MODELE = { ...CONTEXT, model: true },
   hits = (value: string) => {
     return candidates(value, CONTEXT).hits;
@@ -30,9 +30,9 @@ it("should hold the sections and the missions in the vocabulary", () => {
   assert.ok(hits("m-").includes("m-kereis"));
 });
 
-// La completion ne tronque plus : tronquer ici faisait mentir « commonPrefix », qui
-// completait au-dela du prefixe reel des que la onzieme proposition existait. C'est la
-// coquille qui n'en montre que « MAX_SUGGESTIONS » a la fois.
+// La complétion ne tronque plus : tronquer ici faisait mentir « commonPrefix », qui
+// complétait au-delà du préfixe réel dès que la onzième proposition existait. C'est la
+// coquille qui n'en montre que « MAX_SUGGESTIONS » à la fois.
 it("should return every match instead of truncating the list", () => {
   assert.ok(hits("").length > MAX_SUGGESTIONS, "the whole vocabulary comes back");
 });
