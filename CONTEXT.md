@@ -58,8 +58,9 @@ calculer. Un bandeau y devient un objet dessiné là où la ligne brute ne porta
 _Avoid_: ligne rendue, ligne finale.
 
 **Frise** (`timeline`) :
-La liste chronologique du volet central, dans la section parcours. Chaque entrée ouvre la
-fiche d'une mission.
+La liste chronologique du volet central, dans les sections parcours et cursus. Une entrée
+par ligne, de la plus récente à la plus ancienne. Dans parcours, une entrée ouvre la fiche
+de sa mission quand elle en a une. Dans cursus, une entrée n'ouvre rien.
 _Avoid_: parcours, chronologie, historique.
 
 **Ton** (`tone`) :
@@ -81,6 +82,21 @@ _Avoid_: page, onglet, rubrique.
 **Mission** (`mission`) :
 Une expérience professionnelle, présentée en fiche depuis le volet gauche.
 _Avoid_: expérience, poste, projet.
+
+**Cursus** (`cursus`) :
+La section qui liste les formations et les certifications, sous forme de frise.
+S'appelait formation : l'ancre `#formation` et la commande `cd formation` y mènent encore.
+_Avoid_: formation, qualifications, diplômes.
+
+**Formation** (`formation`) :
+Une entrée du cursus obtenue par des études : diplôme ou titre professionnel. Valeur de
+`kind`.
+_Avoid_: diplôme, études.
+
+**Certification** (`certification`) :
+Une entrée du cursus délivrée par un organisme après un examen, avec un lien de
+vérification. Valeur de `kind`.
+_Avoid_: badge (le mot nomme déjà le compteur des succès), attestation, diplôme.
 
 **Étincelle** (`sparkle`) :
 Le caractère `✨` qui suffixe la commande de recherche quand un modèle local répond.
