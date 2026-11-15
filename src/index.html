@@ -94,8 +94,8 @@
        servies en fichier, elles perdraient les huit thèmes. La construction remplace le
        marqueur ci-dessous par « src/assets/succes.svg ». -->
     <!--succes.svg-->
-    <!-- Le lien de saut est le seul contenu hors des volets. Sans ce reperage, il reste
-       hors de tout reperage, et le scan le signale. -->
+    <!-- Le lien de saut est le seul contenu hors des volets. Sans ce repérage, il reste
+       hors de tout repérage, et le scan le signale. -->
     <header>
       <a class="skip" href="texte.html"
         >Aller à la version texte, plus simple avec un lecteur d'écran.</a
@@ -374,8 +374,8 @@
                 <span :data-tone="entry.c" data-log-text x-text="entry.t"></span>
               </p>
             </template>
-            <!-- Quand un modele choisit la reponse, rien ne s'affiche avant qu'il ait choisi.
-               Sans cette ligne, la commande paraitrait sans effet. Meme caractere et meme
+            <!-- Quand un modèle choisit la réponse, rien ne s'affiche avant qu'il ait choisi.
+               Sans cette ligne, la commande paraîtrait sans effet. Même caractère et même
                pulsation que « execution… », pour que les deux attentes se lisent pareil. -->
             <template x-if="thinking">
               <p data-thinking data-log-line>
@@ -410,9 +410,9 @@
                sorti de la piste, et sans capture le navigateur cesserait de livrer
                « pointermove » dès la sortie. Ne la retirez pas. -->
             <template x-if="anim && !reduced">
-              <!-- Les deux adresses ci-dessous ne sont pas des feuilles d'etat : la
-                 construction les reecrit comme tout chemin d'actif, et « loadForm » les y
-                 lit pour tirer la forme demandee sans reconstruire son empreinte. -->
+              <!-- Les deux adresses ci-dessous ne sont pas des feuilles d'état : la
+                 construction les réécrit comme tout chemin d'actif, et « loadForm » les y
+                 lit pour tirer la forme demandée sans reconstruire son empreinte. -->
               <div
                 data-mascot
                 x-ref="mascot"
@@ -457,9 +457,9 @@
               aria-label="Suggestions"
               :data-fresh="suggFresh ? 'true' : 'false'"
             >
-              <!-- « index » compte dans la fenetre, pas dans la liste : « suggTop » le
-                 ramene au rang reel avant toute selection. « --at » garde le rang de
-                 fenetre, sinon le retard d'animation croitrait sans fin. -->
+              <!-- « index » compte dans la fenêtre, pas dans la liste : « suggTop » le
+                 ramène au rang réel avant toute selection. « --at » garde le rang de
+                 fenêtre, sinon le retard d'animation croîtrait sans fin. -->
               <template x-for="(hit, index) in suggWindow" :key="hit">
                 <button
                   type="button"
@@ -476,7 +476,7 @@
                 </button>
               </template>
             </div>
-            <!-- Un nom ne dit pas ce qu'il fait. La ligne decrit la proposition choisie, et
+            <!-- Un nom ne dit pas ce qu'il fait. La ligne décrit la proposition choisie, et
                reste hors du listbox, qui n'accepte que des options. -->
             <template x-if="suggHint">
               <p data-sugg-hint aria-hidden="true" data-tone="fg2" x-text="suggHint"></p>
@@ -521,7 +521,7 @@
               ></span
             >
             <!-- Pendant la compaction, l'animation prend la place des cellules : le cadre
-               « ctx [ … ] » ne bouge pas, et une seule barre reste a l'ecran. -->
+               « ctx [ … ] » ne bouge pas, et une seule barre reste à l'ecran. -->
             <span data-gauge aria-hidden="true"
               ><span data-tone="fg2">ctx [</span
               ><template x-if="!compacting"
@@ -540,7 +540,7 @@
                   ><span data-glyph="edge" x-text="compactBar.hollow"></span></span></template
               ><span data-tone="fg2" x-text="`] ${ctxPct}`"></span
             ></span>
-            <!-- La jauge des appuis sur Shift. Elle n'entre qu'au deuxieme : au premier
+            <!-- La jauge des appuis sur Shift. Elle n'entre qu'au deuxième : au premier
                elle trahirait l'easter egg. -->
             <template x-if="shiftArming">
               <span data-shift aria-hidden="true">
@@ -555,8 +555,8 @@
 
         <!-- Les deux bases viennent de la maquette. Elles vont par paire : donner sa base
            au volet de sortie sans rendre la sienne au volet central inverserait les deux,
-           le droit prenant 641 px contre 346 px a gauche. Fixes, elles gardent la mise en
-           page identique d'une section a l'autre. -->
+           le droit prenant 641 px contre 346 px à gauche. Fixes, elles gardent la mise en
+           page identique d'une section à l'autre. -->
         <aside class="zone" data-pane="out" aria-label="Sortie" x-show="out">
           <h2 class="zone__head">
             <span x-text="radioOn ? 'radio' : open.out.title"></span
@@ -637,8 +637,8 @@
             </template>
             <dl x-show="!running" :style="`--out-key:${outKeyWidth}`">
               <template x-for="(row, index) in open.out.lines" :key="index">
-                <!-- La colonne des cles prend la largeur de la plus longue de la section :
-                   les valeurs restent alignees sans que la moitie du volet reste vide. -->
+                <!-- La colonne des clés prend la largeur de la plus longue de la section :
+                   les valeurs restent alignées sans que la moitié du volet reste vide. -->
                 <div>
                   <dt :data-tone="row.kc" x-text="row.k"></dt>
                   <dd :data-tone="row.vc" x-text="row.v"></dd>
@@ -707,8 +707,8 @@
           </div>
         </aside>
 
-        <!-- Le calque du glitch. Il est decoratif de bout en bout : « data-no-glitch » le
-           garde hors du parcours de corruption, qui le trouverait sinon en s'appliquant a
+        <!-- Le calque du glitch. Il est décoratif de bout en bout : « data-no-glitch » le
+           garde hors du parcours de corruption, qui le trouverait sinon en s'appliquant à
            ses propres colonnes de pluie. -->
         <template x-if="glitchMode">
           <div data-glitch-layer data-no-glitch aria-hidden="true">
@@ -960,8 +960,8 @@
       </template>
 
       <template x-if="booting">
-        <!-- Le clic abrege le boot comme la touche. « skipBoot » refuse quand la panique est
-           affichee : le bouton retry garde ses gestes. -->
+        <!-- Le clic abrège le boot comme la touche. « skipBoot » refuse quand la panique est
+           affichée : le bouton retry garde ses gestes. -->
         <div data-boot @pointerdown="skipBoot()">
           <div class="zone">
             <template x-if="dataErr">
