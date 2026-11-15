@@ -8,6 +8,7 @@ import {
   type Line,
   MAX_SUGGESTIONS,
   type PowerMode,
+  SECTION_ALIASES,
   type Tone,
   type TrackValue,
   ghostFor,
@@ -847,16 +848,21 @@ document.addEventListener("alpine:init", () => {
       },
 
       fromHash() {
-        const id = globalThis.location.hash.slice(1);
-
-        this.goSection(
-          this.all.some((entry) => {
+        const hash = globalThis.location.hash.slice(1),
+          id =
+            Object.entries(SECTION_ALIASES).find(([old]) => {
+              return old === hash;
+            })?.[1] ?? hash,
+          known = this.all.some((entry) => {
             return entry.id === id;
-          })
-            ? id
-            : "whoami",
-          { push: false },
-        );
+          });
+
+        // L'adresse corrigée est celle que le visiteur partagera ensuite.
+        if (known && id !== hash) {
+          globalThis.history.replaceState({}, "", `#${id}`);
+        }
+
+        this.goSection(known ? id : "whoami", { push: false });
       },
 
       // Un clic modifié ou un autre bouton garde le comportement du lien : nouvel onglet,

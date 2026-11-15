@@ -57,9 +57,17 @@ test("should give every section a shareable anchor", async ({ page }) => {
 });
 
 test("should open its section directly from an anchor", async ({ page }) => {
+  await boot(page, "#cursus");
+
+  await expect(main(page)).toContainText("bd learn --history");
+});
+
+// Un lien partagé avant le renommage mène encore à la section, et l'adresse se corrige.
+test("should open the cursus from the old formation anchor", async ({ page }) => {
   await boot(page, "#formation");
 
   await expect(main(page)).toContainText("bd learn --history");
+  await expect(page).toHaveURL(/#cursus$/u);
 });
 
 test("should fall back to whoami on an unknown anchor", async ({ page }) => {

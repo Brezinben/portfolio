@@ -504,6 +504,18 @@ it("should still navigate on a section or a mission name alone", () => {
   assert.equal(effectOf(interpret("m-kereis", CONTEXT), "navigate")?.id, "m-kereis");
 });
 
+// La section formation s'appelle cursus : un ancien geste doit encore y mener.
+it("should lead the old formation name to the cursus", () => {
+  const avecCursus: Context = {
+    ...CONTEXT,
+    sections: [...CONTEXT.sections, { ask: "", id: "cursus", label: "cursus" }],
+  };
+
+  for (const typed of ["formation", "cd formation", "bd formation", "open formation"]) {
+    assert.equal(effectOf(interpret(typed, avecCursus), "navigate")?.id, "cursus", typed);
+  }
+});
+
 it("should keep its text when an easter egg is followed by a section name", () => {
   assert.match(texts(interpret("/sudo stack", CONTEXT))[1] ?? "", /sudoers/u);
 });

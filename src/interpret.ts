@@ -43,3 +43,4 @@ export { MAX_SUGGESTIONS, type Line } from "./interpret/lines.ts";
 export { TONES, type Tone, safeTone } from "./interpret/tone.ts";
 export { type Share, fillTokens, isSafeUrl, shareTarget } from "./interpret/share.ts";
 export { interpret } from "./interpret/dispatch.ts";
+export { SECTION_ALIASES } from "./interpret/vocabulary.ts";

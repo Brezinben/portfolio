@@ -81,6 +81,9 @@ export const ALIASES = {
 // mot suivi d'un identifiant de section y menait : « share contact » partait naviguer au
 // lieu de partager, et « /sudo stack » n'affichait jamais son texte.
 export const NAVIGATORS = new Set(["bd", "cd", "open"]);
+// Une section renommée garde son ancien nom : un lien ou un geste appris y mène encore.
+// L'ancre lit la même table.
+export const SECTION_ALIASES = { formation: "cursus" };
 // Le vocabulaire ne propose que des commandes vivantes, et les easter eggs avec leur
 // slash : sinon l'autocomplétion propose ce que le dispatcher refuse.
 const PLAIN = [

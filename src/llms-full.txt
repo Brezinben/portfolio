@@ -312,7 +312,7 @@ Cinq domaines, 57 briques. Chaque brique indique où elle a été pratiquée.
 - Pair-programming — Transway, Kereis — Transmission plus rapide qu'une documentation,
   surtout sur les parties sensibles.
 
-## Formation
+## Cursus
 
 - 2021 → aujourd'hui : veille sur l'IA et les nouvelles technologies, bêta-testeur de
   GitHub Copilot à ses débuts.
