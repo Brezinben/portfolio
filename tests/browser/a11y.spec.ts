@@ -68,6 +68,29 @@ for (const theme of THEMES) {
   });
 }
 
+// Le repère d'une certification prend le ton ambre : il doit tenir son contraste partout.
+for (const theme of THEMES) {
+  test(`should report no accessibility violation in the cursus on the ${theme} theme`, async ({
+    page,
+  }) => {
+    await withTheme(page, theme);
+    await page
+      .getByRole("link", { name: /^cursus/u })
+      .first()
+      .click();
+    await expect(page.locator('[data-ctl="tl"]').first()).toBeVisible();
+    await settled(page);
+
+    const { violations } = await scan(page);
+
+    expect(
+      violations.map((entry) => {
+        return `${entry.id}: ${entry.nodes.length}`;
+      }),
+    ).toEqual([]);
+  });
+}
+
 // La page d'erreur porte les huit thèmes elle aussi, et une sortie mise en avant dont le
 // fond teinte le texte. Elle échappait au scan : le portail ne la sert sur aucune adresse
 // connue, donc aucune boucle ne l'atteignait.

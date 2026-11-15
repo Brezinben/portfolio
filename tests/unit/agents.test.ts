@@ -215,6 +215,7 @@ it("should carry the same notes, places and contact in every copy", () => {
   // SAFETY: content.json est un artefact du dépôt, versionné à côté de ce test, et son
   // schéma est tenu par tests/unit/content.test.ts. Seules ces clés sont lues ici.
   const contenu = JSON.parse(read("content.json")) as {
+      cursus: { kind: string; note: string; org: string; role: string; url?: string }[];
       profile: { email: string };
       techNotes: Record<string, { note: string; where: string }>;
       timeline: { detail: string | null; note: string; role: string }[];
@@ -237,6 +238,10 @@ it("should carry the same notes, places and contact in every copy", () => {
         .flatMap((entry) => {
           return [entry.role, entry.note];
         }),
+      // La version texte garde ses abréviations : l'intitulé se compare sans balises.
+      ...contenu.cursus.flatMap((entry) => {
+        return [entry.org, entry.role, entry.note, ...(entry.url ? [entry.url] : [])];
+      }),
     ].map((fact) => {
       return flat(fact);
     });

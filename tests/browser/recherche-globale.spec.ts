@@ -77,6 +77,7 @@ test("should complete towards the first hit on tab", async ({ page }) => {
 const OPENS: [string, string][] = [
   ["whoami", "Concepteur orchestrateur IA"],
   ["parcours", "2026"],
+  ["cursus", "formation"],
   ["contact", "Nantes"],
   ["kereis", "Kereis"],
 ];

@@ -314,13 +314,20 @@ Cinq domaines, 57 briques. Chaque brique indique où elle a été pratiquée.
 
 ## Cursus
 
-- 2021 → aujourd'hui : veille sur l'IA et les nouvelles technologies, bêta-testeur de
-  GitHub Copilot à ses débuts.
-- 2020 → 2021 : Titre Professionnel Concepteur Développeur d'Applications.
-- 2018 → 2020 : BTS SIO option SISR, en alternance.
-- 2016 → 2018 : baccalauréat STI2D.
+Formations et certifications, de la plus récente à la plus ancienne.
 
-En cours : MCP, agents, évaluation. Méthode : lire, tester, casser, recommencer.
+- 2020 → 2021 · Formation · Titre Professionnel Concepteur Développeur
+  d'Applications · alternance · LDC Services. Préparé en alternance, en parallèle du
+  poste de concepteur développeur chez LDC Services.
+- 2018 → 2020 · Formation · BTS SIO option SISR · alternance · FPEE Industries.
+  Préparé en alternance, en parallèle du poste de technicien réseau chez FPEE
+  Industries.
+- 2016 → 2018 · Formation · Baccalauréat STI2D · baccalauréat technologique. Sciences
+  et technologies de l'industrie et du développement durable.
+
+Veille : depuis 2021, veille sur l'IA et les nouvelles technologies, bêta-testeur de
+GitHub Copilot à ses débuts. En cours : MCP, agents, évaluation. Méthode : lire,
+tester, casser, recommencer.
 
 ## Contact
 

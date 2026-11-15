@@ -60,13 +60,16 @@ interface Mission {
   state: string;
 }
 
-// Une entrée de la frise.
+// Une entrée de la frise. Dans le cursus, « org » porte l'intitulé et « role » l'organisme
+// ou le cadre, pas un employeur et un poste.
 interface Step {
   detail?: string | null;
   id: string;
+  kind?: "certification" | "formation";
   note: string;
   org: string;
   role: string;
+  url?: string;
   via?: string;
   years: string;
 }
@@ -445,9 +448,14 @@ document.addEventListener("alpine:init", () => {
         this.tech = name;
       },
 
-      // Chaque entrée de la frise annonce la commande qui ouvre sa fiche. La commande vient
-      // du contenu : la reconstruire ici la ferait mentir au premier renommage.
+      // Une entrée du cursus annonce sa nature. Une entrée du parcours annonce la commande
+      // qui ouvre sa fiche. La commande vient du contenu : la reconstruire ici la ferait
+      // mentir au premier renommage.
       missionCue(entry: Step) {
+        if (entry.kind) {
+          return entry.kind;
+        }
+
         const detail = this.details.find((item) => {
           return item.id === entry.detail;
         });
@@ -902,6 +910,13 @@ document.addEventListener("alpine:init", () => {
         // Le volet de sortie appartient à la section ouverte. La radio le quitte donc, et
         // son contexte audio se ferme plutôt que de continuer à tourner sans volet.
         this.radioStop();
+
+        // Les deux frises partagent leur position : une position héritée d'une frise plus
+        // longue ne laisserait aucun arrêt de tabulation (règle 9).
+        if (this.frise(id) !== this.frise(this.section)) {
+          this.timelineAt = 0;
+        }
+
         this.section = id;
 
         if (push && globalThis.location.hash !== `#${id}`) {

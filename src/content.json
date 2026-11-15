@@ -307,38 +307,12 @@
     {
       "id": "cursus",
       "label": "cursus",
-      "sub": "2016 → …",
+      "sub": "formations · certifications",
       "dot": "ok",
       "state": "en cours",
+      "view": "timeline",
       "cmd": "bd learn --history --tail",
-      "lines": [
-        {
-          "m": "◆",
-          "mc": "acc",
-          "t": "2021 → …  Veille continue",
-          "w": "700"
-        },
-        {
-          "m": "│",
-          "t": "Veille sur l'IA et les nouvelles technologies, bêta-testeur de GitHub Copilot à ses débuts.",
-          "tone": "fg2"
-        },
-        {
-          "m": "◆",
-          "mc": "acc",
-          "t": "2020 → 2021  Titre Professionnel Concepteur Développeur d'Applications"
-        },
-        {
-          "m": "◆",
-          "mc": "acc",
-          "t": "2018 → 2020  BTS SIO option SISR · alternance"
-        },
-        {
-          "m": "╰",
-          "mc": "acc",
-          "t": "2016 → 2018  Baccalauréat STI2D"
-        }
-      ],
+      "lines": [],
       "out": {
         "title": "changelog",
         "lines": [
@@ -347,6 +321,10 @@
             "MCP, agents, évaluation",
             "fg2",
             "acc"
+          ],
+          [
+            "veille",
+            "IA et nouvelles technologies, depuis 2021"
           ],
           [
             "2021",
@@ -366,7 +344,7 @@
           ]
         ]
       },
-      "ask": "Depuis 2021 : veille sur l'IA et les nouvelles technologies, bêta-testeur de GitHub Copilot à ses débuts. Titre Professionnel Concepteur Développeur d'Applications en 2021, BTS SIO option SISR en alternance en 2020, baccalauréat STI2D en 2018."
+      "ask": "Le cursus réunit les formations et les certifications. Formation : Titre Professionnel Concepteur Développeur d'Applications en 2021, BTS SIO option SISR en alternance en 2020, baccalauréat STI2D en 2018. Depuis 2021 : veille sur l'IA et les nouvelles technologies, bêta-testeur de GitHub Copilot à ses débuts."
     },
     {
       "id": "contact",
@@ -883,6 +861,35 @@
         ]
       },
       "ask": "Transway, de septembre 2021 à septembre 2023 : deux produits d'incitation à la mobilité durable, WeFlo Pro pour les entreprises et IREBY pour les collectivités. Il a mené la migration de la V1 vers la V3, soit plus de 300 000 utilisateurs transférés. Passage au rôle de tech lead, avec l'encadrement de quatre à six développeurs."
+    }
+  ],
+  "cursus": [
+    {
+      "id": "c-cda",
+      "kind": "formation",
+      "years": "2020 → 2021",
+      "org": "Titre Professionnel Concepteur Développeur d'Applications",
+      "role": "alternance · LDC Services",
+      "note": "Préparé en alternance, en parallèle du poste de concepteur développeur chez LDC Services.",
+      "detail": null
+    },
+    {
+      "id": "c-bts",
+      "kind": "formation",
+      "years": "2018 → 2020",
+      "org": "BTS SIO option SISR",
+      "role": "alternance · FPEE Industries",
+      "note": "Préparé en alternance, en parallèle du poste de technicien réseau chez FPEE Industries.",
+      "detail": null
+    },
+    {
+      "id": "c-bac",
+      "kind": "formation",
+      "years": "2016 → 2018",
+      "org": "Baccalauréat STI2D",
+      "role": "baccalauréat technologique",
+      "note": "Sciences et technologies de l'industrie et du développement durable.",
+      "detail": null
     }
   ],
   "timeline": [

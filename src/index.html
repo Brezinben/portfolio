@@ -200,7 +200,7 @@
               <div
                 data-timeline
                 role="listbox"
-                aria-label="Parcours professionnel"
+                :aria-label="current.id === 'cursus' ? 'Cursus : formations et certifications' : 'Parcours professionnel'"
                 aria-orientation="vertical"
               >
                 <template x-for="group in timelineGroups()" :key="group.steps[0].id">
@@ -236,7 +236,7 @@
                           <span data-tone="fg2" data-tl-note x-text="entry.role"></span>
                           <span
                             data-cue
-                            :data-tone="entry.detail ? 'acc' : 'fg2'"
+                            :data-tone="entry.detail || entry.kind === 'certification' ? 'acc' : 'fg2'"
                             x-text="missionCue(entry)"
                           ></span>
                         </span>
