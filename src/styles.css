@@ -2231,9 +2231,9 @@ a:hover {
 /* Sous 900 px les trois volets s'empilent en une colonne. Les jetons datent du temps
  où chaque déclaration vivait en ligne, hors de portée d'une requête de média : les
  volets sont dans la feuille depuis, et la requête pourrait déclarer « flex » et
- « min-height » directement. Le volet central porte la réponse que le visiteur
- cherche : il passe en tête et prend la plus grande part. L'ordre du document ne
- bouge pas, donc le parcours clavier non plus. Le journal perd son plafond : la
+ « min-height » directement. Les volets gardent l'ordre du document, car l'ordre de Tab
+ le suit (RGAA 12.8). Le volet central porte la réponse que le visiteur cherche : il
+ prend la plus grande part. Le journal perd son plafond : la
  colonne défile déjà, donc une réponse longue n'a plus à tenir dans 120 px. */
 /* La radio. Aucune couleur en dur : les deux teintes des barres sortent de « --acc »
  par color-mix, donc les huit thèmes suivent. La page est bornée à 100dvh sans
@@ -2496,7 +2496,6 @@ a:hover {
 
   .tm [data-pane="main"] {
     --pane-min: 70dvh;
-    order: -1;
   }
 }
 

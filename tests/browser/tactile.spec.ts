@@ -31,11 +31,12 @@ test.describe("on touch", () => {
     );
   });
 
-  test("should put the main pane first in the stacked column", async ({ page }) => {
+  // L'ordre de Tab suit le document : un ordre visuel différent ferait sauter le focus.
+  test("should stack the panes in the order of the document", async ({ page }) => {
     await boot(page);
 
     const tops = await page.evaluate(() => {
-      return ["main", "nav", "out"].map((name) => {
+      return ["nav", "main", "out"].map((name) => {
         return document.querySelector(`[data-pane="${name}"]`)?.getBoundingClientRect().top ?? 0;
       });
     });
