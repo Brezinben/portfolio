@@ -923,8 +923,8 @@ document.addEventListener("alpine:init", () => {
         });
       },
 
-      // Sur la colonne empilee, les listes sont sous le volet central. Choisir une section
-      // rendait donc le resultat au-dessus de l'ecran, et le visiteur restait sur la liste.
+      // Sur la colonne empilée, le volet central est sous la liste des sections. Sans ce
+      // défilement, le résultat d'une section choisie resterait sous l'écran.
       revealResult() {
         if (!this.stacked) {
           return;
