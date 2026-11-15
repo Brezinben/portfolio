@@ -111,8 +111,8 @@ const ROOT = fileURLToPath(new URL("../", import.meta.url)),
   // MinifyJS reste absent. Rolldown a déjà minifié les deux scripts en ligne du projet.
   // RemoveAttributeQuotes et removeOptionalTags rendent le balisage déroutant pour 0,3 Ko.
   MINIFY = { collapseWhitespace: true, minifyCSS: true, removeComments: true },
-  // Le code d'erreur de Node n'est pas dans le type Error : on le retrecit plutot que de
-  // l'affirmer. TypeScript impose « unknown » sur un catch ; deviner une forme avant de la verifier ecrirait moins sur que ce code.
+  // Le code d'erreur de Node n'est pas dans le type Error : on le rétrécit plutôt que de
+  // l'affirmer. TypeScript impose « unknown » sûr un catch ; deviner une forme avant de la vérifier écrirait moins sûr que ce code.
   // oxlint-disable-next-line anti-slop/no-unknown-parameters
   errorCode = (error: unknown): string | undefined => {
     // oxlint-disable-next-line anti-slop/no-runtime-typeof
@@ -355,14 +355,14 @@ const unfilter = (filter: number, value: number, around: Around) => {
     return { bytes: writeSheets(width, height, pixels), height, width };
   },
   // Une seule requête au lieu d'une par état : un seul flux deflate exploite la ressemblance
-  // entre les feuilles, que src/ garde separees pour rester lisibles une par une. Le plan
+  // entre les feuilles, que src/ garde séparées pour rester lisibles une par une. Le plan
   // sort d'un seul balayage de la feuille, donc feuilles et bandes ne peuvent pas diverger.
   planSheets = async (staging: string) => {
     const sheet = await readFile(join(SOURCE, STYLES), "utf8"),
       declared = sheet.match(SHEET_URL) ?? [],
-      // Les trente-deux etats communs ne sont ecrits qu'une fois, sous le slime : les trois
-      // formes portent les memes, dans le meme ordre, avec le meme nombre de cases. Les
-      // autres formes les deduisent par leur prefixe, et n'ecrivent que leurs transitions.
+      // Les trente-deux états communs ne sont écrits qu'une fois, sous le slime : les trois
+      // formes portent les mêmes, dans le même ordre, avec le même nombre de cases. Les
+      // autres formes les déduisent par leur préfixe, et n'écrivent que leurs transitions.
       common = declared.filter((file) => {
         return dirOf(file) === "slime";
       });
@@ -371,7 +371,7 @@ const unfilter = (filter: number, value: number, around: Around) => {
       throw new Error(`${STYLES} ne déclare plus de feuille de mascotte`);
     }
 
-    // Une transition suit les trente-deux etats communs de la feuille ou elle vit :
+    // Une transition suit les trente-deux états communs de la feuille où elle vit :
     // « evolveCube » montre un slime, mais elle vit dans la feuille du cube.
     const forms = FORMS.map(({ dir, prefix }) => {
         return {
@@ -406,7 +406,7 @@ const unfilter = (filter: number, value: number, around: Around) => {
       });
     });
 
-    // Les feuilles source sortent de l'artefact : leur dossier ne sert plus a rien une fois
+    // Les feuilles source sortent de l'artefact : leur dossier ne sert plus à rien une fois
     // les bandes empilees.
     await Promise.all([
       ...forms.map(({ dir }, index) => {
@@ -423,9 +423,9 @@ const unfilter = (filter: number, value: number, around: Around) => {
   foldPage = (text: string, plan: SheetPlan, dirs: string[]) => {
     let seen = 0;
 
-    // Le balayage est plus large que le pliage : il prend toute adresse de feuille, la regle
-    // exige en plus les deux lignes dans l'ordre. Sans ce garde-fou, une regle defaite par un
-    // reformatage laisserait survivre une adresse dont le dossier a ete retire.
+    // Le balayage est plus large que le pliage : il prend toute adresse de feuille, la règle
+    // exige en plus les deux lignes dans l'ordre. Sans ce garde-fou, une règle défaite par un
+    // reformatage laisserait survivre une adresse dont le dossier a été retire.
     const declared = text.match(SHEET_URL) ?? [],
       // L'adresse de l'image fusionnée reprend la forme de celles qu'elle remplace : une page
       // servie sur une adresse quelconque écrit des chemins absolus, et les garde.
@@ -453,14 +453,14 @@ const unfilter = (filter: number, value: number, around: Around) => {
     return dirs.reduce((carry, dir) => {
       const size = plan.sizes.get(dir),
         // SAFETY: « dir » vient de FORMS, dont les trois noms sont exactement les clefs de
-        // BASE_RULE. Une forme ajoutee sans sa regle de base ne compilerait pas.
+        // BASE_RULE. Une forme ajoutée sans sa règle de base ne compilerait pas.
         next = carry.replace(
           BASE_RULE[dir as keyof typeof BASE_RULE],
           (_rule: string, head: string, indent: string) => {
             return `${head}${indent}background-image: url("${root}${sheetsOf(dir)}");\n${
-              // Seule la forme par defaut pose la position de depart. Un « background-position »
-              // sur une regle d'attribut ecraserait le « background-position-y » des regles
-              // d'etat, moins specifiques : toutes les bandes retomberaient sur la premiere.
+              // Seule la forme par défaut pose la position de depart. Un « background-position »
+              // sur une règle d'attribut écraserait le « background-position-y » des règles
+              // d'état, moins spécifiques : toutes les bandes retomberaient sur la premiere.
               dir === "slime" ? `${indent}background-position: 0 0;\n` : ""
             }${indent}background-size: ${size?.width ?? 0}px ${size?.height ?? 0}px;\n`;
           },
@@ -513,9 +513,9 @@ const unfilter = (filter: number, value: number, around: Around) => {
     );
     await writeFile(join(staging, "index.html"), await minify(replaced, MINIFY));
   },
-  // La page d'erreur garde sa feuille et son script a part dans src/, pour qu'ils s'editent,
-  // se relisent et passent sous les memes outils que le reste. L'artefact les remet en ligne :
-  // une adresse inconnue ne doit pas couter deux requetes bloquantes de plus.
+  // La page d'erreur garde sa feuille et son script à part dans src/, pour qu'ils s'éditent,
+  // se relisent et passent sous les mêmes outils que le reste. L'artefact les remet en ligne :
+  // une adresse inconnue ne doit pas coûter deux requêtes bloquantes de plus.
   build404 = async (staging: string, plan: SheetPlan) => {
     const page = await readFile(join(SOURCE, "404.html"), "utf8"),
       sheet = await readFile(join(SOURCE, "404.css"), "utf8");
@@ -558,7 +558,7 @@ const unfilter = (filter: number, value: number, around: Around) => {
       target = join(staging, CONTENT),
       { atime, mtime } = await stat(source),
       // Le contenu vient d'un fichier : sa forme n'est pas garantie ici. La construction ne
-      // le lit pas, elle le reserialise, donc « unknown » suffit et interdit de s'y fier.
+      // le lit pas, elle le resérialise, donc « unknown » suffit et interdit de s'y fier.
       parsed: unknown = JSON.parse(await readFile(source, "utf8"));
 
     await writeFile(target, JSON.stringify(parsed));
@@ -690,8 +690,8 @@ const unfilter = (filter: number, value: number, around: Around) => {
     );
   };
 
-// Un dossier vide n'a rien a faire dans l'artefact. L'elagage remonte des feuilles vers la
-// racine : un dossier qui ne contenait que des dossiers vides se vide a son tour.
+// Un dossier vide n'a rien à faire dans l'artefact. L'élagage remonte des feuilles vers la
+// racine : un dossier qui ne contenait que des dossiers vides se vide à son tour.
 const pruneEmpty = async (directory: string): Promise<boolean> => {
   const entries = await readdir(directory, { withFileTypes: true }),
     kept = await Promise.all(
@@ -730,9 +730,9 @@ try {
 
   await mkdir(version, { recursive: true });
   await cp(SOURCE, version, {
-    // Une regle plutot qu'une liste de noms : le bundle absorbe les modules, et un renommage
+    // Une règle plutôt qu'une liste de noms : le bundle absorbe les modules, et un renommage
     // ne doit pas republier la source en silence. Les CONTEXT.md sont de la documentation de
-    // depot, pas des actifs : les publier exposerait la carte des modules, et empecherait l'elagage.
+    // dépôt, pas des actifs : les publier exposerait la carte des modules, et empêcherait l'elagage.
     filter: (from: string) => {
       return (
         extname(from) !== ".ts" &&
@@ -745,9 +745,9 @@ try {
     preserveTimestamps: true,
     recursive: true,
   });
-  // Le filtre s'applique aussi aux dossiers, sans extension pour trancher : on elague apres
-  // coup plutot que de les nommer, car un dossier qui porterait un actif a cote de ses
-  // modules doit rester. L'elagage part des enfants, jamais de la racine, qui doit survivre meme vide pour l'ecriture de index.html qui suit.
+  // Le filtre s'applique aussi aux dossiers, sans extension pour trancher : on élague après
+  // coup plutôt que de les nommer, car un dossier qui porterait un actif à côté de ses
+  // modules doit rester. L'élagage part des enfants, jamais de la racine, qui doit survivre même vide pour l'écriture de index.html qui suit.
   await pruneChildren(version);
 
   const plan = await planSheets(version);

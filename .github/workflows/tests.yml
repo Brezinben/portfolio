@@ -1,5 +1,5 @@
-# Deux travaux, et pas un seul : la verification rend la main en une minute, la suite
-# navigateur prend sept minutes. Les separer donne le verdict rapide tout de suite, sans
+# Deux travaux, et pas un seul : la vérification rend la main en une minute, la suite
+# navigateur prend sept minutes. Les séparer donne le verdict rapide tout de suite, sans
 # attendre les navigateurs.
 name: tests
 
@@ -11,7 +11,7 @@ on:
 permissions:
   contents: read
 
-# Une nouvelle poussee annule la precedente : deux suites navigateur sur la meme branche
+# Une nouvelle poussée annule la précédente : deux suites navigateur sur la même branche
 # n'apprennent rien de plus, et occupent un runner pour rien.
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -28,15 +28,15 @@ jobs:
 
       - run: bun install --frozen-lockfile
 
-      # « artefact-sans-source » lit le dossier construit : sans cette etape il ne trouve
-      # rien et echoue. En local la suite navigateur l'avait deja construit.
+      # « artefact-sans-source » lit le dossier construit : sans cette étape il ne trouve
+      # rien et echoue. En local la suite navigateur l'avait déjà construit.
       - run: bun run build
         env:
           PORTFOLIO_DIST: dist.test
 
       - run: bun run test
 
-      # Un commit fait avec --no-verify, ou hors d'un agent, n'est passe par aucun hook local.
+      # Un commit fait avec --no-verify, ou hors d'un agent, n'est passé par aucun hook local.
       - run: bun run check
 
   navigateur:
@@ -49,14 +49,14 @@ jobs:
 
       - run: bun install --frozen-lockfile
 
-      # La version vient du paquet installe : Dependabot change la cle sans toucher au workflow.
+      # La version vient du paquet installe : Dependabot change la clé sans toucher au workflow.
       - id: playwright
         run: |
           version=$(jq -r .version node_modules/@playwright/test/package.json)
           echo "version=$version" >> "$GITHUB_OUTPUT"
 
-      # Les navigateurs pesent plus que les dependances. La cle porte la version de
-      # Playwright : une montee de version tire une nouvelle archive, pas l'ancienne.
+      # Les navigateurs pèsent plus que les dependances. La clé porte la version de
+      # Playwright : une montée de version tire une nouvelle archive, pas l'ancienne.
       - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         id: navigateurs
         with:
@@ -66,13 +66,13 @@ jobs:
       - if: steps.navigateurs.outputs.cache-hit != 'true'
         run: bun x playwright install --with-deps chromium
 
-      # Les dependances systeme ne sont pas dans le cache du dossier : elles s'installent
-      # meme quand les navigateurs en reviennent.
+      # Les dépendances système ne sont pas dans le cache du dossier : elles s'installent
+      # même quand les navigateurs en reviennent.
       - if: steps.navigateurs.outputs.cache-hit == 'true'
         run: bun x playwright install-deps chromium
 
       # Le plafond de deux workers vient de beta, qui a 7 Go. Le runner en a 16
-      # pour quatre coeurs : il en tient quatre, et la suite passe de neuf minutes a cinq.
+      # pour quatre coeurs : il en tient quatre, et la suite passe de neuf minutes à cinq.
       - run: bun run test:browser
         env:
           PORTFOLIO_WORKERS: 4
