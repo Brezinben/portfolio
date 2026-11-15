@@ -258,3 +258,10 @@ it("should carry the same notes, places and contact in every copy", () => {
 
   assert.ok(llms.includes(contenu.profile.email), "llms.txt gives another contact");
 });
+
+// Les certifications arrivent avec des valeurs provisoires. Aucune ne doit partir en ligne.
+it("should publish no placeholder", () => {
+  for (const name of ["content.json", "texte.html", "llms.txt", "llms-full.txt", "index.html"]) {
+    assert.ok(!read(name).includes("À COMPLÉTER"), `${name} carries a placeholder`);
+  }
+});

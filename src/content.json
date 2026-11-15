@@ -327,6 +327,14 @@
             "IA et nouvelles technologies, depuis 2021"
           ],
           [
+            "2026",
+            "À COMPLÉTER : certification Cloud Developer Foundation"
+          ],
+          [
+            "À COMPLÉTER",
+            "certification Numérique responsable"
+          ],
+          [
             "2021",
             "TP CDA"
           ],
@@ -344,7 +352,7 @@
           ]
         ]
       },
-      "ask": "Le cursus réunit les formations et les certifications. Formation : Titre Professionnel Concepteur Développeur d'Applications en 2021, BTS SIO option SISR en alternance en 2020, baccalauréat STI2D en 2018. Depuis 2021 : veille sur l'IA et les nouvelles technologies, bêta-testeur de GitHub Copilot à ses débuts."
+      "ask": "Le cursus réunit les formations et les certifications. Certifications : À COMPLÉTER : Cloud Developer Foundation en 2026, À COMPLÉTER : Numérique responsable. Formation : Titre Professionnel Concepteur Développeur d'Applications en 2021, BTS SIO option SISR en alternance en 2020, baccalauréat STI2D en 2018. Depuis 2021 : veille sur l'IA et les nouvelles technologies, bêta-testeur de GitHub Copilot à ses débuts."
     },
     {
       "id": "contact",
@@ -864,6 +872,26 @@
     }
   ],
   "cursus": [
+    {
+      "id": "c-cert-cloud",
+      "kind": "certification",
+      "years": "2026",
+      "org": "À COMPLÉTER : nom exact de la certification Cloud Developer Foundation",
+      "role": "À COMPLÉTER : organisme",
+      "note": "À COMPLÉTER : une phrase",
+      "url": "À COMPLÉTER : lien de vérification",
+      "detail": null
+    },
+    {
+      "id": "c-cert-nr",
+      "kind": "certification",
+      "years": "À COMPLÉTER : 2023 ou 2024",
+      "org": "À COMPLÉTER : Numérique responsable (nom exact)",
+      "role": "À COMPLÉTER : INR ?",
+      "note": "À COMPLÉTER : une phrase sur la certification Numérique responsable",
+      "url": "À COMPLÉTER : lien de vérification Numérique responsable",
+      "detail": null
+    },
     {
       "id": "c-cda",
       "kind": "formation",
