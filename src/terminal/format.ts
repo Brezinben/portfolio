@@ -1,11 +1,11 @@
-// La mise en forme : ce que la coquille calcule et que l'interpreteur ne peut pas
+// La mise en forme : ce que la coquille calcule et que l'interpréteur ne peut pas
 // rendre. Bandeau dessine en box-shadow, barres de progression, lignes de contenu.
 
 import { type ContentLine, type Tone, contentLine, safeTone } from "../interpret.ts";
 import { lookup } from "./lookup.ts";
 
-// Le bandeau que la coquille calcule : l'interpreteur ne rend qu'un mot a dessiner, le
-// balisage a besoin d'une geometrie et d'une ombre.
+// Le bandeau que la coquille calcule : l'interpréteur ne rend qu'un mot à dessiner, le
+// balisage a besoin d'une géométrie et d'une ombre.
 export interface Banner {
   height: string;
   label: string;
@@ -14,8 +14,8 @@ export interface Banner {
   width: string;
 }
 
-// Ce que la coquille rend au balisage : trois formes, comme en sortie de l'interpreteur, mais
-// le bandeau y est un objet. « ShapedLine » et « shaped » viennent du glossaire (CONTEXT.md), qui prime sur la regle bannissant « shape ».
+// Ce que la coquille rend au balisage : trois formes, comme en sortie de l'interpréteur, mais
+// le bandeau y est un objet. « ShapedLine » et « shaped » viennent du glossaire (CONTEXT.md), qui prime sur la règle bannissant « shape ».
 /* oxlint-disable anti-slop/no-shape-in-symbol-names */
 export type ShapedLine =
   | { banner: Banner; text: string; tone: Tone }
@@ -32,8 +32,8 @@ export type ShapedLine =
     };
 /* eslint-enable anti-slop/no-shape-in-symbol-names */
 
-// Tout ce dont on sait mesurer la longueur imprimee : une ligne de journal, une ligne de
-// contenu, ou une ligne deja mise en forme.
+// Tout ce dont on sait mesurer la longueur imprimée : une ligne de journal, une ligne de
+// contenu, ou une ligne déjà mise en forme.
 export interface Printable {
   t?: string;
   text?: string;
@@ -66,13 +66,13 @@ export interface RawSection {
 // Une section une fois mise en forme par la coquille : c'est ce que le balisage lit.
 export type Section = ReturnType<typeof section>;
 
-// Les huit frames braille du rotateur. Une fois la tete passee, la case se pose pleine :
-// une case a qui il manque un point donne une barre trouee, pas une barre remplie.
+// Les huit frames braille du rotateur. Une fois la tête passée, la case se pose pleine :
+// une case à qui il manque un point donne une barre trouée, pas une barre remplie.
 export const SPINNER = ["⣾", "⣽", "⣻", "⢿", "⡿", "⣟", "⣯", "⣷"];
 export const FILLED = "⣿";
 export const HOLLOW = "░";
-// Une seule barre pour toute la page : les cases posees, la tete qui tourne tant qu'il
-// reste a faire, les cases vides. Rendue en deux morceaux, chacun avec sa couleur.
+// Une seule barre pour toute la page : les cases posées, la tête qui tourne tant qu'il
+// reste à faire, les cases vides. Rendue en deux morceaux, chacun avec sa couleur.
 // Sans `tick`, la barre ne progresse pas : elle n'a alors pas de tete.
 export const barParts = (done: number, total: number, tick?: number) => {
   const placed = Math.max(0, Math.min(total, Math.floor(done))),
@@ -165,8 +165,8 @@ export const printed = (lines: Printable[]) => {
     return total + text.length;
   }, 0);
 };
-// Le bandeau change de nature ici : l'interpreteur rend le mot a dessiner, la coquille
-// rend la geometrie et l'ombre que le balisage ne sait pas calculer.
+// Le bandeau change de nature ici : l'interpréteur rend le mot à dessiner, la coquille
+// rend la géométrie et l'ombre que le balisage ne sait pas calculer.
 const line = (raw: ContentLine): ShapedLine => {
   const shaped = contentLine(raw);
 

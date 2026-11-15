@@ -5,14 +5,14 @@ import { type Shell, slice } from "../shell.ts";
 import { ASK_MS } from "../settings.ts";
 import type { Line } from "../../interpret.ts";
 
-// Ce que la question et l'idée gardent dans l'etat du composant.
+// Ce que la question et l'idée gardent dans l'état du composant.
 export interface AskState {
   // La question en vol. L'annuler coupe le modèle au lieu d'attendre sa réponse.
   asker: AbortController | undefined;
   feedback: Record<string, string>;
   // L'idée qui attend son oui.
   pending: string | undefined;
-  // Le modele cherche, et rien n'est encore affiche : sa reponse remplacera l'attente.
+  // Le modèle cherche, et rien n'est encore affiché : sa réponse remplacera l'attente.
   thinking: boolean;
 }
 
@@ -84,8 +84,8 @@ const until = async <T>(work: Promise<T>, signal: AbortSignal) => {
   }
 };
 
-// L'attente depassee et le refus ne se reparent pas de la meme facon : l'une demande de
-// patienter, l'autre de regarder l'etat du modele.
+// L'attente dépassée et le refus ne se réparent pas de la même façon : l'une demande de
+// patienter, l'autre de regarder l'état du modele.
 const askFailure = (cause: unknown) => {
   return cause instanceof DOMException && cause.name === "TimeoutError"
     ? `le modèle local n'a pas répondu en ${ASK_MS / 1000} s.`
@@ -107,8 +107,8 @@ export const askSlice = () => {
       this.asker = asker;
       this.thinking = true;
 
-      // Une session fermee de travers ne doit pas faire repasser la question par le repli :
-      // la reponse est deja affichee, elle sortirait deux fois.
+      // Une session fermée de travers ne doit pas faire repasser la question par le repli :
+      // la réponse est déjà affichée, elle sortirait deux fois.
       let answered = false;
 
       try {
@@ -139,7 +139,7 @@ export const askSlice = () => {
           ];
         }
       } finally {
-        // La question coupee n'eteint pas l'attente de celle qui l'a remplacee.
+        // La question coupée n'éteint pas l'attente de celle qui l'a remplacee.
         if (this.asker === asker) {
           this.thinking = false;
         }
@@ -147,8 +147,8 @@ export const askSlice = () => {
     },
 
     // « m-transway » ne dit rien de ce que la mission couvre. Sans le texte en face, le
-    // modele choisit sur la forme de l'identifiant, et perd l'avantage qu'il avait sur le
-    // recouvrement de mots. La contrainte de reponse, elle, reste sur les identifiants.
+    // modèle choisit sur la forme de l'identifiant, et perd l'avantage qu'il avait sur le
+    // recouvrement de mots. La contrainte de réponse, elle, reste sur les identifiants.
     askPrompt(this: Shell, query: string, candidateIds: string[]) {
       const corpus = [...this.sections, ...this.details],
         topics = candidateIds.map((id) => {
@@ -167,8 +167,8 @@ export const askSlice = () => {
       ].join("\n");
     },
 
-    // « availability » est asynchrone, l'interpreteur ne l'est pas : sans cette lecture au
-    // demarrage, la premiere question partirait en croyant qu'aucun modele n'est la.
+    // « availability » est asynchrone, l'interpréteur ne l'est pas : sans cette lecture au
+    // démarrage, la première question partirait en croyant qu'aucun modèle n'est la.
     async learnModel(this: Shell) {
       // L'API Prompt n'existe que dans Chrome, derrière un contexte sécurisé : son absence est
       // le cas majoritaire. « @types/dom-chromium-ai » déclare « LanguageModel » toujours
@@ -183,12 +183,12 @@ export const askSlice = () => {
         // la recherche globale garderait le nom d'avant la detection.
         this.reindexGlobal();
       } catch {
-        // Un refus au demarrage laisse « unknown » : « ask » repond alors sans modele,
+        // Un refus au démarrage laisse « unknown » : « ask » répond alors sans modèle,
         // ce qui est le comportement sans API.
       }
     },
 
-    // Le site entier tient en memoire une fois charge : seules les commandes qui partent
+    // Le site entier tient en mémoire une fois charge : seules les commandes qui partent
     // ailleurs cassent. Le refus les nomme, et il nomme ce qui marche encore.
     refuseOffline(this: Shell, what: string, instead: string) {
       this.journal = [
@@ -237,8 +237,8 @@ export const askSlice = () => {
       }
     },
 
-    // Le choix du modele designe un passage du corpus, et c'est ce passage qui s'affiche.
-    // Un identifiant inconnu ne designe rien : la reponse du corpus reprend la main.
+    // Le choix du modèle désigne un passage du corpus, et c'est ce passage qui s'affiche.
+    // Un identifiant inconnu ne désigne rien : la réponse du corpus reprend la main.
     showAskChoice(id: string, lexical: Line[], asker: AbortController) {
       if (this.asker !== asker) {
         return;

@@ -1,10 +1,10 @@
-// Le socle du composant Alpine, decoupe en tranches : des objets de methodes qui ne se
-// parlent que par « this », comme au temps ou elles vivaient dans un litteral unique. Deux
-// regles tiennent ce decoupage.
-// 1. Aucune tranche ne porte d'accesseur, pour que app.ts reste le seul fichier ou vivent
+// Le socle du composant Alpine, découpé en tranches : des objets de méthodes qui ne se
+// parlent que par « this », comme au temps où elles vivaient dans un littéral unique. Deux
+// règles tiennent ce decoupage.
+// 1. Aucune tranche ne porte d'accesseur, pour que app.ts reste le seul fichier où vivent
 //    les valeurs lues par le balisage. L'ADR 0002 l'exige.
 // 2. Ce fichier n'importe que des types, en forme longue « import type » : le
-//    specificateur en ligne creerait un cycle d'execution invisible ailleurs, que tient la regle dediee de .oxlintrc.jsonc.
+//    spécificateur en ligne créerait un cycle d'exécution invisible ailleurs, que tient la règle dédiée de .oxlintrc.jsonc.
 
 import type { AchievementsApi, AchievementsState } from "./achievements/slice.ts";
 import type { AskApi, AskState } from "./ask/slice.ts";
@@ -19,16 +19,16 @@ import type { RadioApi, RadioState } from "./radio/slice.ts";
 import type { SuggestionsApi, SuggestionsState } from "./suggestions/slice.ts";
 import type { Section } from "./format.ts";
 
-// Alpine pose ses magies sur le composant apres l'avoir construit : elles ne sont pas dans
-// le litteral, mais « this » les voit a l'execution.
+// Alpine pose ses magies sur le composant après l'avoir construit : elles ne sont pas dans
+// le littéral, mais « this » les voit à l'execution.
 export interface Magics {
   $nextTick: (callback: () => void) => void;
   $refs: Record<string, HTMLElement | undefined>;
 }
 
-// D'ou vient une action mesuree : un clic ou une touche dans l'interface, ou une commande
-// tapee dans le terminal. Type partage pour que les deux ne divergent jamais entre les
-// evenements qui la distinguent.
+// D'où vient une action mesurée : un clic ou une touche dans l'interface, ou une commande
+// tapée dans le terminal. Type partage pour que les deux ne divergent jamais entre les
+// événements qui la distinguent.
 export type TrackSource = "commande" | "interface";
 
 // Les deux minuteurs de la plateforme. Chaque tranche en garde, et aucune ne les redéclare.
@@ -66,8 +66,8 @@ export interface Shared {
   shareTargets: string[];
   shortcuts: boolean;
   skipBoot(): boolean;
-  // « typed » distingue une commande tapee d'une commande lancee a la souris : le succes de
-  // la premiere commande dit « tapee, pas cliquee ».
+  // « typed » distingue une commande tapée d'une commande lancée à la souris : le succès de
+  // la première commande dit « tapee, pas cliquee ».
   submit(options?: { typed?: boolean }): void;
   tech: string;
   wantResult: boolean;
@@ -75,8 +75,8 @@ export interface Shared {
   track(event: string, props?: Record<string, TrackValue>): void;
 }
 
-// Ce que le composant est une fois les tranches reunies. Le contrat s'ecrit a la main :
-// deduire « this » du type des tranches tourne en rond, et TypeScript rend « any ».
+// Ce que le composant est une fois les tranches reunies. Le contrat s'écrit à la main :
+// déduire « this » du type des tranches tourne en rond, et TypeScript rend « any ».
 export interface Terminal
   extends
     AchievementsApi,
@@ -101,11 +101,11 @@ export interface Terminal
     SuggestionsApi,
     SuggestionsState {}
 
-// Ce que « this » voit dans une methode : le composant entier, plus les magies.
+// Ce que « this » voit dans une méthode : le composant entier, plus les magies.
 export type Shell = Magics & Terminal;
 
-// L'identite, comme withMagics dont elle prend la place : ThisType ne change rien au code
-// produit, elle donne seulement son type a « this ».
+// L'identité, comme withMagics dont elle prend la place : ThisType ne change rien au code
+// produit, elle donne seulement son type à « this ».
 export const slice = <T extends object>(members: T & ThisType<Shell>): T => {
   return members;
 };

@@ -1,27 +1,27 @@
 // Le glitch : cinq secondes d'affichage corrompu, et les trois gestes qui les declenchent.
 //
-// La tranche ne porte aucun accesseur : elle ecrit dans l'etat, et le balisage lit l'etat.
+// La tranche ne porte aucun accesseur : elle écrit dans l'état, et le balisage lit l'etat.
 // Le texte corrompu fait exception, et pour une raison — voir « glitchStart ».
 
 import { type Beat, type Delay, type Shell, slice } from "../shell.ts";
 import { RAIN, corrupt, heatAt, pick } from "./corrupt.ts";
 import type { GlitchMode } from "../../interpret.ts";
 
-// Cinq secondes : assez pour croire a la panne, trop court pour inquieter. La fenetre
-// separe deux appuis, elle ne borne pas la serie : un rythme regulier arme, une hesitation
-// remet a zero.
+// Cinq secondes : assez pour croire à la panne, trop court pour inquieter. La fenêtre
+// sépare deux appuis, elle ne borne pas la série : un rythme régulier arme, une hésitation
+// remet à zero.
 const GLITCH_MS = 5000;
-// La feuille fige le theme permute sur sa derniere image (« both »). Sans cette variable,
+// La feuille fige le thème permute sur sa dernière image (« both »). Sans cette variable,
 // un glitch plus long laisserait les couleurs permutées après sa fin, sans aucune erreur.
 const GLITCH_VAR = "--glitch-ms";
 
 export const SHIFT_COUNT = 5;
-// La jauge n'apparait qu'au deuxieme appui : au premier elle trahirait l'egg a quiconque
+// La jauge n'apparaît qu'au deuxième appui : au premier elle trahirait l'egg à quiconque
 // effleure la touche.
 export const GAUGE_AT = 2;
 
 const TAP_WINDOW_MS = 1400;
-// Le refus de « sudo » doit se lire avant que l'ecran parte : deux lignes, un silence,
+// Le refus de « sudo » doit se lire avant que l'écran parte : deux lignes, un silence,
 // puis la panne.
 const SUDO_MS = 900;
 const TICK_MS = 70;
@@ -30,11 +30,11 @@ const TICK_MS = 70;
 const NODE_ODDS = 0.72;
 const RAIN_COLUMNS = 30;
 const RAIN_LENGTH = 18;
-// La chute la plus rapide, et l'ecart au-dessus. Les deux se tirent par colonne.
+// La chute la plus rapide, et l'écart au-dessus. Les deux se tirent par colonne.
 const RAIN_FALL_MS = 1100;
 const RAIN_SPREAD_MS = 900;
-// Les regions vivantes sont ecartees : les corrompre ferait lire du charabia a un lecteur
-// d'ecran quatorze fois par seconde. Les champs de saisie le sont aussi, sinon la commande
+// Les régions vivantes sont écartées : les corrompre ferait lire du charabia à un lecteur
+// d'écran quatorze fois par seconde. Les champs de saisie le sont aussi, sinon la commande
 // en cours part avec le reste.
 const SPARED =
   'input,textarea,[contenteditable],[aria-live],[role="status"],[role="alert"],[data-no-glitch]';
@@ -42,9 +42,9 @@ const stage = () => {
   return document.querySelector("[data-panes]");
 };
 
-// Chaque colonne tire sa duree et son retard. Deriver les deux du rang faisait tomber la
-// pluie en cascade reguliere, qui se lit comme un balayage et non comme une pluie. Le
-// retard est negatif : la colonne est deja en route, sinon les trente entrent ensemble.
+// Chaque colonne tire sa durée et son retard. Dériver les deux du rang faisait tomber la
+// pluie en cascade régulière, qui se lit comme un balayage et non comme une pluie. Le
+// retard est négatif : la colonne est déjà en route, sinon les trente entrent ensemble.
 const rainColumns = () => {
   return Array.from({ length: RAIN_COLUMNS }, (_, index) => {
     const fall = Math.round(RAIN_FALL_MS + Math.random() * RAIN_SPREAD_MS);
@@ -58,18 +58,18 @@ const rainColumns = () => {
   });
 };
 
-// Ce que le glitch garde dans l'etat du composant. L'etat vit dans app.ts, comme tout le
-// reste ; app.ts reprend cette interface pour ne pas declarer les memes champs deux fois.
+// Ce que le glitch garde dans l'état du composant. L'état vit dans app.ts, comme tout le
+// reste ; app.ts reprend cette interface pour ne pas déclarer les mêmes champs deux fois.
 export interface GlitchState {
-  // Les appuis comptes dans la fenetre glissante, de zero a cinq.
+  // Les appuis comptes dans la fenêtre glissante, de zéro à cinq.
   glitchArmed: number;
   glitchBeat: Beat | undefined;
-  // Le texte d'origine, noeud par noeud. Il est rendu tel quel a la fin, donc une panne
+  // Le texte d'origine, noeud par noeud. Il est rendu tel quel à la fin, donc une panne
   // interrompue ne perd rien.
   glitchCache: { node: Text; text: string }[];
   glitchEnd: Delay | undefined;
   // « shift », « matrix » ou « sudo » pendant la panne, vide au repos : un seul champ dit
-  // a la fois que le glitch court et ce qui l'a declenche.
+  // à la fois que le glitch court et ce qui l'a declenche.
   glitchMode: GlitchMode | "";
   glitchRain: { glyphs: string; style: string }[];
   glitchTap: Delay | undefined;
@@ -85,7 +85,7 @@ export interface GlitchApi {
 
 export const glitchSlice = () => {
   return slice<GlitchApi>({
-    // « sudo » refuse, puis tombe en panne. L'interpreteur ne pose aucun minuteur : il dit
+    // « sudo » refuse, puis tombe en panne. L'interpréteur ne pose aucun minuteur : il dit
     // que le glitch vient, la coquille tient le silence entre les deux.
     glitchLater(this: Shell, mode: GlitchMode) {
       clearTimeout(this.glitchWait);
@@ -94,8 +94,8 @@ export const glitchSlice = () => {
       }, SUDO_MS);
     },
 
-    // Cinq appuis sur Shift, le reflexe de qui cherche une console. app.ts rend deja la
-    // main quand la frappe vient d'un champ : une majuscule tapee ne compte pas.
+    // Cinq appuis sur Shift, le réflexe de qui cherche une console. app.ts rend déjà la
+    // main quand la frappe vient d'un champ : une majuscule tapée ne compte pas.
     glitchShift(this: Shell) {
       clearTimeout(this.glitchTap);
 
@@ -115,8 +115,8 @@ export const glitchSlice = () => {
       }, TAP_WINDOW_MS);
     },
 
-    // Animations coupees ou mouvement reduit : rien ne se corrompt, comme la mascotte
-    // disparait au lieu de se figer. Un lecteur d'ecran relirait sinon cinq secondes de
+    // Animations coupées ou mouvement réduit : rien ne se corrompt, comme la mascotte
+    // disparaît au lieu de se figer. Un lecteur d'écran relirait sinon cinq secondes de
     // charabia sans avoir rien demande.
     glitchStart(this: Shell, mode: GlitchMode) {
       if (!this.anim || this.reduced) {
@@ -140,7 +140,7 @@ export const glitchSlice = () => {
 
       for (let node = walker.nextNode(); node !== null; node = walker.nextNode()) {
         // SAFETY: « SHOW_TEXT » garantit que le parcours ne rend que des noeuds texte.
-        // C'est la declaration de la lib DOM qui ne sait pas l'exprimer.
+        // C'est la déclaration de la lib DOM qui ne sait pas l'exprimer.
         cache.push({ node: node as Text, text: node.nodeValue ?? "" });
       }
 
@@ -148,8 +148,8 @@ export const glitchSlice = () => {
 
       const started = performance.now();
 
-      // Le texte corrompu s'ecrit dans les noeuds, jamais dans l'etat : le deriver d'un
-      // etat reactif ferait rerendre les trois volets quatorze fois par seconde.
+      // Le texte corrompu s'écrit dans les noeuds, jamais dans l'état : le dériver d'un
+      // état réactif ferait rerendre les trois volets quatorze fois par seconde.
       this.glitchBeat = setInterval(() => {
         const heat = heatAt(Math.min(1, (performance.now() - started) / GLITCH_MS));
 

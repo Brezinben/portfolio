@@ -1,5 +1,5 @@
-// Les valeurs figees du terminal : durees, seuils, tables de reglage. Arretees apres
-// iteration dans le canvas, elles ne doivent pas redevenir des reglages.
+// Les valeurs figées du terminal : durées, seuils, tables de reglage. Arrêtées après
+// itération dans le canvas, elles ne doivent pas redevenir des reglages.
 // Voir design/DECISIONS.md, section 23.
 
 import { section } from "./format.ts";
@@ -40,9 +40,9 @@ export const PALETTES = [
   { id: "hibernus", label: "hibernus" },
 ];
 export const THEMES = [{ id: SYSTEM_THEME, label: "systema" }, ...PALETTES];
-// Les valeurs d'etat restent en anglais : c'est la langue d'un terminal.
-// Les réglages qui se basculent. Nommer l'union permet d'indexer l'etat par la
-// cle sans effacer son type.
+// Les valeurs d'état restent en anglais : c'est la langue d'un terminal.
+// Les réglages qui se basculent. Nommer l'union permet d'indexer l'état par la
+// clé sans effacer son type.
 export type ToggleKey = "anim" | "out" | "shortcuts";
 
 export const TOGGLES: { key: ToggleKey; label: string; off: string; on: string }[] = [
@@ -54,31 +54,31 @@ export const TOGGLES: { key: ToggleKey; label: string; off: string; on: string }
 ];
 export const TYPE_CPS = 52;
 export const EXEC_MS = 20;
-// La fenetre de contexte se compte en caracteres imprimes, pas en commandes : une
-// section longue coute plus qu'un « ok ». Budget et plancher figes apres essai.
+// La fenêtre de contexte se compte en caractères imprimes, pas en commandes : une
+// section longue coûte plus qu'un « ok ». Budget et plancher figes après essai.
 export const CTX_BUDGET = 2600;
 export const CTX_FLOOR = 60;
 export const CTX_CELLS = 10;
-// Compacter prend du temps, et ca doit se voir. La barre se remplit d'une case toutes
-// les 520 ms pendant que sa tete tourne a chaque battement : dix cases, cinq secondes.
+// Compacter prend du temps, et ça doit se voir. La barre se remplit d'une case toutes
+// les 520 ms pendant que sa tête tourne à chaque battement : dix cases, cinq secondes.
 export const COMPACT_MS = 5200;
 export const COMPACT_TICK_MS = 130;
-// Le demarrage dessine sa barre sur vingt-quatre cases, comme le canvas.
+// Le démarrage dessine sa barre sur vingt-quatre cases, comme le canvas.
 export const BOOT_CELLS = 24;
 // Ce que la recherche globale montre, tous groupes confondus. Au-dela, la liste demande un
-// defilement, et la selection quitte la vue au lieu de se lire d'un coup.
+// défilement, et la sélection quitte la vue au lieu de se lire d'un coup.
 export const GLOBAL_LIMIT = 7;
-// Le journal ne prend jamais la place du resultat : celui-ci garde ce plancher.
+// Le journal ne prend jamais la place du résultat : celui-ci garde ce plancher.
 export const RESULT_MIN_PX = 120;
 export const PANE_GAP_PX = 10;
-// Largeur approximative d'un caractere de JetBrains Mono a 14 px.
+// Largeur approximative d'un caractère de JetBrains Mono à 14 px.
 export const CHAR_PX = 8.4;
-// Le contenu est servi a cote de la page. Le depot est prive : la copie distante
-// rendait 404 et ne servait plus qu'a retarder le demarrage.
+// Le contenu est servi à côté de la page. Le dépôt est privé : la copie distante
+// rendait 404 et ne servait plus qu'à retarder le demarrage.
 export const CONTENT_URL = "content.json";
-// La premiere question paie la mise en route du modele, qui tient rarement en cinq
-// secondes. L'attente se voit a l'ecran, donc mieux vaut la laisser courir que rendre
-// une reponse par defaut alors que le modele allait repondre.
+// La première question paie la mise en route du modèle, qui tient rarement en cinq
+// secondes. L'attente se voit à l'écran, donc mieux vaut la laisser courir que rendre
+// une réponse par défaut alors que le modèle allait repondre.
 export const ASK_MS = 15_000;
 export const EMPTY = section({ id: "", label: "" });
 // Délai de repos du focus avant qu'une techno compte comme regardée.

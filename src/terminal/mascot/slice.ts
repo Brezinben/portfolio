@@ -1,4 +1,4 @@
-// La mascotte : ce qu'elle joue, ou elle se place, comment on la manipule.
+// La mascotte : ce qu'elle joue, où elle se place, comment on la manipule.
 
 import {
   AWAY_MS,
@@ -28,8 +28,8 @@ interface Point {
   y: number;
 }
 
-// Ce que la mascotte garde dans l'etat du composant. L'etat vit dans app.ts, comme tout le
-// reste ; app.ts reprend cette interface pour ne pas declarer les memes champs deux fois.
+// Ce que la mascotte garde dans l'état du composant. L'état vit dans app.ts, comme tout le
+// reste ; app.ts reprend cette interface pour ne pas déclarer les mêmes champs deux fois.
 export interface MascotState {
   at: number;
   becoming: string;
@@ -91,7 +91,7 @@ export interface MascotApi {
 export const mascotSlice = () => {
   return slice<MascotApi>({
     blowUp(this: Shell, via: TrackSource = "interface") {
-      // Deja absente, une seconde explosion repousserait son retour sans rien montrer.
+      // Déjà absente, une seconde explosion repousserait son retour sans rien montrer.
       // Le clic passe par poke(), qui garde déjà. La commande arrive ici en direct.
       if (this.gone) {
         return;
@@ -112,8 +112,8 @@ export const mascotSlice = () => {
     },
 
     // Une explosion ou un voyage en cours laisserait la mascotte absente, et leur minuteur
-    // la rappellerait en pleine nuit : les deux tombent avec le reseau. Vider l'etat
-    // courant ouvre aussi la garde des transitions, qui refuse tout jusqu'a son terme.
+    // la rappellerait en pleine nuit : les deux tombent avec le reseau. Vider l'état
+    // courant ouvre aussi la garde des transitions, qui refuse tout jusqu'à son terme.
     doze(this: Shell) {
       clearTimeout(this.sleeper);
       clearTimeout(this.settler);
@@ -133,18 +133,18 @@ export const mascotSlice = () => {
       }
 
       const box = track.getBoundingClientRect(),
-        // Plaquee, la mascotte suit encore le curseur en abscisse : elle est retenue, pas
+        // Plaquée, la mascotte suit encore le curseur en abscisse : elle est retenue, pas
         // figee.
         was = this.at;
 
       this.place(event.clientX - box.left - this.grabAt);
 
       // Le sens se lit sur ce que la mascotte a parcouru, pas sur ce que le curseur a
-      // parcouru : plaquee, elle ne bouge plus, et sa feuille doit le dire.
+      // parcouru : plaquée, elle ne bouge plus, et sa feuille doit le dire.
       const step = this.at - was;
 
-      // Un glisser franc n'est pas un clic. Le verrou tient jusqu'a la prise suivante :
-      // revenir au point de depart n'annule pas le deplacement.
+      // Un glisser franc n'est pas un clic. Le verrou tient jusqu'à la prise suivante :
+      // revenir au point de départ n'annule pas le deplacement.
       if (
         Math.hypot(event.clientX - this.grabFrom.x, event.clientY - this.grabFrom.y) > DRAG_STEP
       ) {
@@ -153,8 +153,8 @@ export const mascotSlice = () => {
 
       const next = dragState(event, box, step);
 
-      // Reaffecter la meme feuille remettrait l'animation a sa premiere case : la mascotte
-      // paraitrait figee pendant tout le deplacement.
+      // Réaffecter la même feuille remettrait l'animation à sa première case : la mascotte
+      // paraîtrait figée pendant tout le deplacement.
       if (next !== this.mascotState) {
         this.mascotPlay(next);
       }
@@ -167,14 +167,14 @@ export const mascotSlice = () => {
     },
 
     // Chaque expression porte le nom de sa feuille, et l'ADR 0004 exige qu'une expression sans
-    // feuille ramene au repos en coupant ce qui etait en cours. « idle » suit ce chemin :
-    // le repos est deja son etat.
+    // feuille ramène au repos en coupant ce qui était en cours. « idle » suit ce chemin :
+    // le repos est déjà son etat.
     emote(this: Shell, expression?: Expression) {
       this.mascotPlay(expression && MASCOT_STATES.has(expression) ? expression : MASCOT_REST);
     },
 
     // Un cran dans la chaine. La feuille arrive avant la transition : sans cela, les
-    // premieres cases se joueraient sur une image absente.
+    // premières cases se joueraient sur une image absente.
     async evolve(this: Shell) {
       const step = lookup(CHAIN, this.form);
 
@@ -196,10 +196,10 @@ export const mascotSlice = () => {
       }
     },
 
-    // La mascotte est retenue dans sa piste. On peut l'y trainer d'un bout a l'autre, mais
+    // La mascotte est retenue dans sa piste. On peut l'y traîner d'un bout à l'autre, mais
     // pas l'en sortir : tirer au-dela d'un bord la plaque contre ce bord.
     grab(this: Shell, event: PointerEvent) {
-      // Endormie, elle ne se laisse pas prendre : sans ce refus, drag() la deplacerait
+      // Endormie, elle ne se laisse pas prendre : sans ce refus, drag() la déplacerait
       // encore par place(), et la feuille de sommeil glisserait sur la piste.
       if (this.gone || !this.online) {
         return;
@@ -212,14 +212,14 @@ export const mascotSlice = () => {
       this.grabFrom = { x: event.clientX, y: event.clientY };
       this.dragged = false;
       this.dragging = true;
-      // La capture porte tout le plaquage : l'etat se lit sur un curseur sorti de la
-      // piste, et sans elle le navigateur cesserait de livrer pointermove des la sortie.
+      // La capture porte tout le plaquage : l'état se lit sur un curseur sorti de la
+      // piste, et sans elle le navigateur cesserait de livrer pointermove dès la sortie.
       node?.setPointerCapture(event.pointerId);
       this.mascotPlay("grab");
     },
 
-    // La feuille du train fait la paire avec celle de la chute : l'une emmene la
-    // mascotte, l'autre la ramene. Un decor vide sans retour serait un piege.
+    // La feuille du train fait la paire avec celle de la chute : l'une emmène la
+    // mascotte, l'autre la ramene. Un décor vide sans retour serait un piege.
     leave(this: Shell) {
       if (this.gone) {
         return;
@@ -257,8 +257,8 @@ export const mascotSlice = () => {
       this.loaded.add(form);
     },
 
-    // Reappliquer une classe ne redemarre pas son animation : il faut la retirer, forcer
-    // une relecture de la geometrie, puis la remettre.
+    // Reappliquer une classe ne redémarre pas son animation : il faut la retirer, forcer
+    // une relecture de la géométrie, puis la remettre.
     mascotPlay(this: Shell, state: string) {
       const node = this.$refs.mascot;
 
@@ -277,8 +277,8 @@ export const mascotSlice = () => {
         return;
       }
 
-      // Le reseau coupe, la mascotte dort et rien ne la reveille : toute autre feuille
-      // la sortirait de sa boucle. Meme forme de garde que « gone » au-dessus.
+      // Le réseau coupe, la mascotte dort et rien ne la réveille : toute autre feuille
+      // la sortirait de sa boucle. Même forme de garde que « gone » au-dessus.
       if (!this.online && state !== "sleep") {
         return;
       }
@@ -301,9 +301,9 @@ export const mascotSlice = () => {
       }
     },
 
-    // Ce que la coquille sait de la mascotte, et que l'interpreteur ne peut pas deviner.
+    // Ce que la coquille sait de la mascotte, et que l'interpréteur ne peut pas deviner.
     mascotStanding(this: Shell): Context["mascot"] {
-      // Le sommeil passe devant l'absence : hors reseau, doze() a deja rappele la mascotte
+      // Le sommeil passe devant l'absence : hors réseau, doze() a déjà rappelé la mascotte
       // et coupe le minuteur qui l'aurait ramenee.
       if (!this.online) {
         return "asleep";
@@ -342,8 +342,8 @@ export const mascotSlice = () => {
       }
     },
 
-    // La position est ecrite directement dans le style : la faire passer par l'etat
-    // reactif ferait rerendre la page a chaque image.
+    // La position est écrite directement dans le style : la faire passer par l'état
+    // réactif ferait rerendre la page à chaque image.
     place(this: Shell, x: number) {
       this.at = Math.max(0, Math.min(this.trackWidth(), x));
 
@@ -355,7 +355,7 @@ export const mascotSlice = () => {
     },
 
     poke(this: Shell) {
-      // Un clic suit toujours le relachement du pointeur. Trainer la mascotte n'est pas
+      // Un clic suit toujours le relâchement du pointeur. Traîner la mascotte n'est pas
       // cliquer dessus : sans cette garde, chaque glisser rapprocherait l'explosion.
       if (this.dragged) {
         this.dragged = false;
@@ -364,7 +364,7 @@ export const mascotSlice = () => {
       }
 
       // Endormie, elle ne compte pas les clics : sinon l'explosion partirait sans feuille
-      // a jouer, et la mascotte disparaitrait jusqu'au retour du reseau.
+      // à jouer, et la mascotte disparaîtrait jusqu'au retour du reseau.
       if (this.gone || !this.online) {
         return;
       }
@@ -390,9 +390,9 @@ export const mascotSlice = () => {
       this.mascotPlay("jump");
     },
 
-    // La veille a la priorite la plus basse : le moindre geste la repousse. Le reseau
-    // coupe passe devant : le sommeil tient alors jusqu'a son retour, et aucun geste ne
-    // rearme le minuteur.
+    // La veille a la priorité la plus basse : le moindre geste la repousse. Le réseau
+    // coupe passe devant : le sommeil tient alors jusqu'à son retour, et aucun geste ne
+    // réarme le minuteur.
     rouse(this: Shell) {
       clearTimeout(this.sleeper);
 
@@ -432,30 +432,30 @@ export const mascotSlice = () => {
     },
 
     settle(this: Shell) {
-      // Un plaquage tient sa derniere case tant qu'on reste colle. Sans cette sortie, son
+      // Un plaquage tient sa dernière case tant qu'on reste colle. Sans cette sortie, son
       // animationend rendrait le repos au milieu de la prise.
       if (this.dragging) {
         return;
       }
 
-      // Rejouer la mue plutot que la boucler en CSS lui garde le filet de ONE_SHOT_MS :
-      // une boucle sans fin n'emet jamais animationend et resterait collee.
+      // Rejouer la mue plutôt que la boucler en CSS lui garde le filet de ONE_SHOT_MS :
+      // une boucle sans fin n'émet jamais animationend et resterait collee.
       if (this.morphHeld && this.mascotState === "morph") {
         this.mascotPlay("morph");
 
         return;
       }
 
-      // Le train emmene la mascotte : sa derniere case est un quai vide. Elle n'a donc
-      // pas de repos a reprendre, elle est partie.
+      // Le train emmène la mascotte : sa dernière case est un quai vide. Elle n'a donc
+      // pas de repos à reprendre, elle est partie.
       if (this.mascotState === "train") {
         this.leave();
 
         return;
       }
 
-      // La derniere case d'une transition montre deja la forme d'arrivee : il ne reste
-      // qu'a la poser, puis a rendre le repos.
+      // La dernière case d'une transition montre déjà la forme d'arrivée : il ne reste
+      // qu'à la poser, puis à rendre le repos.
       if (TRANSITIONS.has(this.mascotState)) {
         this.form = this.becoming;
         this.becoming = "";
@@ -465,8 +465,8 @@ export const mascotSlice = () => {
         return;
       }
 
-      // Hors reseau, le repos de la mascotte est le sommeil. Sans ce choix, la page chargee
-      // puis coupee avant le premier rendu la laisserait sans feuille du tout.
+      // Hors réseau, le repos de la mascotte est le sommeil. Sans ce choix, la page chargée
+      // puis coupée avant le premier rendu la laisserait sans feuille du tout.
       this.mascotPlay(this.online ? MASCOT_REST : "sleep");
     },
 
@@ -521,7 +521,7 @@ export const mascotSlice = () => {
       }
 
       clearTimeout(this.typer_rest);
-      // Rendre la main seulement si la frappe tient encore l'ecran : une commande a pu
+      // Rendre la main seulement si la frappe tient encore l'écran : une commande a pu
       // demander autre chose entre-temps, « sleep » par exemple.
       this.typer_rest = setTimeout(() => {
         if (this.mascotState === "type") {
@@ -530,7 +530,7 @@ export const mascotSlice = () => {
       }, TYPE_REST_MS);
     },
 
-    // Une mascotte endormie ne se promene pas : la balade passe par place(), que la garde
+    // Une mascotte endormie ne se promène pas : la balade passe par place(), que la garde
     // de mascotPlay() n'atteint pas.
     wander(this: Shell) {
       if (this.dragging || this.gone || !this.anim || this.reduced || !this.online) {
