@@ -32,7 +32,7 @@ test("should copy the address on share link", async ({ page, context }) => {
   await expect(page.locator("[data-journal]")).toContainText("partage vers");
 
   // L'adresse partagée est celle d'où la page vient, pas celle que content.json annonce :
-  // le lien copié depuis une préproduction doit ramener à cette preproduction.
+  // le lien copié depuis une préproduction doit ramener à cette préproduction.
   const here = await page.evaluate(() => {
     return globalThis.location.origin + globalThis.location.pathname;
   });
