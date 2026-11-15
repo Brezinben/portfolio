@@ -2,8 +2,8 @@ import { expect, test } from "@playwright/test";
 import type { Page } from "@playwright/test";
 import { boxOf } from "../helpers/box.ts";
 
-// Le site tient en memoire une fois charge : couper le reseau apres le demarrage ne casse
-// que les commandes qui partent ailleurs. Le test coupe donc apres, jamais avant.
+// Le site tient en mémoire une fois charge : couper le réseau après le démarrage ne casse
+// que les commandes qui partent ailleurs. Le test coupe donc après, jamais avant.
 const boot = async (page: Page) => {
     await page.goto("/");
     await expect(page.locator("[data-boot]")).toHaveCount(0, { timeout: 10_000 });

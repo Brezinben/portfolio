@@ -35,7 +35,7 @@ test("should set the timeline years in tabular figures", async ({ page }) => {
 });
 
 // Les missions faites pour un employeur se rangent sous lui : on lit pour qui chacune a
-// ete faite.
+// été faite.
 test("should group the missions under their employer", async ({ page }) => {
   await open(page, "#parcours");
 
@@ -60,7 +60,7 @@ test("should open the mission when a timeline entry is confirmed", async ({ page
 });
 
 // Le canvas dispose la stack comme la sortie d'un ls : un rail par domaine, et les
-// technologies qui coulent en colonnes, chacune precedee de son trait d'arborescence.
+// technologies qui coulent en colonnes, chacune précédée de son trait d'arborescence.
 test("should show the stack tree in the main pane, in columns", async ({ page }) => {
   await open(page, "#stack");
 
@@ -79,8 +79,8 @@ test("should show the stack tree in the main pane, in columns", async ({ page })
   expect(columns, "the technologies flow over several columns").toBeGreaterThan(1);
 });
 
-// Aucun texte d'invite au depart : rien ne s'affiche tant qu'aucune technologie n'a le
-// focus. Des qu'une en a un, sa fiche suit immediatement.
+// Aucun texte d'invite au départ : rien ne s'affiche tant qu'aucune technologie n'a le
+// focus. Dès qu'une en a un, sa fiche suit immediatement.
 test("should follow the focus with the tech note from the first technology", async ({ page }) => {
   await open(page, "#stack");
 
@@ -95,7 +95,7 @@ test("should follow the focus with the tech note from the first technology", asy
   await expect(page.locator("[data-technote]")).toContainText("Docker");
 });
 
-// La stack est une grille : les quatre fleches y naviguent, pas seulement la tabulation.
+// La stack est une grille : les quatre flèches y naviguent, pas seulement la tabulation.
 test("should move through the stack grid with the four arrows", async ({ page }) => {
   await open(page, "#stack");
   await page.locator("[data-tech]").first().focus();
@@ -124,14 +124,14 @@ test("should move through the stack grid with the four arrows", async ({ page })
 });
 
 // Chaque bloc de la stack est une grille independante. Un pas fixe, calcule sur la
-// premiere ligne du premier bloc, faisait changer de colonne des qu'une ligne etait
-// incomplete ou qu'on passait d'une categorie a la suivante.
+// première ligne du premier bloc, faisait changer de colonne dès qu'une ligne était
+// incomplète ou qu'on passait d'une catégorie à la suivante.
 test("should keep the column from one stack row to the next on arrow down", async ({ page }) => {
   await open(page, "#stack");
 
   const strayed = await page.evaluate(() => {
     const cells = [...document.querySelectorAll<HTMLElement>("[data-tech]")],
-      // Une cellule est toujours dans la carte : elle vient de la meme liste.
+      // Une cellule est toujours dans la carte : elle vient de la même liste.
       boxes = new Map(
         cells.map((cell) => {
           return [cell, cell.getBoundingClientRect()];
@@ -141,7 +141,7 @@ test("should keep the column from one stack row to the next on arrow down", asyn
         return boxes.get(cell) ?? cell.getBoundingClientRect();
       },
       wrong: string[] = [],
-      // La derniere ligne n'a rien en dessous : la fleche bas n'y promet rien.
+      // La dernière ligne n'a rien en dessous : la flèche bas n'y promet rien.
       departures = cells.filter((cell) => {
         return cells.some((other) => {
           return boxOf(other).top > boxOf(cell).top + 1;

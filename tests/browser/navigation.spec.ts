@@ -134,7 +134,7 @@ test("should focus the command line on the slash key", async ({ page }) => {
   await expect(page.getByLabel("Commande")).toBeFocused();
 });
 
-// Dans une liste a une colonne, la fleche droite valide et descend vers le volet suivant.
+// Dans une liste à une colonne, la flèche droite valide et descend vers le volet suivant.
 // La frise fait exception : elle mène à la première techno sur la stack. Une section
 // sans prise mène à la ligne de commande.
 test("should confirm a section and go down into the main pane on arrow right", async ({ page }) => {
@@ -180,7 +180,7 @@ test("should walk the section list with the up and down arrows", async ({ page }
 // Valider au clavier envoyait alors une mesure par répétition, pour un seul geste.
 test("should measure one section when enter is held down", async ({ page }) => {
   // Count.js remplace window.goatcounter.count par le sien : sans ce blocage, le
-  // compteur du test disparait au chargement du script.
+  // compteur du test disparaît au chargement du script.
   await page.route("**/analytics.brezinben.dpdns.org/**", (route) => {
     return route.abort();
   });
@@ -218,8 +218,8 @@ test("should measure one section when enter is held down", async ({ page }) => {
   }, Promise.resolve());
   await cdp.send("Input.dispatchKeyEvent", { ...key, type: "keyUp" });
 
-  // GoatCounter ne porte pas de propriete : « section » arrive suivi de son id et de
-  // sa provenance, dans le nom meme de l'evenement.
+  // GoatCounter ne porte pas de propriété : « section » arrive suivi de son id et de
+  // sa provenance, dans le nom même de l'evenement.
   const sections = await page.evaluate(() => {
     return globalThis.hits.filter((name) => {
       return name.startsWith("section:");

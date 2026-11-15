@@ -30,14 +30,14 @@ const CONTEXT: Context = {
     shareTargets: [],
     themes: ["dark", "light", "noctis"],
   },
-  // Le meme contexte, avec un modele local disponible : la recherche lui laisse choisir.
+  // Le même contexte, avec un modèle local disponible : la recherche lui laisse choisir.
   AVEC_MODELE: Context = { ...CONTEXT, model: true },
   texts = (result: Outcome) => {
     return result.lines.map((line) => {
       return line.t;
     });
   },
-  // Ce qu'une commande met dans le resultat, la ou le journal ne recoit que l'echo.
+  // Ce qu'une commande met dans le résultat, là où le journal ne reçoit que l'echo.
   resultTexts = (result: Outcome) => {
     return (result.result ?? []).map((line) => {
       return line.t ?? "";
@@ -48,7 +48,7 @@ const CONTEXT: Context = {
       return effect.type;
     });
   },
-  // Retrouver un effet par son genre, en gardant le type precis que l'union lui donne.
+  // Retrouver un effet par son genre, en gardant le type précis que l'union lui donne.
   effectOf = <K extends Effect["type"]>(result: Outcome, kind: K) => {
     return result.effects.find((entry): entry is Extract<Effect, { type: K }> => {
       return entry.type === kind;
@@ -112,8 +112,8 @@ it("should list the sections then the missions with ls", () => {
   assert.equal(result.lines[2]?.t, "m-kereis");
 });
 
-// La reponse de help ne tient pas dans le journal d'un ecran large : elle reclame le
-// resultat, et le journal dit seulement ou la lire.
+// La réponse de help ne tient pas dans le journal d'un écran large : elle réclame le
+// résultat, et le journal dit seulement où la lire.
 it("should list the commands and recall the keyboard in the result of help", () => {
   const result = interpret("help", CONTEXT),
     body = resultTexts(result).join("\n");
@@ -226,7 +226,7 @@ it("should treat brezinben as an alias of benjamin", () => {
   );
 });
 
-// La blague est tiree au hasard, mais jamais deux fois la meme d'affilee.
+// La blague est tirée au hasard, mais jamais deux fois la même d'affilee.
 it("should draw a joke different from the previous one", () => {
   for (let attempt = 0; attempt < 40; attempt += 1) {
     const result = interpret("/joke", { ...CONTEXT, jokeIndex: 0 }),
@@ -379,7 +379,7 @@ it("should answer with a passage of the corpus, never with generated text", () =
   );
 });
 
-// Sans modele, la reponse part telle quelle : aucun descripteur, personne pour le lire.
+// Sans modèle, la réponse part telle quelle : aucun descripteur, personne pour le lire.
 it("should answer alone and describe no candidate when ask runs without a model", () => {
   const result = interpret("ask nantes développeur", CONTEXT);
 
@@ -391,8 +391,8 @@ it("should answer alone and describe no candidate when ask runs without a model"
   );
 });
 
-// Le modele voit tous les passages, pas seulement ceux qui partagent un mot avec la
-// question. Ne lui donner que les trouvailles lexicales le reduirait a les reclasser.
+// Le modèle voit tous les passages, pas seulement ceux qui partagent un mot avec la
+// question. Ne lui donner que les trouvailles lexicales le réduirait à les reclasser.
 it("should submit every passage to the model when ask runs with one", () => {
   const descripteur = effectOf(interpret("ask nantes développeur", AVEC_MODELE), "ask");
 
@@ -400,8 +400,8 @@ it("should submit every passage to the model when ask runs with one", () => {
   assert.deepEqual(descripteur?.candidates, ["whoami", "stack", "m-kereis"]);
 });
 
-// La reponse attend le modele, mais elle voyage avec le descripteur : elle sort si le
-// modele echoue, et la coquille n'a pas a la reconstruire.
+// La réponse attend le modèle, mais elle voyage avec le descripteur : elle sort si le
+// modèle échoue, et la coquille n'a pas à la reconstruire.
 it("should keep the corpus answer waiting in the descriptor when ask runs with a model", () => {
   const result = interpret("ask nantes développeur", AVEC_MODELE),
     descripteur = effectOf(result, "ask");
@@ -415,8 +415,8 @@ it("should keep the corpus answer waiting in the descriptor when ask runs with a
   );
 });
 
-// Le recouvrement de mots ne trouve rien des que la question est tournee autrement. C'est
-// le cas ou un modele sert le plus : il doit etre consulte, pas court-circuite.
+// Le recouvrement de mots ne trouve rien dès que la question est tournée autrement. C'est
+// le cas où un modèle sert le plus : il doit être consulté, pas court-circuite.
 it("should consult the model even without a lexical match", () => {
   const descripteur = effectOf(interpret("ask zzzzz", AVEC_MODELE), "ask");
 
@@ -657,7 +657,7 @@ it("should refuse the command instead of lying when the mascot is away", () => {
   }
 });
 
-// Le but se jouait sur l'aide : la coquille en deduisait « easter egg trouve, rien ne
+// Le but se jouait sur l'aide : la coquille en déduisait « easter egg trouve, rien ne
 // bouge ». Une commande qui liste son usage le dit maintenant.
 it("should flag a slime usage listing as such", () => {
   for (const command of ["/slime", "/slime bogus", "/slime expression", "/slime activity"]) {
@@ -669,7 +669,7 @@ it("should flag a slime usage listing as such", () => {
   assert.equal(effectOf(interpret("/coffee", CONTEXT), "usage"), undefined);
 });
 
-// La chaine des formes. La coquille pose l'effet, l'interpreteur ne connait ni la forme
+// La chaîne des formes. La coquille pose l'effet, l'interpréteur ne connaît ni la forme
 // courante ni la suivante : il ne dit que « change de forme ».
 it("should ask for the form change on slime evolve", () => {
   const result = interpret("/slime evolve", CONTEXT);
@@ -678,7 +678,7 @@ it("should ask for the form change on slime evolve", () => {
   assert.match(texts(result)[1] ?? "", /change de forme/u);
 });
 
-// Endormie n'est ni absente ni occupee : la mascotte est la, et elle le reste. Le refus
+// Endormie n'est ni absente ni occupée : la mascotte est là, et elle le reste. Le refus
 // nomme la cause et la sortie, comme les autres refus du mode hors ligne.
 it("should sleep the mascot and refuse the command without a network", () => {
   const asleep = { ...CONTEXT, mascot: "asleep" } as const;
@@ -702,7 +702,7 @@ it("should sleep the mascot and refuse the command without a network", () => {
   }
 });
 
-// Occupee n'est pas absente : la mascotte est la, elle finit sa transformation. Le journal
+// Occupée n'est pas absente : la mascotte est là, elle finit sa transformation. Le journal
 // doit le dire, et non annoncer un geste que la coquille avale.
 it("should refuse the command without lying during a form change", () => {
   const busy = { ...CONTEXT, mascot: "busy" } as const;

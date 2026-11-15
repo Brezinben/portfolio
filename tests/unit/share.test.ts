@@ -110,7 +110,7 @@ it("should explain the command when propose has no text", () => {
   assert.match(interpret("/propose", CONTEXT).lines[1]?.t ?? "", /propose \[-y\] <idée>/u);
 });
 
-// La reponse attendue est deja ecrite : la validation tient en une touche.
+// La réponse attendue est déjà écrite : la validation tient en une touche.
 it("should pre-write the answer in the input", () => {
   const pending = interpret("/propose ajouter une section", CONTEXT).effects.find((entry) => {
     return entry.type === "pending";
@@ -119,7 +119,7 @@ it("should pre-write the answer in the input", () => {
   assert.equal(pending?.answer, "oui");
 });
 
-// -y vaut consentement : le drapeau a ete tape avec l'idee.
+// -y vaut consentement : le drapeau a été tapé avec l'idee.
 it("should send without asking the question when propose gets -y", () => {
   const result = interpret("/propose -y ajouter une section", CONTEXT);
 
@@ -140,7 +140,7 @@ it("should explain the command when propose gets -y without an idea", () => {
   assert.match(interpret("/propose -y", CONTEXT).lines[1]?.t ?? "", /propose \[-y\] <idée>/u);
 });
 
-// Le drapeau est un mot entier : une idee qui commence par « -y » reste intacte.
+// Le drapeau est un mot entier : une idée qui commence par « -y » reste intacte.
 it("should not cut an idea that starts with -y", () => {
   const result = interpret("/propose -yeux plus grands", CONTEXT);
 

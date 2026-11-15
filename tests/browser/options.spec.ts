@@ -1,8 +1,8 @@
 import { expect, test } from "@playwright/test";
 import type { Page } from "@playwright/test";
 
-// La premiere visite suit la preference du systeme : ces tests partent du thème sombre
-// pour ne pas dependre du reglage de la machine qui les lance.
+// La première visite suit la préférence du système : ces tests partent du thème sombre
+// pour ne pas dépendre du réglage de la machine qui les lance.
 const boot = async (page: Page) => {
     await page.emulateMedia({ colorScheme: "dark" });
     await page.goto("/");
@@ -74,8 +74,8 @@ test("should close the modal and give the focus back to the button on escape", a
   await expect(opts(page)).toBeFocused();
 });
 
-// Les themes sont sur plusieurs lignes : les quatre fleches y naviguent, et sortir par le
-// bas mene au premier reglage.
+// Les thèmes sont sur plusieurs lignes : les quatre flèches y naviguent, et sortir par le
+// bas mène au premier reglage.
 test("should move through the theme grid with the four arrows", async ({ page }) => {
   await boot(page);
   const dialog = await openOpts(page);
@@ -98,8 +98,8 @@ test("should move through the theme grid with the four arrows", async ({ page })
   await expect(page.locator(".tm")).toHaveAttribute("data-theme", "dark");
 });
 
-// Le reglage modifie doit etre celui qui a le focus, quel que soit le chemin pour y
-// arriver : un compteur separe se desynchronisait de la tabulation.
+// Le réglage modifie doit être celui qui a le focus, quel que soit le chemin pour y
+// arriver : un compteur séparé se désynchronisait de la tabulation.
 test("should change the setting that holds the focus on arrow right", async ({ page }) => {
   await boot(page);
   await openOpts(page);
@@ -116,8 +116,8 @@ test("should change the setting that holds the focus on arrow right", async ({ p
   ).toHaveAttribute("aria-pressed", "true");
 });
 
-// Le depart est le dernier theme, pas le theme actif : compter les pressions depuis le
-// theme actif depend du nombre de colonnes, donc de la largeur de la fenetre. Les
+// Le départ est le dernier thème, pas le thème actif : compter les pressions depuis le
+// thème actif dépend du nombre de colonnes, donc de la largeur de la fenetre. Les
 // pressions en trop tombent alors dans le vide et le test ne peut plus echouer.
 test("should reach the settings on arrow down from the last theme row", async ({ page }) => {
   await boot(page);
@@ -146,7 +146,7 @@ test("should follow the dark preference of the system on the first visit", async
   await expect(page.locator(".tm")).toHaveAttribute("data-theme", "dark");
 });
 
-// Le choix conserve prime sur la preference du systeme.
+// Le choix conserve prime sur la préférence du systeme.
 test("should ignore the system preference when a theme is already chosen", async ({ page }) => {
   await page.emulateMedia({ colorScheme: "light" });
   await page.addInitScript(() => {
@@ -246,7 +246,7 @@ test("should open the modal on the options command", async ({ page }) => {
   await expect(page.getByRole("dialog", { name: "Options d'affichage" })).toBeVisible();
 });
 
-// La modale a deux ouvrants depuis que la commande existe. Echap doit rendre le focus a
+// La modale a deux ouvrants depuis que la commande existe. Echap doit rendre le focus à
 // celui qui a ouvert, et non au bouton de l'en-tete que le visiteur n'a jamais touche.
 test("should give the focus back to the command line on escape when the command opened the modal", async ({
   page,

@@ -2,9 +2,9 @@ import { expect, test } from "@playwright/test";
 import { opened, spyOpen } from "../helpers/open.ts";
 import type { Page } from "@playwright/test";
 
-// Compose plutot qu'ecrit en clair : no-script-url interdit le litteral, alors qu'il est
+// Compose plutôt qu'écrit en clair : no-script-url interdit le littéral, alors qu'il est
 // ici la charge utile du test.
-// Ce que le test sert a la place de content.json. La forme est celle d'un contenu
+// Ce que le test sert à la place de content.json. La forme est celle d'un contenu
 // normal : ce sont les valeurs qui sont hostiles, et c'est tout le sujet.
 interface ContenuServi {
   feedback?: Record<string, string>;
@@ -51,8 +51,8 @@ const SCRIPT = ["java", "script:"].join(""),
     await expect(page.locator("[data-boot]")).toHaveCount(0, { timeout: 10_000 });
   };
 
-// Un ton venu du contenu est interpole dans un attribut style. Sans liste blanche, il
-// ferme la declaration et fait sortir une requete vers un serveur tiers.
+// Un ton venu du contenu est interpolé dans un attribut style. Sans liste blanche, il
+// ferme la déclaration et fait sortir une requête vers un serveur tiers.
 test("should send no request out when the content carries a hostile tone", async ({ page }) => {
   const leaked: string[] = [];
 
@@ -70,7 +70,7 @@ test("should send no request out when the content carries a hostile tone", async
   await expect(page.locator("[data-result]")).toContainText("charge utile");
 });
 
-// Une cible declaree dans le contenu ne doit pas pouvoir executer de script.
+// Une cible déclarée dans le contenu ne doit pas pouvoir exécuter de script.
 test("should never open a share target that carries a script URL", async ({ page }) => {
   await spyOpen(page);
   await serve(page, HOSTILE);
@@ -85,7 +85,7 @@ test("should never open a share target that carries a script URL", async ({ page
   expect(await opened(page), "nothing opens").toEqual([]);
 });
 
-// Une sequence pourcent invalide ne doit pas tuer la commande.
+// Une séquence pourcent invalide ne doit pas tuer la commande.
 test("should raise no exception on a badly encoded URL", async ({ page }) => {
   const errors: string[] = [];
 

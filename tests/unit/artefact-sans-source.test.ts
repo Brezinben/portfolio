@@ -19,7 +19,7 @@ const OUTPUT = fileURLToPath(
 
     return found.flat();
   },
-  // Un dossier vide n'apparait pas dans walk(), qui ne rend que des fichiers.
+  // Un dossier vide n'apparaît pas dans walk(), qui ne rend que des fichiers.
   emptyDirs = async (directory: string): Promise<string[]> => {
     const entries = await readdir(directory, { withFileTypes: true }),
       found = await Promise.all(
@@ -59,7 +59,7 @@ it("should publish no source file in the artefact", async () => {
 });
 
 // Le filtre de copie s'applique aussi aux dossiers, et un dossier n'a pas d'extension : un
-// dossier qui ne porte que du TypeScript etait cree puis vide de ses enfants, et publie
+// dossier qui ne porte que du TypeScript était crée puis vide de ses enfants, et publie
 // vide. Le test des sources ne le voyait pas, puisqu'il ne liste que des fichiers.
 it("should publish no empty directory in the artefact", async () => {
   const files = await walk(OUTPUT).catch(() => {
@@ -76,8 +76,8 @@ it("should publish no empty directory in the artefact", async () => {
   assert.deepEqual(empty, [], "a source directory was created then emptied");
 });
 
-// Les CONTEXT.md ont ete publies une fois : ils ne portent pas l'extension que le test des
-// sources filtre, et leur presence empechait en plus l'elagage de retirer le dossier qui ne
+// Les CONTEXT.md ont été publiés une fois : ils ne portent pas l'extension que le test des
+// sources filtre, et leur présence empêchait en plus l'élagage de retirer le dossier qui ne
 // contenait qu'eux. Un artefact ne sert que ce qu'un visiteur demande.
 it("should publish no repository documentation", async () => {
   const files = await walk(OUTPUT).catch(() => {

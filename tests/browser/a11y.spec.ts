@@ -13,8 +13,8 @@ const THEMES = ["dark", "light", "noctis", "azureus", "uva", "bordo", "lux", "hi
     }, theme);
     await boot(page);
   },
-  // Sans les regles de bonne pratique, le scan laissait passer une page sans « main » et
-  // sans titre de niveau un. Elles ne sont pas des echecs WCAG, mais la section impact
+  // Sans les règles de bonne pratique, le scan laissait passer une page sans « main » et
+  // sans titre de niveau un. Elles ne sont pas des échecs WCAG, mais la section impact
   // annonce « structure semantique » : le scan doit tenir la promesse, pas la contourner.
   scan = (page: Page) => {
     return new AxeBuilder({ page }).analyze();
@@ -187,7 +187,7 @@ test("should reach every section button with Tab", async ({ page }) => {
   expect(reached.size, "every section button is on the Tab path").toBe(sections);
 });
 
-// Noctis n'a qu'un vert : l'accent et le succes portaient la meme teinte, et la cle
+// Noctis n'a qu'un vert : l'accent et le succès portaient la même teinte, et la clé
 // d'une paire JSON ne se distinguait plus de sa valeur.
 test("should separate the key from the value on the noctis theme", async ({ page }) => {
   await withTheme(page, "noctis");

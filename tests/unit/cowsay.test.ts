@@ -57,8 +57,8 @@ it("should wrap the text at the requested width", () => {
   assert.ok(narrow.length > large.length, "fewer columns, more lines");
 });
 
-// La commande ne prend plus de drapeau : elle tire un visage au hasard a chaque appel. Les
-// huit restent donc atteignables par l'API, et c'est le repartiteur qui choisit.
+// La commande ne prend plus de drapeau : elle tire un visage au hasard à chaque appel. Les
+// huit restent donc atteignables par l'API, et c'est le répartiteur qui choisit.
 it("should give each of the eight head modes its own eyes", () => {
   const eyes = new Set(
     COW_HEAD_MODES.map((mode) => {
@@ -101,8 +101,8 @@ it("should not loop on a word longer than the width", () => {
   );
 });
 
-// Les drapeaux ont disparu de la commande : « cowsay -d » ecrit « -d », il ne l'interprete
-// plus. Le visage se tire au hasard, donc le test verifie l'appartenance, pas l'identite.
+// Les drapeaux ont disparu de la commande : « cowsay -d » écrit « -d », il ne l'interprète
+// plus. Le visage se tire au hasard, donc le test vérifie l'appartenance, pas l'identite.
 it("should draw a face at random among the eight", () => {
   const yeux = new Set(
       Array.from({ length: 60 }, () => {

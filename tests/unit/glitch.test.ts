@@ -1,5 +1,5 @@
 // La corruption du glitch. Elle tire dans « Math.random », donc les tests portent sur ce
-// qui doit tenir a chaque tirage, jamais sur un tirage precis.
+// qui doit tenir à chaque tirage, jamais sur un tirage precis.
 
 import { MOJIBAKE, corrupt, heatAt } from "../../src/terminal/glitch/corrupt.ts";
 import assert from "node:assert/strict";
@@ -23,7 +23,7 @@ it("should never touch the spaces", () => {
   }
 });
 
-// A froid, seul le mojibake passe : c'est lui qui porte le sens de la panne, et il reste
+// À froid, seul le mojibake passe : c'est lui qui porte le sens de la panne, et il reste
 // lisible. Le reste du texte doit sortir intact.
 it("should only mojibake the characters it knows when the heat is zero", () => {
   const corrupted = corrupt("abc def 123", 0);
@@ -38,8 +38,8 @@ it("should map every accented character it names", () => {
   }
 });
 
-// L'intensite decroit par vagues : tres cassee au debut, presque lisible a la fin. Le
-// plancher garde un fremissement plutot qu'un texte fige.
+// L'intensité décroît par vagues : très cassée au début, presque lisible à la fin. Le
+// plancher garde un frémissement plutôt qu'un texte fige.
 it("should keep the heat inside its floor and its ceiling", () => {
   for (let step = 0; step <= 100; step++) {
     const heat = heatAt(step / 100);
@@ -49,7 +49,7 @@ it("should keep the heat inside its floor and its ceiling", () => {
   }
 });
 
-// Une decroissance droite se lisait comme un fondu. La vague doit donc remonter au moins
+// Une décroissance droite se lisait comme un fondu. La vague doit donc remonter au moins
 // une fois avant la fin.
 it("should make the heat wave instead of fading", () => {
   const samples = Array.from({ length: 100 }, (_, step) => {
