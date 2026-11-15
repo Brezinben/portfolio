@@ -1,4 +1,4 @@
-// Les easter eggs a reponse fixe. Les plus riches — slime, cowsay, joke, matrix — ont
+// Les easter eggs à réponse fixe. Les plus riches — slime, cowsay, joke, matrix — ont
 // leur propre logique ailleurs : ceux-ci ne rendent que des lignes.
 
 import { type Effect, say } from "./effects.ts";

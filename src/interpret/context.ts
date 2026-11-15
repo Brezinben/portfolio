@@ -1,25 +1,25 @@
-// Le contrat coquille vers interpreteur : ce que la coquille sait et que l'interpreteur ne
-// peut pas deviner. Ce fichier ne porte que des interfaces : il n'emet aucun code, et aucun
-// de ses imports n'est une arete d'execution.
+// Le contrat coquille vers interpréteur : ce que la coquille sait et que l'interpréteur ne
+// peut pas deviner. Ce fichier ne porte que des interfaces : il n'émet aucun code, et aucun
+// de ses imports n'est une arête d'execution.
 
 import type { Share } from "./share.ts";
 
-// Ce que la coquille passe a l'interpreteur : la section ouverte, le contenu charge, et
-// l'attente d'une reponse oui ou non.
+// Ce que la coquille passe à l'interpréteur : la section ouverte, le contenu charge, et
+// l'attente d'une réponse oui ou non.
 export interface Entry {
-  // Le resume que la recherche interroge. Il est ecrit a la main dans content.json : c'est
-  // la seule prose du site qui repond a une question au lieu de decrire un ecran.
+  // Le résumé que la recherche interroge. Il est écrit à la main dans content.json : c'est
+  // la seule prose du site qui répond à une question au lieu de décrire un ecran.
   ask?: string;
   cmd?: string;
   id: string;
   label: string;
 }
 
-// Ce que la completion a besoin de connaitre : les noms qu'elle peut proposer. Elle ne
+// Ce que la complétion a besoin de connaître : les noms qu'elle peut proposer. Elle ne
 // lit que les identifiants, pas les libelles.
 export interface CompletionContext {
-  // Un modele local installe et disponible. La coquille l'apprend d'un appel asynchrone au
-  // demarrage, que l'interpreteur ne peut pas faire : il est pur et synchrone.
+  // Un modèle local installe et disponible. La coquille l'apprend d'un appel asynchrone au
+  // démarrage, que l'interpréteur ne peut pas faire : il est pur et synchrone.
   model: boolean;
   details: { id: string }[];
   sections: { id: string }[];
@@ -27,14 +27,14 @@ export interface CompletionContext {
   themes: string[];
 }
 
-// Ce que la coquille passe a l'interpreteur. Tout est requis : la coquille ne l'appelle
-// qu'une fois le contenu charge, et un champ manquant serait un defaut de chargement,
-// pas un cas a traiter ici.
+// Ce que la coquille passe à l'interpreteur. Tout est requis : la coquille ne l'appelle
+// qu'une fois le contenu charge, et un champ manquant serait un défaut de chargement,
+// pas un cas à traiter ici.
 export interface Context extends CompletionContext {
   columns: number;
   // La mascotte est absente pendant son explosion et son voyage en train ; sans cette
-  // information, l'interpreteur annoncerait des gestes que la coquille ne joue pas.
-  // « away » : explosee ou en train. « busy » : change de forme. « asleep » : reseau coupe.
+  // information, l'interpréteur annoncerait des gestes que la coquille ne joue pas.
+  // « away » : explosée ou en train. « busy » : change de forme. « asleep » : réseau coupe.
   mascot: "asleep" | "away" | "busy" | "here";
   details: Entry[];
   sections: Entry[];

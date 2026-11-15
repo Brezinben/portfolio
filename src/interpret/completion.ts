@@ -1,8 +1,8 @@
-// L'autocompletion : ce qu'elle propose selon le chemin deja tape, et la description
+// L'autocomplétion : ce qu'elle propose selon le chemin déjà tapé, et la description
 // qu'elle affiche sous la liste.
 //
-// Elle rend la liste entiere, jamais tronquee. C'est la coquille qui n'en montre que dix
-// a la fois, et qui fait glisser cette fenetre quand la selection en sort.
+// Elle rend la liste entière, jamais tronquee. C'est la coquille qui n'en montre que dix
+// à la fois, et qui fait glisser cette fenêtre quand la sélection en sort.
 
 import { ACTIVITIES, OFFERED } from "./mascot.ts";
 import { ALIASES, vocabulary } from "./vocabulary.ts";
@@ -16,8 +16,8 @@ const argumentsFor = (path: string, context: CompletionContext): string[] | unde
   const ids = [...context.sections, ...context.details].map((entry) => {
       return entry.id;
     }),
-    // Quatre sous-commandes claires valent mieux que dix mots melanges : les expressions
-    // vivent un niveau plus bas, derriere « expression ».
+    // Quatre sous-commandes claires valent mieux que dix mots mélangés : les expressions
+    // vivent un niveau plus bas, derrière « expression ».
     slimeArguments = ["expression", "activity", "evolve", "drop", "kill"];
 
   return {
@@ -33,7 +33,7 @@ const argumentsFor = (path: string, context: CompletionContext): string[] | unde
 };
 // La liste ne montre que des noms, et un nom n'apprend rien : ni « bd », ni « goal ». Une
 // ligne sous la liste dit ce que fait la proposition choisie. Les noms venus du contenu
-// n'y sont pas : leur identifiant est deja leur libelle.
+// n'y sont pas : leur identifiant est déjà leur libelle.
 const HINTS = {
   "": {
     "/benjamin": "qui je suis, en trois lignes",
@@ -108,7 +108,7 @@ export const candidates = (value: string, context: CompletionContext) => {
     parts = bare.split(" "),
     first = (parts[0] ?? "").toLowerCase();
 
-  // Une saisie faite d'espaces se normalise en chaine vide. Sans ce garde, appuyer sur la
+  // Une saisie faite d'espaces se normalise en chaîne vide. Sans ce garde, appuyer sur la
   // barre d'espace dans une ligne vide ouvrirait le vocabulaire entier.
   if (input === "" && value !== "") {
     return { frag: "", head: "", hits: [], slash: false };
@@ -140,7 +140,7 @@ export const candidates = (value: string, context: CompletionContext) => {
     typed = parts.slice(0, -1).map((word) => {
       return word.toLowerCase();
     }),
-    // L'alias ne porte que sur le premier mot : « mascotte activity » suivrait le meme
+    // L'alias ne porte que sur le premier mot : « mascotte activity » suivrait le même
     // chemin que « slime activity ».
     path = [command, ...typed.slice(1)].join(" "),
     pool = argumentsFor(path, context),

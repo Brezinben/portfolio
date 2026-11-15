@@ -1,18 +1,18 @@
-// Le vocabulaire : les noms que le dispatcher accepte, ceux que la completion propose, et
+// Le vocabulaire : les noms que le dispatcher accepte, ceux que la complétion propose, et
 // l'aide qui les annonce. Aucun import : ce module est une feuille du graphe.
 //
 // « SLASH_ONLY » vit ici et non avec les easter eggs. Il porte « slime », « joke »,
 // « propose » et « matrix », qui n'en sont pas : ce n'est pas le catalogue des eggs, c'est
 // la liste des noms qui exigent le slash.
 
-// La recherche porte deux noms, jamais les deux a la fois. Sans modele elle repond par
-// recouvrement de mots ; avec un modele, c'est lui qui choisit le passage, et l'etincelle
-// le dit. Une commande « ai » separee obligeait a demander si le modele etait la : le nom
+// La recherche porte deux noms, jamais les deux à la fois. Sans modèle elle répond par
+// recouvrement de mots ; avec un modèle, c'est lui qui choisit le passage, et l'étincelle
+// le dit. Une commande « ai » séparée obligeait à demander si le modèle était là : le nom
 // de la commande le montre maintenant.
 export const ASK = "ask";
 export const ASK_MODEL = "ask✨";
-// L'etincelle occupe deux colonnes dans une police a chasse fixe. Sans ce comptage, la
-// ligne d'aide qui la porte decalerait son tiret d'une colonne.
+// L'étincelle occupe deux colonnes dans une police à chasse fixe. Sans ce comptage, la
+// ligne d'aide qui la porte décalerait son tiret d'une colonne.
 const displayWidth = (text: string) => {
   return text.length + (text.includes("✨") ? 1 : 0);
 };
@@ -37,9 +37,9 @@ export const helpLines = (model: boolean) => {
 export const KEYBOARD =
   "Clavier : / cible la saisie · ⌘K ou Ctrl+K ouvre la recherche globale · j / k changent de section · Tab complète · ↑ ↓ rappellent l'historique.";
 
-// Les easter eggs ne repondent qu'au prefixe slash, pour ne pas melanger une vraie
-// commande et un raccourci du portfolio. L'ordre d'ecriture ne decide de rien : le
-// vocabulaire se trie, et la fenetre de la completion glisse au-dela de dix propositions.
+// Les easter eggs ne répondent qu'au préfixe slash, pour ne pas mélanger une vraie
+// commande et un raccourci du portfolio. L'ordre d'écriture ne décide de rien : le
+// vocabulaire se trie, et la fenêtre de la complétion glisse au-dela de dix propositions.
 export const SLASH_ONLY = new Set([
   "slime",
   "joke",
@@ -82,7 +82,7 @@ export const ALIASES = {
 // lieu de partager, et « /sudo stack » n'affichait jamais son texte.
 export const NAVIGATORS = new Set(["bd", "cd", "open"]);
 // Le vocabulaire ne propose que des commandes vivantes, et les easter eggs avec leur
-// slash : sinon l'autocompletion propose ce que le dispatcher refuse.
+// slash : sinon l'autocomplétion propose ce que le dispatcher refuse.
 const PLAIN = [
   "?",
   "bd",
@@ -112,8 +112,8 @@ const VERBS = [
 ];
 
 // Les deux noms de la recherche ne s'offrent jamais ensemble : le vocabulaire ne porte
-// que celui qui correspond a l'etat du modele. Le tri decide de ce que la fenetre montre
-// en premier, la ou la liste depasse desormais dix noms.
+// que celui qui correspond à l'état du modele. Le tri décide de ce que la fenêtre montre
+// en premier, là où la liste dépasse désormais dix noms.
 export const vocabulary = (model: boolean) => {
   return [model ? ASK_MODEL : ASK, ...VERBS].toSorted();
 };

@@ -1,5 +1,5 @@
-// La recherche lexicale : elle departage les passages du corpus par recouvrement de
-// mots, et rend la reponse que « ask » affiche quand aucun modele local ne repond.
+// La recherche lexicale : elle départage les passages du corpus par recouvrement de
+// mots, et rend la réponse que « ask » affiche quand aucun modèle local ne repond.
 
 import { ASK, ASK_MODEL } from "./vocabulary.ts";
 import { type Effect, track } from "./effects.ts";
@@ -7,8 +7,8 @@ import { done, failed, info, line, muted } from "./lines.ts";
 import type { Entry } from "./context.ts";
 import { fold } from "./fold.ts";
 
-// Les mots trop frequents pour departager deux passages. La liste est courte a dessein :
-// une question posee a un portfolio tient en quelques mots, et en retirer trop la vide.
+// Les mots trop fréquents pour départager deux passages. La liste est courte à dessein :
+// une question posée à un portfolio tient en quelques mots, et en retirer trop la vide.
 const VIDES = new Set([
   "a",
   "au",
@@ -72,9 +72,9 @@ const words = (text: string): string[] => {
 };
 
 // Un score par recouvrement de mots, sans index ni modele. Le corpus fait dix passages
-// ecrits a la main : tout ce qui serait plus savant couterait plus qu'il ne rapporte.;
+// écrits à la main : tout ce qui serait plus savant coûterait plus qu'il ne rapporte.;
 
-// Un mot du titre pese trois fois : demander « stack » doit ouvrir la section stack, meme
+// Un mot du titre pèse trois fois : demander « stack » doit ouvrir la section stack, même
 // si un autre passage prononce le mot plus souvent.
 const search = (query: string, entries: Entry[]) => {
   const wanted = new Set(words(query));
@@ -99,8 +99,8 @@ const search = (query: string, entries: Entry[]) => {
           return title.has(word);
         }).length;
 
-      // Le nombre de mots distincts touches prime sur les repetitions : un passage qui
-      // repond a toute la question vaut mieux qu'un qui martele un seul de ses mots.
+      // Le nombre de mots distincts touches prime sur les répétitions : un passage qui
+      // répond à toute la question vaut mieux qu'un qui martèle un seul de ses mots.
       return { entry, score: distinct * 10 + hitCount + inTitle * 30 };
     })
     .filter((hit) => {
@@ -111,8 +111,8 @@ const search = (query: string, entries: Entry[]) => {
     });
 };
 
-// La reponse est toujours le texte du corpus, jamais un texte produit. Un modele, quand il
-// y en a un, ne fait que choisir parmi ces passages : il ne parle pas a la place de
+// La réponse est toujours le texte du corpus, jamais un texte produit. Un modèle, quand il
+// y en a un, ne fait que choisir parmi ces passages : il ne parle pas à la place de
 // Benjamin.
 export const answer = (query: string, entries: Entry[], options: { model: boolean }) => {
   const { model } = options;
@@ -132,9 +132,9 @@ export const answer = (query: string, entries: Entry[], options: { model: boolea
     others = hits.slice(1, 4).map((hit) => {
       return hit.entry.label;
     }),
-    // Le modele voit tous les passages, pas seulement ceux qui partagent un mot avec la
-    // question. Lui donner la liste du recouvrement le reduirait a reclasser ce que la
-    // recherche lexicale a deja trouve, et « comment tu bosses » ne trouve rien du tout.
+    // Le modèle voit tous les passages, pas seulement ceux qui partagent un mot avec la
+    // question. Lui donner la liste du recouvrement le réduirait à reclasser ce que la
+    // recherche lexicale a déjà trouvé, et « comment tu bosses » ne trouve rien du tout.
     answerable = entries
       .filter((entry) => {
         return (entry.ask ?? "") !== "";
@@ -158,8 +158,8 @@ export const answer = (query: string, entries: Entry[], options: { model: boolea
     return { effects: [measured], lines: lexical };
   }
 
-  // Sans modele, la reponse part tout de suite. Avec un modele, elle attend son choix :
-  // deux reponses de suite pour une seule question se liraient comme une hesitation.
+  // Sans modèle, la réponse part tout de suite. Avec un modèle, elle attend son choix :
+  // deux réponses de suite pour une seule question se liraient comme une hesitation.
   return {
     effects: [measured, { candidates: answerable, lexical, query, type: "ask" } satisfies Effect],
     lines: [],

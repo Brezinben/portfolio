@@ -1,5 +1,5 @@
-// Cowsay, conforme a l'original : la bulle change de forme selon le nombre de lignes,
-// et le retour a la ligne suit la largeur du volet.
+// Cowsay, conforme à l'original : la bulle change de forme selon le nombre de lignes,
+// et le retour à la ligne suit la largeur du volet.
 
 import { lookup } from "./lookup.ts";
 

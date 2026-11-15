@@ -1,13 +1,13 @@
 // Mise en forme des lignes de contenu venues de content.json. Pure, donc testable sans
 // navigateur, au même titre que les commandes.
 //
-// Ce module n'a aucun lecteur dans l'interpreteur : seule la coquille l'appelle, par la
+// Ce module n'a aucun lecteur dans l'interpréteur : seule la coquille l'appelle, par la
 // facade.
 
 import { type Tone, safeTone } from "./tone.ts";
 import { lookup } from "./lookup.ts";
 
-// Un morceau colore a l'interieur d'une ligne de contenu.
+// Un morceau colore à l'intérieur d'une ligne de contenu.
 export interface Token {
   c: Tone;
   t: string;
@@ -15,7 +15,7 @@ export interface Token {
 }
 
 // Ce qu'une commande dit, avant que le dispatcher n'y ajoute son echo et sa mesure.
-// Une ligne telle que content.json l'ecrit. Sept formes d'entree, dont le rendu ne tire
+// Une ligne telle que content.json l'ecrit. Sept formes d'entrée, dont le rendu ne tire
 // que trois : bandeau, jetons, ligne simple.
 export interface ContentLine {
   banner?: string;

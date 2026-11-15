@@ -25,8 +25,8 @@ export const answerPending = (input: string, pending: string): Outcome => {
   return { effects: [], lines: [muted("répondez « oui » ou « non » — Échap annule.")] };
 };
 
-// Consentement en deux temps : la commande dit ce qui part, ou, et ce qui ne part pas.
-// Rien n'est envoye avant un oui.
+// Consentement en deux temps : la commande dit ce qui part, où, et ce qui ne part pas.
+// Rien n'est envoyé avant un oui.
 export const ideaPrompt = (text: string, feedback: Record<string, string>): Line[] => {
   return [
     line({ marker: "›", markerTone: "acc", text: `« ${text} »`, tone: "fg" }),
