@@ -123,6 +123,7 @@ interface RawContent {
   share?: Share;
   stack?: Brick[];
   techNotes?: Record<string, TechNote>;
+  cursus?: Step[];
   timeline?: Step[];
 }
 
@@ -185,6 +186,7 @@ interface State
   tech: string;
   techNotes: Record<string, TechNote>;
   techTimer: Delay | undefined;
+  cursus: Step[];
   timeline: Step[];
   timelineAt: number;
   typed: string;
@@ -361,6 +363,7 @@ document.addEventListener("alpine:init", () => {
       systemLight: globalThis.matchMedia?.("(prefers-color-scheme: light)").matches ?? false,
       techTimer: undefined,
       theme: SYSTEM_THEME,
+      cursus: [],
       timeline: [],
       timelineAt: 0,
       typed: "",
@@ -456,7 +459,7 @@ document.addEventListener("alpine:init", () => {
       timelineGroups() {
         const groups: { key: string; steps: Step[] }[] = [];
 
-        for (const step of this.timeline) {
+        for (const step of this.frise(this.current.id)) {
           const key = step.via ?? step.org,
             last = groups.at(-1);
 
@@ -470,10 +473,16 @@ document.addEventListener("alpine:init", () => {
         return groups;
       },
 
+      // Une méthode, pas un accesseur : « weigh » pèse une section qui n'est pas forcément
+      // la section ouverte.
+      frise(id: string): Step[] {
+        return id === "cursus" ? this.cursus : this.timeline;
+      },
+
       openTimeline(index: number) {
         this.timelineAt = index;
 
-        const target = this.timeline[index]?.detail;
+        const target = this.frise(this.current.id)[index]?.detail;
 
         if (target) {
           this.track("mission", { nom: target, via: "interface" });
@@ -534,7 +543,7 @@ document.addEventListener("alpine:init", () => {
       weigh(entry: Section) {
         if (entry.view === "timeline") {
           return printed(
-            this.timeline.map((item) => {
+            this.frise(entry.id).map((item) => {
               return {
                 text: `${item.years}${item.org}${item.role}${item.note}`,
               };
@@ -1338,6 +1347,7 @@ document.addEventListener("alpine:init", () => {
         this.shareTargets = (content.share?.targets ?? []).map((entry: { id: string }) => {
           return entry.id;
         });
+        this.cursus = content.cursus ?? [];
         this.timeline = content.timeline ?? [];
         this.stack = content.stack ?? [];
         this.techNotes = content.techNotes ?? {};
