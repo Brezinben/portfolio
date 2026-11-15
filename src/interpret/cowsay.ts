@@ -89,5 +89,5 @@ export const cowsay = (
   ];
 };
 
-// Le nom interne dit la table, le nom public dit ce qu'elle sert : des modes de tete.
+// Le nom interne dit la table, le nom public dit ce qu'elle sert : des modes de tête.
 export { COW_MODES as COW_HEAD_MODES };

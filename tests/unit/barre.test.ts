@@ -12,7 +12,7 @@ it("should keep the bar width, head included", () => {
   }
 });
 
-// Sans « tick », la barre ne progresse pas : elle n'a alors pas de tete.
+// Sans « tick », la barre ne progresse pas : elle n'a alors pas de tête.
 it("should draw no head without a tick", () => {
   const { filled } = barParts(4, 10);
 
@@ -21,14 +21,14 @@ it("should draw no head without a tick", () => {
 });
 
 // Une barre pleine n'a plus rien à attendre : la tête disparaît, sinon elle tournerait sur
-// un travail termine.
+// un travail terminé.
 it("should drop the head when the bar is full", () => {
   assert.deepEqual(barParts(10, 10, 3), { filled: FILLED.repeat(10), hollow: "" });
   assert.deepEqual(barParts(99, 10, 3), { filled: FILLED.repeat(10), hollow: "" });
 });
 
 // Le tick tourne en boucle sur les huit glyphes : il vient d'un compteur qui ne se remet
-// jamais à zero.
+// jamais à zéro.
 it("should loop the head through the tick glyphs", () => {
   assert.equal(barParts(0, 10, 0).filled, SPINNER[0]);
   assert.equal(barParts(0, 10, 9).filled, SPINNER[1]);

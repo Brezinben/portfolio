@@ -80,7 +80,7 @@ test("should show the stack tree in the main pane, in columns", async ({ page })
 });
 
 // Aucun texte d'invite au départ : rien ne s'affiche tant qu'aucune technologie n'a le
-// focus. Dès qu'une en a un, sa fiche suit immediatement.
+// focus. Dès qu'une en a un, sa fiche suit immédiatement.
 test("should follow the focus with the tech note from the first technology", async ({ page }) => {
   await open(page, "#stack");
 
@@ -123,7 +123,7 @@ test("should move through the stack grid with the four arrows", async ({ page })
   expect(await focused()).toBe(first);
 });
 
-// Chaque bloc de la stack est une grille independante. Un pas fixe, calcule sur la
+// Chaque bloc de la stack est une grille indépendante. Un pas fixe, calculé sur la
 // première ligne du premier bloc, faisait changer de colonne dès qu'une ligne était
 // incomplète ou qu'on passait d'une catégorie à la suivante.
 test("should keep the column from one stack row to the next on arrow down", async ({ page }) => {

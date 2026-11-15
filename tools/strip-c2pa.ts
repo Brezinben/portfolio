@@ -4,7 +4,7 @@
 //
 //     bun tools/strip-c2pa.ts src/assets/sprites/cube/*.png
 //
-// Ne garde que les chunks dont le rendu depend. Relancer sur un fichier déjà propre ne
+// Ne garde que les chunks dont le rendu dépend. Relancer sur un fichier déjà propre ne
 // change rien.
 
 import { readFile, writeFile } from "node:fs/promises";

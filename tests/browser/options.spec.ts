@@ -75,7 +75,7 @@ test("should close the modal and give the focus back to the button on escape", a
 });
 
 // Les thèmes sont sur plusieurs lignes : les quatre flèches y naviguent, et sortir par le
-// bas mène au premier reglage.
+// bas mène au premier réglage.
 test("should move through the theme grid with the four arrows", async ({ page }) => {
   await boot(page);
   const dialog = await openOpts(page);
@@ -98,7 +98,7 @@ test("should move through the theme grid with the four arrows", async ({ page })
   await expect(page.locator(".tm")).toHaveAttribute("data-theme", "dark");
 });
 
-// Le réglage modifie doit être celui qui a le focus, quel que soit le chemin pour y
+// Le réglage modifié doit être celui qui a le focus, quel que soit le chemin pour y
 // arriver : un compteur séparé se désynchronisait de la tabulation.
 test("should change the setting that holds the focus on arrow right", async ({ page }) => {
   await boot(page);
@@ -117,8 +117,8 @@ test("should change the setting that holds the focus on arrow right", async ({ p
 });
 
 // Le départ est le dernier thème, pas le thème actif : compter les pressions depuis le
-// thème actif dépend du nombre de colonnes, donc de la largeur de la fenetre. Les
-// pressions en trop tombent alors dans le vide et le test ne peut plus echouer.
+// thème actif dépend du nombre de colonnes, donc de la largeur de la fenêtre. Les
+// pressions en trop tombent alors dans le vide et le test ne peut plus échouer.
 test("should reach the settings on arrow down from the last theme row", async ({ page }) => {
   await boot(page);
 
@@ -146,7 +146,7 @@ test("should follow the dark preference of the system on the first visit", async
   await expect(page.locator(".tm")).toHaveAttribute("data-theme", "dark");
 });
 
-// Le choix conserve prime sur la préférence du systeme.
+// Le choix conservé prime sur la préférence du système.
 test("should ignore the system preference when a theme is already chosen", async ({ page }) => {
   await page.emulateMedia({ colorScheme: "light" });
   await page.addInitScript(() => {
@@ -247,7 +247,7 @@ test("should open the modal on the options command", async ({ page }) => {
 });
 
 // La modale a deux ouvrants depuis que la commande existe. Echap doit rendre le focus à
-// celui qui a ouvert, et non au bouton de l'en-tete que le visiteur n'a jamais touche.
+// celui qui a ouvert, et non au bouton de l'en-tête que le visiteur n'a jamais touché.
 test("should give the focus back to the command line on escape when the command opened the modal", async ({
   page,
 }) => {

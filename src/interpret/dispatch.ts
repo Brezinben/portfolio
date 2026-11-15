@@ -17,7 +17,7 @@ import { shareTarget } from "./share.ts";
 import { slime } from "./mascot.ts";
 
 // Ce qu'un gestionnaire reçoit : la ligne découpée, le contexte, et « out », qui pose
-// l'echo et la mesure de la commande devant ses lignes et ses effets.
+// l'écho et la mesure de la commande devant ses lignes et ses effets.
 interface Call {
   argument: string;
   command: string;
@@ -70,7 +70,7 @@ const COMMANDS = {
     );
   },
   // Il n'y a pas de PDF à servir, et la version texte porte déjà tout le parcours. La
-  // commande l'ouvre, et l'annonce : une navigation muette se lit comme une commande cassee.
+  // commande l'ouvre, et l'annonce : une navigation muette se lit comme une commande cassée.
   cv: ({ out }) => {
     return out([info("le parcours complet s'ouvre dans la version texte.")], [{ type: "cv" }]);
   },
@@ -80,7 +80,7 @@ const COMMANDS = {
     return out([], [{ type: "email" }]);
   },
   // Sept lignes ne tiennent pas dans le journal d'un écran large. La réponse va donc dans
-  // le resultat. Le résultat n'est pas une région live : le journal dit où lire la reponse.
+  // le résultat. Le résultat n'est pas une région live : le journal dit où lire la réponse.
   help: ({ context, out }) => {
     return {
       ...out([muted("aide affichée dans le résultat")], [say("essayez « /joke »", "happy")]),

@@ -1,4 +1,4 @@
-// Une clé libre dans une table fermee. La table garde le type que l'inférence lui donne,
+// Une clé libre dans une table fermée. La table garde le type que l'inférence lui donne,
 // et l'appelant reçoit undefined quand la clé n'y est pas.
 //
 // « Object.hasOwn » écarte les clés héritées du prototype. Aucun appelant d'ici n'en passe,

@@ -9,12 +9,12 @@ import {
 import assert from "node:assert/strict";
 import { it } from "node:test";
 
-// La seed temoin. Son morceau est publié dès que quelqu'un la note : les valeurs
-// ci-dessous sont donc un contrat, pas un echantillon.
+// La seed témoin. Son morceau est publié dès que quelqu'un la note : les valeurs
+// ci-dessous sont donc un contrat, pas un échantillon.
 const WITNESS = 8_093_451_772_146;
 
 // L'ordre des tirages EST le format de la seed. Ce test tombe le jour où un tirage se
-// déplace, et c'est alors une décision à prendre, pas un accident à découvrir en ecoutant.
+// déplace, et c'est alors une décision à prendre, pas un accident à découvrir en écoutant.
 it("should derive the frozen parameters of the witness seed", () => {
   const params = derive(WITNESS);
 
@@ -51,7 +51,7 @@ it("should derive the frozen silhouette of the witness seed", () => {
   }
 });
 
-// C'est la propriété centrale de la commande : même seed, même morceau, à la note pres.
+// C'est la propriété centrale de la commande : même seed, même morceau, à la note près.
 it("should derive the very same parameters twice", () => {
   assert.deepEqual(derive(WITNESS), derive(WITNESS));
   assert.deepEqual(derive(1), derive(1));
@@ -91,7 +91,7 @@ it("should keep every pitch inside the scale", () => {
   }
 });
 
-// Le chiffrage décide de la casse par la tierce reelle. En pentatonique, la tierce de
+// Le chiffrage décide de la casse par la tierce réelle. En pentatonique, la tierce de
 // chaque degré mesure quatre demi-tons ou plus : la grille s'y annonce donc en capitales.
 it("should figure the chords from the real third", () => {
   const major = derive(WITNESS);

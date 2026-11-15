@@ -66,7 +66,7 @@ const REFUSED = { asleep: dozing, away: absent, busy: changing };
 // trois booléens dont la plupart des combinaisons n'existent pas.
 export const slime = (argument: string, name: string, mascot: Context["mascot"]): Told => {
   // Annoncer « le slime explose » pendant qu'il est déjà parti fait mentir le journal :
-  // la coquille avale le geste, la ligne reste. Endormie, elle avale tout de meme.
+  // la coquille avale le geste, la ligne reste. Endormie, elle avale tout de même.
   const refused = lookup(REFUSED, mascot);
 
   if (refused) {

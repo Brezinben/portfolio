@@ -493,7 +493,7 @@ footer {
    Un « steps » sur toute la piste étalerait les cases sur onze secondes ; le pas vit donc
    dans la première borne, et « step-end » tient la pose sur la seconde. « jump-none »
    répartit seize valeurs de la première case à la dernière incluse : sans lui, la course
-   finirait sur une dix-septieme case qui n'existe pas. */
+   finirait sur une dix-septième case qui n'existe pas. */
 @keyframes slime-16-pause {
   0% {
     background-position-x: 0;

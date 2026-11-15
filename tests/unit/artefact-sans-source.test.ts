@@ -59,7 +59,7 @@ it("should publish no source file in the artefact", async () => {
 });
 
 // Le filtre de copie s'applique aussi aux dossiers, et un dossier n'a pas d'extension : un
-// dossier qui ne porte que du TypeScript était crée puis vide de ses enfants, et publie
+// dossier qui ne porte que du TypeScript était créé puis vidé de ses enfants, et publié
 // vide. Le test des sources ne le voyait pas, puisqu'il ne liste que des fichiers.
 it("should publish no empty directory in the artefact", async () => {
   const files = await walk(OUTPUT).catch(() => {

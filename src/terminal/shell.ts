@@ -1,6 +1,6 @@
 // Le socle du composant Alpine, découpé en tranches : des objets de méthodes qui ne se
 // parlent que par « this », comme au temps où elles vivaient dans un littéral unique. Deux
-// règles tiennent ce decoupage.
+// règles tiennent ce découpage.
 // 1. Aucune tranche ne porte d'accesseur, pour que app.ts reste le seul fichier où vivent
 //    les valeurs lues par le balisage. L'ADR 0002 l'exige.
 // 2. Ce fichier n'importe que des types, en forme longue « import type » : le
@@ -20,14 +20,14 @@ import type { SuggestionsApi, SuggestionsState } from "./suggestions/slice.ts";
 import type { Section } from "./format.ts";
 
 // Alpine pose ses magies sur le composant après l'avoir construit : elles ne sont pas dans
-// le littéral, mais « this » les voit à l'execution.
+// le littéral, mais « this » les voit à l'exécution.
 export interface Magics {
   $nextTick: (callback: () => void) => void;
   $refs: Record<string, HTMLElement | undefined>;
 }
 
 // D'où vient une action mesurée : un clic ou une touche dans l'interface, ou une commande
-// tapée dans le terminal. Type partage pour que les deux ne divergent jamais entre les
+// tapée dans le terminal. Type partagé pour que les deux ne divergent jamais entre les
 // événements qui la distinguent.
 export type TrackSource = "commande" | "interface";
 
@@ -67,7 +67,7 @@ export interface Shared {
   shortcuts: boolean;
   skipBoot(): boolean;
   // « typed » distingue une commande tapée d'une commande lancée à la souris : le succès de
-  // la première commande dit « tapee, pas cliquee ».
+  // la première commande dit « tapée, pas cliquée ».
   submit(options?: { typed?: boolean }): void;
   tech: string;
   wantResult: boolean;
@@ -75,7 +75,7 @@ export interface Shared {
   track(event: string, props?: Record<string, TrackValue>): void;
 }
 
-// Ce que le composant est une fois les tranches reunies. Le contrat s'écrit à la main :
+// Ce que le composant est une fois les tranches réunies. Le contrat s'écrit à la main :
 // déduire « this » du type des tranches tourne en rond, et TypeScript rend « any ».
 export interface Terminal
   extends

@@ -100,7 +100,7 @@ test.describe("on touch", () => {
   });
 
   // Les listes sont sous le volet central : sans ce déplacement, toucher une section
-  // laissait le visiteur devant la liste, et rendait le résultat au-dessus de l'ecran.
+  // laissait le visiteur devant la liste, et rendait le résultat au-dessus de l'écran.
   for (const [quoi, nom] of [
     ["section", /impact/u],
     ["mission", /kereis/u],
@@ -113,7 +113,7 @@ test.describe("on touch", () => {
     });
   }
 
-  // Le journal garde l'echo, et il reste des commandes qui n'écrivent que la.
+  // Le journal garde l'écho, et il reste des commandes qui n'écrivent que là.
   test("should show the whole answer of an unknown command in the log", async ({ page }) => {
     await boot(page);
     const cli = page.getByLabel("Commande");

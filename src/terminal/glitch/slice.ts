@@ -1,17 +1,17 @@
-// Le glitch : cinq secondes d'affichage corrompu, et les trois gestes qui les declenchent.
+// Le glitch : cinq secondes d'affichage corrompu, et les trois gestes qui les déclenchent.
 //
-// La tranche ne porte aucun accesseur : elle écrit dans l'état, et le balisage lit l'etat.
+// La tranche ne porte aucun accesseur : elle écrit dans l'état, et le balisage lit l'état.
 // Le texte corrompu fait exception, et pour une raison — voir « glitchStart ».
 
 import { type Beat, type Delay, type Shell, slice } from "../shell.ts";
 import { RAIN, corrupt, heatAt, pick } from "./corrupt.ts";
 import type { GlitchMode } from "../../interpret.ts";
 
-// Cinq secondes : assez pour croire à la panne, trop court pour inquieter. La fenêtre
+// Cinq secondes : assez pour croire à la panne, trop court pour inquiéter. La fenêtre
 // sépare deux appuis, elle ne borne pas la série : un rythme régulier arme, une hésitation
-// remet à zero.
+// remet à zéro.
 const GLITCH_MS = 5000;
-// La feuille fige le thème permute sur sa dernière image (« both »). Sans cette variable,
+// La feuille fige le thème permuté sur sa dernière image (« both »). Sans cette variable,
 // un glitch plus long laisserait les couleurs permutées après sa fin, sans aucune erreur.
 const GLITCH_VAR = "--glitch-ms";
 
@@ -61,15 +61,15 @@ const rainColumns = () => {
 // Ce que le glitch garde dans l'état du composant. L'état vit dans app.ts, comme tout le
 // reste ; app.ts reprend cette interface pour ne pas déclarer les mêmes champs deux fois.
 export interface GlitchState {
-  // Les appuis comptes dans la fenêtre glissante, de zéro à cinq.
+  // Les appuis comptés dans la fenêtre glissante, de zéro à cinq.
   glitchArmed: number;
   glitchBeat: Beat | undefined;
-  // Le texte d'origine, noeud par noeud. Il est rendu tel quel à la fin, donc une panne
+  // Le texte d'origine, nœud par nœud. Il est rendu tel quel à la fin, donc une panne
   // interrompue ne perd rien.
   glitchCache: { node: Text; text: string }[];
   glitchEnd: Delay | undefined;
   // « shift », « matrix » ou « sudo » pendant la panne, vide au repos : un seul champ dit
-  // à la fois que le glitch court et ce qui l'a declenche.
+  // à la fois que le glitch court et ce qui l'a déclenché.
   glitchMode: GlitchMode | "";
   glitchRain: { glyphs: string; style: string }[];
   glitchTap: Delay | undefined;
@@ -117,7 +117,7 @@ export const glitchSlice = () => {
 
     // Animations coupées ou mouvement réduit : rien ne se corrompt, comme la mascotte
     // disparaît au lieu de se figer. Un lecteur d'écran relirait sinon cinq secondes de
-    // charabia sans avoir rien demande.
+    // charabia sans avoir rien demandé.
     glitchStart(this: Shell, mode: GlitchMode) {
       if (!this.anim || this.reduced) {
         return;
@@ -139,7 +139,7 @@ export const glitchSlice = () => {
         cache: GlitchState["glitchCache"] = [];
 
       for (let node = walker.nextNode(); node !== null; node = walker.nextNode()) {
-        // SAFETY: « SHOW_TEXT » garantit que le parcours ne rend que des noeuds texte.
+        // SAFETY: « SHOW_TEXT » garantit que le parcours ne rend que des nœuds texte.
         // C'est la déclaration de la lib DOM qui ne sait pas l'exprimer.
         cache.push({ node: node as Text, text: node.nodeValue ?? "" });
       }
@@ -148,7 +148,7 @@ export const glitchSlice = () => {
 
       const started = performance.now();
 
-      // Le texte corrompu s'écrit dans les noeuds, jamais dans l'état : le dériver d'un
+      // Le texte corrompu s'écrit dans les nœuds, jamais dans l'état : le dériver d'un
       // état réactif ferait rerendre les trois volets quatorze fois par seconde.
       this.glitchBeat = setInterval(() => {
         const heat = heatAt(Math.min(1, (performance.now() - started) / GLITCH_MS));
@@ -167,7 +167,7 @@ export const glitchSlice = () => {
       clearInterval(this.glitchBeat);
       clearTimeout(this.glitchEnd);
       // Le minuteur de « sudo » part aussi : sans lui, un /matrix tape dans la seconde qui
-      // suit se faisait couper par une panne qu'on croyait annulee.
+      // suit se faisait couper par une panne qu'on croyait annulée.
       clearTimeout(this.glitchWait);
 
       for (const entry of this.glitchCache) {

@@ -219,7 +219,7 @@ test("should measure one section when enter is held down", async ({ page }) => {
   await cdp.send("Input.dispatchKeyEvent", { ...key, type: "keyUp" });
 
   // GoatCounter ne porte pas de propriété : « section » arrive suivi de son id et de
-  // sa provenance, dans le nom même de l'evenement.
+  // sa provenance, dans le nom même de l'événement.
   const sections = await page.evaluate(() => {
     return globalThis.hits.filter((name) => {
       return name.startsWith("section:");

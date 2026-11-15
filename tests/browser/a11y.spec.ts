@@ -15,7 +15,7 @@ const THEMES = ["dark", "light", "noctis", "azureus", "uva", "bordo", "lux", "hi
   },
   // Sans les règles de bonne pratique, le scan laissait passer une page sans « main » et
   // sans titre de niveau un. Elles ne sont pas des échecs WCAG, mais la section impact
-  // annonce « structure semantique » : le scan doit tenir la promesse, pas la contourner.
+  // annonce « structure sémantique » : le scan doit tenir la promesse, pas la contourner.
   scan = (page: Page) => {
     return new AxeBuilder({ page }).analyze();
   },

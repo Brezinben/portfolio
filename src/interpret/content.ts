@@ -2,20 +2,20 @@
 // navigateur, au même titre que les commandes.
 //
 // Ce module n'a aucun lecteur dans l'interpréteur : seule la coquille l'appelle, par la
-// facade.
+// façade.
 
 import { type Tone, safeTone } from "./tone.ts";
 import { lookup } from "./lookup.ts";
 
-// Un morceau colore à l'intérieur d'une ligne de contenu.
+// Un morceau coloré à l'intérieur d'une ligne de contenu.
 export interface Token {
   c: Tone;
   t: string;
   w: string;
 }
 
-// Ce qu'une commande dit, avant que le dispatcher n'y ajoute son echo et sa mesure.
-// Une ligne telle que content.json l'ecrit. Sept formes d'entrée, dont le rendu ne tire
+// Ce qu'une commande dit, avant que le dispatcher n'y ajoute son écho et sa mesure.
+// Une ligne telle que content.json l'écrit. Sept formes d'entrée, dont le rendu ne tire
 // que trois : bandeau, jetons, ligne simple.
 export interface ContentLine {
   banner?: string;

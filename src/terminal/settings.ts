@@ -1,5 +1,5 @@
-// Les valeurs figées du terminal : durées, seuils, tables de reglage. Arrêtées après
-// itération dans le canvas, elles ne doivent pas redevenir des reglages.
+// Les valeurs figées du terminal : durées, seuils, tables de réglage. Arrêtées après
+// itération dans le canvas, elles ne doivent pas redevenir des réglages.
 // Voir design/DECISIONS.md, section 23.
 
 import { section } from "./format.ts";
@@ -54,8 +54,8 @@ export const TOGGLES: { key: ToggleKey; label: string; off: string; on: string }
 ];
 export const TYPE_CPS = 52;
 export const EXEC_MS = 20;
-// La fenêtre de contexte se compte en caractères imprimes, pas en commandes : une
-// section longue coûte plus qu'un « ok ». Budget et plancher figes après essai.
+// La fenêtre de contexte se compte en caractères imprimés, pas en commandes : une
+// section longue coûte plus qu'un « ok ». Budget et plancher figés après essai.
 export const CTX_BUDGET = 2600;
 export const CTX_FLOOR = 60;
 export const CTX_CELLS = 10;
@@ -65,7 +65,7 @@ export const COMPACT_MS = 5200;
 export const COMPACT_TICK_MS = 130;
 // Le démarrage dessine sa barre sur vingt-quatre cases, comme le canvas.
 export const BOOT_CELLS = 24;
-// Ce que la recherche globale montre, tous groupes confondus. Au-dela, la liste demande un
+// Ce que la recherche globale montre, tous groupes confondus. Au-delà, la liste demande un
 // défilement, et la sélection quitte la vue au lieu de se lire d'un coup.
 export const GLOBAL_LIMIT = 7;
 // Le journal ne prend jamais la place du résultat : celui-ci garde ce plancher.
@@ -74,11 +74,11 @@ export const PANE_GAP_PX = 10;
 // Largeur approximative d'un caractère de JetBrains Mono à 14 px.
 export const CHAR_PX = 8.4;
 // Le contenu est servi à côté de la page. Le dépôt est privé : la copie distante
-// rendait 404 et ne servait plus qu'à retarder le demarrage.
+// rendait 404 et ne servait plus qu'à retarder le démarrage.
 export const CONTENT_URL = "content.json";
 // La première question paie la mise en route du modèle, qui tient rarement en cinq
 // secondes. L'attente se voit à l'écran, donc mieux vaut la laisser courir que rendre
-// une réponse par défaut alors que le modèle allait repondre.
+// une réponse par défaut alors que le modèle allait répondre.
 export const ASK_MS = 15_000;
 export const EMPTY = section({ id: "", label: "" });
 // Délai de repos du focus avant qu'une techno compte comme regardée.

@@ -20,7 +20,7 @@ export interface Edges {
 
 // Le plaquage naît du curseur qui sort de la piste, et non d'une collision entre le
 // sprite et un bord. Les quatre coins se testent avant les quatre murs : sur une
-// diagonale les deux lectures sont vraies au même instant, et un coin place après un
+// diagonale les deux lectures sont vraies au même instant, et un coin placé après un
 // mur ne serait jamais atteint.
 export const dragState = (event: PointerPoint, box: Edges, step: number): string => {
   const above = event.clientY < box.top - SPLAT_MARGIN,

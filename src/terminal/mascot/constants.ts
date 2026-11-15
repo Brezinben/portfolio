@@ -1,10 +1,10 @@
 // Les valeurs figées de la mascotte. Durées et seuils arrêtés après itération : ils ne
-// doivent pas redevenir des reglages.
+// doivent pas redevenir des réglages.
 
 // Une case affichée fait 64 px, soit la hauteur de la piste.
 export const SPRITE = 64;
-// Trente-cinq feuilles de sprites remplacent le dessin en ombres portees. Les durées et
-// les images vivent dans la feuille de style : le script ne choisit que l'etat.
+// Trente-cinq feuilles de sprites remplacent le dessin en ombres portées. Les durées et
+// les images vivent dans la feuille de style : le script ne choisit que l'état.
 export const MASCOT_STATES = new Set([
   "evolveCube",
   "evolvePingouin",
@@ -56,11 +56,11 @@ export const TRANSITIONS = new Set(["devolve", "evolveCube", "evolvePingouin"]);
 export const DRAG_STEP = 2;
 // Le plaquage se déclenche quand le curseur sort de la piste, haute comme le sprite. Sans
 // marge, un tremblement vertical ferait clignoter le sol et le plafond à la place des
-// feuilles de deplacement. La largeur, elle, est trop longue pour sortir par accident.
+// feuilles de déplacement. La largeur, elle, est trop longue pour sortir par accident.
 export const SPLAT_MARGIN = 24;
 // Combien de temps un état de passage tient avant le repos. Un filet derrière
 // animationend pour une passe unique ; la SEULE sortie pour « laugh », « sad » et
-// « scared », qui bouclent sans jamais l'emettre. « boom » attend son minuteur de reapparition.
+// « scared », qui bouclent sans jamais l'émettre. « boom » attend son minuteur de réapparition.
 export const HOLD_MS = {
   alert: 960,
   bike: 2880,
@@ -82,7 +82,7 @@ export const HOLD_MS = {
   train: 1440,
   wink: 1680,
 };
-// Le quai reste vide le temps qu'on remarque le départ, puis « drop » la ramene.
+// Le quai reste vide le temps qu'on remarque le départ, puis « drop » la ramène.
 export const AWAY_MS = 3000;
 export const BOOM_AT = 5;
 export const REFORM_MIN_MS = 5000;
@@ -92,7 +92,7 @@ export const REFORM_SPREAD_MS = 5000;
 // qui tape regarde ses mots, pas la mascotte.
 export const TYPE_REST_MS = 1400;
 // La modale retient le regard, et une passe de mue dure deux secondes et demie. La mue
-// rejoue donc tant que la modale est ouverte, puis court encore ce sursis apres.
+// rejoue donc tant que la modale est ouverte, puis court encore ce sursis après.
 export const MORPH_HOLD_MS = 600;
 export const SLEEP_MS = 10_000;
 export const TWITCH_MS = 5000;

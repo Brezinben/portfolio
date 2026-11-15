@@ -102,7 +102,7 @@ it("should not loop on a word longer than the width", () => {
 });
 
 // Les drapeaux ont disparu de la commande : « cowsay -d » écrit « -d », il ne l'interprète
-// plus. Le visage se tire au hasard, donc le test vérifie l'appartenance, pas l'identite.
+// plus. Le visage se tire au hasard, donc le test vérifie l'appartenance, pas l'identité.
 it("should draw a face at random among the eight", () => {
   const yeux = new Set(
       Array.from({ length: 60 }, () => {

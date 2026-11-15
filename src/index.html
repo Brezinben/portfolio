@@ -376,7 +376,7 @@
             </template>
             <!-- Quand un modèle choisit la réponse, rien ne s'affiche avant qu'il ait choisi.
                Sans cette ligne, la commande paraîtrait sans effet. Même caractère et même
-               pulsation que « execution… », pour que les deux attentes se lisent pareil. -->
+               pulsation que « exécution… », pour que les deux attentes se lisent pareil. -->
             <template x-if="thinking">
               <p data-thinking data-log-line>
                 <span aria-hidden="true" data-glyph="acc" data-pulse>▚</span>
@@ -458,7 +458,7 @@
               :data-fresh="suggFresh ? 'true' : 'false'"
             >
               <!-- « index » compte dans la fenêtre, pas dans la liste : « suggTop » le
-                 ramène au rang réel avant toute selection. « --at » garde le rang de
+                 ramène au rang réel avant toute sélection. « --at » garde le rang de
                  fenêtre, sinon le retard d'animation croîtrait sans fin. -->
               <template x-for="(hit, index) in suggWindow" :key="hit">
                 <button
@@ -521,7 +521,7 @@
               ></span
             >
             <!-- Pendant la compaction, l'animation prend la place des cellules : le cadre
-               « ctx [ … ] » ne bouge pas, et une seule barre reste à l'ecran. -->
+               « ctx [ … ] » ne bouge pas, et une seule barre reste à l'écran. -->
             <span data-gauge aria-hidden="true"
               ><span data-tone="fg2">ctx [</span
               ><template x-if="!compacting"

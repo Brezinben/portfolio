@@ -1,22 +1,22 @@
-// Le volet : ce que la radio affiche, ce qu'elle écoute au clavier, et son demontage.
+// Le volet : ce que la radio affiche, ce qu'elle écoute au clavier, et son démontage.
 //
-// La tranche ne porte aucun accesseur : elle écrit dans l'état, et le balisage lit l'etat.
+// La tranche ne porte aucun accesseur : elle écrit dans l'état, et le balisage lit l'état.
 // Les hauteurs de barres font exception, et pour une raison — voir « radioDraw ».
 
 import type { Beat, Shell } from "../shell.ts";
 import { type Params, derive, newSeed, radioLines } from "./derive.ts";
 import { type Radio, radioEngine } from "./engine.ts";
 
-// Seize barres quand le volet est à son minimum, vingt au-dela. Sous 900 px le volet
-// s'empile et la bande grandit d'elle-meme par son « clamp ».
+// Seize barres quand le volet est à son minimum, vingt au-delà. Sous 900 px le volet
+// s'empile et la bande grandit d'elle-même par son « clamp ».
 const BARS_NARROW = 16;
 const BARS_WIDE = 20;
 const WIDE_PX = 260;
-// Le repère de crête retombe plus lentement que la barre, comme sur un vu-metre.
+// Le repère de crête retombe plus lentement que la barre, comme sur un vu-mètre.
 const PEAK_FALL = 0.9;
 const PEAK_OFFSET_PX = 3;
-// L'analyseur ne rend que des zéros entre deux notes et pendant la montée du gain maitre.
-// Écrire ces zéros aplatirait le spectre en une ligne pendant tout le demarrage.
+// L'analyseur ne rend que des zéros entre deux notes et pendant la montée du gain maître.
+// Écrire ces zéros aplatirait le spectre en une ligne pendant tout le démarrage.
 const SILENT_LEVEL = 3;
 // La crête de repos se pose juste au-dessus de la barre, sans sortir de la bande.
 const REST_PEAK_LIFT = 0.08;
@@ -75,7 +75,7 @@ export interface RadioState {
   radioSeconds: number;
   radioSeedText: string;
   radioSeeds: number;
-  // La radio mise en pause parce que l'onglet est passé en arriere-plan, et qu'il faut donc
+  // La radio mise en pause parce que l'onglet est passé en arrière-plan, et qu'il faut donc
   // rendre au retour. Une pause demandée par le visiteur, elle, ne se défait pas seule.
   radioSlept: boolean;
   radioSizer: ResizeObserver | undefined;
@@ -116,8 +116,8 @@ const forgetMediaSession = () => {
 // la page et n'a donc pas d'URL. « ThisType » type « this » sans rien emprunter.
 const members: RadioApi & ThisType<Shell> = {
   // Tout ce que la commande a posé tombe ici : minuteur, boucle de rendu, et surtout le
-  // contexte audio. Un contexte laisse ouvert continue de tourner en fond et garde le
-  // matériel audio reserve.
+  // contexte audio. Un contexte laissé ouvert continue de tourner en fond et garde le
+  // matériel audio réservé.
   radioClose(this: Shell) {
     if (!this.radioOn) {
       return;
@@ -146,7 +146,7 @@ const members: RadioApi & ThisType<Shell> = {
     forgetMediaSession();
 
     this.radioEngine?.close();
-    // Un champ retire ne perd pas le focus par un événement : sans la remise à zéro de
+    // Un champ retiré ne perd pas le focus par un événement : sans la remise à zéro de
     // « radioTyping », la seed suivante ne s'afficherait jamais.
     Object.assign(this, {
       radioAudio: "muet",
@@ -172,9 +172,9 @@ const members: RadioApi & ThisType<Shell> = {
       return;
     }
 
-    // La boucle s'arrête pour de bon : volet ferme, animation coupée ou lecture en pause
+    // La boucle s'arrête pour de bon : volet fermé, animation coupée ou lecture en pause
     // ne laissent plus tourner un rappel par image. « radioToggle » la relance à la
-    // lecture, et « flip » au retour du reglage.
+    // lecture, et « flip » au retour du réglage.
     const frame = () => {
       if (
         !this.radioOn ||
@@ -235,7 +235,7 @@ const members: RadioApi & ThisType<Shell> = {
   },
 
   // Les raccourcis sont posés sur le volet, pas sur la fenêtre : la coquille garde le
-  // focus sur la ligne de commande, ou « espace » et « r » se tapent legitimement. Le
+  // focus sur la ligne de commande, ou « espace » et « r » se tapent légitimement. Le
   // champ de seed est exclu pour la même raison.
   radioKey(this: Shell, event: KeyboardEvent) {
     // Une modale a son propre clavier. La bascule des raccourcis coupe aussi ces touches.
@@ -277,8 +277,8 @@ const members: RadioApi & ThisType<Shell> = {
   },
 
   // Une écoute se partage par un nombre : ce nombre doit pouvoir se recoller. Le vide est
-  // refuse plutôt que charge comme seed zero. La seed courante ne relance rien, sinon
-  // « entree » puis la perte de focus redémarreraient le morceau deux fois.
+  // refusé plutôt que chargé comme seed zéro. La seed courante ne relance rien, sinon
+  // « entrée » puis la perte de focus redémarreraient le morceau deux fois.
   radioLoad(this: Shell, text: string) {
     const digits = text.replaceAll(/\D/gu, "").slice(0, MAX_DIGITS),
       seed = Number(digits),
@@ -307,7 +307,7 @@ const members: RadioApi & ThisType<Shell> = {
 
     this.radioAudio = engine.toggleMute() ? "muet" : "on";
 
-    // Le spectre mesure le son en bout de chaîne : coupe, il n'a rien à montrer.
+    // Le spectre mesure le son en bout de chaîne : coupé, il n'a rien à montrer.
     if (this.radioAudio === "on") {
       this.radioDraw();
     }
@@ -335,7 +335,7 @@ const members: RadioApi & ThisType<Shell> = {
       }
     }, SECOND_MS);
 
-    // Le volet vient d'être demandé : sa largeur ne se mesure qu'une fois qu'il est pose.
+    // Le volet vient d'être demandé : sa largeur ne se mesure qu'une fois qu'il est posé.
     // Mesurer avant laissait seize barres sur un grand écran, quand le réglage « out »
     // était éteint et que le volet valait donc zéro pixel.
     navigator.mediaSession.setActionHandler("play", () => {
@@ -373,8 +373,8 @@ const members: RadioApi & ThisType<Shell> = {
     });
   },
 
-  // Une autre seed, donc un autre morceau, immediatement. Le chronomètre repart à zéro :
-  // il mesure le morceau en cours, pas la durée d'ecoute.
+  // Une autre seed, donc un autre morceau, immédiatement. Le chronomètre repart à zéro :
+  // il mesure le morceau en cours, pas la durée d'écoute.
   radioReseed(this: Shell, seed: number | undefined) {
     this.radioSeconds = 0;
     this.radioClock = ZERO_CLOCK;
@@ -407,7 +407,7 @@ const members: RadioApi & ThisType<Shell> = {
     this.radioSilhouette();
   },
 
-  // L'image qu'on voit sans son, et celle qui reste quand l'animation est coupee. Le gel
+  // L'image qu'on voit sans son, et celle qui reste quand l'animation est coupée. Le gel
   // est une image fixe lisible, jamais une disparition : les hauteurs sortent de la seed.
   radioSilhouette(this: Shell) {
     const params = this.radioParams;
@@ -458,8 +458,8 @@ const members: RadioApi & ThisType<Shell> = {
       return;
     }
 
-    // Une reprise continue le morceau là où la pause l'a laisse. Seule la première lecture,
-    // ou une nouvelle seed, le reprend depuis le debut.
+    // Une reprise continue le morceau là où la pause l'a laissé. Seule la première lecture,
+    // ou une nouvelle seed, le reprend depuis le début.
     if (!engine.resume()) {
       engine.play(this.radioParams);
     }
@@ -471,7 +471,7 @@ const members: RadioApi & ThisType<Shell> = {
     this.track("radio_ecoute", { seeds: this.radioSeeds });
   },
 
-  // Un onglet en arriere-plan qui continue de jouer est une impolitesse. La pause rendue au
+  // Un onglet en arrière-plan qui continue de jouer est une impolitesse. La pause rendue au
   // retour n'est que celle-ci : une pause demandée par le visiteur ne se défait pas seule.
   radioVisibility(this: Shell) {
     const engine = this.radioEngine;

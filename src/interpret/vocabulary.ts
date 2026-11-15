@@ -39,7 +39,7 @@ export const KEYBOARD =
 
 // Les easter eggs ne répondent qu'au préfixe slash, pour ne pas mélanger une vraie
 // commande et un raccourci du portfolio. L'ordre d'écriture ne décide de rien : le
-// vocabulaire se trie, et la fenêtre de la complétion glisse au-dela de dix propositions.
+// vocabulaire se trie, et la fenêtre de la complétion glisse au-delà de dix propositions.
 export const SLASH_ONLY = new Set([
   "slime",
   "joke",
@@ -112,7 +112,7 @@ const VERBS = [
 ];
 
 // Les deux noms de la recherche ne s'offrent jamais ensemble : le vocabulaire ne porte
-// que celui qui correspond à l'état du modele. Le tri décide de ce que la fenêtre montre
+// que celui qui correspond à l'état du modèle. Le tri décide de ce que la fenêtre montre
 // en premier, là où la liste dépasse désormais dix noms.
 export const vocabulary = (model: boolean) => {
   return [model ? ASK_MODEL : ASK, ...VERBS].toSorted();

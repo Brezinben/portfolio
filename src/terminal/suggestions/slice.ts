@@ -13,7 +13,7 @@ export interface SuggestionsState {
   sugg: string[];
   suggAt: number;
   suggFrag: string;
-  // La liste vient d'être calculée par une frappe, et non déplacée par une fleche. Seule
+  // La liste vient d'être calculée par une frappe, et non déplacée par une flèche. Seule
   // une liste fraîche s'anime : voir surgir chaque entrée révélée par la fenêtre qui glisse
   // transformerait un déplacement en clignotement.
   suggFresh: boolean;
@@ -109,8 +109,8 @@ export const suggestionsSlice = () => {
     },
 
     // Le doigt valide en un geste : la proposition part sans passer par la touche
-    // entree. Un premier mot qui attend un argument ouvre sa liste, sinon la commande
-    // partirait incomplete.
+    // entrée. Un premier mot qui attend un argument ouvre sa liste, sinon la commande
+    // partirait incomplète.
     pickSugg(this: Shell, index: number, pointer: PointerEvent) {
       this.applySugg(index);
 
@@ -135,7 +135,7 @@ export const suggestionsSlice = () => {
 
     // La flèche haut rappelle la commande de la section, puis les commandes déjà tapées.
     // La commande de section n'arrive en tête que tant que rien n'a été tapé : c'est
-    // « la premiere fois dans une section » du journal de conception, pas toujours.
+    // « la première fois dans une section » du journal de conception, pas toujours.
     recall(this: Shell, step: number) {
       const pool =
           this.commands.length > 0 ? [...this.commands, this.current.cmd] : [this.current.cmd],
@@ -184,7 +184,7 @@ export const suggestionsSlice = () => {
 
     // Sans proposition, Tab garde son rôle de navigation : avaler Tab enferme le visiteur
     // dans la ligne. Une ligne vide garde tout le vocabulaire en réserve, et n'en propose
-    // rien. Shift+Tab n'est jamais une completion.
+    // rien. Shift+Tab n'est jamais une complétion.
     tab(this: Shell, event: KeyboardEvent) {
       if (event.shiftKey || this.input === "" || this.sugg.length === 0) {
         return;

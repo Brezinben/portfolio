@@ -37,7 +37,7 @@ const CONTEXT: Context = {
       return line.t;
     });
   },
-  // Ce qu'une commande met dans le résultat, là où le journal ne reçoit que l'echo.
+  // Ce qu'une commande met dans le résultat, là où le journal ne reçoit que l'écho.
   resultTexts = (result: Outcome) => {
     return (result.result ?? []).map((line) => {
       return line.t ?? "";
@@ -226,7 +226,7 @@ it("should treat brezinben as an alias of benjamin", () => {
   );
 });
 
-// La blague est tirée au hasard, mais jamais deux fois la même d'affilee.
+// La blague est tirée au hasard, mais jamais deux fois la même d'affilée.
 it("should draw a joke different from the previous one", () => {
   for (let attempt = 0; attempt < 40; attempt += 1) {
     const result = interpret("/joke", { ...CONTEXT, jokeIndex: 0 }),
@@ -416,7 +416,7 @@ it("should keep the corpus answer waiting in the descriptor when ask runs with a
 });
 
 // Le recouvrement de mots ne trouve rien dès que la question est tournée autrement. C'est
-// le cas où un modèle sert le plus : il doit être consulté, pas court-circuite.
+// le cas où un modèle sert le plus : il doit être consulté, pas court-circuité.
 it("should consult the model even without a lexical match", () => {
   const descripteur = effectOf(interpret("ask zzzzz", AVEC_MODELE), "ask");
 
@@ -657,7 +657,7 @@ it("should refuse the command instead of lying when the mascot is away", () => {
   }
 });
 
-// Le but se jouait sur l'aide : la coquille en déduisait « easter egg trouve, rien ne
+// Le but se jouait sur l'aide : la coquille en déduisait « easter egg trouvé, rien ne
 // bouge ». Une commande qui liste son usage le dit maintenant.
 it("should flag a slime usage listing as such", () => {
   for (const command of ["/slime", "/slime bogus", "/slime expression", "/slime activity"]) {

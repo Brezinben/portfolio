@@ -119,7 +119,7 @@ it("should pre-write the answer in the input", () => {
   assert.equal(pending?.answer, "oui");
 });
 
-// -y vaut consentement : le drapeau a été tapé avec l'idee.
+// -y vaut consentement : le drapeau a été tapé avec l'idée.
 it("should send without asking the question when propose gets -y", () => {
   const result = interpret("/propose -y ajouter une section", CONTEXT);
 

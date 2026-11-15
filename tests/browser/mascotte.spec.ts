@@ -43,7 +43,7 @@ const boot = async (page: Page) => {
     await page.mouse.move(box.x + 32, box.y + 32);
     await page.mouse.down();
   },
-  // Plusieurs pas : un saut unique ne dirait pas le sens du deplacement.
+  // Plusieurs pas : un saut unique ne dirait pas le sens du déplacement.
   pousser = (page: Page, x: number, y: number) => {
     return page.mouse.move(x, y, { steps: 12 });
   };
@@ -68,7 +68,7 @@ test("should draw the mascot from a sprite sheet and play the idle state", async
 });
 
 // Les trente-deux états d'une forme tiennent dans une image : une requête, pas trente-deux.
-// Et une seule forme part au demarrage.
+// Et une seule forme part au démarrage.
 test("should carry the thirty-two slime states in a single image", async ({ page }) => {
   const asked = watchSheets(page);
 
@@ -265,7 +265,7 @@ test("should bring the hue with the morph, not before it", async ({ page }) => {
 });
 
 // Sans mascotte, changer de thème ne doit rien jouer ni rien télécharger : la promesse
-// « aucune feuille en mouvement reduit » vaut aussi quand le thème change.
+// « aucune feuille en mouvement réduit » vaut aussi quand le thème change.
 // Trop court, la personne qui tape ne voit jamais l'animation : elle regarde ses mots.
 test("should hold the typing state for one thousand four hundred milliseconds after the last key", async ({
   page,
@@ -321,7 +321,7 @@ test("should load no sheet when the theme changes without a mascot", async ({ pa
 });
 
 // Rallumer les animations après un changement de thème remonte la mascotte : elle doit
-// reprendre son repos, pas rester sur la mue d'un thème déjà applique.
+// reprendre son repos, pas rester sur la mue d'un thème déjà appliqué.
 test("should return to idle when animations come back after a theme change", async ({ page }) => {
   await page.addInitScript(() => {
     localStorage.setItem("bd-term-opts", JSON.stringify({ anim: false }));
@@ -377,7 +377,7 @@ test("should really put the mascot to sleep on the sleep command", async ({ page
 });
 
 // Trois expressions jouaient « jump » et une quatrième « wink » : la commande annonçait une
-// émotion et rendait le geste d'à cote. Chacune porte maintenant sa feuille.
+// émotion et rendait le geste d'à côté. Chacune porte maintenant sa feuille.
 for (const expression of ["alert", "happy", "laugh", "sad", "scared", "sleep"]) {
   test(`should play its own sheet for the ${expression} expression`, async ({ page }) => {
     const cli = await boot(page);
@@ -421,7 +421,7 @@ test("should make the mascot speak on a command", async ({ page }) => {
   await expect(page.locator("[data-bubble]")).toContainText("héhé");
 });
 
-// Cinq clics font exploser le slime. Il ne répond plus à rien jusqu'à sa reapparition.
+// Cinq clics font exploser le slime. Il ne répond plus à rien jusqu'à sa réapparition.
 test("should blow the mascot up after five clicks", async ({ page }) => {
   await boot(page);
 
@@ -557,7 +557,7 @@ test("should keep the last frame of a splat that is held long", async ({ page })
   await pousser(page, piste.x - 40, piste.y + piste.height / 2);
   await expect(mascot(page)).toHaveClass(/slime--splatLeft$/u);
 
-  // La passe dure 0,96 s. On attend bien au-dela, comme une main qui ne lâche pas.
+  // La passe dure 0,96 s. On attend bien au-delà, comme une main qui ne lâche pas.
   await page.waitForTimeout(1600);
 
   // La passe du plaquage compte douze cases. La case tenue est la douzième : la treizième
@@ -760,7 +760,7 @@ test("should play the activity on slime activity, then hand back", async ({ page
 });
 
 // Le train est la seule feuille qui finit sans mascotte. Un décor vide sans retour serait
-// un piège : « drop » la ramene.
+// un piège : « drop » la ramène.
 test("should take the mascot away on the train, then drop it back", async ({ page }) => {
   const cli = await boot(page);
 
@@ -810,7 +810,7 @@ test("should not trigger the goal when the slime usage is listed", async ({ page
 });
 
 // Le redémarrage remettait le journal à zéro mais laissait la mascotte absente, avec le
-// minuteur de l'ancienne session arme.
+// minuteur de l'ancienne session armé.
 test("should bring back a mascot that left by exploding when the page reboots", async ({
   page,
 }) => {
@@ -854,7 +854,7 @@ test("should move the mascot one step up the chain on evolve", async ({ page }) 
   await expect(mascot(page)).toHaveClass(/slime--evolveCube\b/u);
   await expect(mascot(page)).toHaveAttribute("data-form", "cube");
   // La bande, et pas seulement la classe : une règle de forme trop spécifique écrasait le
-  // décalage vertical, et toutes les bandes retombaient sur la premiere.
+  // décalage vertical, et toutes les bandes retombaient sur la première.
   const transition = await bande(page);
 
   await expect(mascot(page)).toHaveClass(/slime--idle\b/u, { timeout: 6000 });

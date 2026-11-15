@@ -1,7 +1,7 @@
 // La recherche globale : l'ouverture, le clavier et le lancement d'une trouvaille.
 //
 // Elle n'exécute rien. Une trouvaille pose sa commande sur la ligne de saisie et la soumet :
-// l'echo, le résultat, le journal et les succès restent ceux du terminal. Ce qui n'est pas
+// l'écho, le résultat, le journal et les succès restent ceux du terminal. Ce qui n'est pas
 // une commande ouvre la zone qui lui correspond.
 
 import { type GlobalEntry, globalIndex } from "../../interpret.ts";

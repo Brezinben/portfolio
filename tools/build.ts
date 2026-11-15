@@ -112,7 +112,7 @@ const ROOT = fileURLToPath(new URL("../", import.meta.url)),
   // RemoveAttributeQuotes et removeOptionalTags rendent le balisage déroutant pour 0,3 Ko.
   MINIFY = { collapseWhitespace: true, minifyCSS: true, removeComments: true },
   // Le code d'erreur de Node n'est pas dans le type Error : on le rétrécit plutôt que de
-  // l'affirmer. TypeScript impose « unknown » sûr un catch ; deviner une forme avant de la vérifier écrirait moins sûr que ce code.
+  // l'affirmer. TypeScript impose « unknown » sur un catch ; deviner une forme avant de la vérifier écrirait moins sûr que ce code.
   // oxlint-disable-next-line anti-slop/no-unknown-parameters
   errorCode = (error: unknown): string | undefined => {
     // oxlint-disable-next-line anti-slop/no-runtime-typeof
@@ -407,7 +407,7 @@ const unfilter = (filter: number, value: number, around: Around) => {
     });
 
     // Les feuilles source sortent de l'artefact : leur dossier ne sert plus à rien une fois
-    // les bandes empilees.
+    // les bandes empilées.
     await Promise.all([
       ...forms.map(({ dir }, index) => {
         return writeFile(join(staging, sheetsOf(dir)), merges[index]?.bytes ?? Buffer.alloc(0));
@@ -425,7 +425,7 @@ const unfilter = (filter: number, value: number, around: Around) => {
 
     // Le balayage est plus large que le pliage : il prend toute adresse de feuille, la règle
     // exige en plus les deux lignes dans l'ordre. Sans ce garde-fou, une règle défaite par un
-    // reformatage laisserait survivre une adresse dont le dossier a été retire.
+    // reformatage laisserait survivre une adresse dont le dossier a été retiré.
     const declared = text.match(SHEET_URL) ?? [],
       // L'adresse de l'image fusionnée reprend la forme de celles qu'elle remplace : une page
       // servie sur une adresse quelconque écrit des chemins absolus, et les garde.
@@ -458,9 +458,9 @@ const unfilter = (filter: number, value: number, around: Around) => {
           BASE_RULE[dir as keyof typeof BASE_RULE],
           (_rule: string, head: string, indent: string) => {
             return `${head}${indent}background-image: url("${root}${sheetsOf(dir)}");\n${
-              // Seule la forme par défaut pose la position de depart. Un « background-position »
+              // Seule la forme par défaut pose la position de départ. Un « background-position »
               // sur une règle d'attribut écraserait le « background-position-y » des règles
-              // d'état, moins spécifiques : toutes les bandes retomberaient sur la premiere.
+              // d'état, moins spécifiques : toutes les bandes retomberaient sur la première.
               dir === "slime" ? `${indent}background-position: 0 0;\n` : ""
             }${indent}background-size: ${size?.width ?? 0}px ${size?.height ?? 0}px;\n`;
           },
@@ -732,7 +732,7 @@ try {
   await cp(SOURCE, version, {
     // Une règle plutôt qu'une liste de noms : le bundle absorbe les modules, et un renommage
     // ne doit pas republier la source en silence. Les CONTEXT.md sont de la documentation de
-    // dépôt, pas des actifs : les publier exposerait la carte des modules, et empêcherait l'elagage.
+    // dépôt, pas des actifs : les publier exposerait la carte des modules, et empêcherait l'élagage.
     filter: (from: string) => {
       return (
         extname(from) !== ".ts" &&

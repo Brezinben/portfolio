@@ -85,7 +85,7 @@ const until = async <T>(work: Promise<T>, signal: AbortSignal) => {
 };
 
 // L'attente dépassée et le refus ne se réparent pas de la même façon : l'une demande de
-// patienter, l'autre de regarder l'état du modele.
+// patienter, l'autre de regarder l'état du modèle.
 const askFailure = (cause: unknown) => {
   return cause instanceof DOMException && cause.name === "TimeoutError"
     ? `le modèle local n'a pas répondu en ${ASK_MS / 1000} s.`
@@ -139,7 +139,7 @@ export const askSlice = () => {
           ];
         }
       } finally {
-        // La question coupée n'éteint pas l'attente de celle qui l'a remplacee.
+        // La question coupée n'éteint pas l'attente de celle qui l'a remplacée.
         if (this.asker === asker) {
           this.thinking = false;
         }
@@ -180,7 +180,7 @@ export const askSlice = () => {
       try {
         this.modelState = await LanguageModel.availability();
         // Le vocabulaire porte « ask » ou « ask✨ », jamais les deux. L'index se refait, sinon
-        // la recherche globale garderait le nom d'avant la detection.
+        // la recherche globale garderait le nom d'avant la détection.
         this.reindexGlobal();
       } catch {
         // Un refus au démarrage laisse « unknown » : « ask » répond alors sans modèle,
@@ -188,7 +188,7 @@ export const askSlice = () => {
       }
     },
 
-    // Le site entier tient en mémoire une fois charge : seules les commandes qui partent
+    // Le site entier tient en mémoire une fois chargé : seules les commandes qui partent
     // ailleurs cassent. Le refus les nomme, et il nomme ce qui marche encore.
     refuseOffline(this: Shell, what: string, instead: string) {
       this.journal = [

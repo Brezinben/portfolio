@@ -91,7 +91,7 @@ const ROOT = resolve(
     stream.pipe(response);
   },
   // Un seul point d'envoi pour les deux passes : l'adresse demandée, puis la page
-  // d'erreur. Il rend faux quand le fichier n'est pas là, sans rien ecrire.
+  // d'erreur. Il rend faux quand le fichier n'est pas là, sans rien écrire.
   serve = async ({
     request,
     response,

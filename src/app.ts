@@ -51,7 +51,7 @@ import type { RadioApi, RadioState } from "./terminal/radio/slice.ts";
 import { type RawSection, type Section, barParts, printed, section } from "./terminal/format.ts";
 import { type SuggestionsState, suggestionsSlice } from "./terminal/suggestions/slice.ts";
 
-// Une mission du volet gauche : sa pastille et son etat.
+// Une mission du volet gauche : sa pastille et son état.
 interface Mission {
   dot: Tone;
   id: string;
@@ -86,7 +86,7 @@ interface TechNote {
   why?: string;
 }
 
-// Le partage, tel que content.json le decrit.
+// Le partage, tel que content.json le décrit.
 interface Share {
   targets?: { id: string; kind: string; label: string; url: string }[];
   text?: string;
@@ -112,7 +112,7 @@ declare global {
 }
 
 // Le contenu tel que le réseau le rend. Chaque champ peut manquer : « applyContent » pose
-// un repli pour chacun, sauf « sections », sans lequel le chargement echoue.
+// un repli pour chacun, sauf « sections », sans lequel le chargement échoue.
 interface RawContent {
   details?: RawSection[];
   feedback?: Record<string, string>;
@@ -129,8 +129,8 @@ interface RawContent {
 // Un gestionnaire par genre d'effet : la clé et l'effet reçu vont ensemble.
 type EffectRun = { [K in Effect["type"]]: (effect: Extract<Effect, { type: K }>) => void };
 
-// Ce que la page tient en memoire. Les minuteurs en font partie : les déclarer les rend
-// visibles. « RadioState » vient de la tranche qui l'emploie, pour ne pas deriver.
+// Ce que la page tient en mémoire. Les minuteurs en font partie : les déclarer les rend
+// visibles. « RadioState » vient de la tranche qui l'emploie, pour ne pas dériver.
 interface State
   extends
     AchievementsState,
@@ -149,7 +149,7 @@ interface State
   ticker: Beat | undefined;
   anim: boolean;
   reduced: boolean;
-  // Le résultat d'une commande qui l'a reclame. La navigation le reprend.
+  // Le résultat d'une commande qui l'a réclamé. La navigation le reprend.
   commandResult: Section | undefined;
   bootTick: number;
   dataErr: boolean;
@@ -169,10 +169,10 @@ interface State
   power: "boot" | "fade" | "off" | "on";
   profileEmail: string;
   // La tranche de la radio arrive par import dynamique : ce drapeau dit si elle a rejoint
-  // le composant, et « radioOn » ne peut valoir vrai qu'apres.
+  // le composant, et « radioOn » ne peut valoir vrai qu'après.
   radioLoaded: boolean;
-  // La commande a été tapée et la radio n'a pas encore été quittee. Le chunk arrive après
-  // un aller-retour réseau : partir entre-temps ne doit pas la faire s'ouvrir quand meme.
+  // La commande a été tapée et la radio n'a pas encore été quittée. Le chunk arrive après
+  // un aller-retour réseau : partir entre-temps ne doit pas la faire s'ouvrir quand même.
   radioWanted: boolean;
   running: boolean;
   section: string;
@@ -211,12 +211,12 @@ const slices = () => {
 };
 
 // « RadioApi » n'est pas dans « slices » : sa tranche arrive par import dynamique, une fois
-// la commande tapee. Elle rejoint le composant à ce moment, mais « this » la voit des ici.
+// la commande tapée. Elle rejoint le composant à ce moment, mais « this » la voit dès ici.
 type Slices = RadioApi & ReturnType<typeof slices>;
 
 // ThisType ajoute les magies au type de « this » sans rien changer au code produit :
-// cette fonction est l'identite. L'état vient de State, le reste du littéral vient de T :
-// sans ce partage, un champ initialise à vide prendrait le type du vide.
+// cette fonction est l'identité. L'état vient de State, le reste du littéral vient de T :
+// sans ce partage, un champ initialisé à vide prendrait le type du vide.
 const withMagics = <T>(
   component: State & T & ThisType<Magics & State & Omit<T, keyof State> & Slices>,
 ): State & Omit<T, keyof State> => {
@@ -224,7 +224,7 @@ const withMagics = <T>(
 };
 
 document.addEventListener("alpine:init", () => {
-  // Les propriétés sont triees. Les méthodes suivent un ordre de lecture : chargement,
+  // Les propriétés sont triées. Les méthodes suivent un ordre de lecture : chargement,
   // navigation, commandes. Un tri alphabétique disperserait chaque sujet.
   // oxlint-disable-next-line sort-keys
   Alpine.data("terminal", () => {
@@ -452,7 +452,7 @@ document.addEventListener("alpine:init", () => {
       },
 
       // Une mission porte le nom de son employeur dans « via » : elle se range sous lui,
-      // dans le groupe qu'il ouvre. Une entrée seule forme un groupe d'une entree.
+      // dans le groupe qu'il ouvre. Une entrée seule forme un groupe d'une entrée.
       timelineGroups() {
         const groups: { key: string; steps: Step[] }[] = [];
 
@@ -481,8 +481,8 @@ document.addEventListener("alpine:init", () => {
         }
       },
 
-      // La jauge monte de ce que la sortie a imprime. Pleine, elle "compacte" avec un
-      // résumé ironique, puis repart à zero.
+      // La jauge monte de ce que la sortie a imprimé. Pleine, elle "compacte" avec un
+      // résumé ironique, puis repart à zéro.
       get ctxCells() {
         return Math.min(CTX_CELLS, Math.round((this.used / CTX_BUDGET) * CTX_CELLS));
       },
@@ -557,7 +557,7 @@ document.addEventListener("alpine:init", () => {
 
       // Le journal se redimensionne au glisser, entre 44 px et la place disponible, et sa
       // hauteur est conservée sur l'appareil. « logH » vaut 0 tant que rien n'a été réglé : la
-      // hauteur effective doit donc toujours passer par ce getter, sinon un réglage part de zero.
+      // hauteur effective doit donc toujours passer par ce getter, sinon un réglage part de zéro.
       get logHeight(): number {
         return this.logH || 120;
       },
@@ -609,7 +609,7 @@ document.addEventListener("alpine:init", () => {
         }
       },
 
-      // Extinction façon CRT, puis la séquence de boot complete.
+      // Extinction façon CRT, puis la séquence de boot complète.
       powerDown(mode: PowerMode) {
         this.stopCompacting();
         this.radioStop();
@@ -644,7 +644,7 @@ document.addEventListener("alpine:init", () => {
       },
 
       // Ce que le volet de sortie annonce. La radio qui joue reprend « live », le mot que
-      // la sortie emploie déjà : un seul mot pour un seul etat.
+      // la sortie emploie déjà : un seul mot pour un seul état.
       get outLabel() {
         if (!this.radioOn) {
           return this.outStatus;
@@ -663,7 +663,7 @@ document.addEventListener("alpine:init", () => {
         return this.radioAudio === "on" ? "‖" : "▶";
       },
 
-      // Ce que la commande fera au prochain appui, pour un lecteur d'ecran.
+      // Ce que la commande fera au prochain appui, pour un lecteur d'écran.
       get radioAction() {
         if (this.radioAudio === "muet") {
           return "Rendre le son — touche m";
@@ -690,7 +690,7 @@ document.addEventListener("alpine:init", () => {
         setTimeout(
           () => {
             this.power = "on";
-            // Le démarrage découvre la mascotte : elle arrive plutôt qu'elle n'apparait.
+            // Le démarrage découvre la mascotte : elle arrive plutôt qu'elle n'apparaît.
             this.mascotPlay("drop");
           },
           this.reduced ? 0 : FADE_MS,
@@ -800,8 +800,8 @@ document.addEventListener("alpine:init", () => {
       },
 
       // Les groupes se découpent dans l'ordre des trouvailles, jamais dans l'ordre déclaré :
-      // sinon la flèche du bas et l'oeil ne parcourent pas la même liste. « GLOBAL_GROUPS »
-      // n'apporte plus ici que le libelle et l'etiquette.
+      // sinon la flèche du bas et l'œil ne parcourent pas la même liste. « GLOBAL_GROUPS »
+      // n'apporte plus ici que le libelle et l'étiquette.
       get globalGroups() {
         // L'annotation casse la circularité : sans elle, TypeScript déduit l'accesseur depuis
         // le littéral qui le contient, et rend « any ».
@@ -997,8 +997,8 @@ document.addEventListener("alpine:init", () => {
         }, 1000 / TYPE_CPS);
       },
 
-      // La réponse prend la place de la section dans le resultat. La frappe en cours
-      // s'arrête : sans cela, le minuteur de « play » réécrirait la commande affichee.
+      // La réponse prend la place de la section dans le résultat. La frappe en cours
+      // s'arrête : sans cela, le minuteur de « play » réécrirait la commande affichée.
       showResult(raw: string, lines: ContentLine[]) {
         clearInterval(this.typer);
         clearTimeout(this.latency);
@@ -1111,7 +1111,7 @@ document.addEventListener("alpine:init", () => {
         }
 
         // Ouvrir un onglet vers LinkedIn sans réseau laisse une page d'erreur du navigateur,
-        // et le visiteur croit que le portfolio a casse.
+        // et le visiteur croit que le portfolio a cassé.
         if (!this.online) {
           this.refuseOffline(
             `ouvrir ${effect.kind}`,
@@ -1138,7 +1138,7 @@ document.addEventListener("alpine:init", () => {
 
         this.say("copié");
         // La bulle n'est montée qu'avec son texte : elle n'annonce rien. Le journal, lui,
-        // est une région live toujours presente.
+        // est une région live toujours présente.
         this.journal = [...this.journal, { c: "ok", m: "✓", mc: "ok", t: "copié" }];
       },
 
@@ -1170,7 +1170,7 @@ document.addEventListener("alpine:init", () => {
       apply(effects: Effect[]) {
         // Trouver un easter egg vaut une célébration, mais plusieurs disent déjà une
         // expression : le but ne se joue que si rien d'autre ne bouge la mascotte, sinon il
-        // s'écraserait aussitot. Il se joue après la boucle, pour ne pas dépendre de l'ordre des effets.
+        // s'écraserait aussitôt. Il se joue après la boucle, pour ne pas dépendre de l'ordre des effets.
         const found = effects.some((effect) => {
             return effect.type === "track" && effect.event === "easter_egg";
           }),
@@ -1283,7 +1283,7 @@ document.addEventListener("alpine:init", () => {
 
         for (const effect of effects) {
           // SAFETY: « effect.type » désigne la clé de « run », dont le gestionnaire attend ce
-          // genre d'effet. TypeScript ne relie pas les deux côtés de l'accès indexe.
+          // genre d'effet. TypeScript ne relie pas les deux côtés de l'accès indexé.
           (run[effect.type] as (value: Effect) => void)(effect);
         }
 
@@ -1293,14 +1293,14 @@ document.addEventListener("alpine:init", () => {
       },
 
       // Le nom d'une proposition n'apprend rien à lui seul. La ligne suit la sélection,
-      // et se tait quand la proposition vient du contenu : son identifiant se lit deja.
+      // et se tait quand la proposition vient du contenu : son identifiant se lit déjà.
       get suggHint() {
         return hintFor(this.suggHead, this.sugg[this.suggAt] ?? "");
       },
 
       // Dix propositions à l'écran, sur une liste qui peut être plus longue. La fenêtre
       // glisse sous la sélection au lieu de couper la liste : une proposition tapable
-      // reste atteignable à la fleche.
+      // reste atteignable à la flèche.
       get suggWindow() {
         return this.sugg.slice(this.suggTop, this.suggTop + MAX_SUGGESTIONS);
       },

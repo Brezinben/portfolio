@@ -1,7 +1,7 @@
 // L'autocomplétion : ce qu'elle propose selon le chemin déjà tapé, et la description
 // qu'elle affiche sous la liste.
 //
-// Elle rend la liste entière, jamais tronquee. C'est la coquille qui n'en montre que dix
+// Elle rend la liste entière, jamais tronquée. C'est la coquille qui n'en montre que dix
 // à la fois, et qui fait glisser cette fenêtre quand la sélection en sort.
 
 import { ACTIVITIES, OFFERED } from "./mascot.ts";

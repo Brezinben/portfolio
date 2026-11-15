@@ -1,5 +1,5 @@
 // La mise en forme : ce que la coquille calcule et que l'interpréteur ne peut pas
-// rendre. Bandeau dessine en box-shadow, barres de progression, lignes de contenu.
+// rendre. Bandeau dessiné en box-shadow, barres de progression, lignes de contenu.
 
 import { type ContentLine, type Tone, contentLine, safeTone } from "../interpret.ts";
 import { lookup } from "./lookup.ts";
@@ -40,13 +40,13 @@ export interface Printable {
   tokens?: { t: string }[];
 }
 
-// Le volet de sortie d'une section : un titre et des paires cle/valeur colorees.
+// Le volet de sortie d'une section : un titre et des paires clé/valeur colorées.
 export interface RawOut {
   lines?: (number | string)[][];
   title?: string;
 }
 
-// Une section ou une fiche de mission, telle que content.json l'ecrit.
+// Une section ou une fiche de mission, telle que content.json l'écrit.
 export interface RawSection {
   ask?: string;
   cmd?: string;
@@ -73,7 +73,7 @@ export const FILLED = "⣿";
 export const HOLLOW = "░";
 // Une seule barre pour toute la page : les cases posées, la tête qui tourne tant qu'il
 // reste à faire, les cases vides. Rendue en deux morceaux, chacun avec sa couleur.
-// Sans `tick`, la barre ne progresse pas : elle n'a alors pas de tete.
+// Sans `tick`, la barre ne progresse pas : elle n'a alors pas de tête.
 export const barParts = (done: number, total: number, tick?: number) => {
   const placed = Math.max(0, Math.min(total, Math.floor(done))),
     head = tick === undefined || placed >= total ? "" : SPINNER[tick % SPINNER.length];

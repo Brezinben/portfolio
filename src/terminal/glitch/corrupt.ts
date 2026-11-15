@@ -1,13 +1,13 @@
-// La corruption d'un texte : ce qui remplace quoi, et avec quelle intensite.
+// La corruption d'un texte : ce qui remplace quoi, et avec quelle intensité.
 //
-// Elle ne lit que ses arguments et ne touche à aucun noeud. La tranche garde le DOM, les
-// minuteurs et le texte d'origine ; ce module ne rend que des chaines.
+// Elle ne lit que ses arguments et ne touche à aucun nœud. La tranche garde le DOM, les
+// minuteurs et le texte d'origine ; ce module ne rend que des chaînes.
 
 import { lookup } from "../lookup.ts";
 
 // UTF-8 relu en latin-1 : la faute d'encodage la plus reconnaissable, et la seule qui se
 // lise comme une panne plutôt que comme du bruit. Les accents français y passent tous,
-// sinon la corruption saute justement les caractères qui la rendent credible.
+// sinon la corruption saute justement les caractères qui la rendent crédible.
 export const MOJIBAKE = {
   "«": "Â«",
   "°": "Â°",
@@ -47,7 +47,7 @@ const POOL = "ĄßĆÐЄҒĢĦƗĴЌŁӍИФ¶ҚЯŞŦЦVЩЖ¥ƵǂǃΔΣΞ∎�
 export const RAIN = "アイウエオカキクケコサシスセソタチツテトナニヌネノ0123456789";
 
 // Une passe sur trois cent quarante : la corruption doit rester lisible comme un texte
-// casse, pas comme un mur de glyphes. Le mojibake passe presque toujours, parce qu'il
+// cassé, pas comme un mur de glyphes. Le mojibake passe presque toujours, parce qu'il
 // porte le sens de la panne ; le reste suit la chaleur du moment.
 const MOJIBAKE_ODDS = 0.82;
 const HEAT_FLOOR = 0.02;
@@ -72,7 +72,7 @@ export const heatAt = (progress: number) => {
 };
 
 // Les espaces ne sont jamais touchés : les mots gardent leurs coupures, et le texte reste
-// lisible comme un texte casse. La largeur, elle, bouge : le mojibake rend deux octets là
+// lisible comme un texte cassé. La largeur, elle, bouge : le mojibake rend deux octets là
 // où il en lit un.
 export const corrupt = (text: string, heat: number) => {
   let out = "";

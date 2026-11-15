@@ -152,7 +152,7 @@ const globalShortcut = (shell: Shell, event: KeyboardEvent): boolean => {
 // Les touches que le gestionnaire de la page ne traite pas : un modificateur, une touche
 // déjà consommée, Entrée répétée, la fin du boot, une modale, une saisie.
 const passesKey = (shell: Shell, event: KeyboardEvent): boolean => {
-  // Un élément qui traite sa touche l'a déjà consommee. Sans cette sortie, la
+  // Un élément qui traite sa touche l'a déjà consommée. Sans cette sortie, la
   // flèche de la poignée déplace aussi le focus de volet.
   if (event.altKey || event.ctrlKey || event.metaKey || event.defaultPrevented) {
     return true;
@@ -213,7 +213,7 @@ const characterKey = (shell: Shell, event: KeyboardEvent): boolean => {
   }
 
   // La bascule ne coupe que les touches de caractère : les flèches restent la
-  // navigation elle-meme, pas un raccourci.
+  // navigation elle-même, pas un raccourci.
   if (shell.shortcuts && event.key === "/") {
     event.preventDefault();
     shell.$refs.cli?.focus();

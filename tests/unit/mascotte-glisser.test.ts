@@ -14,7 +14,7 @@ const TRACK = { bottom: 100, left: 0, right: 400, top: 0 },
   };
 
 // Un coin se teste avant un bord. Sur une diagonale les deux lectures sont vraies au même
-// instant, et un coin place après un mur ne serait jamais atteint.
+// instant, et un coin placé après un mur ne serait jamais atteint.
 it("should prefer the four corners over the four edges", () => {
   assert.equal(state(-10, -50), "splatCeilingLeft");
   assert.equal(state(410, -50), "splatCeilingRight");
@@ -44,7 +44,7 @@ it("should read the drag direction from the step, above a threshold", () => {
 });
 
 // Le plaquage décide avant le sens : une mascotte retenue contre un bord suit encore le
-// curseur en abscisse, mais sa feuille doit montrer l'ecrasement.
+// curseur en abscisse, mais sa feuille doit montrer l'écrasement.
 it("should prefer the splat over the drag direction", () => {
   assert.equal(state(-10, 50, 99), "splatLeft");
   assert.equal(state(410, 50, -99), "splatRight");

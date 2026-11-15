@@ -1,7 +1,7 @@
 // La recherche globale : l'index cherchable du site, et le classement d'une saisie.
 //
 // Elle ne cherche pas la même chose que « ask » : « ask » lit la prose du corpus et rend un
-// passage, la recherche globale lit le contenu structure et rend une commande.
+// passage, la recherche globale lit le contenu structuré et rend une commande.
 //
 // Rien n'est recopié ici. L'index dérive du contenu, des thèmes, du catalogue des succès et
 // du vocabulaire : une brique ajoutée à content.json y entre sans qu'on y touche.
@@ -23,7 +23,7 @@ export interface GlobalEntry {
   kind: GlobalKind;
   label: string;
   needsArgument: boolean;
-  // La fiche techno à ouvrir une fois la section stack affichee. Vide ailleurs.
+  // La fiche techno à ouvrir une fois la section stack affichée. Vide ailleurs.
   tech: string;
 }
 
@@ -68,7 +68,7 @@ export interface GlobalSource {
 const entry = (partial: Omit<GlobalEntry, "needsArgument" | "tech"> & Partial<GlobalEntry>) => {
   return { needsArgument: false, tech: "", ...partial } satisfies GlobalEntry;
 };
-// Le champ « cmd » du contenu est l'echo décoratif d'une section : « bd log --graph » n'ouvre
+// Le champ « cmd » du contenu est l'écho décoratif d'une section : « bd log --graph » n'ouvre
 // rien, le répartiteur n'accepte que l'identifiant. Seul « bd <id> » se soumet.
 const open = (id: string) => {
   return `bd ${id}`;
@@ -180,9 +180,9 @@ const rank = (query: string, item: GlobalEntry): number => {
 // Les trouvailles sortent regroupées par genre, parce que la zone les affiche ainsi : sans
 // ce regroupement, une flèche sauterait d'un groupe à l'autre puis reviendrait.
 //
-// C'est la meilleure trouvaille d'un genre qui place le genre, jamais un ordre declare. Un
-// ordre fige aurait enterré une trouvaille exacte : « theme » nomme une commande, et les
-// huit thèmes ne la portent que dans leurs mots-cles.
+// C'est la meilleure trouvaille d'un genre qui place le genre, jamais un ordre déclaré. Un
+// ordre figé aurait enterré une trouvaille exacte : « theme » nomme une commande, et les
+// huit thèmes ne la portent que dans leurs mots-clés.
 export const rankHits = (raw: string, index: GlobalEntry[], limit: number): GlobalEntry[] => {
   const query = fold(globalQuery(raw));
 

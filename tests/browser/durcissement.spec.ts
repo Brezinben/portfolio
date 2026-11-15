@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 import { opened, spyOpen } from "../helpers/open.ts";
 import type { Page } from "@playwright/test";
 
-// Compose plutôt qu'écrit en clair : no-script-url interdit le littéral, alors qu'il est
+// Composé plutôt qu'écrit en clair : no-script-url interdit le littéral, alors qu'il est
 // ici la charge utile du test.
 // Ce que le test sert à la place de content.json. La forme est celle d'un contenu
 // normal : ce sont les valeurs qui sont hostiles, et c'est tout le sujet.

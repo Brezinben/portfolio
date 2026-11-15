@@ -168,7 +168,7 @@ test("should leave the gauge empty when the panes are only clicked", async ({ pa
   expect(await gauge(), "a typed command costs").toBeGreaterThan(0);
 });
 
-// Pleine, la jauge compacte avec un résumé ironique, puis repart à zero.
+// Pleine, la jauge compacte avec un résumé ironique, puis repart à zéro.
 test("should start a compaction and empty itself when the gauge is full", async ({ page }) => {
   const cli = await boot(page),
     warned = page.locator("[data-journal]", { hasText: "fenêtre de contexte pleine" });
@@ -266,7 +266,7 @@ test("should draw the boot bar with dots", async ({ page }) => {
 });
 
 // Un redémarrage annule la compaction : sinon son résumé s'écrit dans un journal qu'on
-// vient de vider, et sa barre s'affiche par-dessus l'écran de demarrage.
+// vient de vider, et sa barre s'affiche par-dessus l'écran de démarrage.
 test("should cancel the running compaction on a reboot", async ({ page }) => {
   const cli = await boot(page),
     bar = page.locator("[data-compacting]");
@@ -384,7 +384,7 @@ test("should let the sudo refusal be read before the glitch", async ({ page }) =
 
 // La permutation des couleurs passe par une variable, parce que le conteneur des volets
 // porte un style en ligne qui bat la feuille. Elle est partie une fois sans que rien ne le
-// signale : ce test lit l'animation réellement calculee.
+// signale : ce test lit l'animation réellement calculée.
 test("should really run the theme permutation on the panes", async ({ page }) => {
   const cli = await boot(page);
 
@@ -399,8 +399,8 @@ test("should really run the theme permutation on the panes", async ({ page }) =>
     .toBeGreaterThan(0);
 });
 
-// Une touche maintenue se repete. Sans garde, garder Shift enfonce armait l'egg tout seul,
-// et « il ne se declenche jamais tout seul » cessait d'être vrai.
+// Une touche maintenue se répète. Sans garde, garder Shift enfoncé armait l'egg tout seul,
+// et « il ne se déclenche jamais tout seul » cessait d'être vrai.
 test("should not arm the glitch when Shift is held down", async ({ page }) => {
   await boot(page);
   await page.locator("[data-journal]").focus();
@@ -442,7 +442,7 @@ test("should give the pane its text back once the glitch is over", async ({ page
 });
 
 // Le mouvement réduit court-circuite tout : un lecteur d'écran relirait sinon cinq
-// secondes de charabia sans avoir rien demande.
+// secondes de charabia sans avoir rien demandé.
 test("should corrupt nothing when reduced motion is on", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
 

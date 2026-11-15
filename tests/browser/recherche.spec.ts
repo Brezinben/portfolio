@@ -16,7 +16,7 @@ const boot = async (page: Page) => {
 
     return page.getByLabel("Commande");
   },
-  // Le modèle local n'existe que dans Chrome, derrière un contexte securise. Le faux
+  // Le modèle local n'existe que dans Chrome, derrière un contexte sécurisé. Le faux
   // modèle pose le contrat attendu, rien de plus : il prouve l'usage, pas l'API.
   // Le Chromium de Playwright annonce un modèle téléchargeable mais absent, comme la majorité des visiteurs.
   retirerModele = (page: Page) => {
@@ -25,7 +25,7 @@ const boot = async (page: Page) => {
     });
   },
   // « responseConstraint » fait rendre du JSON au vrai modèle : un identifiant en sort
-  // entre guillemets. Un faux modèle qui rend l'identifiant nu cacherait ce piege.
+  // entre guillemets. Un faux modèle qui rend l'identifiant nu cacherait ce piège.
   poserModele = (page: Page, choix: string) => {
     return page.addInitScript((id: string) => {
       Object.defineProperty(globalThis, "LanguageModel", {
@@ -54,7 +54,7 @@ const boot = async (page: Page) => {
     }, choix);
   },
   // Un modèle qui ne répond que sur ordre. Un minuteur ferait courir le test contre la
-  // latence de la machine : l'attente doit tenir tant que le test ne l'a pas relachee.
+  // latence de la machine : l'attente doit tenir tant que le test ne l'a pas relâchée.
   poserModeleLent = (page: Page) => {
     return page.addInitScript(() => {
       const { promise, reject, resolve } = Promise.withResolvers<string>();
@@ -136,7 +136,7 @@ test("should recall its usage when ask comes without a question", async ({ page 
   await expect(page.locator("[data-journal]")).toContainText("posez une question");
 });
 
-// Le modèle choisit un identifiant dans une liste fermée, et c'est son choix qui repond.
+// Le modèle choisit un identifiant dans une liste fermée, et c'est son choix qui répond.
 // Ce qui s'affiche reste le texte du corpus : il ne parle jamais à la place de Benjamin.
 test("should let the model answer first and take the text from the corpus", async ({ page }) => {
   await poserModele(page, "contact");
@@ -167,7 +167,7 @@ test("should let the corpus answer when the model invents an identifier", async 
 });
 
 // Deux « ask » de suite : le choix de la première question ne doit pas s'écrire sous la
-// réponse de la seconde. La coupure passe par le signal donne au modele.
+// réponse de la seconde. La coupure passe par le signal donné au modèle.
 test("should cut the model choice of the first question when a second one comes", async ({
   page,
 }) => {
@@ -245,7 +245,7 @@ test("should stop the question in flight on clear", async ({ page }) => {
   await expect(journal).not.toContainText("48 heures");
 });
 
-// Le modèle répond en premier, donc son silence laisserait la question sans reponse. Celle
+// Le modèle répond en premier, donc son silence laisserait la question sans réponse. Celle
 // du corpus attend pour ce cas précis, et elle doit sortir.
 test("should let the corpus answer come out when the model stays silent", async ({ page }) => {
   await page.addInitScript(() => {
@@ -314,7 +314,7 @@ test("should name the search in the help under the name that is offered", async 
 });
 
 // Le défaut que la revue a trouvé : le recouvrement de mots ne trouvait rien, et le modèle
-// n'était même pas consulte. C'est pourtant le seul cas où il apporte quelque chose.
+// n'était même pas consulté. C'est pourtant le seul cas où il apporte quelque chose.
 test("should still go through the model for a question that no word matches", async ({ page }) => {
   await poserModele(page, "contact");
 
@@ -365,8 +365,8 @@ test("should still use an identifier returned without JSON", async ({ page }) =>
   await expect(page.locator("[data-journal]")).toContainText("48 heures");
 });
 
-// « rien ne repond dans ce portfolio » et « le modele a lache » se lisaient pareil. Le
-// premier envoyait chercher le défaut dans le contenu, quand il était dans le modele.
+// « rien ne répond dans ce portfolio » et « le modèle a lâché » se lisaient pareil. Le
+// premier envoyait chercher le défaut dans le contenu, quand il était dans le modèle.
 test("should tell a model failure apart from a missing answer", async ({ page }) => {
   await page.addInitScript(() => {
     Object.defineProperty(globalThis, "LanguageModel", {

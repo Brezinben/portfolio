@@ -29,7 +29,7 @@ jobs:
       - run: bun install --frozen-lockfile
 
       # « artefact-sans-source » lit le dossier construit : sans cette étape il ne trouve
-      # rien et echoue. En local la suite navigateur l'avait déjà construit.
+      # rien et échoue. En local la suite navigateur l'avait déjà construit.
       - run: bun run build
         env:
           PORTFOLIO_DIST: dist.test
@@ -49,13 +49,13 @@ jobs:
 
       - run: bun install --frozen-lockfile
 
-      # La version vient du paquet installe : Dependabot change la clé sans toucher au workflow.
+      # La version vient du paquet installé : Dependabot change la clé sans toucher au workflow.
       - id: playwright
         run: |
           version=$(jq -r .version node_modules/@playwright/test/package.json)
           echo "version=$version" >> "$GITHUB_OUTPUT"
 
-      # Les navigateurs pèsent plus que les dependances. La clé porte la version de
+      # Les navigateurs pèsent plus que les dépendances. La clé porte la version de
       # Playwright : une montée de version tire une nouvelle archive, pas l'ancienne.
       - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         id: navigateurs
@@ -72,7 +72,7 @@ jobs:
         run: bun x playwright install-deps chromium
 
       # Le plafond de deux workers vient de beta, qui a 7 Go. Le runner en a 16
-      # pour quatre coeurs : il en tient quatre, et la suite passe de neuf minutes à cinq.
+      # pour quatre cœurs : il en tient quatre, et la suite passe de neuf minutes à cinq.
       - run: bun run test:browser
         env:
           PORTFOLIO_WORKERS: 4

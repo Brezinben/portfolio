@@ -1,7 +1,7 @@
 // L'audio : graphe Web Audio, séquenceur, analyseur. Ce module ne touche pas au DOM.
 //
 // Les valeurs viennent de « design/export-radio/MUSIQUE.md » §4 à §6. Elles ont été réglées
-// à l'oreille, une par une : ce sont des valeurs figées, pas des reglages.
+// à l'oreille, une par une : ce sont des valeurs figées, pas des réglages.
 
 import { type Params, QUARTER_SEC, type Voice, degreeToMidi, midiToHertz } from "./derive.ts";
 
@@ -11,18 +11,18 @@ const BASS: Voice = { attack: 0.008, decay: 0.9, gain: 0.5, name: "basse", wave:
 const PAD: Voice = { attack: 0.35, decay: 2.4, gain: 0.34, name: "nappe", wave: "sine" };
 const BELL: Voice = { attack: 0.003, decay: 2.2, gain: 0.44, name: "grelot", wave: "sine" };
 // 5200 Hz et non 3200 : sous 4 kHz la cloche et les aigus de la mélodie perdaient leur
-// éclat, et une radio enjouée a besoin de cet eclat.
+// éclat, et une radio enjouée a besoin de cet éclat.
 const LOWPASS_HZ = 5200;
 const LOWPASS_Q = 0.4;
-// Les percussions sautent le passe-bas et l'echo : une cymbale filtrée à 5 kHz n'existe
-// plus, et un echo sur chaque croche noierait la boucle.
+// Les percussions sautent le passe-bas et l'écho : une cymbale filtrée à 5 kHz n'existe
+// plus, et un écho sur chaque croche noierait la boucle.
 const DRY_GAIN = 0.9;
-// Une croche et demie : hors tempo l'echo brouille la boucle, en tempo il l'epaissit.
+// Une croche et demie : hors tempo l'écho brouille la boucle, en tempo il l'épaissit.
 const ECHO_BEATS = 1.5;
 const ECHO_CAP = 0.9;
 const ECHO_FEEDBACK = 0.2;
 // Trois voix, une basse et une percussion qui tombent sur le même temps saturaient la
-// sortie. Le compresseur passe avant le gain maitre.
+// sortie. Le compresseur passe avant le gain maître.
 const COMP_THRESHOLD = -16;
 const COMP_KNEE = 14;
 const COMP_RATIO = 3.2;
@@ -54,7 +54,7 @@ const KICK_DROP = 0.14;
 const KICK_PEAK = 0.42;
 const KICK_TAIL = 0.18;
 const KICK_STOP = 0.2;
-// Du bruit blanc coupe sous 7 kHz. L'écart entre temps et contretemps donne le balancement.
+// Du bruit blanc coupé sous 7 kHz. L'écart entre temps et contretemps donne le balancement.
 const HAT_HZ = 7000;
 const HAT_DECAY = 0.06;
 const HAT_STOP = 0.08;
@@ -74,7 +74,7 @@ const BELL_DUR = 0.1;
 const BELL_EVERY = 4;
 const BELL_TAIL = 3;
 const BELL_LIFT = 24;
-// Une mesure sur huit monte d'une octave : la boucle respire sans se dedoubler.
+// Une mesure sur huit monte d'une octave : la boucle respire sans se dédoubler.
 const LIFT_EVERY = 8;
 const SEMITONES = 12;
 // L'oreille entend en octaves : un découpage linéaire des bacs donnerait vingt barres de
@@ -88,7 +88,7 @@ const LEVEL_SCALE = 104;
 const LEVEL_FLOOR = 2;
 const LEVEL_CEIL = 100;
 // Depuis l'arrivée de la basse et de la grosse caisse, les premiers bacs plafonnaient et
-// les trois quarts de la bande restaient plats. Ce basculement vers les aigus les releve.
+// les trois quarts de la bande restaient plats. Ce basculement vers les aigus les relève.
 const TILT_FLOOR = 0.58;
 const TILT_SPAN = 0.95;
 
@@ -192,20 +192,20 @@ const build = (): Graph => {
   };
 };
 
-// Le séquenceur et le graphe, derrière une poignee. Le volet ne voit que cette poignée :
-// il ne connaît ni les noeuds, ni le minuteur, ni l'horloge.
+// Le séquenceur et le graphe, derrière une poignée. Le volet ne voit que cette poignée :
+// il ne connaît ni les nœuds, ni le minuteur, ni l'horloge.
 export const radioEngine = (): Radio => {
   let graph: Graph | undefined = undefined,
     params: Params | undefined = undefined,
     running = false,
-    // Le moteur porte seul l'état du son coupe, car il porte le gain maitre. « play » et
+    // Le moteur porte seul l'état du son coupé, car il porte le gain maître. « play » et
     // « resume » le réécrivent : lu ailleurs, il se désynchroniserait à la première pause.
     silenced = false,
     timer: ReturnType<typeof setInterval> | undefined = undefined,
     cursor = 0,
     nextAt = 0;
 
-  // Une note : un oscillateur et son enveloppe, créés pour elle seule et jetés apres. C'est
+  // Une note : un oscillateur et son enveloppe, créés pour elle seule et jetés après. C'est
   // la forme que l'API impose — un oscillateur arrêté ne se rejoue pas.
   const note = (live: Graph, hit: Hit) => {
       const osc = live.ctx.createOscillator(),
@@ -262,7 +262,7 @@ export const radioEngine = (): Radio => {
         chord = tune.prog[bar % tune.prog.length] ?? 0,
         { length } = tune.scale.steps,
         lift = bar % LIFT_EVERY === LIFT_EVERY - 1 ? SEMITONES : 0,
-        // La croche faible arrive en retard : rien ne fait sonner « joue » comme ce decalage.
+        // La croche faible arrive en retard : rien ne fait sonner « joué » comme ce décalage.
         at = index % 2 === 1 ? cue.at + tune.swingSec : cue.at,
         pitch = (degree: number) => {
           return degreeToMidi(tune.scale, tune.root, degree);
@@ -295,7 +295,7 @@ export const radioEngine = (): Radio => {
         });
       }
 
-      // La nappe est un fond, pas une voix : deux ou trois notes posées à 12 ms d'ecart.
+      // La nappe est un fond, pas une voix : deux ou trois notes posées à 12 ms d'écart.
       if (index === 0) {
         for (let voice = 0; voice < tune.voices; voice += 1) {
           note(live, {
@@ -341,7 +341,7 @@ export const radioEngine = (): Radio => {
         cursor += 1;
       }
     },
-    // Le niveau que le gain maître doit viser : zéro tant que le son est coupe. « play » et
+    // Le niveau que le gain maître doit viser : zéro tant que le son est coupé. « play » et
     // « resume » passent par ici, sinon ils rendraient le son sans que rien le demande.
     level = () => {
       return silenced ? 0 : MASTER_GAIN;
@@ -367,7 +367,7 @@ export const radioEngine = (): Radio => {
       graph = undefined;
     },
 
-    // « niveaux » rend des hauteurs en pourcentage, lues sur l'analyseur en bout de chaine.
+    // « niveaux » rend des hauteurs en pourcentage, lues sur l'analyseur en bout de chaîne.
     // Le spectre ne peut donc pas mentir sur le son.
     levels(count) {
       if (!graph) {

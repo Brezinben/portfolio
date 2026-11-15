@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 import type { Page } from "@playwright/test";
 
 // La grille des technologies coule en « repeat(auto-fill, minmax(148px, 1fr)) » : le nombre
-// de colonnes dépend de la largeur de la fenetre. Un test qui ne pose pas sa fenêtre ne
+// de colonnes dépend de la largeur de la fenêtre. Un test qui ne pose pas sa fenêtre ne
 // prouve rien, il passe ou échoue selon la machine.
 const LARGEUR = 1280,
   boot = async (page: Page) => {

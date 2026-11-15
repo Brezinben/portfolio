@@ -9,7 +9,7 @@
 export const SEED_VERSION = 1;
 
 // Une voix : sa forme d'onde et son enveloppe. L'attaque et la chute font autant pour le
-// caractère que la forme. « gain » est le niveau de la voix, avant le maitre.
+// caractère que la forme. « gain » est le niveau de la voix, avant le maître.
 export interface Voice {
   attack: number;
   decay: number;
@@ -54,7 +54,7 @@ export interface Params {
 
 // Cinq gammes, toutes lumineuses sauf une. Le mineur naturel et le phrygien sont sortis du
 // tirage : ils tiraient chaque seed vers le mélancolique, ce qui est l'inverse de la
-// commande. Le dorien reste comme seule teinte douce-amere.
+// commande. Le dorien reste comme seule teinte douce-amère.
 const SCALES: readonly [Scale, ...Scale[]] = [
   { name: "majeur", steps: [0, 2, 4, 5, 7, 9, 11] },
   { name: "pentatonique majeure", steps: [0, 2, 4, 7, 9] },
@@ -63,8 +63,8 @@ const SCALES: readonly [Scale, ...Scale[]] = [
   { name: "dorien", steps: [0, 2, 3, 5, 7, 9, 10] },
 ];
 
-// Les six timbres tirables pour la melodie. La basse et la nappe n'y sont pas : ce sont
-// les voix d'accompagnement, elles ne doivent pas se retrouver à jouer le theme.
+// Les six timbres tirables pour la mélodie. La basse et la nappe n'y sont pas : ce sont
+// les voix d'accompagnement, elles ne doivent pas se retrouver à jouer le thème.
 const TIMBRES: readonly [Voice, ...Voice[]] = [
   { attack: 0.012, decay: 1.2, gain: 0.5, name: "sinus doux", wave: "sine" },
   { attack: 0.01, decay: 1, gain: 0.44, name: "triangle", wave: "triangle" },
@@ -74,8 +74,8 @@ const TIMBRES: readonly [Voice, ...Voice[]] = [
   { attack: 0.12, decay: 1.8, gain: 0.4, name: "souffle", wave: "triangle" },
 ];
 
-// Quatre mesures d'accords, en degrés de la gamme. C'est la que se joue le caractère
-// enjoue, bien plus que dans la gamme : ces marches resolvent.
+// Quatre mesures d'accords, en degrés de la gamme. C'est là que se joue le caractère
+// enjoué, bien plus que dans la gamme : ces marches résolvent.
 const PROGS: readonly [readonly number[], ...(readonly number[])[]] = [
   [0, 4, 5, 3],
   [0, 5, 3, 4],
@@ -84,7 +84,7 @@ const PROGS: readonly [readonly number[], ...(readonly number[])[]] = [
   [0, 2, 3, 4],
 ];
 
-// La mesure n'est pas un ornement affiche : elle donne le nombre de croches par mesure,
+// La mesure n'est pas un ornement affiché : elle donne le nombre de croches par mesure,
 // donc la longueur du motif de mélodie et le retour de la nappe.
 const METERS: readonly [Meter, ...Meter[]] = [
   { label: "4/4", steps: 8 },
@@ -110,10 +110,10 @@ const ROOT_SPAN = 8;
 const REST_STRONG = 0.08;
 const REST_WEAK = 0.44;
 const OCTAVE_ODDS = 0.2;
-// Deux fois sur trois, la seconde moitié de la mesure rejoue la premiere. C'est ce qui
+// Deux fois sur trois, la seconde moitié de la mesure rejoue la première. C'est ce qui
 // fait un motif plutôt qu'une suite de notes, et une boucle qu'on reconnaît au second tour.
 const REPEAT_ODDS = 0.65;
-// Rien ne fait sonner « joue » comme ce retard sur les croches faibles.
+// Rien ne fait sonner « joué » comme ce retard sur les croches faibles.
 const SWING_RATIO = 0.16;
 const MAJOR_THIRD = 4;
 const SEMITONES = 12;
@@ -123,7 +123,7 @@ const SEMITONES = 12;
 export const QUARTER_SEC = 30;
 
 // Un générateur déterministe en quatre lignes, suffisant ici — on tire des notes, pas des
-// cles. « Math.random » n'accepte pas de seed, donc un morceau ne se retrouverait jamais.
+// clés. « Math.random » n'accepte pas de seed, donc un morceau ne se retrouverait jamais.
 export const rng = (seed: number) => {
   let state = seed >>> 0;
 
@@ -139,7 +139,7 @@ export const rng = (seed: number) => {
   };
 };
 
-// Un tirage dans une liste fermee. L'index tombe toujours dans les bornes, mais le type
+// Un tirage dans une liste fermée. L'index tombe toujours dans les bornes, mais le type
 // d'entrée non vide est ce qui le prouve au compilateur.
 const pick = <T>(list: readonly [T, ...T[]], roll: number) => {
   return list[Math.floor(roll * list.length)] ?? list[0];
@@ -166,7 +166,7 @@ export const newSeed = () => {
 };
 
 // Le chiffrage est calculé, pas écrit : la tierce réelle de l'accord décide de la casse. Le
-// volet annonce donc les accords qu'il joue, y compris quand la gamme change leur qualite.
+// volet annonce donc les accords qu'il joue, y compris quand la gamme change leur qualité.
 const romanNumerals = (scale: Scale, prog: readonly number[]) => {
   return prog
     .map((step) => {
@@ -248,7 +248,7 @@ export const derive = (seed: number): Params => {
 };
 
 // Une ligne affichée est une valeur que le séquenceur lit vraiment. Le premier jet annonçait
-// une mesure que le séquenceur ignorait : c'est un bug d'honnêteté, pas un détail cosmetique.
+// une mesure que le séquenceur ignorait : c'est un bug d'honnêteté, pas un détail cosmétique.
 export const radioLines = (params: Params) => {
   return [
     { label: "tempo", value: `${params.tempo} bpm` },

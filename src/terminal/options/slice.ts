@@ -12,7 +12,7 @@ export interface OptionsState {
   // La mue du thème tient jusqu'à la fermeture de la modale, puis ce sursis.
   morphTimer: Delay | undefined;
   optsOpen: boolean;
-  // Qui a ouvert la modale : le bouton de l'en-tete, ou la saisie via la commande.
+  // Qui a ouvert la modale : le bouton de l'en-tête, ou la saisie via la commande.
   optsReturn: HTMLElement | undefined;
   // La préférence du système, tenue à jour : la palette affichée en dépend quand le choix est
   // « système ».
@@ -85,7 +85,7 @@ export const optionsSlice = () => {
         return;
       }
 
-      // Fermer au milieu d'une passe n'en montrerait qu'un eclat. Le sursis passe, la
+      // Fermer au milieu d'une passe n'en montrerait qu'un éclat. Le sursis passe, la
       // passe en cours s'achève, et settle() rend le repos.
       clearTimeout(this.morphTimer);
       this.morphTimer = setTimeout(() => {
@@ -103,13 +103,13 @@ export const optionsSlice = () => {
       this.persist();
 
       // La boucle de rendu de la radio s'arrête quand l'animation se coupe. Rien ne la
-      // rallumerait sans cet appel : le dépôt ne porte aucun observateur de reglage.
+      // rallumerait sans cet appel : le dépôt ne porte aucun observateur de réglage.
       if (key === "anim" && this.radioOn) {
         this.radioDraw();
       }
 
       // Le volet de sortie est la seule surface de la radio, et « /radio » le rallume pour
-      // cette raison. L'éteindre la laisserait jouer sans rien pour l'arreter.
+      // cette raison. L'éteindre la laisserait jouer sans rien pour l'arrêter.
       if (key === "out" && !this.out) {
         this.radioStop();
       }
@@ -234,7 +234,7 @@ export const optionsSlice = () => {
     restore(this: Shell) {
       const saved = readOpts();
 
-      // Cinq clés, et cinq seulement, chacune vérifiée avant d'entrer dans l'etat.
+      // Cinq clés, et cinq seulement, chacune vérifiée avant d'entrer dans l'état.
       if (saved.anim === true || saved.anim === false) {
         this.anim = saved.anim;
       }

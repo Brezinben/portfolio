@@ -32,7 +32,7 @@ test("should copy the address on share link", async ({ page, context }) => {
   await expect(page.locator("[data-journal]")).toContainText("partage vers");
 
   // L'adresse partagée est celle d'où la page vient, pas celle que content.json annonce :
-  // le lien copie depuis une préproduction doit ramener à cette preproduction.
+  // le lien copié depuis une préproduction doit ramener à cette preproduction.
   const here = await page.evaluate(() => {
     return globalThis.location.origin + globalThis.location.pathname;
   });
@@ -89,7 +89,7 @@ test("should prefill the command line with « oui » on propose", async ({ page 
   await expect(cli).toHaveValue("oui");
 });
 
-// -y vaut consentement : le drapeau a été tapé avec l'idee.
+// -y vaut consentement : le drapeau a été tapé avec l'idée.
 test("should wait for no confirmation on propose -y", async ({ page }) => {
   const cli = await boot(page);
 
@@ -111,7 +111,7 @@ test("should set no cookie", async ({ page, context }) => {
   expect(await context.cookies()).toEqual([]);
 });
 
-// GoatCounter bloque ou absent ne doit rien casser : le helper est silencieux.
+// GoatCounter bloqué ou absent ne doit rien casser : le helper est silencieux.
 test("should not break the page when the audience measurement is blocked", async ({ page }) => {
   await page.route("**/analytics.brezinben.dpdns.org/**", (route) => {
     return route.abort();

@@ -5,7 +5,7 @@ import { ringRatios } from "../helpers/contrast.ts";
 
 // La poignée ne s'affiche que si le journal déborde : une tige à déplacer dans le vide
 // ne servirait à rien. « help » ne remplit plus le journal, il réclame le résultat : une
-// commande introuvable y laisse deux lignes, et c'est elle qui le fait deborder.
+// commande introuvable y laisse deux lignes, et c'est elle qui le fait déborder.
 const fill = async (cli: Locator) => {
     for (const _ of Array.from({ length: 6 })) {
       // Les commandes doivent s'enchaîner : les paralléliser ne remplirait pas le journal.
@@ -44,7 +44,7 @@ test("should never grow the page past the window height", async ({ page }) => {
 });
 
 // Sur deux colonnes le journal tient dans 119 px, et la réponse de help en fait sept fois
-// plus. Le résultat a la place, il la prend : le journal ne garde que l'echo.
+// plus. Le résultat a la place, il la prend : le journal ne garde que l'écho.
 test("should show the whole help answer in the result", async ({ page }) => {
   const cli = await boot(page);
 
@@ -183,7 +183,7 @@ test("should show an indicator while content remains below", async ({ page }) =>
 // Les libelles de mission tenaient sur une ligne avec leur état, et trois se coupaient.
 // Le nom prend sa ligne, l'état passe dessous, comme les sections juste au-dessus.
 test("should never cut a label of the left pane", async ({ page }) => {
-  // Sous 1150 px le volet gauche touche son plancher : c'est la que « numérique
+  // Sous 1150 px le volet gauche touche son plancher : c'est là que « numérique
   // responsable » se coupait. Il passe désormais à la ligne.
   await page.setViewportSize({ height: 900, width: 1024 });
   await boot(page);
@@ -312,7 +312,7 @@ test("should resize the log with the keyboard and keep its height", async ({ pag
 
 // Une hauteur de journal réglée sur une autre fenêtre survit dans le stockage. Trop
 // haute, elle écrasait le résultat à zéro et faisait déborder le volet central : la
-// réponse de « contact » arrivait coupee.
+// réponse de « contact » arrivait coupée.
 test("should give the result its room back when a too tall log meets a new section", async ({
   page,
 }) => {

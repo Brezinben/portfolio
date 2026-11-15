@@ -660,7 +660,7 @@ a:hover {
 
 /* L'ambre du thème clair donne 2,1:1 : correct pour une pastille ou un trait, pas
  pour du texte. La teinte décorative ne change pas ; le texte prend un ambre plus
- sombre de la même famille, mesuré à 5,2:1. Les sept autres thèmes passent deja. */
+ sombre de la même famille, mesuré à 5,2:1. Les sept autres thèmes passent déjà. */
 .tm {
   --acc-text: var(--acc);
 }
@@ -2005,7 +2005,7 @@ a:hover {
   --acc-text: #8f5f00;
 }
 
-/* La feuille du canvas colore les liens avec l'ambre decoratif. Un lien est du
+/* La feuille du canvas colore les liens avec l'ambre décoratif. Un lien est du
  texte : il prend l'ambre textuel. */
 .tm ::selection {
   background: var(--acc-soft);
@@ -2029,7 +2029,7 @@ a:hover {
 
 /* Le canvas exprimait le survol et le focus en attributs style-hover et style-focus,
  que son runtime synthétisait. Un navigateur ne sait pas les mettre en inline. */
-/* La mascotte est visqueuse : sa partie haute se déforme quand on la deplace. La
+/* La mascotte est visqueuse : sa partie haute se déforme quand on la déplace. La
  couronne est un objet solide et garde sa forme, d'où l'animation portée par le
  bloc et non par la couronne. */
 
@@ -3021,7 +3021,7 @@ a:hover {
  par le script, qui ne fait que poser « data-glitch » sur les volets. */
 
 /* Les alias des couleurs du thème courant, lus par « gVars ». Ils vivent sur l'ancêtre
- qui porte les variables de thème, jamais sur l'élément anime : var() y deviendrait
+ qui porte les variables de thème, jamais sur l'élément animé : var() y deviendrait
  circulaire, et la permutation ne rendrait plus aucune couleur. */
 .tm {
   --held-acc: var(--acc);
@@ -3059,7 +3059,7 @@ a:hover {
 }
 
 /* Quatre tranches, quatre hauteurs, quatre rythmes. Les décaler toutes pareil se lisait
- comme un volet qui glisse, pas comme une image qui se dechire. */
+ comme un volet qui glisse, pas comme une image qui se déchire. */
 .tm [data-glitch-band]:nth-child(1) {
   top: 14%;
   height: 6%;

@@ -1,5 +1,5 @@
 // La recherche lexicale : elle départage les passages du corpus par recouvrement de
-// mots, et rend la réponse que « ask » affiche quand aucun modèle local ne repond.
+// mots, et rend la réponse que « ask » affiche quand aucun modèle local ne répond.
 
 import { ASK, ASK_MODEL } from "./vocabulary.ts";
 import { type Effect, track } from "./effects.ts";
@@ -71,7 +71,7 @@ const words = (text: string): string[] => {
     });
 };
 
-// Un score par recouvrement de mots, sans index ni modele. Le corpus fait dix passages
+// Un score par recouvrement de mots, sans index ni modèle. Le corpus fait dix passages
 // écrits à la main : tout ce qui serait plus savant coûterait plus qu'il ne rapporte.;
 
 // Un mot du titre pèse trois fois : demander « stack » doit ouvrir la section stack, même
@@ -99,7 +99,7 @@ const search = (query: string, entries: Entry[]) => {
           return title.has(word);
         }).length;
 
-      // Le nombre de mots distincts touches prime sur les répétitions : un passage qui
+      // Le nombre de mots distincts touchés prime sur les répétitions : un passage qui
       // répond à toute la question vaut mieux qu'un qui martèle un seul de ses mots.
       return { entry, score: distinct * 10 + hitCount + inTitle * 30 };
     })
@@ -159,7 +159,7 @@ export const answer = (query: string, entries: Entry[], options: { model: boolea
   }
 
   // Sans modèle, la réponse part tout de suite. Avec un modèle, elle attend son choix :
-  // deux réponses de suite pour une seule question se liraient comme une hesitation.
+  // deux réponses de suite pour une seule question se liraient comme une hésitation.
   return {
     effects: [measured, { candidates: answerable, lexical, query, type: "ask" } satisfies Effect],
     lines: [],

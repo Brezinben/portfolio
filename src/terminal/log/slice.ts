@@ -153,7 +153,7 @@ export const logSlice = () => {
     },
 
     // Un redémarrage annule la compaction : sinon son résumé s'écrit dans un journal
-    // qu'on vient de vider, et sa barre s'affiche par-dessus l'écran de demarrage.
+    // qu'on vient de vider, et sa barre s'affiche par-dessus l'écran de démarrage.
     stopCompacting(this: Shell) {
       clearInterval(this.spinner);
       clearTimeout(this.compactor);

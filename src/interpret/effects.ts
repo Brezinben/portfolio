@@ -18,7 +18,7 @@ export type Expression = "alert" | "happy" | "idle" | "laugh" | "sad" | "scared"
 export type Effect =
   | { type: "activity"; name: string }
   // « lexical » n'est rempli que si un modèle doit choisir avant d'afficher. La coquille
-  // le garde sous la main : il sort si le modèle échoue ou dépasse son delai.
+  // le garde sous la main : il sort si le modèle échoue ou dépasse son délai.
   | { candidates: string[]; query: string; type: "ask"; lexical?: Line[] }
   | { type: "blowUp" }
   | { type: "clear" }
@@ -47,7 +47,7 @@ export type Effect =
 export interface Outcome {
   effects: Effect[];
   lines: Line[];
-  // Une commande peut réclamer le résultat au lieu du journal. Le journal garde l'echo, le
+  // Une commande peut réclamer le résultat au lieu du journal. Le journal garde l'écho, le
   // corps de la réponse va dans le volet central, où la place existe.
   result?: ContentLine[];
 }
