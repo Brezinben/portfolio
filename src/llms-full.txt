@@ -316,13 +316,12 @@ Cinq domaines, 57 briques. Chaque brique indique où elle a été pratiquée.
 
 Formations et certifications, de la plus récente à la plus ancienne.
 
-- 2026 · Certification · À COMPLÉTER : nom exact de la certification Cloud Developer
-  Foundation · À COMPLÉTER : organisme. À COMPLÉTER : une phrase. Vérification :
-  À COMPLÉTER : lien de vérification
-- À COMPLÉTER : 2023 ou 2024 · Certification · À COMPLÉTER : Numérique responsable
-  (nom exact) · À COMPLÉTER : INR ?. À COMPLÉTER : une phrase sur la certification
-  Numérique responsable. Vérification : À COMPLÉTER : lien de vérification Numérique
-  responsable
+- 2026 · Certification · Claude Certified Developer - Foundations · Anthropic. Certification d'Anthropic sur la
+  conception d'agents avec Claude : architecture et patterns d'agents. Valable jusqu'en
+  novembre 2027. Vérification : À COMPLÉTER : lien Anthropic
+- 2024 · Certification · Certificat de Connaissance Numérique Responsable · Institut du Numérique Responsable.
+  Certificat de connaissance du numérique responsable. Identifiant cxtY79U9.
+  Vérification : À COMPLÉTER : lien INR
 - 2020 → 2021 · Formation · Titre Professionnel Concepteur Développeur
   d'Applications · alternance · LDC Services. Préparé en alternance, en parallèle du
   poste de concepteur développeur chez LDC Services.

@@ -328,10 +328,10 @@
           ],
           [
             "2026",
-            "À COMPLÉTER : certification Cloud Developer Foundation"
+            "certification Claude Certified Developer - Foundations"
           ],
           [
-            "À COMPLÉTER",
+            "2024",
             "certification Numérique responsable"
           ],
           [
@@ -352,7 +352,7 @@
           ]
         ]
       },
-      "ask": "Le cursus réunit les formations et les certifications. Certifications : À COMPLÉTER : Cloud Developer Foundation en 2026, À COMPLÉTER : Numérique responsable. Formation : Titre Professionnel Concepteur Développeur d'Applications en 2021, BTS SIO option SISR en alternance en 2020, baccalauréat STI2D en 2018. Depuis 2021 : veille sur l'IA et les nouvelles technologies, bêta-testeur de GitHub Copilot à ses débuts."
+      "ask": "Le cursus réunit les formations et les certifications. Certifications : Claude Certified Developer - Foundations (Anthropic) en 2026, Certificat de Connaissance Numérique Responsable (Institut du Numérique Responsable) en 2024. Formation : Titre Professionnel Concepteur Développeur d'Applications en 2021, BTS SIO option SISR en alternance en 2020, baccalauréat STI2D en 2018. Depuis 2021 : veille sur l'IA et les nouvelles technologies, bêta-testeur de GitHub Copilot à ses débuts."
     },
     {
       "id": "contact",
@@ -876,20 +876,20 @@
       "id": "c-cert-cloud",
       "kind": "certification",
       "years": "2026",
-      "org": "À COMPLÉTER : nom exact de la certification Cloud Developer Foundation",
-      "role": "À COMPLÉTER : organisme",
-      "note": "À COMPLÉTER : une phrase",
-      "url": "À COMPLÉTER : lien de vérification",
+      "org": "Claude Certified Developer - Foundations",
+      "role": "Anthropic",
+      "note": "Certification d'Anthropic sur la conception d'agents avec Claude : architecture et patterns d'agents. Valable jusqu'en novembre 2027.",
+      "url": "À COMPLÉTER : lien Anthropic",
       "detail": null
     },
     {
       "id": "c-cert-nr",
       "kind": "certification",
-      "years": "À COMPLÉTER : 2023 ou 2024",
-      "org": "À COMPLÉTER : Numérique responsable (nom exact)",
-      "role": "À COMPLÉTER : INR ?",
-      "note": "À COMPLÉTER : une phrase sur la certification Numérique responsable",
-      "url": "À COMPLÉTER : lien de vérification Numérique responsable",
+      "years": "2024",
+      "org": "Certificat de Connaissance Numérique Responsable",
+      "role": "Institut du Numérique Responsable",
+      "note": "Certificat de connaissance du numérique responsable. Identifiant cxtY79U9.",
+      "url": "À COMPLÉTER : lien INR",
       "detail": null
     },
     {
