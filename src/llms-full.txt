@@ -312,15 +312,28 @@ Cinq domaines, 57 briques. Chaque brique indique où elle a été pratiquée.
 - Pair-programming — Transway, Kereis — Transmission plus rapide qu'une documentation,
   surtout sur les parties sensibles.
 
-## Formation
+## Cursus
 
-- 2021 → aujourd'hui : veille sur l'IA et les nouvelles technologies, bêta-testeur de
-  GitHub Copilot à ses débuts.
-- 2020 → 2021 : Titre Professionnel Concepteur Développeur d'Applications.
-- 2018 → 2020 : BTS SIO option SISR, en alternance.
-- 2016 → 2018 : baccalauréat STI2D.
+Formations et certifications, de la plus récente à la plus ancienne.
 
-En cours : MCP, agents, évaluation. Méthode : lire, tester, casser, recommencer.
+- 2026 · Certification · Claude Certified Developer - Foundations · Anthropic. Certification d'Anthropic sur la
+  conception d'agents avec Claude : architecture et patterns d'agents.
+  Vérification : https://www.credly.com/badges/5af54c84-af12-49db-859f-d8c3e871baac
+- 2024 · Certification · Certificat de Connaissance Numérique Responsable · Institut du Numérique Responsable.
+  Certificat de connaissance du numérique responsable. Identifiant cxtY79U9.
+  Vérification : https://numerique-responsable.univ-lr.fr/ecocertifications/index.php
+- 2020 → 2021 · Formation · Titre Professionnel Concepteur Développeur
+  d'Applications · alternance · LDC Services. Préparé en alternance, en parallèle du
+  poste de concepteur développeur chez LDC Services.
+- 2018 → 2020 · Formation · BTS SIO option SISR · alternance · FPEE Industries.
+  Préparé en alternance, en parallèle du poste de technicien réseau chez FPEE
+  Industries.
+- 2016 → 2018 · Formation · Baccalauréat STI2D · baccalauréat technologique. Sciences
+  et technologies de l'industrie et du développement durable.
+
+Veille : depuis 2021, veille sur l'IA et les nouvelles technologies, bêta-testeur de
+GitHub Copilot à ses débuts. En cours : MCP, agents, évaluation. Méthode : lire,
+tester, casser, recommencer.
 
 ## Contact
 

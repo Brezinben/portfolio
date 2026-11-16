@@ -4,7 +4,14 @@
 // étapes : la réponse en attente, le slash obligatoire, le rejeu, les sections, la table,
 // puis les easter eggs.
 
-import { ALIASES, KEYBOARD, NAVIGATORS, SLASH_ONLY, helpLines } from "./vocabulary.ts";
+import {
+  ALIASES,
+  KEYBOARD,
+  NAVIGATORS,
+  SECTION_ALIASES,
+  SLASH_ONLY,
+  helpLines,
+} from "./vocabulary.ts";
 import { COW_MODES, cowsay } from "./cowsay.ts";
 import { EGGS, type Egg } from "./eggs.ts";
 import { type Effect, type Outcome, say, track } from "./effects.ts";
@@ -215,10 +222,16 @@ const COMMANDS = {
   },
 } satisfies Record<string, (call: Call) => Outcome>;
 
+const named = (word: string) => {
+  return lookup(SECTION_ALIASES, word) ?? word;
+};
+
 const route = (call: Call): Outcome => {
   const { argument, command, out, sections } = call,
     target = sections.find((entry) => {
-      return entry.id === command || (NAVIGATORS.has(command) && entry.id === argument);
+      return (
+        entry.id === named(command) || (NAVIGATORS.has(command) && entry.id === named(argument))
+      );
     });
 
   // « help » et « ls » passent devant les sections : ce sont les deux premiers gestes.

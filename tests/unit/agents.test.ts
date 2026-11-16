@@ -215,6 +215,7 @@ it("should carry the same notes, places and contact in every copy", () => {
   // SAFETY: content.json est un artefact du dépôt, versionné à côté de ce test, et son
   // schéma est tenu par tests/unit/content.test.ts. Seules ces clés sont lues ici.
   const contenu = JSON.parse(read("content.json")) as {
+      cursus: { kind: string; note: string; org: string; role: string; url?: string }[];
       profile: { email: string };
       techNotes: Record<string, { note: string; where: string }>;
       timeline: { detail: string | null; note: string; role: string }[];
@@ -237,6 +238,10 @@ it("should carry the same notes, places and contact in every copy", () => {
         .flatMap((entry) => {
           return [entry.role, entry.note];
         }),
+      // La version texte garde ses abréviations : l'intitulé se compare sans balises.
+      ...contenu.cursus.flatMap((entry) => {
+        return [entry.org, entry.role, entry.note, ...(entry.url ? [entry.url] : [])];
+      }),
     ].map((fact) => {
       return flat(fact);
     });
@@ -252,4 +257,42 @@ it("should carry the same notes, places and contact in every copy", () => {
   }
 
   assert.ok(llms.includes(contenu.profile.email), "llms.txt gives another contact");
+});
+
+// Un marqueur « À COMPLÉTER » ne part jamais en ligne.
+it("should publish no placeholder", () => {
+  for (const name of ["content.json", "texte.html", "llms.txt", "llms-full.txt", "index.html"]) {
+    assert.ok(!read(name).includes("À COMPLÉTER"), `${name} carries a placeholder`);
+  }
+});
+
+// Le JSON-LD est écrit en dur dans la page. Une certification ajoutée au cursus sans lui
+// resterait invisible pour les moteurs de recherche.
+it("should declare every certification in the JSON-LD of the page", () => {
+  // SAFETY: index.html et content.json sont versionnés à côté de ce test. Seules ces clés
+  // sont lues ici.
+  const bloc = /<script type="application\/ld\+json">(?<json>[\s\S]+?)<\/script>/u.exec(
+      read("index.html"),
+    )?.groups?.json,
+    personne = JSON.parse(bloc ?? "{}") as {
+      hasCredential?: { name: string; recognizedBy?: { name: string }; url?: string }[];
+    },
+    contenu = JSON.parse(read("content.json")) as {
+      cursus: { kind: string; org: string; role: string; url?: string | null }[];
+    },
+    declarees = (personne.hasCredential ?? []).map((credential) => {
+      return [credential.name, credential.recognizedBy?.name, credential.url];
+    });
+
+  for (const entry of contenu.cursus.filter((step) => {
+    return step.kind === "certification";
+  })) {
+    assert.deepEqual(
+      declarees.find(([name]) => {
+        return name === entry.org;
+      }),
+      [entry.org, entry.role, entry.url],
+      `${entry.org} is missing from the JSON-LD`,
+    );
+  }
 });

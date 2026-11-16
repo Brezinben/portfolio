@@ -233,8 +233,9 @@ test("should keep the focus in the radio after loading a seed", async ({ page })
 for (const [hash, selector] of [
   ["#stack", "[data-tech]"],
   ["#parcours", '[data-ctl="tl"]'],
+  ["#cursus", '[data-ctl="tl"]'],
 ] as const) {
-  test(`should give ${selector} a single tab stop`, async ({ page }) => {
+  test(`should give ${selector} a single tab stop in ${hash}`, async ({ page }) => {
     await page.goto(`/${hash}`);
     await expect(page.locator("[data-boot]")).toHaveCount(0, { timeout: 10_000 });
 
@@ -244,3 +245,18 @@ for (const [hash, selector] of [
     await expect(page.locator(`${selector}[tabindex="0"]`)).toHaveCount(1);
   });
 }
+
+// Les deux frises partagent leur position. Le parcours est plus long que le cursus : une
+// position gardée d'une frise à l'autre ne laisserait aucun arrêt de tabulation.
+test("should keep a single tab stop when moving from parcours to cursus", async ({ page }) => {
+  await page.goto("/#parcours");
+  await expect(page.locator("[data-boot]")).toHaveCount(0, { timeout: 10_000 });
+  await page.locator('[data-ctl="tl"]').last().click();
+  await page
+    .getByRole("link", { name: /^cursus/u })
+    .first()
+    .click();
+
+  await expect(page.locator('[data-ctl="tl"]').first()).toBeVisible();
+  await expect(page.locator('[data-ctl="tl"][tabindex="0"]')).toHaveCount(1);
+});

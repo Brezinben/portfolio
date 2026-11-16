@@ -1,6 +1,35 @@
 import assert from "node:assert/strict";
 import { contentLine } from "../../src/interpret.ts";
 import { it } from "node:test";
+import { readFileSync } from "node:fs";
+
+// SAFETY: content.json est un artefact du dépôt, versionné à côté de ce test. Seul le
+// cursus est lu ici.
+const { cursus } = JSON.parse(
+  readFileSync(new URL("../../src/content.json", import.meta.url), "utf8"),
+) as { cursus: { kind: string; years: string }[] };
+
+it("should give every cursus entry a kind, formation or certification", () => {
+  assert.notEqual(cursus.length, 0, "the cursus is empty");
+  assert.deepEqual(
+    cursus.filter((entry) => {
+      return entry.kind !== "formation" && entry.kind !== "certification";
+    }),
+    [],
+  );
+});
+
+// Le code ne trie rien : l'ordre du fichier est l'ordre d'affichage.
+it("should list the cursus from the most recent year to the oldest", () => {
+  const ends = cursus.map((entry) => {
+    return Number(entry.years.match(/\d{4}/gu)?.at(-1));
+  });
+
+  for (const [at, end] of ends.entries()) {
+    assert.ok(Number.isInteger(end), `entry ${at} carries no year`);
+    assert.ok(end >= (ends[at + 1] ?? 0), `entry ${at} is older than the next one`);
+  }
+});
 
 it("should keep the text, the tone and the weight of a plain line", () => {
   const result = contentLine({ t: "bonjour", tone: "acc", w: "700" });

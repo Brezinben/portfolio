@@ -63,7 +63,8 @@ Le numérique responsable est une contrainte de conception, au même titre que l
 - [Contenu complet](https://me.brezinben.dpdns.org/llms-full.txt): tout le
   contenu du portfolio en un seul document — le parcours détaillé des six
   expériences, les quatre missions documentées, les 57 fiches techno, le numérique
-  responsable, la formation et le contact. Lisez-le pour toute question de fond.
+  responsable, le cursus (formations et certifications) et le contact. Lisez-le
+  pour toute question de fond.
 - [Version texte](https://me.brezinben.dpdns.org/texte.html): les mêmes
   faits en HTML, une colonne, sans script ni image.
 - [Version terminal](https://me.brezinben.dpdns.org/): les mêmes faits dans

@@ -52,6 +52,30 @@ test("should group the missions under their employer", async ({ page }) => {
   await expect(employer.getByRole("option").first()).toBeFocused();
 });
 
+test("should show the cursus as a timeline in the main pane", async ({ page }) => {
+  await open(page, "#cursus");
+
+  const options = page
+    .locator('[data-pane="main"]')
+    .getByRole("listbox", { name: "Cursus : formations et certifications" })
+    .getByRole("option");
+
+  await expect(options).not.toHaveCount(0);
+
+  for (const option of await options.all()) {
+    await expect(option).toContainText(/certification|formation/u);
+  }
+});
+
+// Une entrée du cursus n'a pas de fiche : la valider ne quitte pas la section.
+test("should open nothing when a cursus entry is confirmed", async ({ page }) => {
+  await open(page, "#cursus");
+  await page.getByRole("option").first().click();
+
+  await expect(page).toHaveURL(/#cursus$/u);
+  await expect(page.locator('[data-pane="main"]')).toContainText("bd learn --history");
+});
+
 test("should open the mission when a timeline entry is confirmed", async ({ page }) => {
   await open(page, "#parcours");
   await page.getByRole("option", { name: /Kereis/u }).click();

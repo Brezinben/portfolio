@@ -8,6 +8,7 @@ import {
   type Line,
   MAX_SUGGESTIONS,
   type PowerMode,
+  SECTION_ALIASES,
   type Tone,
   type TrackValue,
   ghostFor,
@@ -48,6 +49,7 @@ import { type LogState, logSlice } from "./terminal/log/slice.ts";
 import { type MascotState, mascotSlice } from "./terminal/mascot/slice.ts";
 import { type OptionsState, optionsSlice } from "./terminal/options/slice.ts";
 import type { RadioApi, RadioState } from "./terminal/radio/slice.ts";
+import { lookup } from "./terminal/lookup.ts";
 import { type RawSection, type Section, barParts, printed, section } from "./terminal/format.ts";
 import { type SuggestionsState, suggestionsSlice } from "./terminal/suggestions/slice.ts";
 
@@ -59,13 +61,16 @@ interface Mission {
   state: string;
 }
 
-// Une entrée de la frise.
+// Une entrée de la frise. Dans le cursus, « org » porte l'intitulé et « role » l'organisme
+// ou le cadre, pas un employeur et un poste.
 interface Step {
   detail?: string | null;
   id: string;
+  kind?: "certification" | "formation";
   note: string;
   org: string;
   role: string;
+  url?: string;
   via?: string;
   years: string;
 }
@@ -123,6 +128,7 @@ interface RawContent {
   share?: Share;
   stack?: Brick[];
   techNotes?: Record<string, TechNote>;
+  cursus?: Step[];
   timeline?: Step[];
 }
 
@@ -185,6 +191,7 @@ interface State
   tech: string;
   techNotes: Record<string, TechNote>;
   techTimer: Delay | undefined;
+  cursus: Step[];
   timeline: Step[];
   timelineAt: number;
   typed: string;
@@ -361,6 +368,7 @@ document.addEventListener("alpine:init", () => {
       systemLight: globalThis.matchMedia?.("(prefers-color-scheme: light)").matches ?? false,
       techTimer: undefined,
       theme: SYSTEM_THEME,
+      cursus: [],
       timeline: [],
       timelineAt: 0,
       typed: "",
@@ -441,9 +449,14 @@ document.addEventListener("alpine:init", () => {
         this.tech = name;
       },
 
-      // Chaque entrée de la frise annonce la commande qui ouvre sa fiche. La commande vient
-      // du contenu : la reconstruire ici la ferait mentir au premier renommage.
+      // Une entrée du cursus annonce sa nature. Une entrée du parcours annonce la commande
+      // qui ouvre sa fiche. La commande vient du contenu : la reconstruire ici la ferait
+      // mentir au premier renommage.
       missionCue(entry: Step) {
+        if (entry.kind) {
+          return entry.kind;
+        }
+
         const detail = this.details.find((item) => {
           return item.id === entry.detail;
         });
@@ -456,7 +469,7 @@ document.addEventListener("alpine:init", () => {
       timelineGroups() {
         const groups: { key: string; steps: Step[] }[] = [];
 
-        for (const step of this.timeline) {
+        for (const step of this.frise(this.current.id)) {
           const key = step.via ?? step.org,
             last = groups.at(-1);
 
@@ -470,10 +483,15 @@ document.addEventListener("alpine:init", () => {
         return groups;
       },
 
+      // Une méthode, pas un accesseur : la section pesée n'est pas toujours la section ouverte.
+      frise(id: string): Step[] {
+        return id === "cursus" ? this.cursus : this.timeline;
+      },
+
       openTimeline(index: number) {
         this.timelineAt = index;
 
-        const target = this.timeline[index]?.detail;
+        const target = this.frise(this.current.id)[index]?.detail;
 
         if (target) {
           this.track("mission", { nom: target, via: "interface" });
@@ -534,7 +552,7 @@ document.addEventListener("alpine:init", () => {
       weigh(entry: Section) {
         if (entry.view === "timeline") {
           return printed(
-            this.timeline.map((item) => {
+            this.frise(entry.id).map((item) => {
               return {
                 text: `${item.years}${item.org}${item.role}${item.note}`,
               };
@@ -838,16 +856,18 @@ document.addEventListener("alpine:init", () => {
       },
 
       fromHash() {
-        const id = globalThis.location.hash.slice(1);
-
-        this.goSection(
-          this.all.some((entry) => {
+        const hash = globalThis.location.hash.slice(1),
+          id = lookup(SECTION_ALIASES, hash) ?? hash,
+          known = this.all.some((entry) => {
             return entry.id === id;
-          })
-            ? id
-            : "whoami",
-          { push: false },
-        );
+          });
+
+        // L'adresse corrigée est celle que le visiteur partagera ensuite.
+        if (known && id !== hash) {
+          globalThis.history.replaceState({}, "", `#${id}`);
+        }
+
+        this.goSection(known ? id : "whoami", { push: false });
       },
 
       // Un clic modifié ou un autre bouton garde le comportement du lien : nouvel onglet,
@@ -887,6 +907,13 @@ document.addEventListener("alpine:init", () => {
         // Le volet de sortie appartient à la section ouverte. La radio le quitte donc, et
         // son contexte audio se ferme plutôt que de continuer à tourner sans volet.
         this.radioStop();
+
+        // Les deux frises partagent leur position : une position héritée d'une frise plus
+        // longue ne laisserait aucun arrêt de tabulation (règle 9).
+        if (this.frise(id) !== this.frise(this.section)) {
+          this.timelineAt = 0;
+        }
+
         this.section = id;
 
         if (push && globalThis.location.hash !== `#${id}`) {
@@ -1338,6 +1365,7 @@ document.addEventListener("alpine:init", () => {
         this.shareTargets = (content.share?.targets ?? []).map((entry: { id: string }) => {
           return entry.id;
         });
+        this.cursus = content.cursus ?? [];
         this.timeline = content.timeline ?? [];
         this.stack = content.stack ?? [];
         this.techNotes = content.techNotes ?? {};

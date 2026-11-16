@@ -305,40 +305,14 @@
       "ask": "Le numérique responsable est une contrainte de conception : sobriété des interfaces, accessibilité réelle (RGAA), mesure de l'impact environnemental, arbitrages assumés entre fonctionnalité et empreinte. Cette page n'a aucun cookie, aucun identifiant de visiteur, aucune vidéo, aucune photo, une seule police."
     },
     {
-      "id": "formation",
-      "label": "formation",
-      "sub": "2016 → …",
+      "id": "cursus",
+      "label": "cursus",
+      "sub": "formations · certifications",
       "dot": "ok",
       "state": "en cours",
+      "view": "timeline",
       "cmd": "bd learn --history --tail",
-      "lines": [
-        {
-          "m": "◆",
-          "mc": "acc",
-          "t": "2021 → …  Veille continue",
-          "w": "700"
-        },
-        {
-          "m": "│",
-          "t": "Veille sur l'IA et les nouvelles technologies, bêta-testeur de GitHub Copilot à ses débuts.",
-          "tone": "fg2"
-        },
-        {
-          "m": "◆",
-          "mc": "acc",
-          "t": "2020 → 2021  Titre Professionnel Concepteur Développeur d'Applications"
-        },
-        {
-          "m": "◆",
-          "mc": "acc",
-          "t": "2018 → 2020  BTS SIO option SISR · alternance"
-        },
-        {
-          "m": "╰",
-          "mc": "acc",
-          "t": "2016 → 2018  Baccalauréat STI2D"
-        }
-      ],
+      "lines": [],
       "out": {
         "title": "changelog",
         "lines": [
@@ -347,6 +321,18 @@
             "MCP, agents, évaluation",
             "fg2",
             "acc"
+          ],
+          [
+            "veille",
+            "IA et nouvelles technologies, depuis 2021"
+          ],
+          [
+            "2026",
+            "certification Claude Certified Developer - Foundations"
+          ],
+          [
+            "2024",
+            "certification Numérique responsable"
           ],
           [
             "2021",
@@ -366,7 +352,7 @@
           ]
         ]
       },
-      "ask": "Depuis 2021 : veille sur l'IA et les nouvelles technologies, bêta-testeur de GitHub Copilot à ses débuts. Titre Professionnel Concepteur Développeur d'Applications en 2021, BTS SIO option SISR en alternance en 2020, baccalauréat STI2D en 2018."
+      "ask": "Le cursus réunit les formations et les certifications. Certifications : Claude Certified Developer - Foundations (Anthropic) en 2026, Certificat de Connaissance Numérique Responsable (Institut du Numérique Responsable) en 2024. Formation : Titre Professionnel Concepteur Développeur d'Applications en 2021, BTS SIO option SISR en alternance en 2020, baccalauréat STI2D en 2018. Depuis 2021 : veille sur l'IA et les nouvelles technologies, bêta-testeur de GitHub Copilot à ses débuts."
     },
     {
       "id": "contact",
@@ -883,6 +869,55 @@
         ]
       },
       "ask": "Transway, de septembre 2021 à septembre 2023 : deux produits d'incitation à la mobilité durable, WeFlo Pro pour les entreprises et IREBY pour les collectivités. Il a mené la migration de la V1 vers la V3, soit plus de 300 000 utilisateurs transférés. Passage au rôle de tech lead, avec l'encadrement de quatre à six développeurs."
+    }
+  ],
+  "cursus": [
+    {
+      "id": "c-cert-cloud",
+      "kind": "certification",
+      "years": "2026",
+      "org": "Claude Certified Developer - Foundations",
+      "role": "Anthropic",
+      "note": "Certification d'Anthropic sur la conception d'agents avec Claude : architecture et patterns d'agents.",
+      "url": "https://www.credly.com/badges/5af54c84-af12-49db-859f-d8c3e871baac",
+      "detail": null
+    },
+    {
+      "id": "c-cert-nr",
+      "kind": "certification",
+      "years": "2024",
+      "org": "Certificat de Connaissance Numérique Responsable",
+      "role": "Institut du Numérique Responsable",
+      "note": "Certificat de connaissance du numérique responsable. Identifiant cxtY79U9.",
+      "url": "https://numerique-responsable.univ-lr.fr/ecocertifications/index.php",
+      "detail": null
+    },
+    {
+      "id": "c-cda",
+      "kind": "formation",
+      "years": "2020 → 2021",
+      "org": "Titre Professionnel Concepteur Développeur d'Applications",
+      "role": "alternance · LDC Services",
+      "note": "Préparé en alternance, en parallèle du poste de concepteur développeur chez LDC Services.",
+      "detail": null
+    },
+    {
+      "id": "c-bts",
+      "kind": "formation",
+      "years": "2018 → 2020",
+      "org": "BTS SIO option SISR",
+      "role": "alternance · FPEE Industries",
+      "note": "Préparé en alternance, en parallèle du poste de technicien réseau chez FPEE Industries.",
+      "detail": null
+    },
+    {
+      "id": "c-bac",
+      "kind": "formation",
+      "years": "2016 → 2018",
+      "org": "Baccalauréat STI2D",
+      "role": "baccalauréat technologique",
+      "note": "Sciences et technologies de l'industrie et du développement durable.",
+      "detail": null
     }
   ],
   "timeline": [
