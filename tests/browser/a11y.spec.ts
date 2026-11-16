@@ -68,7 +68,7 @@ for (const theme of THEMES) {
   });
 }
 
-// Le repère d'une certification prend le ton ambre : il doit tenir son contraste partout.
+// Le repère d'une certification prend le ton acc : il doit tenir son contraste sur chaque thème.
 for (const theme of THEMES) {
   test(`should report no accessibility violation in the cursus on the ${theme} theme`, async ({
     page,

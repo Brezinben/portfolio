@@ -85,12 +85,12 @@ _Avoid_: expérience, poste, projet.
 
 **Cursus** (`cursus`) :
 La section qui liste les formations et les certifications, sous forme de frise.
-S'appelait formation : l'ancre `#formation` et la commande `cd formation` y mènent encore.
-_Avoid_: formation, qualifications, diplômes.
+L'ancre `#formation` et la commande `cd formation` y mènent aussi : ce sont des alias.
+_Avoid_: qualifications, diplômes.
 
 **Formation** (`formation`) :
-Une entrée du cursus obtenue par des études : diplôme ou titre professionnel. Valeur de
-`kind`.
+Une entrée du cursus obtenue par des études, du baccalauréat au titre professionnel.
+Valeur de `kind`. Le mot ne nomme pas la section : voir Cursus.
 _Avoid_: diplôme, études.
 
 **Certification** (`certification`) :

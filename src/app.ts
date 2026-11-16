@@ -49,6 +49,7 @@ import { type LogState, logSlice } from "./terminal/log/slice.ts";
 import { type MascotState, mascotSlice } from "./terminal/mascot/slice.ts";
 import { type OptionsState, optionsSlice } from "./terminal/options/slice.ts";
 import type { RadioApi, RadioState } from "./terminal/radio/slice.ts";
+import { lookup } from "./terminal/lookup.ts";
 import { type RawSection, type Section, barParts, printed, section } from "./terminal/format.ts";
 import { type SuggestionsState, suggestionsSlice } from "./terminal/suggestions/slice.ts";
 
@@ -482,8 +483,7 @@ document.addEventListener("alpine:init", () => {
         return groups;
       },
 
-      // Une méthode, pas un accesseur : « weigh » pèse une section qui n'est pas forcément
-      // la section ouverte.
+      // Une méthode, pas un accesseur : la section pesée n'est pas toujours la section ouverte.
       frise(id: string): Step[] {
         return id === "cursus" ? this.cursus : this.timeline;
       },
@@ -857,10 +857,7 @@ document.addEventListener("alpine:init", () => {
 
       fromHash() {
         const hash = globalThis.location.hash.slice(1),
-          id =
-            Object.entries(SECTION_ALIASES).find(([old]) => {
-              return old === hash;
-            })?.[1] ?? hash,
+          id = lookup(SECTION_ALIASES, hash) ?? hash,
           known = this.all.some((entry) => {
             return entry.id === id;
           });
