@@ -318,10 +318,10 @@ Formations et certifications, de la plus récente à la plus ancienne.
 
 - 2026 · Certification · Claude Certified Developer - Foundations · Anthropic. Certification d'Anthropic sur la
   conception d'agents avec Claude : architecture et patterns d'agents. Valable jusqu'en
-  novembre 2027. Vérification : À COMPLÉTER : lien Anthropic
+  novembre 2027. Vérification : https://www.credly.com/badges/5af54c84-af12-49db-859f-d8c3e871baac
 - 2024 · Certification · Certificat de Connaissance Numérique Responsable · Institut du Numérique Responsable.
   Certificat de connaissance du numérique responsable. Identifiant cxtY79U9.
-  Vérification : À COMPLÉTER : lien INR
+  Vérification : https://numerique-responsable.univ-lr.fr/ecocertifications/index.php
 - 2020 → 2021 · Formation · Titre Professionnel Concepteur Développeur
   d'Applications · alternance · LDC Services. Préparé en alternance, en parallèle du
   poste de concepteur développeur chez LDC Services.
