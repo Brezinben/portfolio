@@ -265,3 +265,34 @@ it("should publish no placeholder", () => {
     assert.ok(!read(name).includes("À COMPLÉTER"), `${name} carries a placeholder`);
   }
 });
+
+// Le JSON-LD est écrit en dur dans la page. Une certification ajoutée au cursus sans lui
+// resterait invisible pour les moteurs de recherche.
+it("should declare every certification in the JSON-LD of the page", () => {
+  // SAFETY: index.html et content.json sont versionnés à côté de ce test. Seules ces clés
+  // sont lues ici.
+  const bloc = /<script type="application\/ld\+json">(?<json>[\s\S]+?)<\/script>/u.exec(
+      read("index.html"),
+    )?.groups?.json,
+    personne = JSON.parse(bloc ?? "{}") as {
+      hasCredential?: { name: string; recognizedBy?: { name: string }; url?: string }[];
+    },
+    contenu = JSON.parse(read("content.json")) as {
+      cursus: { kind: string; org: string; role: string; url?: string | null }[];
+    },
+    declarees = (personne.hasCredential ?? []).map((credential) => {
+      return [credential.name, credential.recognizedBy?.name, credential.url];
+    });
+
+  for (const entry of contenu.cursus.filter((step) => {
+    return step.kind === "certification";
+  })) {
+    assert.deepEqual(
+      declarees.find(([name]) => {
+        return name === entry.org;
+      }),
+      [entry.org, entry.role, entry.url],
+      `${entry.org} is missing from the JSON-LD`,
+    );
+  }
+});
