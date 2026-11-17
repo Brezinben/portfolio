@@ -8,6 +8,9 @@ Bun runs the build and the unit tests.
 - French: documents, code comments, commit subjects and commit descriptions.
 - English: identifiers, branch names and test labels. A test label starts with `should`.
 
+Write the current state, not its history. Point to the command or the file that gives a value;
+do not copy the value.
+
 ## Commit messages
 
 The subject uses the infinitive. The description uses the present indicative and says why the

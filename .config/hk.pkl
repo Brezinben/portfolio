@@ -25,6 +25,7 @@ local per_file = new Mapping<String, Step> {
   ["newlines"] = Builtins.newlines
   ["mise"] = Builtins.mise
   ["workflows"] = Builtins.jactionlint
+  ["shellcheck"] = Builtins.shellcheck
   // Le builtin ne passe aucune configuration, et betterleaks ne lit que celle qu'on lui désigne.
   ["secrets"] = (Builtins.betterleaks) {
     env { ["BETTERLEAKS_CONFIG"] = ".config/betterleaks.toml" }
