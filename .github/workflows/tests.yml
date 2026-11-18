@@ -105,8 +105,7 @@ jobs:
           git clone --quiet https://github.com/opengrep/opengrep-rules "$RUNNER_TEMP/rules"
           git -C "$RUNNER_TEMP/rules" checkout --quiet f1d2b562b414783763fd02a6ed2736eaed622efa
 
-      # Les alertes du code de la base sont des faux positifs : seuls les fichiers changés depuis
-      # la base sont jugés.
+      # Les alertes déjà présentes sur la base sont des faux positifs : seules les nouvelles comptent.
       - run: >-
           opengrep scan --error --baseline-commit "$BASE"
           --config "$RUNNER_TEMP/rules/javascript" --config "$RUNNER_TEMP/rules/typescript"

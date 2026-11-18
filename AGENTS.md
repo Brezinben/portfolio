@@ -27,8 +27,7 @@ liens sameAs vers LinkedIn et GitHub, dit à Google que cette page désigne cett
 ## Commands
 
 - Static checks: `bun run check` (`hk check --all`: format, lint, types, dead code, secrets, workflows).
-- Before a change starts, read `.claude/rules/testing.md` to pick its tests. The rule loads only on
-  test files.
+- Before a change starts, read `.claude/rules/testing.md` to pick its tests.
 - Unit tests: `bun run test`, with the coverage floor: `bun run test --coverage`. Browser tests:
   `bun run test:browser`, smoke set: `bun run test:smoke`. Mutation: `bun run test:mutation`.
   Lighthouse: `bun run test:performance`, on a build in `dist.test`.
