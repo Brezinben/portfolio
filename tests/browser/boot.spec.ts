@@ -4,7 +4,7 @@ import { setTimeout } from "node:timers/promises";
 const PANIC = "panic: content.json not found";
 
 // Les quatre cas de démarrage, servis par interception plutôt qu'en abîmant src/.
-test("should reach the terminal with a valid content", async ({ page }) => {
+test("should reach the terminal with a valid content", { tag: "@smoke" }, async ({ page }) => {
   await page.goto("/");
 
   await expect(page.locator("[data-boot]")).toHaveCount(0, { timeout: 10_000 });

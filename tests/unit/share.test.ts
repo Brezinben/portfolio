@@ -1,5 +1,6 @@
 import { fillTokens, interpret, isSafeUrl, shareTarget } from "../../src/interpret.ts";
 import assert from "node:assert/strict";
+import { assert as check, constant, mixedCase, property, string } from "fast-check";
 import { it } from "node:test";
 
 const SHARE = {
@@ -42,6 +43,24 @@ it("should substitute and encode the tokens", () => {
 
   assert.match(filled, /url=https%3A%2F%2Fexemple\.test%2F/u);
   assert.match(filled, /t=un%20titre/u);
+});
+
+it("should give back any value once its token is decoded", () => {
+  check(
+    property(string({ unit: "grapheme" }), (title) => {
+      assert.equal(decodeURIComponent(fillTokens("{title}", { title })), title);
+    }),
+  );
+});
+
+it("should refuse a javascript URL whatever its case and its tail", () => {
+  const scheme = mixedCase(constant("javascript"));
+
+  check(
+    property(scheme, string(), (name, tail) => {
+      assert.equal(isSafeUrl(`${name}:${tail}`), false);
+    }),
+  );
 });
 
 it("should return nothing for an unknown target", () => {

@@ -27,8 +27,14 @@ liens sameAs vers LinkedIn et GitHub, dit à Google que cette page désigne cett
 ## Commands
 
 - Static checks: `bun run check` (`hk check --all`: format, lint, types, dead code, secrets, workflows).
-- Unit tests: `bun run test`. Browser tests: `bun run test:browser`. Mutation: `bun run test:mutation`.
-- Heavy commands (`bun run check`, browser and mutation tests) go through `hochet`, the
+- Before a change starts, read `.claude/rules/testing.md` to pick its tests. The rule loads only on
+  test files.
+- Unit tests: `bun run test`, with the coverage floor: `bun run test --coverage`. Browser tests:
+  `bun run test:browser`, smoke set: `bun run test:smoke`. Mutation: `bun run test:mutation`.
+  Lighthouse: `bun run test:performance`, on a build in `dist.test`.
+- The CI (`.github/workflows/tests.yml`) also runs the coverage floor, the browser suite, Lighthouse,
+  and opengrep on the files a change touches.
+- Heavy commands (`bun run check`, browser, Lighthouse and mutation tests) go through `hochet`, the
   machine-wide queue: `hochet bun run test:browser`. `hochet status` shows who holds each slot.
 - Build: `bun run build` writes `dist`. Only the host `beta` serves `dist` (ADR 0003): a build
   there publishes the live site, a build elsewhere publishes nothing. To test a build, set
@@ -47,6 +53,8 @@ a rule, edit its config:
 - Machine tools and versions: mise, `.config/mise.toml`. Project tools: `package.json`.
 - Claude Code hooks: `.claude/settings.json`, which calls `scripts/post-edit.sh` and `hk agent stop-hook`.
 - Browser and mutation tests: `.config/playwright.config.ts`, `.config/stryker.config.json`.
+- Coverage floor: `bunfig.toml`. Lighthouse assertions: `.config/lighthouserc.json`.
+- Security static analysis: opengrep, pinned in `.config/mise.toml`; the rules commit is in the CI workflow.
 - Worktrees: Worktrunk, `.config/wt.toml`.
 - Issues and specs: GitHub Issues of `Brezinben/portfolio`, through `gh`. Labels and commands in
   `docs/agents/issue-tracker.md` and `docs/agents/triage-labels.md`. No local issue files.
