@@ -192,15 +192,15 @@
     "jest/prefer-each": "off",
     // bun test n'a pas besoin d'un hook pour préparer l'état au niveau du module.
     "jest/require-hook": "off",
-    // Les règles de commentaire gardent déjà un commentaire qui porte une raison.
+    // Elle interdit tout commentaire, alors que le dépôt garde ceux qui disent pourquoi.
     "landmines-style/no-comments": "off",
     // Le type de retour explicite reste un choix de l'auteur.
     "landmines-types/no-explicit-return-types": "off",
     // Les tests vivent sous tests/, et Playwright nomme ses fichiers *.spec.ts.
     "landmines-structure/test-file-names": "off",
     "landmines-structure/colocated-tests": "off",
-    // Elle ne prend pas de liste d'exceptions, et refuse les bouchons légitimes des API du
-    // navigateur (matchMedia, navigator.vibrate) et route.fulfill de Playwright.
+    // Elle ne prend pas de liste d'exceptions, et refuse les bouchons légitimes des tests :
+    // localStorage, document.hidden, navigator.clipboard et route.fulfill de Playwright.
     "landmines-testing/no-test-doubles": "off",
     // Landmines ne voit pas la pause fixe de Playwright.
     "no-restricted-properties": [
