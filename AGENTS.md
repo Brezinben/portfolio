@@ -46,6 +46,7 @@ a rule, edit its config:
 
 - Hooks (git, Claude Code, CI): `.config/hk.pkl`. The commit subject and branch name rules live there.
 - Lint: oxlint, config in `.oxlintrc.jsonc`. Vendored anti-slop plugin in `tools/oxlint/anti-slop/` (see its `SOURCE.md`).
+  Test honesty rules: `@interfere/landmines`.
 - Format: oxfmt, config in `.oxfmtrc.json`.
 - Dead code and import cycles: rev-dep, config in `.rev-dep.config.jsonc`.
 - Secrets: betterleaks, config in `.config/betterleaks.toml`.

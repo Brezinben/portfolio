@@ -15,6 +15,13 @@ A bug fix starts with a test that reproduces the bug.
 that behaviour. Test the public interface of a module, not its internals. A unit test touches no
 network and no real clock.
 
+## Test honesty
+
+A test waits for a signal: the operation itself, an event, or a locator assertion. A fixed sleep
+(`setTimeout`, `page.waitForTimeout`), a retry or a raised timeout lets a test pass without
+proof, and oxlint refuses them (landmines, config in `.oxlintrc.jsonc`). The baseline override
+in `.oxlintrc.jsonc` only shrinks: remove a file from it once its last fixed sleep is gone.
+
 ## Coverage
 
 `bun run test --coverage` fails when a file falls below the floor of `bunfig.toml`. Bun applies the

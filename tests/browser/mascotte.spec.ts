@@ -292,15 +292,7 @@ test("should restart the typing countdown on every key", async ({ page }) => {
 
   // Six touches espacées de 600 ms, moins que le délai de retour : seule la relance à
   // chaque frappe garde la mascotte sur « type » jusqu'au bout.
-  await Array.from({ length: 6 }).reduce<Promise<unknown>>((chain) => {
-    return chain
-      .then(() => {
-        return cli.press("h");
-      })
-      .then(() => {
-        return page.waitForTimeout(600);
-      });
-  }, Promise.resolve());
+  await cli.pressSequentially("hhhhhh", { delay: 600 });
 
   expect(await mascot(page).getAttribute("class"), "typing was not cut").toBe("slime slime--type");
 });
