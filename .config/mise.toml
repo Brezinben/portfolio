@@ -7,6 +7,8 @@ hk = "2.12.0"
 jactionlint = "2.6.0"
 jq = "1.8.2"
 node = "26.13.1"
+# Le backend aqua ne trouve pas d'archive Linux d'opengrep.
+"github:opengrep/opengrep" = "2.0.0"
 # jactionlint vérifie les blocs `run:` des workflows avec le shellcheck du PATH.
 shellcheck = "0.11.0"
 worktrunk = "0.81.0"

@@ -15,11 +15,38 @@ A bug fix starts with a test that reproduces the bug.
 that behaviour. Test the public interface of a module, not its internals. A unit test touches no
 network and no real clock.
 
+## Test honesty
+
+A test waits for a signal: the operation itself, an event, or a locator assertion. A fixed sleep
+(`setTimeout`, `page.waitForTimeout`), a retry or a raised timeout lets a test pass without
+proof, and oxlint refuses them (landmines, config in `.oxlintrc.jsonc`). The baseline override
+in `.oxlintrc.jsonc` only shrinks: remove a file from it once its last fixed sleep is gone.
+
+## Coverage
+
+`bun run test --coverage` fails when a file falls below the floor of `bunfig.toml`. Bun applies the
+floor to each file, not to the total. When the weakest file rises, raise the floor; never lower it.
+Cover a new branch with a test that checks its result: a test without an assertion adds coverage
+and proves nothing.
+
+## Property tests
+
+Write a property test for a parser, a validation, or a serializer: `fc.assert(fc.property(…))`
+from `fast-check`, imported by name (`tests/unit/share.test.ts`). State a property that holds for
+every input (a round trip, an invariant, a comparison with a simpler model), not a copy of the
+implementation. Keep each failing input that fast-check prints as an example test.
+
 ## Browser tests
 
 `bun run test:browser` (Playwright, files `tests/browser/*.spec.ts`). Test what the user sees and
 does, in a real browser: select elements by role and accessible name, not by CSS class. Prefer a
 browser test to a mocked DOM whenever the behaviour depends on layout, focus or real events.
+
+## Smoke tests
+
+Tag with `{ tag: "@smoke" }` the few tests that prove the page starts and the terminal answers.
+Keep the smoke set under a minute: `bun run test:smoke` runs it, and the CI runs it before the
+browser suite.
 
 ## Accessibility tests
 

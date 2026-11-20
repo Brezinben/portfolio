@@ -1,0 +1,5 @@
+[test]
+# Bun applique le seuil à chaque fichier, et non au total : le plancher suit le fichier le moins couvert.
+coverageThreshold = { lines = 0.96, functions = 0.92 }
+# La suite navigateur couvre l'essentiel de ces deux fichiers : avec eux, le plancher tomberait à 30 %.
+coveragePathIgnorePatterns = ["src/terminal/format.ts", "src/terminal/achievements/store.ts"]

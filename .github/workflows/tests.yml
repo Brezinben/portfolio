@@ -1,4 +1,4 @@
-# Deux travaux, et pas un seul : la vérification rend la main en une minute, la suite
+# Plusieurs travaux, et pas un seul : la vérification rend la main en une minute, la suite
 # navigateur prend sept minutes. Les séparer donne le verdict rapide tout de suite, sans
 # attendre les navigateurs.
 name: tests
@@ -18,7 +18,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  verification:
+  check:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -34,12 +34,12 @@ jobs:
         env:
           PORTFOLIO_DIST: dist.test
 
-      - run: bun run test
+      - run: bun run test --coverage
 
       # Un commit fait avec --no-verify, ou hors d'un agent, n'est passé par aucun hook local.
       - run: bun run check
 
-  navigateur:
+  browser:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -58,18 +58,21 @@ jobs:
       # Les navigateurs pèsent plus que les dépendances. La clé porte la version de
       # Playwright : une montée de version tire une nouvelle archive, pas l'ancienne.
       - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        id: navigateurs
+        id: browsers
         with:
           key: playwright-${{ runner.os }}-${{ steps.playwright.outputs.version }}
           path: ~/.cache/ms-playwright
 
-      - if: steps.navigateurs.outputs.cache-hit != 'true'
+      - if: steps.browsers.outputs.cache-hit != 'true'
         run: bun x playwright install --with-deps chromium
 
       # Les dépendances système ne sont pas dans le cache du dossier : elles s'installent
       # même quand les navigateurs en reviennent.
-      - if: steps.navigateurs.outputs.cache-hit == 'true'
+      - if: steps.browsers.outputs.cache-hit == 'true'
         run: bun x playwright install-deps chromium
+
+      # Si la page ne démarre pas, la suite complète échouerait partout : ce test le dit en une minute.
+      - run: bun run test:smoke
 
       # Le plafond de deux workers vient de beta, qui a 7 Go. Le runner en a 16
       # pour quatre cœurs : il en tient quatre, et la suite passe de neuf minutes à cinq.
@@ -80,8 +83,49 @@ jobs:
       - if: failure()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: rapport-playwright
+          name: playwright-report
           path: |
             playwright-report/
             test-results/
           retention-days: 7
+
+  security:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      # L'historique complet donne le commit de base à --baseline-commit.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - uses: jdx/mise-action@b44d12e7d0d8ee7461bb893e1b1993500433185b # v5.2.7
+
+      # Jamais --config auto : il envoie l'URL du projet au registre Semgrep, sous licence non libre.
+      - run: |
+          git clone --quiet https://github.com/opengrep/opengrep-rules "$RUNNER_TEMP/rules"
+          git -C "$RUNNER_TEMP/rules" checkout --quiet f1d2b562b414783763fd02a6ed2736eaed622efa
+
+      # Les alertes déjà présentes sur la base sont des faux positifs : seules les nouvelles comptent.
+      - run: >-
+          opengrep scan --error --baseline-commit "$BASE"
+          --config "$RUNNER_TEMP/rules/javascript" --config "$RUNNER_TEMP/rules/typescript"
+          --exclude src/vendor src
+        env:
+          BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+
+  performance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: jdx/mise-action@b44d12e7d0d8ee7461bb893e1b1993500433185b # v5.2.7
+
+      - run: bun install --frozen-lockfile
+
+      - run: bun run build
+        env:
+          PORTFOLIO_DIST: dist.test
+
+      # Lighthouse sert dist.test lui-même, avec le Chrome du runner.
+      - run: bun run test:performance

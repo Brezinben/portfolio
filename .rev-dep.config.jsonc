@@ -28,6 +28,8 @@
         "enabled": true,
         "excludeModules": [
           "@types/**",
+          "@interfere/landmines",
+          "@lhci/cli",
           "@oxlint/plugins",
           "@stryker-mutator/core",
           "@stylistic/eslint-plugin",

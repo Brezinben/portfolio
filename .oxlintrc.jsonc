@@ -1,5 +1,6 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "extends": ["./node_modules/@interfere/landmines/configs/recommended.json"],
   "plugins": ["eslint", "typescript", "jest", "unicorn", "oxc", "promise", "import"],
   "jsPlugins": [
     "@stylistic/eslint-plugin",
@@ -191,6 +192,25 @@
     "jest/prefer-each": "off",
     // bun test n'a pas besoin d'un hook pour préparer l'état au niveau du module.
     "jest/require-hook": "off",
+    // Elle interdit tout commentaire, alors que le dépôt garde ceux qui disent pourquoi.
+    "landmines-style/no-comments": "off",
+    // Le type de retour explicite reste un choix de l'auteur.
+    "landmines-types/no-explicit-return-types": "off",
+    // Les tests vivent sous tests/, et Playwright nomme ses fichiers *.spec.ts.
+    "landmines-structure/test-file-names": "off",
+    "landmines-structure/colocated-tests": "off",
+    // Elle ne prend pas de liste d'exceptions, et refuse les bouchons légitimes des tests :
+    // localStorage, document.hidden, navigator.clipboard et route.fulfill de Playwright.
+    "landmines-testing/no-test-doubles": "off",
+    // Landmines ne voit pas la pause fixe de Playwright.
+    "no-restricted-properties": [
+      "error",
+      {
+        "object": "page",
+        "property": "waitForTimeout",
+        "message": "Await a locator assertion or an event, not a fixed delay.",
+      },
+    ],
   },
   "ignorePatterns": [
     ".agents/**",
@@ -234,6 +254,21 @@
       "rules": {
         // Un scénario de test se lit d'un bloc : le découper disperserait ses étapes.
         "max-statements": "off",
+      },
+    },
+    {
+      // Base de départ : ces fichiers prouvent une absence sur une durée (rien ne part, rien ne
+      // bouge), sans événement à attendre. Retirer un fichier dès qu'il n'a plus de pause fixe.
+      "files": [
+        "tests/browser/boot.spec.ts",
+        "tests/browser/durcissement.spec.ts",
+        "tests/browser/eggs.spec.ts",
+        "tests/browser/erreur.spec.ts",
+        "tests/browser/mascotte.spec.ts",
+        "tests/browser/radio.spec.ts",
+      ],
+      "rules": {
+        "no-restricted-properties": "off",
       },
     },
   ],
