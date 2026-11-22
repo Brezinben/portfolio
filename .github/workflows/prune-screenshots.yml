@@ -38,7 +38,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git checkout --quiet --orphan purge
-          git rm --quiet -r --cached .
+          git read-tree --empty
           for numero in $ouvertes; do
             if [ -d "pr-$numero" ]; then git add "pr-$numero"; fi
           done
