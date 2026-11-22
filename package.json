@@ -24,7 +24,7 @@
     "@oxlint/plugins": "1.93.0",
     "@playwright/test": "1.65.0",
     "@stryker-mutator/core": "10.1.1",
-    "@stylistic/eslint-plugin": "5.10.0",
+    "@stylistic/eslint-plugin": "6.0.0",
     "@types/dom-chromium-ai": "0.0.18",
     "@types/node": "26.6.6",
     "fast-check": "4.10.2",
