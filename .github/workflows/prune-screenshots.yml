@@ -34,7 +34,7 @@ jobs:
         run: |
           set -euo pipefail
           ancien=$(git rev-parse HEAD)
-          ouvertes=$(gh pr list --state open --json number --jq '.[].number')
+          ouvertes=$(gh pr list --state open --limit 500 --json number --jq '.[].number')
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git checkout --quiet --orphan purge

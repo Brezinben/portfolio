@@ -6,8 +6,8 @@ import { readFileSync } from "node:fs";
 import { settled } from "../helpers/settled.ts";
 
 const CONTENT = fileURLToPath(new URL("../../src/content.json", import.meta.url)),
-  // SAFETY: content.json est un artefact du dépôt, versionné à côté de ce test, et son
-  // schéma est tenu par tests/unit/content.test.ts. Seules deux clés des sections sont lues ici.
+  // SAFETY: content.json est versionné avec ce test ; une section sans id ou sans cmd fait
+  // échouer les tests ci-dessous.
   { sections } = JSON.parse(readFileSync(CONTENT, "utf8")) as {
     sections: { cmd: string; id: string }[];
   },
@@ -16,8 +16,7 @@ const CONTENT = fileURLToPath(new URL("../../src/content.json", import.meta.url)
     mobile: { hasTouch: true, isMobile: true, viewport: { height: 844, width: 390 } },
   };
 
-// Les captures servent la revue d'une montée majeure de Dependabot : la CI les publie en
-// commentaire de la PR (travail « screenshots » de .github/workflows/tests.yml).
+// Les captures finales servent la revue des montées majeures de Dependabot.
 for (const [screen, options] of Object.entries(SCREENS)) {
   test.describe(screen, () => {
     test.use(options);

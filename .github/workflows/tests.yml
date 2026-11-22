@@ -89,8 +89,8 @@ jobs:
             test-results/
           retention-days: 7
 
-      # Une casse de la suite n'empêche pas de voir les sections : la capture sert à
-      # comprendre la casse.
+      # Aussi après un échec : la capture montre au relecteur ce qui a cassé. Utile seulement
+      # aux PR Dependabot.
       - if: ${{ !cancelled() && github.event.pull_request.user.login == 'dependabot[bot]' }}
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
@@ -140,8 +140,8 @@ jobs:
       # Lighthouse sert dist.test lui-même, avec le Chrome du runner.
       - run: bun run test:performance
 
-  # Dependabot ne passe que par les jobs de lecture : la fusion et les captures ont besoin
-  # d'écrire, et ces droits ne vont qu'aux jobs qui n'exécutent pas le code de la PR.
+  # Lit les métadonnées de la PR. Seuls screenshots et merge ont les droits d'écriture, et
+  # aucun des deux n'exécute le code de la PR.
   dependabot:
     if: ${{ github.event.pull_request.user.login == 'dependabot[bot]' }}
     runs-on: ubuntu-latest
@@ -149,15 +149,15 @@ jobs:
     outputs:
       major: ${{ steps.metadata.outputs.update-type != 'version-update:semver-minor' && steps.metadata.outputs.update-type != 'version-update:semver-patch' }}
       names: ${{ steps.metadata.outputs.dependency-names }}
-      trusted: ${{ steps.metadata.outputs.maintainer-changes != 'true' }}
+      trusted: ${{ steps.metadata.outputs.maintainer-changes == 'false' }}
     steps:
       - id: metadata
         uses: dependabot/fetch-metadata@25dd0e34f4fe68f24cc83900b1fe3fe149efef98 # v3.1.0
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
-  # Une montée majeure reçoit ses captures en commentaire avant toute fusion. La branche
-  # « screenshots » ne porte aucun code : seuls les fichiers PNG attendus y entrent.
+  # Une montée majeure reçoit ses captures en commentaire, puis la fusion suit sans attendre.
+  # La branche « screenshots » ne porte aucun code : seuls les fichiers PNG attendus y entrent.
   screenshots:
     needs: [dependabot, browser]
     if: ${{ !cancelled() && needs.dependabot.outputs.major == 'true' }}
@@ -206,7 +206,7 @@ jobs:
           {
             echo "## Captures des sections"
             echo
-            echo "Montée majeure : vérifier chaque section avant de fusionner."
+            echo "Montée majeure : les captures restent en trace, la fusion suit si la CI est verte."
             echo
             echo "| Section | Bureau | Mobile |"
             echo "| --- | --- | --- |"
@@ -222,7 +222,7 @@ jobs:
 
   merge:
     needs: [dependabot, check, browser, security, performance, screenshots]
-    if: ${{ !cancelled() && !failure() && needs.dependabot.outputs.trusted == 'true' }}
+    if: ${{ !cancelled() && !failure() && needs.screenshots.result != 'cancelled' && needs.dependabot.outputs.trusted == 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
