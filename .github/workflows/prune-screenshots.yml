@@ -1,0 +1,46 @@
+# Réécrit la branche « screenshots » : l'historique est effacé, donc les images des PR
+# fermées disparaissent aussi de l'historique. Une simple suppression de fichiers les garderait.
+name: prune-screenshots
+
+on:
+  schedule:
+    - cron: "0 5 * * 1"
+  workflow_dispatch:
+
+permissions: {}
+
+# Même groupe que la publication des captures : une purge ne croise jamais un ajout.
+concurrency:
+  group: screenshots
+  cancel-in-progress: false
+
+jobs:
+  prune:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+      pull-requests: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: screenshots
+          fetch-depth: 1
+
+      - name: Garder les captures des PR ouvertes
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          ancien=$(git rev-parse HEAD)
+          ouvertes=$(gh pr list --state open --json number --jq '.[].number')
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout --quiet --orphan purge
+          git rm --quiet -r --cached .
+          for numero in $ouvertes; do
+            if [ -d "pr-$numero" ]; then git add "pr-$numero"; fi
+          done
+          git commit --quiet --allow-empty -m "Purger les captures des PR fermées"
+          git push --quiet --force-with-lease="screenshots:$ancien" origin purge:screenshots

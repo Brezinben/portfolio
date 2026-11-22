@@ -1,12 +1,17 @@
 version: 2
 updates:
   # Sept jours d'attente : une version tout juste publiée n'a pas encore eu de retour.
+  # Mineures et correctifs en une seule PR : elles se disputent bun.lock, et chaque fusion
+  # relancerait la suite des autres.
   - package-ecosystem: "bun"
     directory: "/"
     schedule:
       interval: "weekly"
     cooldown:
       default-days: 7
+    groups:
+      minor-and-patch:
+        update-types: ["minor", "patch"]
 
   # Les actions sont épinglées par SHA : sans ce bloc, l'épingle ne bougerait plus.
   - package-ecosystem: "github-actions"
@@ -15,3 +20,6 @@ updates:
       interval: "weekly"
     cooldown:
       default-days: 7
+    groups:
+      minor-and-patch:
+        update-types: ["minor", "patch"]

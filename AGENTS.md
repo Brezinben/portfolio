@@ -51,6 +51,7 @@ a rule, edit its config:
 - Dead code and import cycles: rev-dep, config in `.rev-dep.config.jsonc`.
 - Secrets: betterleaks, config in `.config/betterleaks.toml`.
 - Machine tools and versions: mise, `.config/mise.toml`. Project tools: `package.json`.
+- Dependency PRs: Dependabot, `.github/dependabot.yml`. Its merge and screenshot jobs live in `tests.yml`; the `screenshots` branch is pruned by `prune-screenshots.yml`.
 - Claude Code hooks: `.claude/settings.json`, which calls `scripts/post-edit.sh` and `hk agent stop-hook`.
 - Browser and mutation tests: `.config/playwright.config.ts`, `.config/stryker.config.json`.
 - Coverage floor: `bunfig.toml`. Lighthouse assertions: `.config/lighthouserc.json`.
