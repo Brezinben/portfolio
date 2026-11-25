@@ -296,3 +296,15 @@ it("should declare every certification in the JSON-LD of the page", () => {
     );
   }
 });
+
+// Le blog relie ses articles à cette fiche par cet @id exact. Le changer casse le lien entre les
+// deux sites.
+it("should give the Person of the page the @id the blog points to", () => {
+  // SAFETY: index.html est versionné à côté de ce test. Seule la clé @id est lue ici.
+  const bloc = /<script type="application\/ld\+json">(?<json>[\s\S]+?)<\/script>/u.exec(
+      read("index.html"),
+    )?.groups?.json,
+    personne = JSON.parse(bloc ?? "{}") as { "@id"?: string };
+
+  assert.equal(personne["@id"], "https://me.brezinben.dpdns.org/#person");
+});

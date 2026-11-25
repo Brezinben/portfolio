@@ -8,11 +8,12 @@
     "social": {
       "linkedin": "in/benjamin--david",
       "github": "brezinben",
-      "website": "me.brezinben.dpdns.org"
+      "website": "me.brezinben.dpdns.org",
+      "blog": "blog.brezinben.dpdns.org"
     }
   },
   "share": {
-    "title": "Benjamin David · Développeur IA & Full Stack",
+    "title": "Benjamin David · IA Engineer · Nantes",
     "text": "Des outils internes utilisables par les humains comme par les agents.",
     "targets": [
       {
@@ -72,7 +73,7 @@
           "t": "David"
         },
         {
-          "t": "Concepteur orchestrateur IA · Développeur Full Stack · Nantes",
+          "t": "IA Engineer · Nantes",
           "tone": "acc",
           "w": "700"
         },
@@ -104,7 +105,7 @@
         "lines": [
           [
             "poste",
-            "Développeur IA & Full Stack"
+            "IA Engineer"
           ],
           [
             "entreprise",
@@ -134,7 +135,7 @@
           ]
         ]
       },
-      "ask": "Benjamin David, concepteur orchestrateur IA et développeur Full Stack à Nantes. Il construit des applications qui rendent les outils internes utilisables par les humains comme par les agents. Huit ans de production, d'abord côté réseau, aujourd'hui autour de l'IA. L'accessibilité, la performance et la qualité du code sont des contraintes de départ. En poste chez Kereis depuis mai 2026, ouvert aux opportunités en numérique responsable."
+      "ask": "Benjamin David, IA Engineer à Nantes. Il construit des applications qui rendent les outils internes utilisables par les humains comme par les agents. Huit ans de production, d'abord côté réseau, aujourd'hui autour de l'IA. L'accessibilité, la performance et la qualité du code sont des contraintes de départ. En poste chez Kereis depuis mai 2026, ouvert aux opportunités en numérique responsable."
     },
     {
       "id": "parcours",
@@ -176,7 +177,7 @@
           ]
         ]
       },
-      "ask": "Chez digital4better depuis 2023, en mission : Kereis (2026, IA et full stack), SNCF Gares & Connexions (2024-2026, Assist'enGare), équipe RUN (2023-2024). Avant : Transway (2021-2023, full stack puis tech lead), LDC Services (2020-2021, alternance), FPEE Industries (2018-2020, technicien réseau en alternance)."
+      "ask": "Chez digital4better depuis 2023, en mission : Kereis (2026, IA Engineer), SNCF Gares & Connexions (2024-2026, Assist'enGare), équipe RUN (2023-2024). Avant : Transway (2021-2023, full stack puis tech lead), LDC Services (2020-2021, alternance), FPEE Industries (2018-2020, technicien réseau en alternance)."
     },
     {
       "id": "stack",
@@ -408,6 +409,15 @@
             "website",
             "me.brezinben.dpdns.org",
             "str",
+            true
+          ]
+        },
+        {
+          "jq": [
+            "30px",
+            "blog",
+            "blog.brezinben.dpdns.org",
+            "str",
             false
           ]
         },
@@ -535,7 +545,7 @@
           "ls": "-.02em"
         },
         {
-          "t": "mai 2026 → aujourd'hui · Développeur IA & Full Stack · via digital4better",
+          "t": "mai 2026 → aujourd'hui · IA Engineer · via digital4better",
           "tone": "acc"
         },
         {
@@ -578,7 +588,7 @@
           ],
           [
             "rôle",
-            "développeur IA / full stack"
+            "IA Engineer"
           ],
           [
             "client",
@@ -934,7 +944,7 @@
       "years": "2026 → …",
       "org": "Kereis",
       "via": "digital4better",
-      "role": "Développeur IA & Full Stack · pôle DSI",
+      "role": "IA Engineer · pôle DSI",
       "note": "Preuves de concept IA pour une DSI qui construit plutôt qu'elle n'achète. Serveurs MCP, Specification-Driven Development, et le cadrage du code écrit avant la première fonctionnalité.",
       "detail": "m-kereis"
     },

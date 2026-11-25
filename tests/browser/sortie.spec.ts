@@ -232,3 +232,11 @@ test("should preload its command in the command line on the contact section", as
 
   await expect(page.getByLabel("Commande")).toHaveValue("/send-mail benjamin.david1@hotmail.fr");
 });
+
+test("should list the blog among the contact links", async ({ page }) => {
+  await open(page, "#contact");
+
+  await expect(page.locator('[data-pane="main"]')).toContainText(
+    '"blog": "blog.brezinben.dpdns.org"',
+  );
+});

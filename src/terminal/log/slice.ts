@@ -73,7 +73,7 @@ export const logSlice = () => {
             c: "fg2",
             m: "·",
             mc: "fg2",
-            t: "retenu : Benjamin, développeur IA, Nantes, aime le vélo.",
+            t: "retenu : Benjamin, IA Engineer, Nantes, aime le vélo.",
           },
         ];
       }, COMPACT_MS);
