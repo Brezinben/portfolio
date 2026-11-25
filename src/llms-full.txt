@@ -28,6 +28,7 @@ déclare des outils à l'agent du navigateur. Ces outils vivent dans la page.
 - LinkedIn : https://www.linkedin.com/in/benjamin--david
 - GitHub : https://github.com/brezinben
 - Site : https://me.brezinben.dpdns.org/
+- Blog : https://blog.brezinben.dpdns.org/
 
 Je construis des applications qui rendent les outils internes vraiment
 utilisables, par les humains comme par les agents.
@@ -341,6 +342,7 @@ tester, casser, recommencer.
 - LinkedIn : in/benjamin--david
 - GitHub : brezinben
 - Site : me.brezinben.dpdns.org
+- Blog : blog.brezinben.dpdns.org
 - Ville : Nantes, France
 - Recherche : missions IA, full stack, numérique responsable
 - Délai de réponse : 48 heures
