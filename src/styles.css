@@ -2055,7 +2055,7 @@ a:hover {
   padding: 3px 6px;
 }
 
-/* La colonne de droite du pied : le badge des succès, puis les liens de variantes. */
+/* La colonne de droite du pied : le badge des succès, les liens de variantes, puis le blog. */
 .tm [data-footer-links] {
   display: flex;
   align-items: center;
