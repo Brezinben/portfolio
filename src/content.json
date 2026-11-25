@@ -8,7 +8,8 @@
     "social": {
       "linkedin": "in/benjamin--david",
       "github": "brezinben",
-      "website": "me.brezinben.dpdns.org"
+      "website": "me.brezinben.dpdns.org",
+      "blog": "blog.brezinben.dpdns.org"
     }
   },
   "share": {
@@ -407,6 +408,15 @@
             "30px",
             "website",
             "me.brezinben.dpdns.org",
+            "str",
+            true
+          ]
+        },
+        {
+          "jq": [
+            "30px",
+            "blog",
+            "blog.brezinben.dpdns.org",
             "str",
             false
           ]
