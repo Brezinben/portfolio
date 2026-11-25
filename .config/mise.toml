@@ -16,5 +16,5 @@ worktrunk = "0.81.0"
 [env]
 # Les hooks appellent hk par `mise x` : les binaires de node_modules doivent être sur son PATH.
 _.path = ["{{config_root}}/node_modules/.bin"]
-# hk install écrit alors des hooks qui passent par mise x : les binaires de node_modules gagnent sur les outils globaux.
+# Avec HK_MISE, hk install écrit des hooks qui passent par mise x : les binaires de node_modules gagnent sur les outils globaux.
 HK_MISE = "1"
