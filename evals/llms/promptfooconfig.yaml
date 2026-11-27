@@ -1,4 +1,3 @@
-# Mesure ce qu'un agent retrouve dans llms.txt et dans llms-full.txt.
 # Lancer : bun run eval:llms. Chaque lancement appelle un modèle : la CI ne le lance pas.
 description: Qualité de llms.txt et de llms-full.txt pour un agent
 
@@ -20,6 +19,8 @@ providers:
       max_tokens: 1500
 
 defaultTest:
+  vars:
+    context: [file://../../src/llms.txt, file://../../src/llms-full.txt]
   options:
     provider:
       id: anthropic:messages:claude-sonnet-5-5
@@ -29,7 +30,6 @@ defaultTest:
 tests:
   - description: identité
     vars:
-      context: [file://../../src/llms.txt, file://../../src/llms-full.txt]
       question: Qui est Benjamin David et quel est son métier ?
     assert:
       - { type: icontains, value: IA Engineer }
@@ -37,7 +37,6 @@ tests:
 
   - description: disponibilité
     vars:
-      context: [file://../../src/llms.txt, file://../../src/llms-full.txt]
       question: Benjamin est-il disponible pour une nouvelle mission ?
     assert:
       - type: llm-rubric
@@ -45,7 +44,6 @@ tests:
 
   - description: missions recherchées
     vars:
-      context: [file://../../src/llms.txt, file://../../src/llms-full.txt]
       question: Quel type de missions recherche-t-il ?
     assert:
       - type: llm-rubric
@@ -53,7 +51,6 @@ tests:
 
   - description: poste actuel
     vars:
-      context: [file://../../src/llms.txt, file://../../src/llms-full.txt]
       question: Quel est son poste actuel, et pour quel client ?
     assert:
       - type: llm-rubric
@@ -61,7 +58,6 @@ tests:
 
   - description: années d'expérience
     vars:
-      context: [file://../../src/llms.txt, file://../../src/llms-full.txt]
       question: Combien d'années d'expérience a-t-il ?
     assert:
       - type: llm-rubric
@@ -69,7 +65,6 @@ tests:
 
   - description: langues
     vars:
-      context: [file://../../src/llms.txt, file://../../src/llms-full.txt]
       question: Quelles langues parle-t-il ?
     assert:
       - type: llm-rubric
@@ -77,7 +72,6 @@ tests:
 
   - description: contact
     vars:
-      context: [file://../../src/llms.txt, file://../../src/llms-full.txt]
       question: Comment contacter Benjamin ?
     assert:
       - { type: icontains, value: benjamin.david1@hotmail.fr }
@@ -86,7 +80,6 @@ tests:
 
   - description: code et blog
     vars:
-      context: [file://../../src/llms.txt, file://../../src/llms-full.txt]
       question: Où lire son code et son blog ?
     assert:
       - { type: icontains, value: github.com/brezinben }
@@ -94,7 +87,6 @@ tests:
 
   - description: serveurs MCP
     vars:
-      context: [file://../../src/llms.txt, file://../../src/llms-full.txt]
       question: A-t-il de l'expérience avec les serveurs MCP ?
     assert:
       - type: llm-rubric
@@ -102,7 +94,6 @@ tests:
 
   - description: orchestration et observabilité
     vars:
-      context: [file://../../src/llms.txt, file://../../src/llms-full.txt]
       question: Quels outils d'orchestration d'agents et d'observabilité de LLM connaît-il ?
     assert:
       - type: llm-rubric
@@ -110,7 +101,6 @@ tests:
 
   - description: Vue ou React
     vars:
-      context: [file://../../src/llms.txt, file://../../src/llms-full.txt]
       question: Travaille-t-il plutôt avec Vue ou avec React ?
     assert:
       - type: llm-rubric
@@ -118,7 +108,6 @@ tests:
 
   - description: accessibilité
     vars:
-      context: [file://../../src/llms.txt, file://../../src/llms-full.txt]
       question: Connaît-il l'accessibilité numérique ?
     assert:
       - type: llm-rubric
@@ -126,7 +115,6 @@ tests:
 
   - description: numérique responsable
     vars:
-      context: [file://../../src/llms.txt, file://../../src/llms-full.txt]
       question: Quelle est son approche du numérique responsable ?
     assert:
       - type: llm-rubric
@@ -134,7 +122,6 @@ tests:
 
   - description: encadrement
     vars:
-      context: [file://../../src/llms.txt, file://../../src/llms-full.txt]
       question: A-t-il déjà encadré une équipe ?
     assert:
       - type: llm-rubric
@@ -142,7 +129,6 @@ tests:
 
   - description: migration
     vars:
-      context: [file://../../src/llms.txt, file://../../src/llms-full.txt]
       question: Quelle est la plus grosse migration qu'il a menée ?
     assert:
       - type: llm-rubric
@@ -150,7 +136,6 @@ tests:
 
   - description: SNCF
     vars:
-      context: [file://../../src/llms.txt, file://../../src/llms-full.txt]
       question: Qu'a-t-il fait pour SNCF Gares & Connexions ?
     assert:
       - type: llm-rubric
@@ -158,7 +143,6 @@ tests:
 
   - description: certifications
     vars:
-      context: [file://../../src/llms.txt, file://../../src/llms-full.txt]
       question: Quelles certifications a-t-il ?
     assert:
       - type: llm-rubric
@@ -166,7 +150,6 @@ tests:
 
   - description: formation
     vars:
-      context: [file://../../src/llms.txt, file://../../src/llms-full.txt]
       question: Quelle est sa formation ?
     assert:
       - type: llm-rubric
@@ -174,7 +157,6 @@ tests:
 
   - description: tarif absent
     vars:
-      context: [file://../../src/llms.txt, file://../../src/llms-full.txt]
       question: Quel est son tarif journalier ?
     assert:
       - type: llm-rubric
@@ -182,7 +164,6 @@ tests:
 
   - description: télétravail absent
     vars:
-      context: [file://../../src/llms.txt, file://../../src/llms-full.txt]
       question: Accepte-t-il le télétravail complet ?
     assert:
       - type: llm-rubric
@@ -190,7 +171,6 @@ tests:
 
   - description: Kubernetes absent
     vars:
-      context: [file://../../src/llms.txt, file://../../src/llms-full.txt]
       question: A-t-il de l'expérience avec Kubernetes ?
     assert:
       - type: llm-rubric
@@ -198,7 +178,6 @@ tests:
 
   - description: API absente
     vars:
-      context: [file://../../src/llms.txt, file://../../src/llms-full.txt]
       question: Ce site expose-t-il une API ou un serveur MCP ?
     assert:
       - type: llm-rubric
