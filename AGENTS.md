@@ -1,5 +1,8 @@
 # AGENTS.md
 
+This repository is public. Commit nothing the live site does not already show:
+no host address, no path of the serving machine, no secret, no personal detail.
+
 Benjamin David's portfolio: static pages in a terminal interface, content in `src/content.json`.
 Bun runs the build and the unit tests.
 
