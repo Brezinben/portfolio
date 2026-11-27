@@ -40,7 +40,7 @@ liens sameAs vers LinkedIn et GitHub, dit à Google que cette page désigne cett
   model, so the CI does not run it. ADR 0011 gives the frame of both files.
 - Heavy commands (`bun run check`, browser, Lighthouse and mutation tests) go through `hochet`, the
   machine-wide queue: `hochet bun run test:browser`. `hochet status` shows who holds each slot.
-- Build: `bun run build` writes `dist`. Only the host `beta` serves `dist` (ADR 0003): a build
+- Build: `bun run build` writes `dist`. Only the serving host serves `dist` (ADR 0003): a build
   there publishes the live site, a build elsewhere publishes nothing. To test a build, set
   `PORTFOLIO_DIST=dist.test`. Package updates: `bun run deps`.
 - Publish: on the serving host, in its checkout of this repository, run
