@@ -4,7 +4,7 @@ import { defineConfig } from "@playwright/test";
 // sans se disputer le port ni le dossier construit.
 const PORT = Number(process.env.PORTFOLIO_PORT ?? 4173),
   DIST = process.env.PORTFOLIO_DIST ?? "dist.test",
-  // La machine beta n'a que 7 Go de RAM. Au-delà de deux navigateurs, la session entière
+  // La machine de service n'a que 7 Go de RAM. Au-delà de deux navigateurs, la session entière
   // plante, pas seulement les tests.
   WORKERS = Number(process.env.PORTFOLIO_WORKERS ?? 2);
 
@@ -22,7 +22,7 @@ export default defineConfig({
   webServer: {
     command: `bun run build && bun tests/helpers/static-server.ts ${PORT}`,
     cwd: "..",
-    // Sur beta, Caddy sert dist/. Sans cette redirection, la suite y publierait l'arbre de
+    // Sur l'hôte de service, Caddy sert dist/. Sans cette redirection, la suite y publierait l'arbre de
     // travail, que les tests passent ou non.
     env: { PORTFOLIO_DIST: DIST },
     // Réutiliser un serveur déjà là masque « port déjà utilisé » et fait passer les tests

@@ -74,7 +74,7 @@ jobs:
       # Si la page ne démarre pas, la suite complète échouerait partout : ce test le dit en une minute.
       - run: bun run test:smoke
 
-      # Le plafond de deux workers vient de beta, qui a 7 Go. Le runner en a 16
+      # Le plafond de deux workers vient de la machine de service, qui a 7 Go. Le runner en a 16
       # pour quatre cœurs : il en tient quatre, et la suite passe de neuf minutes à cinq.
       - run: bun run test:browser
         env:
