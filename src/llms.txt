@@ -47,7 +47,7 @@ Compétences techniques, cinq domaines :
 - DevOps, livrer sans casser : Docker, Compose, GitLab CI, Jenkins, GitHub Actions, AWS, Linux, Bash, Ansible, Datadog, monitoring.
 - Qualité & sobriété, ce qui tient dans le temps : tests unitaires, E2E, Cypress, ESLint, Oxlint, Prettier, oxfmt, axe, éco-conception, RGAA, pair-programming.
 
-Numérique responsable : contrainte de conception, au même titre que la sécurité. Benjamin est certifié par l'Institut du Numérique Responsable (2024).
+Numérique responsable : contrainte de conception, au même titre que la sécurité.
 
 ## Quand ce site répond à votre question
 

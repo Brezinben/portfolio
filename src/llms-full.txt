@@ -2,7 +2,7 @@
 
 > Benjamin David, IA Engineer à Nantes, construit des applications qui rendent les outils internes utilisables par les humains comme par les agents. Huit ans de production, d'abord côté réseau, aujourd'hui autour de l'IA. En poste chez Kereis depuis mai 2026, ouvert aux opportunités IA et numérique responsable.
 
-Référence complète du portfolio : tous les faits, un par ligne. La fiche courte est https://me.brezinben.dpdns.org/llms.txt
+Référence complète du portfolio : tous les faits du portfolio. La fiche courte est https://me.brezinben.dpdns.org/llms.txt
 
 Ce site n'expose ni API, ni serveur MCP, ni service. Benjamin conçoit des serveurs MCP pour ses clients, mais ce domaine n'en héberge aucun. Dans un navigateur qui prend en charge WebMCP, la page déclare des outils à l'agent du navigateur : ouvrir une section, chercher, lire une fiche techno, obtenir le contact. Ces outils vivent dans la page.
 
@@ -17,7 +17,7 @@ Ce site n'expose ni API, ni serveur MCP, ni service. Benjamin conçoit des serve
 - Base : Nantes, France
 - Langues : français, anglais technique
 
-Benjamin construit des applications qui rendent les outils internes vraiment utilisables, par les humains comme par les agents. Il conçoit, orchestre, livre. La spécification passe avant le code : les agents produisent dans les contraintes qu'il pose.
+Il conçoit, orchestre, livre. La spécification passe avant le code : les agents produisent dans les contraintes que Benjamin pose.
 
 Le métier bouge trop vite pour se reposer sur ce qu'on savait l'an dernier. L'accessibilité, la performance et la qualité du code sont des contraintes de départ, pas une checklist de fin de projet.
 
@@ -317,10 +317,10 @@ tester, casser, recommencer.
 ## Contact
 
 - E-mail : benjamin.david1@hotmail.fr
-- LinkedIn : in/benjamin--david
-- GitHub : brezinben
-- Site : me.brezinben.dpdns.org
-- Blog : blog.brezinben.dpdns.org
+- LinkedIn : https://www.linkedin.com/in/benjamin--david
+- GitHub : https://github.com/brezinben
+- Site : https://me.brezinben.dpdns.org/
+- Blog : https://blog.brezinben.dpdns.org/
 - Ville : Nantes, France
 - Recherche : missions IA, numérique responsable
 - Délai de réponse : 48 heures
