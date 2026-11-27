@@ -41,6 +41,9 @@ liens sameAs vers LinkedIn et GitHub, dit à Google que cette page désigne cett
 - Build: `bun run build` writes `dist`. Only the host `beta` serves `dist` (ADR 0003): a build
   there publishes the live site, a build elsewhere publishes nothing. To test a build, set
   `PORTFOLIO_DIST=dist.test`. Package updates: `bun run deps`.
+- Publish: on the serving host, in its checkout of this repository, run
+  `git pull --ff-only && bun install --frozen-lockfile && bun run build`.
+  Keep the dev dependencies: the build imports rolldown and html-minifier-terser.
 
 ## Tools
 
