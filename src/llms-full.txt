@@ -344,5 +344,5 @@ tester, casser, recommencer.
 - Site : me.brezinben.dpdns.org
 - Blog : blog.brezinben.dpdns.org
 - Ville : Nantes, France
-- Recherche : missions IA, full stack, numérique responsable
+- Recherche : missions IA, numérique responsable
 - Délai de réponse : 48 heures
