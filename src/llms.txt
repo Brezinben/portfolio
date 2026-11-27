@@ -1,38 +1,22 @@
 # Benjamin David · IA Engineer · Nantes
 
-> Portfolio de Benjamin David, IA Engineer à Nantes. Il construit des
-> applications qui rendent les outils internes utilisables par les humains
-> comme par les agents. Huit ans de production, d'abord côté réseau,
-> aujourd'hui autour de l'IA. En poste chez Kereis depuis mai 2026, ouvert
-> aux opportunités en numérique responsable.
+> Benjamin David, IA Engineer à Nantes, construit des applications qui rendent les outils internes utilisables par les humains comme par les agents. Huit ans de production, d'abord côté réseau, aujourd'hui autour de l'IA. En poste chez Kereis depuis mai 2026, ouvert aux opportunités IA et numérique responsable.
 
-Ce site est le portfolio d'une seule personne. Il n'expose ni produit, ni API, ni
-service. Il ne publie que des faits sur Benjamin David.
-
-Ce que ce domaine n'héberge pas :
-
-- Aucune documentation d'API, aucun schéma OpenAPI, aucune clé d'accès.
-- Aucun serveur MCP. Benjamin conçoit des serveurs MCP pour ses clients. Ce
-  domaine n'en héberge aucun et n'expose aucun point d'entrée MCP sur le réseau.
-- Aucun service à appeler. Les documents cités plus bas sont des documents à lire.
-
-Dans un navigateur qui prend en charge WebMCP, la page déclare des outils à
-l'agent du navigateur : ouvrir une section, chercher, lire une fiche techno,
-obtenir le contact. Ces outils vivent dans la page, pas sur un serveur.
+Ce site est le portfolio d'une personne. Il n'expose ni API, ni serveur MCP, ni service : les documents cités plus bas sont à lire. Benjamin conçoit des serveurs MCP pour ses clients, mais ce domaine n'en héberge aucun. Dans un navigateur qui prend en charge WebMCP, la page déclare des outils à l'agent du navigateur (ouvrir une section, chercher, lire une fiche techno, obtenir le contact). Ces outils vivent dans la page, pas sur un serveur.
 
 Identité :
 
 - Nom : Benjamin David
-- Poste : IA Engineer chez digital4better, en mission chez Kereis depuis
-  mai 2026
+- Poste : IA Engineer chez digital4better, en mission chez Kereis (pôle DSI) depuis mai 2026
 - Statut : en poste, ouvert aux opportunités
+- Recherche : missions IA, numérique responsable
+- Expérience : huit ans, depuis 2018
 - Base : Nantes, France
 - Langues : français, anglais technique
 - E-mail : benjamin.david1@hotmail.fr, réponse sous 48 heures
 - LinkedIn : https://www.linkedin.com/in/benjamin--david
 - GitHub : https://github.com/brezinben
 - Blog : https://blog.brezinben.dpdns.org/
-- Recherche : missions IA, numérique responsable
 
 Parcours depuis 2018 :
 
@@ -44,34 +28,33 @@ Parcours depuis 2018 :
 - 2020 → 2021 · LDC Services · Concepteur Développeur d'Applications · alternance
 - 2018 → 2020 · FPEE Industries · Technicien réseau · alternance
 
+Réalisations :
+
+- Kereis (2026) : serveurs MCP pour ouvrir les outils internes aux agents, plugin ChatGPT de simulation de tarif d'assurance de prêt, cartographie du SI sous Backstage, revue de spécification par l'IA.
+- SNCF Gares & Connexions, Assist'enGare (2024-2026) : réservation d'assistance pour les voyageurs PSH / PMR, environ 3 000 dossiers par jour, 96 % de conformité moyenne au RGAA 4.1.
+- Transway (2021-2023) : migration de la V1 vers la V3, plus de 300 000 utilisateurs transférés. Tech lead, encadrement de quatre à six développeurs.
+
+Cursus :
+
+- Certifications : Claude Certified Developer - Foundations (Anthropic, 2026) ; Certificat de Connaissance Numérique Responsable (Institut du Numérique Responsable, 2024).
+- Formations : Titre Professionnel Concepteur Développeur d'Applications (2021), BTS SIO option SISR (2020), baccalauréat STI2D (2018).
+
 Compétences techniques, cinq domaines :
 
-- Frontend, interfaces accessibles : HTML, CSS, Tailwind, Sass, Vuetify, MUI,
-  TypeScript, Vue.js, React, Svelte, Pinia, RxJS, Vite.
-- Backend, services et données : Laravel, NestJS, PHP, API REST, OpenAPI, JWT,
-  PostgreSQL, MySQL, Redis, ActiveMQ.
-- IA, orchestration d'agents : serveurs MCP, SpecKit, SDD, Claude, herdr, LiteLLM,
-  Langfuse, LangGraph, agents, harness engineering, évaluation, prompting.
-- DevOps, livrer sans casser : Docker, Compose, GitLab CI, Jenkins, GitHub
-  Actions, AWS, Linux, Bash, Ansible, Datadog, monitoring.
-- Qualité & sobriété, ce qui tient dans le temps : tests unitaires, E2E, Cypress,
-  ESLint, Oxlint, Prettier, oxfmt, axe, éco-conception, RGAA, pair-programming.
+- Frontend, interfaces accessibles : HTML, CSS, Tailwind, Sass, Vuetify, MUI, TypeScript, Vue.js, React, Svelte, Pinia, RxJS, Vite.
+- Backend, services et données : Laravel, NestJS, PHP, API REST, OpenAPI, JWT, PostgreSQL, MySQL, Redis, ActiveMQ.
+- IA, orchestration d'agents : serveurs MCP, SpecKit, SDD, Claude, herdr, LiteLLM, Langfuse, LangGraph, agents, harness engineering, évaluation, prompting.
+- DevOps, livrer sans casser : Docker, Compose, GitLab CI, Jenkins, GitHub Actions, AWS, Linux, Bash, Ansible, Datadog, monitoring.
+- Qualité & sobriété, ce qui tient dans le temps : tests unitaires, E2E, Cypress, ESLint, Oxlint, Prettier, oxfmt, axe, éco-conception, RGAA, pair-programming.
 
-Le numérique responsable est une contrainte de conception, au même titre que la sécurité.
+Numérique responsable : contrainte de conception, au même titre que la sécurité. Benjamin est certifié par l'Institut du Numérique Responsable (2024).
 
 ## Quand ce site répond à votre question
 
-- [Contenu complet](https://me.brezinben.dpdns.org/llms-full.txt): tout le
-  contenu du portfolio en un seul document — le parcours détaillé des six
-  expériences, les quatre missions documentées, les 57 fiches techno, le numérique
-  responsable, le cursus (formations et certifications) et le contact. Lisez-le
-  pour toute question de fond.
-- [Version texte](https://me.brezinben.dpdns.org/texte.html): les mêmes
-  faits en HTML, une colonne, sans script ni image.
-- [Version terminal](https://me.brezinben.dpdns.org/): les mêmes faits dans
-  une interface à trois volets, pilotée au clavier.
+- [Contenu complet](https://me.brezinben.dpdns.org/llms-full.txt): tout le contenu du portfolio en un seul document : le parcours détaillé des six expériences, les quatre missions documentées, les 57 fiches techno, le numérique responsable, le cursus (formations et certifications) et le contact. Lisez-le pour toute question de fond.
+- [Version texte](https://me.brezinben.dpdns.org/texte.html): les mêmes faits en HTML, une colonne, sans script ni image.
+- [Version terminal](https://me.brezinben.dpdns.org/): les mêmes faits dans une interface à trois volets, pilotée au clavier.
 
 ## Optional
 
-- [Plan du site](https://me.brezinben.dpdns.org/sitemap.xml): les deux
-  pages publiées, et rien d'autre.
+- [Plan du site](https://me.brezinben.dpdns.org/sitemap.xml): les deux pages publiées, et rien d'autre.

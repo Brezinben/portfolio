@@ -1,48 +1,25 @@
 # Benjamin David · IA Engineer · Nantes
 
-> Portfolio de Benjamin David, IA Engineer à Nantes. Il construit des
-> applications qui rendent les outils internes utilisables par les humains
-> comme par les agents. Huit ans de production, d'abord côté réseau,
-> aujourd'hui autour de l'IA. En poste chez Kereis depuis mai 2026, ouvert
-> aux opportunités en numérique responsable.
+> Benjamin David, IA Engineer à Nantes, construit des applications qui rendent les outils internes utilisables par les humains comme par les agents. Huit ans de production, d'abord côté réseau, aujourd'hui autour de l'IA. En poste chez Kereis depuis mai 2026, ouvert aux opportunités IA et numérique responsable.
 
-Contenu complet du portfolio, en un seul document. L'index des documents publiés
-est https://me.brezinben.dpdns.org/llms.txt
+Référence complète du portfolio : tous les faits, un par ligne. La fiche courte est https://me.brezinben.dpdns.org/llms.txt
 
-Ce site est le portfolio d'une seule personne. Il n'expose ni produit, ni API, ni
-service. Benjamin conçoit des serveurs MCP pour ses clients ;
-ce domaine n'en héberge aucun. Dans un navigateur qui prend en charge WebMCP, la page
-déclare des outils à l'agent du navigateur. Ces outils vivent dans la page.
+Ce site n'expose ni API, ni serveur MCP, ni service. Benjamin conçoit des serveurs MCP pour ses clients, mais ce domaine n'en héberge aucun. Dans un navigateur qui prend en charge WebMCP, la page déclare des outils à l'agent du navigateur : ouvrir une section, chercher, lire une fiche techno, obtenir le contact. Ces outils vivent dans la page.
 
 ## Identité
 
 - Nom : Benjamin David
-- Titre : IA Engineer · Nantes
 - Poste : IA Engineer
 - Entreprise : digital4better · en mission chez Kereis
 - Depuis : mai 2026
 - Statut : en poste, ouvert aux opportunités
+- Expérience : huit ans, depuis 2018
 - Base : Nantes, France
 - Langues : français, anglais technique
-- E-mail : benjamin.david1@hotmail.fr
-- LinkedIn : https://www.linkedin.com/in/benjamin--david
-- GitHub : https://github.com/brezinben
-- Site : https://me.brezinben.dpdns.org/
-- Blog : https://blog.brezinben.dpdns.org/
 
-Je construis des applications qui rendent les outils internes vraiment
-utilisables, par les humains comme par les agents.
+Benjamin construit des applications qui rendent les outils internes vraiment utilisables, par les humains comme par les agents. Il conçoit, orchestre, livre. La spécification passe avant le code : les agents produisent dans les contraintes qu'il pose.
 
-Je conçois, j'orchestre, je livre. La spécification avant le code : les agents
-produisent dans les contraintes que je pose.
-
-Huit ans de production, d'abord côté réseau, aujourd'hui autour de l'IA. Le
-métier bouge trop vite pour se reposer sur ce qu'on savait l'an dernier.
-
-L'accessibilité, la performance et la qualité du code sont des contraintes de
-départ, pas une checklist de fin de projet.
-
-Chez digital4better depuis 2023, en mission chez Kereis depuis mai 2026. Ouvert aux opportunités en numérique responsable.
+Le métier bouge trop vite pour se reposer sur ce qu'on savait l'an dernier. L'accessibilité, la performance et la qualité du code sont des contraintes de départ, pas une checklist de fin de projet.
 
 ## Parcours
 
@@ -181,7 +158,8 @@ En parallèle du BTS SIO option SISR.
   sombre.
 
 Le numérique responsable est une contrainte de conception, au même titre que la
-sécurité.
+sécurité. Benjamin est certifié par l'Institut du Numérique Responsable (Certificat de
+Connaissance Numérique Responsable, 2024) : voir le Cursus.
 
 ## Compétences techniques
 
