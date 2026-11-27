@@ -1,0 +1,184 @@
+# Lancer : bun run eval:llms. Chaque lancement appelle un modèle : la CI ne le lance pas.
+description: Qualité de llms.txt et de llms-full.txt pour un agent
+
+prompts:
+  - |
+    Tu es un agent qui répond à une question sur une personne.
+    Réponds uniquement avec le document ci-dessous, en français, en quelques phrases.
+    Si le document ne donne pas la réponse, dis qu'il ne la donne pas. N'invente rien.
+
+    Document :
+    {{context}}
+
+    Question : {{question}}
+
+providers:
+  - id: anthropic:messages:claude-haiku-5-5
+    config:
+      apiKeyRequired: false
+      max_tokens: 1500
+
+defaultTest:
+  vars:
+    context: [file://../../src/llms.txt, file://../../src/llms-full.txt]
+  options:
+    provider:
+      id: anthropic:messages:claude-sonnet-5-5
+      config:
+        apiKeyRequired: false
+
+tests:
+  - description: identité
+    vars:
+      question: Qui est Benjamin David et quel est son métier ?
+    assert:
+      - { type: icontains, value: IA Engineer }
+      - { type: icontains, value: Nantes }
+
+  - description: disponibilité
+    vars:
+      question: Benjamin est-il disponible pour une nouvelle mission ?
+    assert:
+      - type: llm-rubric
+        value: Dit qu'il est en poste chez Kereis depuis mai 2026 et qu'il est ouvert aux opportunités.
+
+  - description: missions recherchées
+    vars:
+      question: Quel type de missions recherche-t-il ?
+    assert:
+      - type: llm-rubric
+        value: Cite les missions IA et le numérique responsable. Ne cite pas « full stack » comme mission recherchée.
+
+  - description: poste actuel
+    vars:
+      question: Quel est son poste actuel, et pour quel client ?
+    assert:
+      - type: llm-rubric
+        value: Dit IA Engineer, via digital4better, en mission chez Kereis, au pôle DSI.
+
+  - description: années d'expérience
+    vars:
+      question: Combien d'années d'expérience a-t-il ?
+    assert:
+      - type: llm-rubric
+        value: Dit huit ans, depuis 2018.
+
+  - description: langues
+    vars:
+      question: Quelles langues parle-t-il ?
+    assert:
+      - type: llm-rubric
+        value: Dit français et anglais technique.
+
+  - description: contact
+    vars:
+      question: Comment contacter Benjamin ?
+    assert:
+      - { type: icontains, value: benjamin.david1@hotmail.fr }
+      - type: llm-rubric
+        value: Dit que la réponse arrive sous 48 heures.
+
+  - description: code et blog
+    vars:
+      question: Où lire son code et son blog ?
+    assert:
+      - { type: icontains, value: github.com/brezinben }
+      - { type: icontains, value: blog.brezinben.dpdns.org }
+
+  - description: serveurs MCP
+    vars:
+      question: A-t-il de l'expérience avec les serveurs MCP ?
+    assert:
+      - type: llm-rubric
+        value: Dit oui, il conçoit des serveurs MCP pour ses clients.
+
+  - description: orchestration et observabilité
+    vars:
+      question: Quels outils d'orchestration d'agents et d'observabilité de LLM connaît-il ?
+    assert:
+      - type: llm-rubric
+        value: "Cite au moins un de ces outils : LangGraph, Langfuse, LiteLLM."
+
+  - description: Vue ou React
+    vars:
+      question: Travaille-t-il plutôt avec Vue ou avec React ?
+    assert:
+      - type: llm-rubric
+        value: Dit qu'il connaît les deux.
+
+  - description: accessibilité
+    vars:
+      question: Connaît-il l'accessibilité numérique ?
+    assert:
+      - type: llm-rubric
+        value: Dit oui et cite le RGAA et axe.
+
+  - description: numérique responsable
+    vars:
+      question: Quelle est son approche du numérique responsable ?
+    assert:
+      - type: llm-rubric
+        value: Dit que c'est une contrainte de conception, au même titre que la sécurité, et cite le certificat de l'Institut du Numérique Responsable.
+
+  - description: encadrement
+    vars:
+      question: A-t-il déjà encadré une équipe ?
+    assert:
+      - type: llm-rubric
+        value: Dit oui, comme tech lead chez Transway, avec quatre à six développeurs.
+
+  - description: migration
+    vars:
+      question: Quelle est la plus grosse migration qu'il a menée ?
+    assert:
+      - type: llm-rubric
+        value: Dit la migration de la V1 vers la V3 chez Transway, avec plus de 300 000 utilisateurs.
+
+  - description: SNCF
+    vars:
+      question: Qu'a-t-il fait pour SNCF Gares & Connexions ?
+    assert:
+      - type: llm-rubric
+        value: Cite Assist'enGare, entre 2024 et 2026.
+
+  - description: certifications
+    vars:
+      question: Quelles certifications a-t-il ?
+    assert:
+      - type: llm-rubric
+        value: Cite Claude Certified Developer Foundations (2026) et le certificat de Connaissance Numérique Responsable (2024).
+
+  - description: formation
+    vars:
+      question: Quelle est sa formation ?
+    assert:
+      - type: llm-rubric
+        value: Cite le BTS SIO option SISR et le titre professionnel Concepteur Développeur d'Applications.
+
+  - description: tarif absent
+    vars:
+      question: Quel est son tarif journalier ?
+    assert:
+      - type: llm-rubric
+        value: Dit que le document ne donne pas de tarif. Ne donne aucun montant.
+
+  - description: télétravail absent
+    vars:
+      question: Accepte-t-il le télétravail complet ?
+    assert:
+      - type: llm-rubric
+        value: Dit que le document ne le précise pas. N'affirme ni oui ni non.
+
+  - description: Kubernetes absent
+    vars:
+      question: A-t-il de l'expérience avec Kubernetes ?
+    assert:
+      - type: llm-rubric
+        value: Dit que le document ne cite pas Kubernetes. N'affirme aucune expérience Kubernetes.
+
+  - description: API absente
+    vars:
+      question: Ce site expose-t-il une API ou un serveur MCP ?
+    assert:
+      - type: llm-rubric
+        value: Dit non. Précise que seuls des outils WebMCP vivent dans la page, sans serveur.

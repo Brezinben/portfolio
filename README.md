@@ -39,7 +39,7 @@ bun run deps           # mise à jour interactive des paquets
 
 Lancez `bun run test`, et non `bun test`. Sans `run`, Bun lance son propre lanceur, qui ramasse aussi `tests/browser/`.
 
-Sur l'hôte `beta`, `bun run build` publie le site en ligne. Ailleurs, il ne publie rien.
+Sur l'hôte qui sert le site, `bun run build` publie le site en ligne. Ailleurs, il ne publie rien.
 Pour tester une construction, écrivez `PORTFOLIO_DIST=dist.test`.
 
 ## Pour aller plus loin

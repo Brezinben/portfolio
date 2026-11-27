@@ -1,5 +1,8 @@
 # AGENTS.md
 
+This repository is public. Commit nothing the live site does not already show:
+no host address, no path of the serving machine, no secret, no personal detail.
+
 Benjamin David's portfolio: static pages in a terminal interface, content in `src/content.json`.
 Bun runs the build and the unit tests.
 
@@ -33,11 +36,16 @@ liens sameAs vers LinkedIn et GitHub, dit à Google que cette page désigne cett
   Lighthouse: `bun run test:performance`, on a build in `dist.test`.
 - The CI (`.github/workflows/tests.yml`) also runs the coverage floor, the browser suite, Lighthouse,
   and opengrep on the files a change touches.
+- After a change to `src/llms.txt` or `src/llms-full.txt`, run `bun run eval:llms`. It calls a
+  model, so the CI does not run it. ADR 0011 gives the frame of both files.
 - Heavy commands (`bun run check`, browser, Lighthouse and mutation tests) go through `hochet`, the
   machine-wide queue: `hochet bun run test:browser`. `hochet status` shows who holds each slot.
-- Build: `bun run build` writes `dist`. Only the host `beta` serves `dist` (ADR 0003): a build
+- Build: `bun run build` writes `dist`. Only the serving host serves `dist` (ADR 0003): a build
   there publishes the live site, a build elsewhere publishes nothing. To test a build, set
   `PORTFOLIO_DIST=dist.test`. Package updates: `bun run deps`.
+- Publish: on the serving host, in its checkout of this repository, run
+  `git pull --ff-only && bun install --frozen-lockfile && bun run build`.
+  Keep the dev dependencies: the build imports rolldown and html-minifier-terser.
 
 ## Tools
 
