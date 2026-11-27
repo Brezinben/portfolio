@@ -8,6 +8,7 @@
     "build": "bun tools/build.ts",
     "check": "hk check --all",
     "deps": "npm-check-updates --interactive --format group",
+    "eval:llms": "bunx promptfoo@0.126.0 eval -c evals/llms/promptfooconfig.yaml",
     "format": "oxfmt .",
     "lint": "oxlint --deny-warnings",
     "test": "bun test tests/unit/",
